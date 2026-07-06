@@ -1,9 +1,23 @@
 <style>
-  .product-list--carousel .product-card--info-outside .product-card__info {
-    padding-block-start: 0;
+  .product-list:has(.product-card--info-outside) .product-list__intro-block {
+    display: flex;
+    flex-direction: column;
   }
-  .product-list--carousel {
-    align-items: flex-start;
+
+  .product-list:has(.product-card--info-outside) .product-list__intro-block > * {
+    flex-grow: 1;
+  }
+
+  #shopify-section-{{ section.id }} .product-list__intro-block .content-box__background-media img {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+  }
+
+  .product-list--carousel .product-card__info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   #shopify-section-{{ section.id }} {
@@ -50,13 +64,13 @@
           </carousel-prev-button>
         {%- endunless -%}
 
-        <product-list id="{{ product_list_id }}" cell-selector=".product-card" class="product-list {{ product_list_class }}">
-          <div class="product-list__intro-block color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+        <product-list id="{{ product_list_id }}" cell-selector=".product-card" class="product-list {{ product_list_class }}" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;">
+          <div class="product-list__intro-block color-scheme color-scheme--{{ section.settings.color_scheme.id }}" style="border-radius: {{ section.settings.intro_block_border_radius }}px; overflow: hidden;">
             <div class="@container/content-box h-full color-scheme color-scheme--{{ section.settings.intro_color_scheme.id }}">
               <div class="content-box">
                 {%- if section.settings.intro_image != blank -%}
                   <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.intro_image_overlay.rgba }}">
-                    {{- section.settings.intro_image | image_url: width: section.settings.intro_image.width | image_tag: sizes: '(max-width: 699px) 100vw, 25vw', widths: '200,300,400,600,800,1000,1200,1400,1600,1800', class: 'size-full' -}}
+                    {{- section.settings.intro_image | image_url: width: section.settings.intro_image.width | image_tag: sizes: '(max-width: 699px) 100vw, 25vw', widths: '200,300,400,600,800,1000,1200,1400,1600,1800' -}}
                   </div>
                 {%- endif -%}
 
@@ -103,28 +117,6 @@
   </div>
 </div>
 
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const section = document.getElementById("shopify-section-{{ section.id }}");
-    const productList = section.querySelector(".product-list");
-    const introBlock = section.querySelector(".product-list__intro-block");
-    const productCards = section.querySelectorAll(".product-card");
-
-    function setIntroBlockHeight() {
-      let maxHeight = 0;
-      productCards.forEach(card => {
-        if (card.offsetHeight > maxHeight) {
-          maxHeight = card.offsetHeight;
-        }
-      });
-      if(introBlock) introBlock.style.height = `${maxHeight}px`;
-    }
-
-    setIntroBlockHeight();
-    window.addEventListener("resize", setIntroBlockHeight);
-  });
-</script>
-
 {% schema %}
 {
   "name": "t:sections.featured_product_list.name",
@@ -146,7 +138,35 @@
       "id": "product_list",
       "label": "t:sections.featured_product_list.product_list"
     },
-{
+    {
+      "type": "checkbox",
+      "id": "stack_products_mobile",
+      "label": "t:global.product_list.stack_products_mobile",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "stack_products_desktop",
+      "label": "t:global.product_list.stack_products_desktop",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "products_per_row_mobile",
+      "label": "t:global.product_list.products_per_row_mobile",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "1"
+    },
+    {
       "type": "range",
       "id": "products_per_row_desktop",
       "min": 2,
@@ -156,11 +176,23 @@
     },
     {
       "type": "range",
-      "id": "products_per_row_desktop",
-      "min": 2,
-      "max": 4,
-      "label": "t:global.product_list.products_per_row_desktop",
-      "default": 4
+      "id": "product_card_border_radius",
+      "min": 0,
+      "max": 25,
+      "step": 1,
+      "unit": "px",
+      "label": "Radio del borde de la tarjeta de producto",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "intro_block_border_radius",
+      "min": 0,
+      "max": 25,
+      "step": 1,
+      "unit": "px",
+      "label": "Radio del borde del bloque de introducción",
+      "default": 0
     },
     {
       "type": "header",
