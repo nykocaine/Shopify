@@ -70,7 +70,7 @@ based on your desired layout (and remove most of the settings associated), and t
     assign product_card_classes = product_card_classes | append: ' product-card--bordered'
   endif
 
-  if product_card_info_position == 'outside'
+  if settings.product_card_info_position == 'outside'
     assign product_card_classes = product_card_classes | append: ' product-card--info-outside'
   else
     assign product_card_classes = product_card_classes | append: ' product-card--info-inside'
@@ -122,7 +122,7 @@ based on your desired layout (and remove most of the settings associated), and t
   endif
 -%}
 
-<product-card class="{{ product_card_classes }} color-scheme color-scheme--{{ color_scheme.id }}" {% if reveal and settings.stagger_products %}reveal-on-scroll="true"{% endif %} handle="{{ product.handle | escape }}" style="{% if product_card_row_count %}--product-card-row-count: {{ product_card_row_count }};{% endif %}">
+<product-card class="{{ product_card_classes }} color-scheme color-scheme--{{ color_scheme.id }}" {% if reveal and settings.stagger_products %}reveal-on-scroll="true"{% endif %} handle="{{ product.handle | escape }}">
   {%- comment -%}
   --------------------------------------------------------------------------------------------------------------------
   PRODUCT MEDIA
