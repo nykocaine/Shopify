@@ -1,11 +1,7 @@
 <style>
-  .product-list--carousel .product-card--info-outside .product-card__info {
-    padding-block-start: 0;
-  }
   .product-list--carousel {
-    align-items: flex-start;
+    grid-auto-rows: min-content;
   }
-
   #shopify-section-{{ section.id }} {
     --product-list-column-count: {{ section.settings.products_per_row_mobile | times: 1 }};
   }
@@ -56,7 +52,7 @@
               <div class="content-box">
                 {%- if section.settings.intro_image != blank -%}
                   <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.intro_image_overlay.rgba }}">
-                    {{- section.settings.intro_image | image_url: width: section.settings.intro_image.width | image_tag: sizes: '(max-width: 699px) 100vw, 25vw', widths: '200,300,400,600,800,1000,1200,1400,1600,1800', class: 'size-full' -}}
+                    {{- section.settings.intro_image | image_url: width: section.settings.intro_image.width | image_tag: sizes: '(max-width: 699px) 100vw, 25vw', widths: '200,300,400,600,800,1000,1200,1400,1600,1800', class: 'size-full', style: 'object-fit: cover; height: 100%; width: 100%;' -}}
                   </div>
                 {%- endif -%}
 
@@ -146,13 +142,33 @@
       "id": "product_list",
       "label": "t:sections.featured_product_list.product_list"
     },
-{
-      "type": "range",
-      "id": "products_per_row_desktop",
-      "min": 2,
-      "max": 4,
-      "label": "t:global.product_list.products_per_row_desktop",
-      "default": 4
+    {
+      "type": "checkbox",
+      "id": "stack_products_mobile",
+      "label": "t:global.product_list.stack_products_mobile",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "stack_products_desktop",
+      "label": "t:global.product_list.stack_products_desktop",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "products_per_row_mobile",
+      "label": "t:global.product_list.products_per_row_mobile",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "1"
     },
     {
       "type": "range",
