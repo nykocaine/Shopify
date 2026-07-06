@@ -8,9 +8,10 @@
     flex-grow: 1;
   }
 
-  .product-list:has(.product-card--info-outside) .product-list__intro-block .content-box__background-media img {
+  #shopify-section-{{ section.id }} .product-list__intro-block .content-box__background-media img {
     object-fit: cover;
     height: 100%;
+    width: 100%;
   }
 
   .product-list--carousel .product-card__info {
@@ -69,7 +70,7 @@
               <div class="content-box">
                 {%- if section.settings.intro_image != blank -%}
                   <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.intro_image_overlay.rgba }}">
-                    {{- section.settings.intro_image | image_url: width: section.settings.intro_image.width | image_tag: sizes: '(max-width: 699px) 100vw, 25vw', widths: '200,300,400,600,800,1000,1200,1400,1600,1800', class: 'size-full' -}}
+                    {{- section.settings.intro_image | image_url: width: section.settings.intro_image.width | image_tag: sizes: '(max-width: 699px) 100vw, 25vw', widths: '200,300,400,600,800,1000,1200,1400,1600,1800' -}}
                   </div>
                 {%- endif -%}
 
