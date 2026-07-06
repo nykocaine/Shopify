@@ -43,7 +43,7 @@
           </carousel-prev-button>
         {%- endunless -%}
 
-          <product-list id="{{ product_list_id }}" cell-selector=".product-card" class="product-list product-list--custom-intro {{ product_list_class }}">
+          <product-list id="{{ product_list_id }}" cell-selector=".product-card" class="product-list product-list--custom-intro product-list--info-outside {{ product_list_class }}">
             <div class="product-list__intro-block color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
               <div class="@container/content-box h-full color-scheme color-scheme--{{ section.settings.intro_color_scheme.id }}">
                 <div class="content-box">
@@ -71,11 +71,20 @@
               </div>
             </div>
 
+            {%- comment -%}
+              The intro block will take the full height of the product card when the info is outside.
+            {%- endcomment -%}
+            {%- if section.settings.stack_products_desktop and section.settings.card_info_position == 'outside' -%}
+              {%- assign product_card_row_count = 2 -%}
+            {%- else -%}
+              {%- assign product_card_row_count = 1 -%}
+            {%- endif -%}
+
             {%- capture sizes -%}(max-width: 699px) calc(100vw / {{ section.settings.products_per_row_mobile }} - 40px), (max-width: 999px) calc(100vw / {{ 3 | at_most: section.settings.products_per_row_desktop }} - 64px), calc((100vw - 96px) / {{ section.settings.products_per_row_desktop }}){%- endcapture -%}
 
             {%- liquid
               for product in section.settings.product_list
-                render 'product-card', product: product, reveal: true, sizes: sizes, position: forloop.index
+                render 'product-card', product: product, reveal: true, sizes: sizes, position: forloop.index, product_card_row_count: product_card_row_count
               else
                 for i in (1..4)
                   render 'product-card-placeholder', loop_index: i
