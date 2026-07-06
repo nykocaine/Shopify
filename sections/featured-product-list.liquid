@@ -96,42 +96,6 @@
   </div>
 </div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    function adjustIntroBlockHeight() {
-      const productList = document.getElementById('{{ product_list_id }}');
-      if (!productList) return;
-
-      const introBlock = productList.querySelector('.product-list__intro-block');
-      const productCards = productList.querySelectorAll('.product-card');
-
-      if (!introBlock || productCards.length === 0) return;
-
-      let maxHeight = 0;
-
-      // Calculate max height of product cards considering all their content
-      productCards.forEach(card => {
-        maxHeight = Math.max(maxHeight, card.offsetHeight);
-      });
-
-      // Apply the max height to the intro block
-      introBlock.style.height = `${maxHeight}px`;
-      introBlock.style.minHeight = `${maxHeight}px`;
-    }
-
-    // Initial adjustment
-    adjustIntroBlockHeight();
-
-    // Re-adjust on window resize
-    window.addEventListener('resize', adjustIntroBlockHeight);
-
-    // Observe changes in product list to re-adjust if content changes dynamically
-    const observer = new MutationObserver(adjustIntroBlockHeight);
-    const config = { childList: true, subtree: true };
-    observer.observe(productList, config);
-  });
-</script>
-
 {% schema %}
 {
   "name": "t:sections.featured_product_list.name",
