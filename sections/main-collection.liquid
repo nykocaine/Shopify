@@ -66,10 +66,10 @@
               </div>
             </div>
           {%- else -%}
-            <div class="collection__results">
-              {%- render 'active-facets', source: collection, hash: "#collection" -%}
-              {%- render 'product-list', products: collection.products, allow_highlight: true, paginate: paginate, blocks: section.blocks, output_override_attributes: true -%}
-            </div>
+             <div class="collection__results" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;">
+               {%- render 'active-facets', source: collection, hash: "#collection" -%}
+               {%- render 'product-list', products: collection.products, allow_highlight: true, paginate: paginate, blocks: section.blocks, output_override_attributes: true -%}
+             </div>
 
             {%- render 'pagination', paginate: paginate, facet: true, hash: '#collection' -%}
           {%- endif -%}
@@ -160,6 +160,16 @@ on desktop based on the settings
       "min": 1,
       "max": 5,
       "default": 4
+    },
+    {
+      "type": "range",
+      "id": "product_card_border_radius",
+      "min": 0,
+      "max": 25,
+      "step": 1,
+      "unit": "px",
+      "label": "Radio del borde de la tarjeta de producto",
+      "default": 0
     },
     {
       "type": "checkbox",
