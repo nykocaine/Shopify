@@ -83,8 +83,10 @@
             {%- capture sizes -%}(max-width: 699px) calc(100vw / {{ section.settings.products_per_row_mobile }} - 40px), (max-width: 999px) calc(100vw / {{ 3 | at_most: section.settings.products_per_row_desktop }} - 64px), calc((100vw - 96px) / {{ section.settings.products_per_row_desktop }}){%- endcapture -%}
 
             {%- liquid
+              # Add this setting so the product card can use it
+              assign product_card_info_position = section.settings.card_info_position
               for product in section.settings.product_list
-                render 'product-card', product: product, reveal: true, sizes: sizes, position: forloop.index, product_card_row_count: product_card_row_count
+                render 'product-card', product: product, reveal: true, sizes: sizes, position: forloop.index, product_card_row_count: product_card_row_count, product_card_info_position: product_card_info_position
               else
                 for i in (1..4)
                   render 'product-card-placeholder', loop_index: i
