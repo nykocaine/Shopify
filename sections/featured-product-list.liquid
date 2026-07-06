@@ -57,8 +57,8 @@
           </carousel-prev-button>
         {%- endunless -%}
 
-        <product-list id="{{ product_list_id }}" cell-selector=".product-card" class="product-list {{ product_list_class }}">
-          <div class="product-list__intro-block color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+        <product-list id="{{ product_list_id }}" cell-selector=".product-card" class="product-list {{ product_list_class }}" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;">
+          <div class="product-list__intro-block color-scheme color-scheme--{{ section.settings.color_scheme.id }}" style="border-radius: {{ section.settings.intro_block_border_radius }}px; overflow: hidden;">
             <div class="@container/content-box h-full color-scheme color-scheme--{{ section.settings.intro_color_scheme.id }}">
               <div class="content-box">
                 {%- if section.settings.intro_image != blank -%}
@@ -166,6 +166,26 @@
       "max": 4,
       "label": "t:global.product_list.products_per_row_desktop",
       "default": 4
+    },
+    {
+      "type": "range",
+      "id": "product_card_border_radius",
+      "min": 0,
+      "max": 25,
+      "step": 1,
+      "unit": "px",
+      "label": "Radio del borde de la tarjeta de producto",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "intro_block_border_radius",
+      "min": 0,
+      "max": 25,
+      "step": 1,
+      "unit": "px",
+      "label": "Radio del borde del bloque de introducción",
+      "default": 0
     },
     {
       "type": "header",
