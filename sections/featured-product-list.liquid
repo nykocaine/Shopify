@@ -1,4 +1,23 @@
 <style>
+  .product-list:has(.product-card--info-outside) .product-list__intro-block {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-list:has(.product-card--info-outside) .product-list__intro-block > * {
+    flex-grow: 1;
+  }
+
+  .product-list:has(.product-card--info-outside) .product-list__intro-block .content-box__background-media img {
+    object-fit: cover;
+    height: 100%;
+  }
+
+  .product-list--carousel .product-card__info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
 
   #shopify-section-{{ section.id }} {
     --product-list-column-count: {{ section.settings.products_per_row_mobile | times: 1 }};
@@ -27,11 +46,11 @@
           assign product_list_class = ''
 
           if section.settings.stack_products_mobile == false and section.settings.stack_products_desktop == false
-            assign product_list_class = 'scroll-area bleed md:unbleed'
+            assign product_list_class = 'product-list--carousel scroll-area bleed md:unbleed'
           elsif section.settings.stack_products_mobile == false
-            assign product_list_class = 'md-max:scroll-area bleed md:unbleed'
+            assign product_list_class = 'md-max:product-list--carousel scroll-area bleed md:unbleed'
           elsif section.settings.stack_products_desktop == false
-            assign product_list_class = 'md:scroll-area'
+            assign product_list_class = 'md:product-list--carousel scroll-area'
           endif
         -%}
 
