@@ -25,7 +25,7 @@
         {%- assign product_list_id = 'section-' | append: section.id | append: '-product-list' -%}
 
         {%- capture product_list -%}
-          <product-list id="{{ product_list_id }}" class="product-list product-list--padded full-bleed {% unless section.settings.stack_products %}product-list--carousel scroll-area{% endunless %}">
+          <product-list id="{{ product_list_id }}" class="product-list product-list--padded full-bleed {% unless section.settings.stack_products %}product-list--carousel scroll-area{% endunless %}" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;">
             {%- capture sizes -%}
               {%- if section.settings.stack_products -%}
                 (max-width: 699px) calc(100vw / {{ section.settings.products_per_row_mobile }} - 40px), (max-width: 999px) calc(50vw - 64px), calc((100vw - 96px) / {{ section.settings.products_per_row_desktop }})
@@ -128,6 +128,16 @@
       "max": 5,
       "label": "t:global.product_list.products_per_row_desktop",
       "default": 4
+    },
+    {
+      "type": "range",
+      "id": "product_card_border_radius",
+      "min": 0,
+      "max": 25,
+      "step": 1,
+      "unit": "px",
+      "label": "Radio del borde de la tarjeta de producto",
+      "default": 0
     },
     {
       "type": "checkbox",
