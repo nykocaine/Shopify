@@ -48,7 +48,7 @@ This component display a list of product that can be used in collection, search.
         {%- continue -%}
       {%- endif -%}
 
-      <div class="product-list__promo {% if block.settings.image == blank and settings.product_listing_spacing == 'none' %}outline{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {% if settings.stagger_products %}reveal-on-scroll="true"{% endif %} style="--product-list-promo-row-span: {{ block.settings.size | split: '_' | last }}; --product-list-promo-column-span: {{ block.settings.size | split: '_' | first }}" {{ block.shopify_attributes }}>
+      <div class="product-list__promo {% if block.settings.image == blank and settings.product_listing_spacing == 'none' %}outline{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {% if settings.stagger_products %}reveal-on-scroll="true"{% endif %} style="--product-list-promo-row-span: {{ block.settings.size | split: '_' | last }}; --product-list-promo-column-span: {{ block.settings.size | split: '_' | first }}; border-radius: {{ block.settings.border_radius }}px; overflow: hidden;" {{ block.shopify_attributes }}>
         <div class="content-box min-h-full">
           <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }}">
             {%- liquid
