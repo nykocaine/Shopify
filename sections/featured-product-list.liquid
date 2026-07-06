@@ -100,6 +100,28 @@
   </div>
 </div>
 
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const section = document.getElementById("shopify-section-{{ section.id }}");
+    const productList = section.querySelector(".product-list");
+    const introBlock = section.querySelector(".product-list__intro-block");
+    const productCards = section.querySelectorAll(".product-card");
+
+    function setIntroBlockHeight() {
+      let maxHeight = 0;
+      productCards.forEach(card => {
+        if (card.offsetHeight > maxHeight) {
+          maxHeight = card.offsetHeight;
+        }
+      });
+      if(introBlock) introBlock.style.height = `${maxHeight}px`;
+    }
+
+    setIntroBlockHeight();
+    window.addEventListener("resize", setIntroBlockHeight);
+  });
+</script>
+
 {% schema %}
 {
   "name": "t:sections.featured_product_list.name",
