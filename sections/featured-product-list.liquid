@@ -33,15 +33,31 @@
     --product-list-column-count: {{ section.settings.products_per_row_mobile | times: 1 }};
   }
 
+  .progress-bar-container.hidden-on-mobile {
+    display: none;
+  }
+
+  .progress-bar-container.hidden-on-desktop {
+    display: none;
+  }
+
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} {
       --product-list-column-count: 2;
+    }
+
+    .progress-bar-container.hidden-on-mobile {
+      display: block;
     }
   }
 
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} {
       --product-list-column-count: {{ section.settings.products_per_row_desktop }};
+    }
+
+    .progress-bar-container.hidden-on-desktop {
+      display: block;
     }
   }
 </style>
@@ -103,12 +119,13 @@
             endfor
           -%}
         </product-list>
+
+        {%- if section.settings.show_progress_bar_mobile or section.settings.show_progress_bar_desktop -%}
+          <div class="progress-bar-container v-stack gap-4 {% if section.settings.show_progress_bar_mobile == false %}hidden-on-mobile{% endif %} {% if section.settings.show_progress_bar_desktop == false %}hidden-on-desktop{% endif %}" style="background-color: {{ section.settings.progress_bar_bg_color }}; height: {{ section.settings.progress_bar_height }}px; margin-top: var(--section-vertical-spacing);">
+            <div class="progress-bar" style="background-color: {{ section.settings.progress_bar_color }};"></div>
+          </div>
+        {%- endif -%}
       </div>
-      {%- if section.settings.show_progress_bar_mobile or section.settings.show_progress_bar_desktop -%}
-      <div class="progress-bar-container" style="background-color: {{ section.settings.progress_bar_bg_color }}; height: {{ section.settings.progress_bar_height }}px;" {%- if section.settings.show_progress_bar_mobile == false -%}hidden-on-mobile{%- endif -%} {%- if section.settings.show_progress_bar_desktop == false -%}hidden-on-desktop{%- endif -%}>
-        <div class="progress-bar" style="background-color: {{ section.settings.progress_bar_color }};"></div>
-      </div>
-    {%- endif -%}
     </div>
   </div>
 </div>
@@ -193,6 +210,31 @@
           "value": "1",
           "label": "1"
         },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "products_per_row_desktop",
+      "min": 2,
+      "max": 4,
+      "label": "t:global.product_list.products_per_row_desktop",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "product_card_border_radius",
+      "min": 0,
+      "max": 25,
+      "step": 1,
+      "unit": "px",
+      "label": "Radio del borde de la tarjeta de producto",
+      "default": 0
+    },
         {
           "value": "2",
           "label": "2"
