@@ -1,5 +1,6 @@
 
 {% comment %}
+  1.1.1 | 2024-07-07 | Cline | Fixed Liquid syntax error.
   1.1.0 | 2024-07-07 | Cline | Added Tooltip, Badge, Close Button, and Agent selection.
   1.0.0 | 2024-07-07 | Cline | Initial implementation
 {% endcomment %}
@@ -15,8 +16,8 @@
   endif
 
   assign agents = section.blocks
-  assign has_agents = agents.size > 0
 -%}
+{%- assign has_agents = agents.size > 0 -%}
 
 {% if show_button %}
   <div
@@ -46,7 +47,7 @@
         data-phone-number="{{ section.settings.phone_number }}"
         data-default-message="{{ section.settings.default_message | escape }}"
         data-animation="{{ section.settings.animation }}"
-        data-has-agents="{{ has_agents }}"
+        data-has-agents="{{ has_agents | json }}"
       >
         {% if section.settings.show_badge %}
           <span class="vc-whatsapp-badge"></span>
