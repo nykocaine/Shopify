@@ -33,21 +33,34 @@
     --product-list-column-count: {{ section.settings.products_per_row_mobile | times: 1 }};
   }
 
-  .progress-bar-container.hidden-on-mobile {
-    display: none;
+  .progress-bar-container {
+    margin-top: 2rem;
   }
 
-  .progress-bar-container.hidden-on-desktop {
-    display: none;
+  .progress-bar {
+    width: 0%;
+    height: 100%;
   }
+
+  {%- unless section.settings.show_progress_bar_mobile -%}
+    @media screen and (max-width: 999px) {
+      .progress-bar-container {
+        display: none;
+      }
+    }
+  {%- endunless -%}
+
+  {%- unless section.settings.show_progress_bar_desktop -%}
+    @media screen and (min-width: 1000px) {
+      .progress-bar-container {
+        display: none;
+      }
+    }
+  {%- endunless -%}
 
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} {
       --product-list-column-count: 2;
-    }
-
-    .progress-bar-container.hidden-on-mobile {
-      display: block;
     }
   }
 
@@ -55,17 +68,12 @@
     #shopify-section-{{ section.id }} {
       --product-list-column-count: {{ section.settings.products_per_row_desktop }};
     }
-
-    .progress-bar-container.hidden-on-desktop {
-      display: block;
-    }
   }
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
   <div class="container">
     <div class="section-spacing section-spacing--tight">
-      <div {% unless section.settings.stack_products_desktop %}class="floating-controls-container"{% endunless %}>
         {%- assign product_list_id = 'product-list-' | append: section.id -%}
 
         {%- liquid
@@ -121,11 +129,10 @@
         </product-list>
 
         {%- if section.settings.show_progress_bar_mobile or section.settings.show_progress_bar_desktop -%}
-          <div class="progress-bar-container v-stack gap-4 {% if section.settings.show_progress_bar_mobile == false %}hidden-on-mobile{% endif %} {% if section.settings.show_progress_bar_desktop == false %}hidden-on-desktop{% endif %}" style="background-color: {{ section.settings.progress_bar_bg_color }}; height: {{ section.settings.progress_bar_height }}px; margin-top: var(--section-vertical-spacing);">
+          <div class="progress-bar-container v-stack gap-4" style="background-color: {{ section.settings.progress_bar_bg_color }}; height: {{ section.settings.progress_bar_height }}px;">
             <div class="progress-bar" style="background-color: {{ section.settings.progress_bar_color }};"></div>
           </div>
         {%- endif -%}
-      </div>
     </div>
   </div>
 </div>
