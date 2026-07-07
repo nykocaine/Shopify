@@ -23,22 +23,22 @@ note that this may have impact on different places.
     assign text_font_bold_italic = text_font_bold | font_modify: 'style', 'italic'
 
     # Typography (subheading)
-    {%- if settings.subheading_font_source == 'shopify' -%}
+    if settings.subheading_font_source == 'shopify'
     echo settings.subheading_font | font_face: font_display: 'fallback'
 
     if subheading_font_italic
       echo subheading_font_italic | font_face: font_display: 'fallback'
     endif
-    {%- endif -%}
+    endif
 
     # Typography (heading)
-    {%- if settings.heading_font_source == 'shopify' -%}
+    if settings.heading_font_source == 'shopify'
     echo settings.heading_font | font_face: font_display: 'fallback'
 
     if heading_font_italic
       echo heading_font_italic | font_face: font_display: 'fallback'
     endif
-    {%- endif -%}
+    endif
 
     if heading_font_bold
       echo heading_font_bold | font_face: font_display: 'fallback'
@@ -49,13 +49,13 @@ note that this may have impact on different places.
     endif
 
     # Typography (body)
-    {%- if settings.text_font_source == 'shopify' -%}
+    if settings.text_font_source == 'shopify'
     echo settings.text_font | font_face: font_display: 'fallback'
 
     if text_font_italic
       echo text_font_italic | font_face: font_display: 'fallback'
     endif
-    {%- endif -%}
+    endif
 
     if text_font_medium
       echo text_font_medium | font_face: font_display: 'fallback'
