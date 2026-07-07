@@ -11,6 +11,14 @@
       endcapture
     -%}
 
+    <style>
+      .modal--newsletter {
+        {%- if section.settings.center_popup -%}
+        justify-content: center;
+        align-items: center;
+        {%- endif -%}
+      }
+    </style>
     <newsletter-popup class="modal modal--newsletter color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.show_only_once %}only-once{% endif %} apparition-delay="{{ section.settings.apparition_delay }}" {% if posted_successfully %}open{% endif %} title="{{ 'sections.newsletter_popup.accessibility_title' | t | escape }}" handle-editor-events>
       {%- if section.settings.image != blank -%}
         {{- section.settings.image | image_url: width: section.settings.image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 100vw, 430px', widths: '200,400,600,800,1000,1200', slot: 'image' -}}
@@ -106,6 +114,12 @@
       "id": "show_only_once",
       "label": "t:sections.newsletter_popup.show_only_once",
       "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "center_popup",
+      "label": "Center popup",
+      "default": false
     },
     {
       "type": "image_picker",
