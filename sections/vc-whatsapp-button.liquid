@@ -1,4 +1,3 @@
-
 {% comment %}
   1.1.1 | 2024-07-07 | Cline | Fixed Liquid syntax error.
   1.1.0 | 2024-07-07 | Cline | Added Tooltip, Badge, Close Button, and Agent selection.
@@ -16,13 +15,24 @@
   endif
 
   assign agents = section.blocks
+  assign shadow_class = ""
+  case section.settings.shadow_intensity
+    when 'sm'
+      assign shadow_class = "shadow-sm"
+    when 'md'
+      assign shadow_class = "shadow-md"
+    when 'lg'
+      assign shadow_class = "shadow-lg"
+  endcase
 -%}
 {%- assign has_agents = agents.size > 0 -%}
 
 {% if show_button %}
   <div
     data-section-id="{{ section.id }}"
-    class="vc-whatsapp-button-wrapper"
+    class="vc-whatsapp-button-wrapper
+      {% unless show_on_mobile %}hide-on-mobile{% endunless %}
+      {% unless show_on_desktop %}hide-on-desktop{% endunless %}"
     style="
       --wa-button-size: {{ section.settings.button_size }}px;
       --wa-icon-size: {{ section.settings.icon_size }}px;
@@ -42,7 +52,7 @@
     <div class="vc-whatsapp-main-container">
       <a
         href="#"
-        class="vc-whatsapp-button"
+        class="vc-whatsapp-button {{ shadow_class }}"
         aria-label="Chat on WhatsApp"
         data-phone-number="{{ section.settings.phone_number }}"
         data-default-message="{{ section.settings.default_message | escape }}"
@@ -77,7 +87,6 @@
 
 {% stylesheet %}
   .vc-whatsapp-button-wrapper {
-    width: max-content;
     position: fixed;
     z-index: var(--wa-z-index);
     bottom: var(--wa-offset-bottom);
@@ -86,9 +95,6 @@
     {% else %}
       left: var(--wa-offset-side);
     {% endif %}
-    display: flex;
-    align-items: center;
-    gap: 10px;
   }
 
   .vc-whatsapp-button {
@@ -103,7 +109,6 @@
     box-shadow: var(--wa-shadow);
     text-decoration: none;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    position: relative;
   }
 
   .vc-whatsapp-button:hover {
@@ -119,71 +124,51 @@
     height: var(--wa-icon-size);
     fill: var(--wa-icon-color);
   }
-  
-  .vc-whatsapp-close-button {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    width: 24px;
-    height: 24px;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    line-height: 1;
-    color: #333;
-    z-index: 1;
-  }
 
-  .vc-whatsapp-badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 12px;
-    height: 12px;
-    background-color: red;
-    border-radius: 50%;
-    border: 2px solid white;
-  }
-
-  .vc-whatsapp-tooltip {
-    background-color: #333;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 6px;
-    white-space: nowrap;
-  }
-  
-  .vc-whatsapp-agents-list {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    padding: 8px;
-    width: 200px;
-    margin-bottom: 10px;
-  }
-
-  .vc-whatsapp-agents-list-header {
+  .vc-whatsapp-button-text {
+    color: var(--wa-icon-color);
+    font-size: calc(var(--wa-icon-size) * 0.8);
     font-weight: bold;
-    padding: 8px;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 8px;
+    padding-right: 10px;
   }
 
-  .vc-whatsapp-agent-item {
-    display: block;
-    padding: 10px;
-    color: #333;
-    text-decoration: none;
-    border-radius: 4px;
+  .vc-whatsapp-button.animation-pulse {
+    animation: pulse 2s infinite;
   }
 
-  .vc-whatsapp-agent-item:hover {
-    background-color: #f5f5f5;
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7), var(--wa-shadow); }
+    70% { box-shadow: 0 0 0 10px rgba(0, 0, 0, 0), var(--wa-shadow); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0), var(--wa-shadow); }
+  }
+
+  .vc-whatsapp-button.animation-bounce {
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-30px); }
+    60% { transform: translateY(-15px); }
+  }
+  
+  {% if section.settings.button_text != blank %}
+    .vc-whatsapp-button {
+      width: auto;
+      padding-left: calc((var(--wa-button-size) - var(--wa-icon-size)) / 2);
+    }
+  {% endif %}
+
+  .hide-on-mobile {
+    @media (max-width: 749px) {
+      display: none !important;
+    }
+  }
+
+  .hide-on-desktop {
+    @media (min-width: 750px) {
+      display: none !important;
+    }
   }
 
 {% endstylesheet %}
@@ -193,42 +178,41 @@
   const wrapper = document.querySelector(`[data-section-id="{{ section.id }}"]`);
   if (!wrapper) return;
 
-  const mainButton = wrapper.querySelector('.vc-whatsapp-button');
-  const closeButton = wrapper.querySelector('.vc-whatsapp-close-button');
-  const agentsList = wrapper.querySelector('.vc-whatsapp-agents-list');
-  const defaultMessage = mainButton.dataset.defaultMessage;
-  const hasAgents = mainButton.dataset.hasAgents === 'true';
+  const button = wrapper.querySelector('.vc-whatsapp-button');
+  if (!button) return;
 
-  const openUrl = (phone) => {
-    const encodedMessage = encodeURIComponent(defaultMessage);
-    const url = `https://wa.me/${phone}?text=${encodedMessage}`;
-    window.open(url, '_blank');
-  }
+  const phoneNumber = button.dataset.phoneNumber;
+  const defaultMessage = button.dataset.defaultMessage;
+  const animation = button.dataset.animation;
 
-  mainButton.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (hasAgents) {
-      agentsList.hidden = !agentsList.hidden;
-    } else {
-      openUrl(mainButton.dataset.phoneNumber);
+  button.addEventListener('click', function(event) {
+    event.preventDefault();
+    if (!phoneNumber) {
+      console.error('WhatsApp button: Phone number is not set.');
+      return;
     }
+
+    const encodedMessage = encodeURIComponent(defaultMessage);
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
   });
 
-  if (closeButton) {
-    closeButton.addEventListener('click', () => {
-      wrapper.style.display = 'none';
-    });
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function handleAnimation() {
+    if (motionQuery.matches) {
+      button.classList.remove('animation-pulse', 'animation-bounce');
+      return;
+    }
+    if (animation === 'pulse') {
+      button.classList.add('animation-pulse');
+    }
+    if (animation === 'bounce') {
+      button.classList.add('animation-bounce');
+    }
   }
-
-  if (agentsList) {
-    wrapper.querySelectorAll('.vc-whatsapp-agent-item').forEach(item => {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        openUrl(item.dataset.phoneNumber);
-        agentsList.hidden = true;
-      });
-    });
-  }
+  
+  handleAnimation();
+  motionQuery.addEventListener('change', handleAnimation);
 })();
 {% endjavascript %}
 
@@ -236,54 +220,72 @@
 {
   "name": "VC WhatsApp Button",
   "class": "vc-whatsapp-button-section",
-  "max_blocks": 5,
   "settings": [
     {
       "type": "header",
-      "content": "Contenido Principal"
+      "content": "Contenido"
     },
     {
       "type": "text",
       "id": "phone_number",
-      "label": "Número de teléfono principal",
-      "info": "Usado si no hay agentes definidos."
+      "label": "Número de teléfono",
+      "info": "Incluye el código de país (ej. 51987654321 para Perú)"
     },
     {
       "type": "textarea",
       "id": "default_message",
-      "label": "Mensaje predeterminado"
-    },
-    {
-      "type": "header",
-      "content": "Tooltip"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_tooltip",
-      "label": "Mostrar tooltip",
-      "default": false
+      "label": "Mensaje predeterminado",
+      "default": "Hola, estoy interesado en tus productos."
     },
     {
       "type": "text",
-      "id": "tooltip_text",
-      "label": "Texto del tooltip",
-      "default": "¡Chatea con nosotros!"
+      "id": "button_text",
+      "label": "Texto del botón (opcional)",
+      "info": "Si se deja en blanco, solo se mostrará el ícono."
+    },
+    {
+      "type": "header",
+      "content": "Posición"
+    },
+    {
+      "type": "select",
+      "id": "position",
+      "label": "Posición",
+      "options": [
+        {
+          "value": "bottom-right",
+          "label": "Abajo a la derecha"
+        },
+        {
+          "value": "bottom-left",
+          "label": "Abajo a la izquierda"
+        }
+      ],
+      "default": "bottom-right"
+    },
+    {
+      "type": "range",
+      "id": "offset_bottom",
+      "label": "Margen inferior",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "offset_side",
+      "label": "Margen lateral",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 20
     },
     {
       "type": "header",
       "content": "Diseño"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_badge",
-      "label": "Mostrar punto de notificación",
-      "default": false
-    },
-    {
-      "type": "checkbox",
-      "id": "show_close_button",
-      "label": "Mostrar botón de cierre",
-      "default": false
     },
     {
       "type": "range",
@@ -292,7 +294,40 @@
       "min": 40,
       "max": 100,
       "step": 2,
+      "unit": "px",
       "default": 60
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "Tamaño del ícono",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Radio del borde",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Color de fondo",
+      "default": "#25D366"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Color del ícono y texto",
+      "default": "#FFFFFF"
     },
     {
       "type": "select",
@@ -304,27 +339,40 @@
         { "value": "md", "label": "Mediana" },
         { "value": "lg", "label": "Grande" }
       ],
-      "default": "none"
-    }
-  ],
-  "blocks": [
+      "default": "md"
+    },
     {
-      "type": "agent",
-      "name": "Agente",
-      "settings": [
-        {
-          "type": "text",
-          "id": "name",
-          "label": "Nombre del Agente/Departamento",
-          "default": "Ventas"
-        },
-        {
-          "type": "text",
-          "id": "phone_number",
-          "label": "Número de teléfono del Agente",
-          "info": "Incluye el código de país"
-        }
-      ]
+      "type": "header",
+      "content": "Comportamiento"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_on_mobile",
+      "label": "Mostrar en móvil",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_on_desktop",
+      "label": "Mostrar en escritorio",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "animation",
+      "label": "Animación",
+      "options": [
+        { "value": "none", "label": "Ninguna" },
+        { "value": "pulse", "label": "Pulso" },
+        { "value": "bounce", "label": "Rebote" }
+      ],
+      "default": "pulse"
+    },
+    {
+      "type": "number",
+      "id": "z_index",
+      "label": "Z-index",
+      "default": 100
     }
   ],
   "presets": [
