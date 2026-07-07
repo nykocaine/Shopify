@@ -33,9 +33,22 @@
     --product-list-column-count: {{ section.settings.products_per_row_mobile | times: 1 }};
   }
 
-  @media screen and (min-width: 700px) {
-    #shopify-section-{{ section.id }} {
-      --product-list-column-count: 2;
+  .progress-bar-container {
+    display: none;
+    height: 2px;
+    background-color: #ccc;
+    margin-top: 10px;
+  }
+
+  .progress-bar {
+    height: 100%;
+    width: 0;
+    background-color: #000;
+  }
+
+  @media screen and (max-width: 999px) {
+    .progress-bar-container {
+      display: block;
     }
   }
 
@@ -43,6 +56,12 @@
     #shopify-section-{{ section.id }} {
       --product-list-column-count: {{ section.settings.products_per_row_desktop }};
     }
+
+    {% if section.settings.show_progress_bar_desktop %}
+      .progress-bar-container {
+        display: block;
+      }
+    {% endif %}
   }
 </style>
 
@@ -63,15 +82,6 @@
             assign product_list_class = 'md:product-list--carousel scroll-area'
           endif
         -%}
-
-        {%- unless section.settings.stack_products_desktop -%}
-          <carousel-prev-button class="floating-controls__control floating-controls__control--offset" aria-controls="{{ product_list_id }}" style="--floating-control-offset: calc((100% / {{ section.settings.products_per_row_desktop }}) + 1.25rem)">
-            <button class="circle-button circle-button--xl">
-              <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
-              {%- render 'icon' with 'big-arrow-left', direction_aware: true, width: 14 -%}
-            </button>
-          </carousel-prev-button>
-        {%- endunless -%}
 
         <product-list id="{{ product_list_id }}" cell-selector=".product-card" class="product-list {{ product_list_class }}" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;">
           <div class="product-list__intro-block color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
@@ -113,18 +123,15 @@
           -%}
         </product-list>
 
-        {%- unless section.settings.stack_products_desktop -%}
-          <carousel-next-button class="floating-controls__control floating-controls__control--offset" aria-controls="{{ product_list_id }}">
-            <button class="circle-button circle-button--xl">
-              <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
-              {%- render 'icon' with 'big-arrow-right', direction_aware: true, width: 14 -%}
-            </button>
-          </carousel-next-button>
-        {%- endunless -%}
+        <div class="progress-bar-container">
+          <div class="progress-bar"></div>
+        </div>
+
       </div>
     </div>
   </div>
 </div>
+<script src="{{ 'featured-product-list.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {
@@ -157,6 +164,12 @@
       "type": "checkbox",
       "id": "stack_products_desktop",
       "label": "t:global.product_list.stack_products_desktop",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_progress_bar_desktop",
+      "label": "Show progress bar on desktop",
       "default": false
     },
     {
