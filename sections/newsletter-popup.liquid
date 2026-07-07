@@ -14,9 +14,17 @@
     <style>
       .modal--newsletter::part(base) {
         {%- if section.settings.center_popup -%}
-        display: grid;
-        place-items: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         {%- endif -%}
+      }
+      @media screen and (min-width: 700px) {
+        .modal--newsletter::part(content) {
+          {%- if section.settings.center_popup -%}
+          place-self: center;
+          {%- endif -%}
+        }
       }
     </style>
     <newsletter-popup class="modal modal--newsletter color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.show_only_once %}only-once{% endif %} apparition-delay="{{ section.settings.apparition_delay }}" {% if posted_successfully %}open{% endif %} title="{{ 'sections.newsletter_popup.accessibility_title' | t | escape }}" handle-editor-events>
