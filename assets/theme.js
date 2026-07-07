@@ -966,12 +966,12 @@ if (!window.customElements.get("split-lines")) {
 
 // js/common/carousel/scroll-carousel.js
 import { inView as inView3 } from "vendor";
-var _hasPendingProgrammaticScroll, _onMouseDownListener, _onMouseMoveListener, _onMouseClickListener, _onMouseUpListener, _targetIndex, _forceChangeEvent, _dragPosition, _isDragging, _dispatchableScrollEvents, _scrollTimeout, _ScrollCarousel_instances, setupListeners_fn, updateTargetIndex_fn, onScroll_fn, onScrollEnd_fn, calculateLeftScroll_fn, calculateClosestIndexToAlignment_fn, onMouseDown_fn, onMouseMove_fn, onMouseClick_fn, onMouseUp_fn, onResize_fn, onMutate_fn, adaptHeight_fn, preloadImages_fn;
+var _hasPendingProgrammaticScroll, _onMouseDownListener, _onMouseMoveListener, _onMouseClickListener, _onMouseUpListener, _targetIndex, _forceChangeEvent, _dragPosition, _isDragging, _dispatchableScrollEvents, _scrollTimeout, _progressBar, _ScrollCarousel_instances, setupListeners_fn, updateTargetIndex_fn, onScroll_fn, onScrollEnd_fn, calculateLeftScroll_fn, calculateClosestIndexToAlignment_fn, onMouseDown_fn, onMouseMove_fn, onMouseClick_fn, onMouseUp_fn, onResize_fn, onMutate_fn, adaptHeight_fn, preloadImages_fn;
 var ScrollCarousel = class extends HTMLElement {
   constructor() {
     super();
     __privateAdd(this, _ScrollCarousel_instances);
-    __privateAdd(this, "_progressBar");
+    __privateAdd(this, _progressBar);
     __privateAdd(this, _hasPendingProgrammaticScroll, false);
     __privateAdd(this, _onMouseDownListener, __privateMethod(this, _ScrollCarousel_instances, onMouseDown_fn).bind(this));
     __privateAdd(this, _onMouseMoveListener, __privateMethod(this, _ScrollCarousel_instances, onMouseMove_fn).bind(this));
@@ -992,7 +992,7 @@ var ScrollCarousel = class extends HTMLElement {
   connectedCallback() {
     __privateSet(this, _targetIndex, Math.max(0, this.cells.findIndex((item) => item.classList.contains("is-initial"))));
     if (this.dataset.showProgressBarMobile === "true" || this.dataset.showProgressBarDesktop === "true") {
-      __privateSet(this, "_progressBar", this.closest(".shopify-section").querySelector(".progress-bar"));
+      __privateSet(this, _progressBar, this.closest(".shopify-section").querySelector(".progress-bar"));
     }
     if (__privateGet(this, _targetIndex) > 0) {
       this.select(__privateGet(this, _targetIndex), { instant: true });
@@ -1103,6 +1103,7 @@ _dragPosition = new WeakMap();
 _isDragging = new WeakMap();
 _dispatchableScrollEvents = new WeakMap();
 _scrollTimeout = new WeakMap();
+_progressBar = new WeakMap();
 _ScrollCarousel_instances = new WeakSet();
 /**
  * -------------------------------------------------------------------------------------------------------------------
@@ -1152,9 +1153,9 @@ updateTargetIndex_fn = function(newValue) {
  * -------------------------------------------------------------------------------------------------------------------
  */
 onScroll_fn = function() {
-  if (__privateGet(this, "_progressBar")) {
+  if (__privateGet(this, _progressBar)) {
     const progress = this.scrollLeft / (this.scrollWidth - this.clientWidth);
-    __privateGet(this, "_progressBar").style.width = `${progress * 100}%`;
+    __privateGet(this, _progressBar).style.width = `${progress * 100}%`;
   }
 
   const scrollEdgeThreshold = 100, normalizedScrollLeft = Math.round(Math.abs(this.scrollLeft - Math.abs(parseInt(getComputedStyle(this).marginInlineStart) || 0)));
