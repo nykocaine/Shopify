@@ -7,12 +7,38 @@
     "theme_documentation_url": "https://support.maestrooo.com/",
     "theme_support_url": "https://support.maestrooo.com/article/203-contact-us"
   },
-  {
-    "name": "t:theme_settings.appearance.name",
-    "settings": [
       {
-        "type": "paragraph",
-        "content": "t:theme_settings.appearance.info_paragraph"
+        "type": "select",
+        "id": "text_font_source",
+        "label": "Font source",
+        "options": [
+          {
+            "value": "shopify",
+            "label": "Shopify font library"
+          },
+          {
+            "value": "apple",
+            "label": "Apple System"
+          }
+        ],
+        "default": "shopify"
+      },
+      {
+        "type": "font_picker",
+        "id": "text_font",
+        "label": "t:theme_settings.typography.font",
+        "info": "Used when \"Shopify font library\" is selected as font source.",
+        "default": "helvetica_n4"
+      },
+      {
+        "type": "range",
+        "id": "text_font_weight",
+        "label": "Font weight",
+        "info": "Used when \"Apple System\" is selected as font source.",
+        "min": 100,
+        "max": 900,
+        "step": 100,
+        "default": 400
       },
       {
         "type": "header",
@@ -31,12 +57,38 @@
             "value": "normal",
             "label": "t:theme_settings.appearance.section_spacing_options.normal"
           },
+      {
+        "type": "select",
+        "id": "heading_font_source",
+        "label": "Font source",
+        "options": [
           {
-            "value": "loose",
-            "label": "t:theme_settings.appearance.section_spacing_options.loose"
+            "value": "shopify",
+            "label": "Shopify font library"
+          },
+          {
+            "value": "apple",
+            "label": "Apple System"
           }
         ],
-        "default": "normal"
+        "default": "shopify"
+      },
+      {
+        "type": "font_picker",
+        "id": "heading_font",
+        "label": "t:theme_settings.typography.font",
+        "info": "Used when \"Shopify font library\" is selected as font source.",
+        "default": "helvetica_n4"
+      },
+      {
+        "type": "range",
+        "id": "heading_font_weight",
+        "label": "Font weight",
+        "info": "Used when \"Apple System\" is selected as font source.",
+        "min": 100,
+        "max": 900,
+        "step": 100,
+        "default": 700
       },
       {
         "type": "header",
@@ -135,13 +187,39 @@
             "label": "t:global.colors.background_gradient",
             "info": "t:global.colors.background_gradient_info"
           },
+      {
+        "type": "select",
+        "id": "subheading_font_source",
+        "label": "Font source",
+        "options": [
           {
-            "type": "color",
-            "id": "secondary_background",
-            "label": "t:global.colors.secondary_background",
-            "info": "t:global.colors.secondary_background_info",
-            "default": "#f2f2f2"
+            "value": "shopify",
+            "label": "Shopify font library"
           },
+          {
+            "value": "apple",
+            "label": "Apple System"
+          }
+        ],
+        "default": "shopify"
+      },
+      {
+        "type": "font_picker",
+        "id": "subheading_font",
+        "label": "t:theme_settings.typography.font",
+        "info": "Used when \"Shopify font library\" is selected as font source.",
+        "default": "helvetica_n4"
+      },
+      {
+        "type": "range",
+        "id": "subheading_font_weight",
+        "label": "Font weight",
+        "info": "Used when \"Apple System\" is selected as font source.",
+        "min": 100,
+        "max": 900,
+        "step": 100,
+        "default": 400
+      },
           {
             "type": "header",
             "content": "t:theme_settings.colors.primary_button_category"
