@@ -23,18 +23,22 @@ note that this may have impact on different places.
     assign text_font_bold_italic = text_font_bold | font_modify: 'style', 'italic'
 
     # Typography (subheading)
+    {%- if settings.subheading_font_source == 'shopify' -%}
     echo settings.subheading_font | font_face: font_display: 'fallback'
 
     if subheading_font_italic
       echo subheading_font_italic | font_face: font_display: 'fallback'
     endif
+    {%- endif -%}
 
     # Typography (heading)
+    {%- if settings.heading_font_source == 'shopify' -%}
     echo settings.heading_font | font_face: font_display: 'fallback'
 
     if heading_font_italic
       echo heading_font_italic | font_face: font_display: 'fallback'
     endif
+    {%- endif -%}
 
     if heading_font_bold
       echo heading_font_bold | font_face: font_display: 'fallback'
@@ -45,11 +49,13 @@ note that this may have impact on different places.
     endif
 
     # Typography (body)
+    {%- if settings.text_font_source == 'shopify' -%}
     echo settings.text_font | font_face: font_display: 'fallback'
 
     if text_font_italic
       echo text_font_italic | font_face: font_display: 'fallback'
     endif
+    {%- endif -%}
 
     if text_font_medium
       echo text_font_medium | font_face: font_display: 'fallback'
@@ -109,24 +115,42 @@ note that this may have impact on different places.
      */
 
     /* Font properties */
+    {%- if settings.subheading_font_source == 'apple' -%}
+    --subheading-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --subheading-font-weight: {{ settings.subheading_font_weight }};
+    --subheading-font-style: normal;
+    {%- else -%}
     --subheading-font-family: {{ settings.subheading_font.family }}, {{ settings.subheading_font.fallback_families }};
     --subheading-font-weight: {{ settings.subheading_font.weight }};
     --subheading-font-style: {{ settings.subheading_font.style }};
+    {%- endif -%}
     --subheading-font-size: {{ settings.subheading_font_size | minus: 1 | divided_by: 16.0 }}rem;
     --subheading-text-transform: {{ settings.subheading_text_transform }};
     --subheading-letter-spacing: {% if language_code == 'ar' %}0{% else %}{{ settings.subheading_letter_spacing | divided_by: 100.0 }}{% endif %}em;
+    {%- if settings.heading_font_source == 'apple' -%}
+    --heading-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --heading-font-weight: {{ settings.heading_font_weight }};
+    --heading-font-style: normal;
+    {%- else -%}
     --heading-font-family: {{ settings.heading_font.family }}, {{ settings.heading_font.fallback_families }};
     --heading-font-weight: {{ settings.heading_font.weight }};
     --heading-font-style: {{ settings.heading_font.style }};
+    {%- endif -%}
     --heading-text-transform: {{ settings.heading_text_transform }};
     --heading-letter-spacing: {% if language_code == 'ar' %}0{% else %}{{ settings.heading_letter_spacing | divided_by: 100.0 }}{% endif %}em;
     --heading-line-height: {{ settings.heading_line_height }};
     --heading-italic-font-family: {{ settings.heading_italic_font.family }}, {{ settings.heading_italic_font.fallback_families }};
     --heading-italic-font-weight: {{ settings.heading_italic_font.weight }};
     --heading-italic-font-size-multiplier: {% if settings.heading_font.family != settings.heading_italic_font.family %}{{ settings.heading_italic_font_size_multiplier }}{% else %}0{% endif %}%;
+    {%- if settings.text_font_source == 'apple' -%}
+    --text-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --text-font-weight: {{ settings.text_font_weight }};
+    --text-font-style: normal;
+    {%- else -%}
     --text-font-family: {{ settings.text_font.family }}, {{ settings.text_font.fallback_families }};
     --text-font-weight: {{ settings.text_font.weight }};
     --text-font-style: {{ settings.text_font.style }};
+    {%- endif -%}
     --text-transform: {{ settings.text_font_text_transform }};
     --text-letter-spacing: {% if language_code == 'ar' %}0{% else %}{{ settings.text_font_letter_spacing | divided_by: 100.0 }}{% endif %}em;
     --text-line-height: {{ settings.text_line_height }};

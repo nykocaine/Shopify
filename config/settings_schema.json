@@ -295,11 +295,38 @@
         "content": "t:theme_settings.typography.body_text_category"
       },
       {
+        "type": "select",
+        "id": "text_font_source",
+        "label": "Font source",
+        "options": [
+          {
+            "value": "shopify",
+            "label": "Shopify font library"
+          },
+          {
+            "value": "apple",
+            "label": "Apple System"
+          }
+        ],
+        "default": "shopify"
+      },
+      {
         "type": "font_picker",
         "id": "text_font",
         "label": "t:theme_settings.typography.font",
         "info": "t:theme_settings.typography.font_info",
-        "default": "helvetica_n4"
+        "default": "helvetica_n4",
+        "visible_if": "{\"id\": \"text_font_source\", \"value\": \"shopify\"}"
+      },
+      {
+        "type": "range",
+        "id": "text_font_weight",
+        "label": "Font weight",
+        "min": 100,
+        "max": 900,
+        "step": 100,
+        "default": 400,
+        "visible_if": "{\"id\": \"text_font_source\", \"value\": \"apple\"}"
       },
       {
         "type": "range",
@@ -363,11 +390,38 @@
         "content": "t:theme_settings.typography.headings_category"
       },
       {
+        "type": "select",
+        "id": "heading_font_source",
+        "label": "Font source",
+        "options": [
+          {
+            "value": "shopify",
+            "label": "Shopify font library"
+          },
+          {
+            "value": "apple",
+            "label": "Apple System"
+          }
+        ],
+        "default": "shopify"
+      },
+      {
         "type": "font_picker",
         "id": "heading_font",
         "label": "t:theme_settings.typography.font",
         "info": "t:theme_settings.typography.font_info",
-        "default": "helvetica_n4"
+        "default": "helvetica_n4",
+        "visible_if": "{\"id\": \"heading_font_source\", \"value\": \"shopify\"}"
+      },
+      {
+        "type": "range",
+        "id": "heading_font_weight",
+        "label": "Font weight",
+        "min": 100,
+        "max": 900,
+        "step": 100,
+        "default": 700,
+        "visible_if": "{\"id\": \"heading_font_source\", \"value\": \"apple\"}"
       },
       {
         "type": "range",
@@ -423,11 +477,38 @@
         "content": "t:theme_settings.typography.subheadings_category"
       },
       {
+        "type": "select",
+        "id": "subheading_font_source",
+        "label": "Font source",
+        "options": [
+          {
+            "value": "shopify",
+            "label": "Shopify font library"
+          },
+          {
+            "value": "apple",
+            "label": "Apple System"
+          }
+        ],
+        "default": "shopify"
+      },
+      {
         "type": "font_picker",
         "id": "subheading_font",
         "label": "t:theme_settings.typography.font",
         "info": "t:theme_settings.typography.font_info",
-        "default": "helvetica_n4"
+        "default": "helvetica_n4",
+        "visible_if": "{\"id\": \"subheading_font_source\", \"value\": \"shopify\"}"
+      },
+      {
+        "type": "range",
+        "id": "subheading_font_weight",
+        "label": "Font weight",
+        "min": 100,
+        "max": 900,
+        "step": 100,
+        "default": 400,
+        "visible_if": "{\"id\": \"subheading_font_source\", \"value\": \"apple\"}"
       },
       {
         "type": "range",
