@@ -76,7 +76,7 @@
 </style>
 
 <height-observer variable="header">
-  <x-header class="header color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.hide_on_scroll %}hide-on-scroll{% endif %}>
+  <x-header class="header color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.hide_on_scroll %}hide-on-scroll{% endif %} style="padding-block: {{ section.settings.header_height_padding }}px;">
     {%- comment -%}
     --------------------------------------------------------------------------------------------------------------------
     LOGO AREA
@@ -478,6 +478,16 @@
       "unit": "px",
       "label": "t:global.image.mobile_width",
       "default": 100
+    },
+    {
+      "type": "range",
+      "id": "header_height_padding",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Relleno del header",
+      "default": 10
     },
     {
       "type": "header",
