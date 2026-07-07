@@ -35,15 +35,12 @@
 
   .progress-bar-container {
     display: none;
-    height: 2px;
-    background-color: #ccc;
     margin-top: 10px;
   }
 
   .progress-bar {
     height: 100%;
     width: 0;
-    background-color: #000;
   }
 
   @media screen and (max-width: 999px) {
@@ -122,11 +119,9 @@
             endfor
           -%}
         </product-list>
-
-        <div class="progress-bar-container">
-          <div class="progress-bar"></div>
-        </div>
-
+      </div>
+      <div class="progress-bar-container" style="background-color: {{ section.settings.progress_bar_bg_color }}; height: {{ section.settings.progress_bar_height }}px;">
+        <div class="progress-bar" style="background-color: {{ section.settings.progress_bar_color }};"></div>
       </div>
     </div>
   </div>
@@ -167,10 +162,36 @@
       "default": false
     },
     {
+      "type": "header",
+      "content": "Progress Bar"
+    },
+    {
       "type": "checkbox",
       "id": "show_progress_bar_desktop",
       "label": "Show progress bar on desktop",
       "default": false
+    },
+    {
+      "type": "color",
+      "id": "progress_bar_bg_color",
+      "label": "Progress Bar Background Color",
+      "default": "#ccc"
+    },
+    {
+      "type": "color",
+      "id": "progress_bar_color",
+      "label": "Progress Bar Color",
+      "default": "#000"
+    },
+    {
+      "type": "range",
+      "id": "progress_bar_height",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "unit": "px",
+      "label": "Progress Bar Height",
+      "default": 2
     },
     {
       "type": "select",
