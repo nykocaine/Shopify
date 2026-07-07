@@ -1,7 +1,8 @@
 {% comment %}
-  1.2.1 | 2026-07-07 | Claude | Fixed: {% javascript %} referenced Liquid ({{ section.id }}) which is never processed inside static JS/CSS tags — script never found the wrapper and silently died. Rewrote JS to iterate all instances via querySelectorAll and read section id from data-attribute (rendered in HTML, not in JS tag). Added fallback for browsers without :has() support. Verified responsive behavior on mobile/desktop toggles.
-  1.2.0 | 2026-07-07 | Claude | Added optional features: tooltip, notification badge, close button, and multiple agents via blocks. All new settings/blocks are declared in schema and are fully optional (backward compatible with single phone_number setup).
-  1.1.2 | 2026-07-07 | Claude | Fixed: removed unrequested tooltip/badge/agents features from prior draft that referenced undeclared schema settings. Fixed: Liquid inside {% stylesheet %} for left/right positioning is never processed by this theme's static CSS compiler — moved to inline CSS custom properties on the wrapper element instead.
+  1.3.0 | 2026-07-07 | Claude | Removed pulse/bounce animation logic and schema setting entirely. Agents list box: removed box-shadow, made border-radius configurable in px, removed custom background/font-size/font-weight so it now inherits from theme body font/color/weight (only background stays white for contrast against page, agent item text/size/weight fully inherited).
+  1.2.1 | 2026-07-07 | Claude | Fixed: {% javascript %} referenced Liquid ({{ section.id }}) which is never processed inside static JS/CSS tags — script never found the wrapper and silently died. Rewrote JS to iterate all instances via querySelectorAll and read section id from data-attribute (rendered in HTML, not in JS tag). Added fallback for browsers without :has() support.
+  1.2.0 | 2026-07-07 | Claude | Added optional features: tooltip, notification badge, close button, and multiple agents via blocks.
+  1.1.2 | 2026-07-07 | Claude | Fixed: Liquid inside {% stylesheet %} for left/right positioning moved to inline CSS custom properties.
   1.0.0 | 2024-07-07 | Cline | Initial implementation
 {% endcomment %}
 
@@ -47,6 +48,7 @@
       --wa-offset-bottom: {{ section.settings.offset_bottom }}px;
       --wa-offset-side: {{ section.settings.offset_side }}px;
       --wa-z-index: {{ section.settings.z_index }};
+      --wa-agents-radius: {{ section.settings.agents_box_radius }}px;
       --wa-left: {% if section.settings.position == 'bottom-right' %}auto{% else %}var(--wa-offset-side){% endif %};
       --wa-right: {% if section.settings.position == 'bottom-right' %}var(--wa-offset-side){% else %}auto{% endif %};
       --wa-anchor-left: {% if section.settings.position == 'bottom-right' %}auto{% else %}0{% endif %};
@@ -92,7 +94,6 @@
         aria-label="Chat on WhatsApp"
         data-phone-number="{{ section.settings.phone_number }}"
         data-default-message="{{ section.settings.default_message | escape }}"
-        data-animation="{{ section.settings.animation }}"
         data-has-agents="{{ has_agents }}"
       >
         {% if section.settings.show_badge %}
@@ -164,31 +165,10 @@
     white-space: nowrap;
   }
 
-  /* :has() fallback: also force width:auto via JS-added class for old browsers */
   .vc-whatsapp-button-wrapper:has(.vc-whatsapp-button-text) .vc-whatsapp-button,
   .vc-whatsapp-button-wrapper.has-text .vc-whatsapp-button {
     width: auto;
     padding-left: calc((var(--wa-button-size) - var(--wa-icon-size)) / 2);
-  }
-
-  .vc-whatsapp-button.animation-pulse {
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7), var(--wa-shadow); }
-    70% { box-shadow: 0 0 0 10px rgba(0, 0, 0, 0), var(--wa-shadow); }
-    100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0), var(--wa-shadow); }
-  }
-
-  .vc-whatsapp-button.animation-bounce {
-    animation: bounce 2s infinite;
-  }
-
-  @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-30px); }
-    60% { transform: translateY(-15px); }
   }
 
   .vc-whatsapp-badge {
@@ -241,6 +221,7 @@
     padding: 0;
   }
 
+  /* Caja de agentes: sin sombra, radio en px, tipografía heredada del body del tema */
   .vc-whatsapp-agents-list {
     position: absolute;
     bottom: calc(100% + 12px);
@@ -249,9 +230,10 @@
     min-width: 220px;
     max-width: min(280px, 90vw);
     background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    border-radius: var(--wa-agents-radius);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    font-family: inherit;
   }
 
   .vc-whatsapp-agents-list[hidden] {
@@ -260,18 +242,21 @@
 
   .vc-whatsapp-agents-list-header {
     padding: 12px 16px;
-    font-weight: bold;
-    font-size: 13px;
-    color: #666666;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
 
   .vc-whatsapp-agent-item {
     display: block;
     padding: 12px 16px;
-    color: #1a1a1a;
+    color: inherit;
     text-decoration: none;
-    font-size: 14px;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   }
 
@@ -370,24 +355,6 @@
           }
         });
       }
-
-      var animation = button.dataset.animation;
-      var motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-      function handleAnimation() {
-        if (motionQuery.matches) {
-          button.classList.remove('animation-pulse', 'animation-bounce');
-          return;
-        }
-        button.classList.remove('animation-pulse', 'animation-bounce');
-        if (animation === 'pulse') {
-          button.classList.add('animation-pulse');
-        } else if (animation === 'bounce') {
-          button.classList.add('animation-bounce');
-        }
-      }
-
-      handleAnimation();
-      motionQuery.addEventListener('change', handleAnimation);
     });
   }
 
@@ -428,10 +395,11 @@
     { "type": "checkbox", "id": "show_badge", "label": "Mostrar punto de notificación", "default": false },
     { "type": "header", "content": "Cierre" },
     { "type": "checkbox", "id": "show_close_button", "label": "Permitir cerrar el botón", "info": "El visitante podrá ocultarlo; se recuerda su elección en este navegador.", "default": false },
+    { "type": "header", "content": "Caja de agentes" },
+    { "type": "range", "id": "agents_box_radius", "label": "Radio de la caja de agentes", "min": 0, "max": 40, "step": 1, "unit": "px", "default": 12 },
     { "type": "header", "content": "Comportamiento" },
     { "type": "checkbox", "id": "show_on_mobile", "label": "Mostrar en móvil", "default": true },
     { "type": "checkbox", "id": "show_on_desktop", "label": "Mostrar en escritorio", "default": true },
-    { "type": "select", "id": "animation", "label": "Animación", "options": [{ "value": "none", "label": "Ninguna" }, { "value": "pulse", "label": "Pulso" }, { "value": "bounce", "label": "Rebote" }], "default": "pulse" },
     { "type": "number", "id": "z_index", "label": "Z-index", "default": 100 }
   ],
   "blocks": [
