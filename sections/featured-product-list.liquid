@@ -33,19 +33,9 @@
     --product-list-column-count: {{ section.settings.products_per_row_mobile | times: 1 }};
   }
 
-  .progress-bar-container {
-    display: none;
-    margin-top: 10px;
-  }
-
-  .progress-bar {
-    height: 100%;
-    width: 0;
-  }
-
-  @media screen and (max-width: 999px) {
-    .progress-bar-container {
-      display: block;
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} {
+      --product-list-column-count: 2;
     }
   }
 
@@ -53,12 +43,6 @@
     #shopify-section-{{ section.id }} {
       --product-list-column-count: {{ section.settings.products_per_row_desktop }};
     }
-
-    {% if section.settings.show_progress_bar_desktop %}
-      .progress-bar-container {
-        display: block;
-      }
-    {% endif %}
   }
 </style>
 
@@ -80,7 +64,7 @@
           endif
         -%}
 
-        <product-list id="{{ product_list_id }}" cell-selector=".product-card" class="product-list {{ product_list_class }}" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;">
+        <product-list id="{{ product_list_id }}" cell-selector=".product-card" class="product-list {{ product_list_class }}" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;" data-show-progress-bar-mobile="{{ section.settings.show_progress_bar_mobile }}" data-show-progress-bar-desktop="{{ section.settings.show_progress_bar_desktop }}">
           <div class="product-list__intro-block color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
             <div class="@container/content-box h-full color-scheme color-scheme--{{ section.settings.intro_color_scheme.id }}">
               <div class="content-box">
@@ -120,13 +104,14 @@
           -%}
         </product-list>
       </div>
-      <div class="progress-bar-container" style="background-color: {{ section.settings.progress_bar_bg_color }}; height: {{ section.settings.progress_bar_height }}px;">
+      {%- if section.settings.show_progress_bar_mobile or section.settings.show_progress_bar_desktop -%}
+      <div class="progress-bar-container" style="background-color: {{ section.settings.progress_bar_bg_color }}; height: {{ section.settings.progress_bar_height }}px;" {%- if section.settings.show_progress_bar_mobile == false -%}hidden-on-mobile{%- endif -%} {%- if section.settings.show_progress_bar_desktop == false -%}hidden-on-desktop{%- endif -%}>
         <div class="progress-bar" style="background-color: {{ section.settings.progress_bar_color }};"></div>
       </div>
+    {%- endif -%}
     </div>
   </div>
 </div>
-<script src="{{ 'featured-product-list.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {
@@ -167,6 +152,12 @@
     },
     {
       "type": "checkbox",
+      "id": "show_progress_bar_mobile",
+      "label": "Show progress bar on mobile",
+      "default": true
+    },
+    {
+      "type": "checkbox",
       "id": "show_progress_bar_desktop",
       "label": "Show progress bar on desktop",
       "default": false
@@ -175,13 +166,13 @@
       "type": "color",
       "id": "progress_bar_bg_color",
       "label": "Progress Bar Background Color",
-      "default": "#ccc"
+      "default": "#e5e5e5"
     },
     {
       "type": "color",
       "id": "progress_bar_color",
       "label": "Progress Bar Color",
-      "default": "#000"
+      "default": "#000000"
     },
     {
       "type": "range",

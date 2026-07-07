@@ -971,6 +971,7 @@ var ScrollCarousel = class extends HTMLElement {
   constructor() {
     super();
     __privateAdd(this, _ScrollCarousel_instances);
+    __privateAdd(this, "_progressBar");
     __privateAdd(this, _hasPendingProgrammaticScroll, false);
     __privateAdd(this, _onMouseDownListener, __privateMethod(this, _ScrollCarousel_instances, onMouseDown_fn).bind(this));
     __privateAdd(this, _onMouseMoveListener, __privateMethod(this, _ScrollCarousel_instances, onMouseMove_fn).bind(this));
@@ -990,6 +991,9 @@ var ScrollCarousel = class extends HTMLElement {
   }
   connectedCallback() {
     __privateSet(this, _targetIndex, Math.max(0, this.cells.findIndex((item) => item.classList.contains("is-initial"))));
+    if (this.dataset.showProgressBarMobile === "true" || this.dataset.showProgressBarDesktop === "true") {
+      __privateSet(this, "_progressBar", this.closest(".shopify-section").querySelector(".progress-bar"));
+    }
     if (__privateGet(this, _targetIndex) > 0) {
       this.select(__privateGet(this, _targetIndex), { instant: true });
     }
@@ -1148,6 +1152,11 @@ updateTargetIndex_fn = function(newValue) {
  * -------------------------------------------------------------------------------------------------------------------
  */
 onScroll_fn = function() {
+  if (__privateGet(this, "_progressBar")) {
+    const progress = this.scrollLeft / (this.scrollWidth - this.clientWidth);
+    __privateGet(this, "_progressBar").style.width = `${progress * 100}%`;
+  }
+
   const scrollEdgeThreshold = 100, normalizedScrollLeft = Math.round(Math.abs(this.scrollLeft - Math.abs(parseInt(getComputedStyle(this).marginInlineStart) || 0)));
   if (normalizedScrollLeft < scrollEdgeThreshold && __privateGet(this, _dispatchableScrollEvents)["nearingStart"]) {
     this.dispatchEvent(new CustomEvent("scroll:edge-nearing", { detail: { position: "start" } }));
@@ -3616,13 +3625,20 @@ if (!window.customElements.get("open-lightbox-button")) {
 // js/common/product/product-list.js
 import { inView as inView6, animate as animate7, stagger } from "vendor";
 var ProductList = class extends ScrollCarousel {
+  constructor() {
+    super(...arguments);
+  }
+
   connectedCallback() {
-    if (matchesMediaQuery("motion-safe") && this.querySelectorAll('product-card[reveal-on-scroll="true"]').length > 0) {
+    super.connectedCallback();
+
+    if (matchesMediaQuery("motion-safe") && this.querySelectorAll("product-card[reveal-on-scroll=\"true\"]").length > 0) {
       inView6(this, this.reveal.bind(this));
     }
   }
+
   async reveal() {
-    animate7(this.querySelectorAll('product-card[reveal-on-scroll="true"], .product-list__promo[reveal-on-scroll="true"]'), {
+    animate7(this.querySelectorAll("product-card[reveal-on-scroll=\"true\"], .product-list__promo[reveal-on-scroll=\"true\"]"), {
       opacity: [0, 1],
       transform: ["translateY(20px)", "translateY(0)"]
     }, {
