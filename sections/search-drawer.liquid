@@ -65,6 +65,12 @@
 
     <div slot="results" class="contents"><!-- FILL IN JS --></div>
   </predictive-search>
+<style>
+  #search-drawer .product-card {
+    --product-card-border-radius: {{ section.settings.product_card_border_radius }}px;
+  }
+</style>
+
 </x-drawer>
 
 {% schema %}
@@ -106,6 +112,16 @@
       "type": "product_list",
       "id": "featured_products",
       "label": "t:sections.search_drawer.featured_products"
+    },
+    {
+      "type": "range",
+      "id": "product_card_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Product card border radius",
+      "default": 0
     }
   ]
 }
