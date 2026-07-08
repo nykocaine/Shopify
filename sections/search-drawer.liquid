@@ -38,12 +38,14 @@
             <div class="floating-controls-container">
               {%- assign featured_products_carousel = section.id | append: '-featured-products-carousel' -%}
 
+              {%- if section.settings.show_carousel_arrows -%}
               <carousel-prev-button class="floating-controls__control floating-controls__control--offset" aria-controls="{{ featured_products_carousel }}">
                 <button disabled class="circle-button circle-button--xl">
                   <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
                   {%- render 'icon' with 'big-arrow-left', direction_aware: true, width: 14 -%}
                 </button>
               </carousel-prev-button>
+              {%- endif -%}
           
               <scroll-carousel id="{{ featured_products_carousel }}" class="search-drawer__product-carousel scroll-area bleed">
                 {%- for product in featured_products -%}
@@ -51,12 +53,14 @@
                 {%- endfor -%}
               </scroll-carousel>
             
+              {%- if section.settings.show_carousel_arrows -%}
               <carousel-next-button class="floating-controls__control floating-controls__control--offset" aria-controls="{{ featured_products_carousel }}">
                 <button class="circle-button circle-button--xl">
                   <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
                   {%- render 'icon' with 'big-arrow-right', direction_aware: true, width: 14 -%}
                 </button>
               </carousel-next-button>
+              {%- endif -%}
             </div>
           </div>
         {%- endif -%}
@@ -112,6 +116,12 @@
       "type": "product_list",
       "id": "featured_products",
       "label": "t:sections.search_drawer.featured_products"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_carousel_arrows",
+      "label": "Show carousel arrows",
+      "default": true
     },
     {
       "type": "range",
