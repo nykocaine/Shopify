@@ -1,11 +1,3 @@
-{% comment %}
-  1.3.0 | 2026-07-07 | Claude | Removed pulse/bounce animation logic and schema setting entirely. Agents list box: removed box-shadow, made border-radius configurable in px, removed custom background/font-size/font-weight so it now inherits from theme body font/color/weight (only background stays white for contrast against page, agent item text/size/weight fully inherited).
-  1.2.1 | 2026-07-07 | Claude | Fixed: {% javascript %} referenced Liquid ({{ section.id }}) which is never processed inside static JS/CSS tags — script never found the wrapper and silently died. Rewrote JS to iterate all instances via querySelectorAll and read section id from data-attribute (rendered in HTML, not in JS tag). Added fallback for browsers without :has() support.
-  1.2.0 | 2026-07-07 | Claude | Added optional features: tooltip, notification badge, close button, and multiple agents via blocks.
-  1.1.2 | 2026-07-07 | Claude | Fixed: Liquid inside {% stylesheet %} for left/right positioning moved to inline CSS custom properties.
-  1.0.0 | 2024-07-07 | Cline | Initial implementation
-{% endcomment %}
-
 {%- liquid
   assign show_on_mobile = section.settings.show_on_mobile
   assign show_on_desktop = section.settings.show_on_desktop
