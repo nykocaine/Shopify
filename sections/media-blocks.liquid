@@ -116,38 +116,15 @@
       overflow: hidden;
     }
 
-    /* Desktop / tablet: items laid out horizontally -> radius on the left of the first item and the right of the last item */
-    @media screen and (min-width: 700px) {
-      #shopify-section-{{ section.id }} .media-blocks > *:first-child .media-blocks__item,
-      #shopify-section-{{ section.id }} .media-blocks > *:first-child.media-blocks__item {
-        border-top-left-radius: var(--media-blocks-corner-radius);
-        border-bottom-left-radius: var(--media-blocks-corner-radius);
-      }
+    {%- if section.settings.column_spacing == 'none' -%}
+      {%- comment -%}
+        No spacing between cards: they form a single continuous piece, so the radius only
+        applies to the outer corners of the whole set (first item on one end, last item on
+        the other), never on the touching inner edges between cards.
+      {%- endcomment -%}
 
-      #shopify-section-{{ section.id }} .media-blocks > *:last-child .media-blocks__item,
-      #shopify-section-{{ section.id }} .media-blocks > *:last-child.media-blocks__item {
-        border-top-right-radius: var(--media-blocks-corner-radius);
-        border-bottom-right-radius: var(--media-blocks-corner-radius);
-      }
-    }
-
-    /* Mobile */
-    @media screen and (max-width: 699px) {
-      {%- if section.settings.stack_on_mobile -%}
-        /* Items are stacked vertically -> radius on the top of the first item and the bottom of the last item */
-        #shopify-section-{{ section.id }} .media-blocks > *:first-child .media-blocks__item,
-        #shopify-section-{{ section.id }} .media-blocks > *:first-child.media-blocks__item {
-          border-top-left-radius: var(--media-blocks-corner-radius);
-          border-top-right-radius: var(--media-blocks-corner-radius);
-        }
-
-        #shopify-section-{{ section.id }} .media-blocks > *:last-child .media-blocks__item,
-        #shopify-section-{{ section.id }} .media-blocks > *:last-child.media-blocks__item {
-          border-bottom-left-radius: var(--media-blocks-corner-radius);
-          border-bottom-right-radius: var(--media-blocks-corner-radius);
-        }
-      {%- else -%}
-        /* Items still scroll horizontally on mobile -> same behavior as desktop/tablet */
+      /* Desktop / tablet: items laid out horizontally -> radius on the left of the first item and the right of the last item */
+      @media screen and (min-width: 700px) {
         #shopify-section-{{ section.id }} .media-blocks > *:first-child .media-blocks__item,
         #shopify-section-{{ section.id }} .media-blocks > *:first-child.media-blocks__item {
           border-top-left-radius: var(--media-blocks-corner-radius);
@@ -159,8 +136,47 @@
           border-top-right-radius: var(--media-blocks-corner-radius);
           border-bottom-right-radius: var(--media-blocks-corner-radius);
         }
-      {%- endif -%}
-    }
+      }
+
+      /* Mobile */
+      @media screen and (max-width: 699px) {
+        {%- if section.settings.stack_on_mobile -%}
+          /* Items are stacked vertically -> radius on the top of the first item and the bottom of the last item */
+          #shopify-section-{{ section.id }} .media-blocks > *:first-child .media-blocks__item,
+          #shopify-section-{{ section.id }} .media-blocks > *:first-child.media-blocks__item {
+            border-top-left-radius: var(--media-blocks-corner-radius);
+            border-top-right-radius: var(--media-blocks-corner-radius);
+          }
+
+          #shopify-section-{{ section.id }} .media-blocks > *:last-child .media-blocks__item,
+          #shopify-section-{{ section.id }} .media-blocks > *:last-child.media-blocks__item {
+            border-bottom-left-radius: var(--media-blocks-corner-radius);
+            border-bottom-right-radius: var(--media-blocks-corner-radius);
+          }
+        {%- else -%}
+          /* Items still scroll horizontally on mobile -> same behavior as desktop/tablet */
+          #shopify-section-{{ section.id }} .media-blocks > *:first-child .media-blocks__item,
+          #shopify-section-{{ section.id }} .media-blocks > *:first-child.media-blocks__item {
+            border-top-left-radius: var(--media-blocks-corner-radius);
+            border-bottom-left-radius: var(--media-blocks-corner-radius);
+          }
+
+          #shopify-section-{{ section.id }} .media-blocks > *:last-child .media-blocks__item,
+          #shopify-section-{{ section.id }} .media-blocks > *:last-child.media-blocks__item {
+            border-top-right-radius: var(--media-blocks-corner-radius);
+            border-bottom-right-radius: var(--media-blocks-corner-radius);
+          }
+        {%- endif -%}
+      }
+    {%- else -%}
+      {%- comment -%}
+        Any spacing (sm/md/lg) leaves a visible gap between cards, so each card reads as its
+        own independent piece and gets the radius on all four of its corners.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .media-blocks__item {
+        border-radius: var(--media-blocks-corner-radius);
+      }
+    {%- endif -%}
   </style>
 
   {%- assign allow_transparent_header = false -%}
