@@ -288,8 +288,13 @@
           <li class="header__account-link md-max:hidden">
             <shopify-account menu="{{ section.settings.customer_account_menu }}">
               <div slot="signed-out-avatar" class="tap-area">
-                <span class="sr-only">{{ 'header.general.login' | t }}</span>
-                {%- render 'icon' with 'account', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+                {%- if section.settings.show_icons_text -%}
+                  <span class="md-max:hidden">{{ 'header.general.login' | t }}</span>
+                  <span class="sr-only">{{ 'header.general.login' | t }}</span>
+                {%- else -%}
+                  <span class="sr-only">{{ 'header.general.login' | t }}</span>
+                  {%- render 'icon' with 'account', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+                {%- endif -%}
               </div>
             </shopify-account>
           </li>
@@ -306,15 +311,25 @@
 
         <li class="header__search-link {% if section.settings.mobile_layout == 'logo_center_navigation_split' %}md-max:hidden{% endif %}">
           <a href="{{ routes.search_url }}" class="block tap-area" aria-controls="search-drawer">
-            <span class="sr-only">{{ 'header.general.search' | t }}</span>
-            {%- render 'icon' with 'search', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+            {%- if section.settings.show_icons_text -%}
+              <span class="md-max:hidden">{{ 'header.general.search' | t }}</span>
+              <span class="sr-only">{{ 'header.general.search' | t }}</span>
+            {%- else -%}
+              <span class="sr-only">{{ 'header.general.search' | t }}</span>
+              {%- render 'icon' with 'search', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+            {%- endif -%}
           </a>
         </li>
 
         <li class="header__cart-link relative">
           <a href="{{ routes.cart_url }}" class="block tap-area" {% if settings.cart_type != 'page' and request.page_type != 'cart' %}aria-controls="cart-drawer"{% endif %} data-no-instant>
-            <span class="sr-only">{{ 'header.general.cart' | t }}</span>
-            {%- render 'icon' with 'cart', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+            {%- if section.settings.show_icons_text -%}
+              <span class="md-max:hidden">{{ 'header.general.cart' | t }}</span>
+              <span class="sr-only">{{ 'header.general.cart' | t }}</span>
+            {%- else -%}
+              <span class="sr-only">{{ 'header.general.cart' | t }}</span>
+              {%- render 'icon' with 'cart', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+            {%- endif -%}
           </a>
 
           <cart-count class="header__active-dot" {%- if cart.empty? -%}hidden{% endif %}>
@@ -559,6 +574,12 @@
       "step": 2,
       "unit": "px",
       "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icons_text",
+      "label": "Show text instead of icons (desktop only)",
+      "default": false
     },
     {
       "type": "checkbox",
