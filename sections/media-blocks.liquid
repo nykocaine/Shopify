@@ -2,7 +2,7 @@
   <style>
     #shopify-section-{{ section.id }} {
       --media-blocks-grid: {% if section.settings.stack_on_mobile %}auto-flow / minmax(0, 1fr){% else %}auto / auto-flow 78vw{% endif %};
-      --media-blocks-gap: {% if section.settings.column_spacing == 'none' %}{% if section.settings.add_border %}1px{% else %}0px{% endif %}{% elsif section.settings.column_spacing == 'sm' %}calc(var(--container-gutter) / 2){% elsif section.settings.column_spacing == 'md' %}var(--container-gutter){% elsif section.settings.column_spacing == 'lg' %}calc(var(--container-gutter) * 1.5){% endif %};
+      --media-blocks-gap: {% if section.settings.column_spacing == 'none' %}0px{% elsif section.settings.column_spacing == 'sm' %}calc(var(--container-gutter) / 2){% elsif section.settings.column_spacing == 'md' %}var(--container-gutter){% elsif section.settings.column_spacing == 'lg' %}calc(var(--container-gutter) * 1.5){% endif %};
       --media-blocks-corner-radius: {% if section.settings.auto_corner_radius %}clamp(8px, 1.2vw, 23px){% else %}{{ section.settings.corner_radius }}px{% endif %};
     }
 
@@ -18,15 +18,33 @@
       }
     }
 
-    /* Reset base para que no se redondeen todas las esquinas */
     #shopify-section-{{ section.id }} .media-blocks__item {
       border-radius: 0;
       overflow: hidden;
     }
 
-    /* MÓVIL APILADO:
-       si stack_on_mobile está activo, en móvil las tarjetas van una debajo de otra,
-       entonces solo se redondea arriba del primer bloque y abajo del último */
+    /* Desktop / tablet: solo esquinas laterales externas */
+    @media screen and (min-width: 700px) {
+      #shopify-section-{{ section.id }} .media-blocks__item:first-child {
+        border-top-left-radius: var(--media-blocks-corner-radius);
+        border-bottom-left-radius: var(--media-blocks-corner-radius);
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+
+      #shopify-section-{{ section.id }} .media-blocks__item:last-child {
+        border-top-right-radius: var(--media-blocks-corner-radius);
+        border-bottom-right-radius: var(--media-blocks-corner-radius);
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+
+      #shopify-section-{{ section.id }} .media-blocks__item:first-child:last-child {
+        border-radius: var(--media-blocks-corner-radius);
+      }
+    }
+
+    /* Mobile apilado: solo arriba y abajo del conjunto */
     {% if section.settings.stack_on_mobile %}
       @media screen and (max-width: 699px) {
         #shopify-section-{{ section.id }} .media-blocks__item:first-child {
@@ -43,39 +61,19 @@
           border-top-right-radius: 0;
         }
 
-        /* Si solo existe un bloque */
         #shopify-section-{{ section.id }} .media-blocks__item:first-child:last-child {
           border-radius: var(--media-blocks-corner-radius);
         }
       }
     {% endif %}
 
-    /* ESCRITORIO / TABLET:
-       solo esquinas laterales exteriores */
-    @media screen and (min-width: 700px) {
-      #shopify-section-{{ section.id }} .media-blocks__item:first-child {
-        border-top-left-radius: var(--media-blocks-corner-radius);
-        border-bottom-left-radius: var(--media-blocks-corner-radius);
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-      }
-
-      #shopify-section-{{ section.id }} .media-blocks__item:last-child {
-        border-top-right-radius: var(--media-blocks-corner-radius);
-        border-bottom-right-radius: var(--media-blocks-corner-radius);
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-      }
-
-      /* Si solo existe un bloque */
-      #shopify-section-{{ section.id }} .media-blocks__item:first-child:last-child {
-        border-radius: var(--media-blocks-corner-radius);
-      }
-    }
-
     @media screen and (pointer: fine) {
       {%- for block in section.blocks -%}
         {%- if block.settings.change_color_scheme_on_hover -%}
+          {%- comment -%}
+          Some colors are not used in this context, so we only output the necessary variables
+          {%- endcomment -%}
+
           {%- assign color_scheme = block.settings.color_scheme -%}
 
           #block-{{ block.id }} {
@@ -88,11 +86,14 @@
           }
 
           #block-{{ block.id }} .link {
-            transition: color 0s ease-in-out, background-size 0.3s ease-in-out;
+            transition: color 0s ease-in-out,  background-size 0.3s ease-in-out;
           }
 
           {%- if block.settings.image != blank -%}
             #block-{{ block.id }}:hover {
+              {%- comment -%}
+              On hover, this forces to re-use the same background as the initial color scheme, which avoids a flash of the destination background
+              {%- endcomment -%}
               --background: {% if color_scheme.settings.background == 'rgba(0,0,0,0)' %}0 0 0 / 0{% else %}{{ color_scheme.settings.background.rgb }}{% endif %};
             }
           {%- endif -%}
@@ -111,16 +112,16 @@
             {%- liquid
               assign subheading_has_border = true
               assign subheading_has_background = true
-
+      
               if color_scheme.settings.subheading_background == blank or color_scheme.settings.subheading_background == 'rgba(0,0,0,0)' or color_scheme.settings.subheading_background == color_scheme.settings.background
                 assign subheading_has_background = false
               endif
-
+      
               if color_scheme.settings.subheading_border_color == blank or color_scheme.settings.subheading_border_color == 'rgba(0,0,0,0)'
                 assign subheading_has_border = false
               endif
             -%}
-
+      
             --subheading-background: {% if subheading_has_background %}{{ color_scheme.settings.subheading_background.rgb }}{% else %}0 0 0 / 0.0{% endif %};
             --subheading-border: {% if subheading_has_border %}1px solid rgb({{ color_scheme.settings.subheading_border_color.rgb }}){% else %}none{% endif %};
             --subheading-text-color: {{ color_scheme.settings.subheading_text_color.rgb }};
@@ -625,7 +626,82 @@
           "id": "icon",
           "label": "t:global.icons.icon",
           "options": [
-            { "value": "none", "label": "t:global.icons.icon_options.none" }
+            { "value": "none", "label": "t:global.icons.icon_options.none" },
+            { "value": "picto-heart", "label": "t:global.icons.icon_options.heart", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-star", "label": "t:global.icons.icon_options.star", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-like", "label": "t:global.icons.icon_options.like", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-sparkle", "label": "t:global.icons.icon_options.sparkle", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-store", "label": "t:global.icons.icon_options.store", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-price-tag", "label": "t:global.icons.icon_options.price_tag", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-discount-coupon", "label": "t:global.icons.icon_options.discount_coupon", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-discount-badge", "label": "t:global.icons.icon_options.discount_badge", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-ticket-star", "label": "t:global.icons.icon_options.ticket_star", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-gift-card", "label": "t:global.icons.icon_options.gift_card", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-happy", "label": "t:global.icons.icon_options.happy", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-checked", "label": "t:global.icons.icon_options.checked", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-gift-box", "label": "t:global.icons.icon_options.gift_box", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-credit-card", "label": "t:global.icons.icon_options.credit_card", "group": "t:global.icons.icon_options.payments_category" },
+            { "value": "picto-wallet", "label": "t:global.icons.icon_options.wallet", "group": "t:global.icons.icon_options.payments_category" },
+            { "value": "picto-secure", "label": "t:global.icons.icon_options.secure", "group": "t:global.icons.icon_options.payments_category" },
+            { "value": "picto-refund", "label": "t:global.icons.icon_options.refund", "group": "t:global.icons.icon_options.payments_category" },
+            { "value": "picto-invoice", "label": "t:global.icons.icon_options.invoice", "group": "t:global.icons.icon_options.payments_category" },
+            { "value": "picto-loyalty-points", "label": "t:global.icons.icon_options.loyalty_points", "group": "t:global.icons.icon_options.payments_category" },
+            { "value": "picto-location-pin", "label": "t:global.icons.icon_options.location_pin", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-truck", "label": "t:global.icons.icon_options.truck", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-express-delivery", "label": "t:global.icons.icon_options.express_delivery", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-package", "label": "t:global.icons.icon_options.package", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-shipping-protection", "label": "t:global.icons.icon_options.shipping_protection", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-return-box", "label": "t:global.icons.icon_options.return_box", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-return", "label": "t:global.icons.icon_options.return", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-fragile", "label": "t:global.icons.icon_options.fragile", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-warehouse", "label": "t:global.icons.icon_options.warehouse", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-analytics-graph", "label": "t:global.icons.icon_options.analytics_graph", "group": "t:global.icons.icon_options.marketing_category" },
+            { "value": "picto-social-media", "label": "t:global.icons.icon_options.social_media", "group": "t:global.icons.icon_options.marketing_category" },
+            { "value": "picto-magnifying-glass", "label": "t:global.icons.icon_options.magnifying_glass", "group": "t:global.icons.icon_options.marketing_category" },
+            { "value": "picto-trending", "label": "t:global.icons.icon_options.trending", "group": "t:global.icons.icon_options.marketing_category" },
+            { "value": "picto-megaphone", "label": "t:global.icons.icon_options.megaphone", "group": "t:global.icons.icon_options.marketing_category" },
+            { "value": "picto-recycle", "label": "t:global.icons.icon_options.recycle", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-leaf", "label": "t:global.icons.icon_options.leaf", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-tree", "label": "t:global.icons.icon_options.tree", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-science", "label": "t:global.icons.icon_options.science", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-earth", "label": "t:global.icons.icon_options.earth", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-sun", "label": "t:global.icons.icon_options.sun", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-summit", "label": "t:global.icons.icon_options.summit", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-feather", "label": "t:global.icons.icon_options.feather", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-drop-of-water", "label": "t:global.icons.icon_options.drop_of_water", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-email", "label": "t:global.icons.icon_options.email", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-inbox", "label": "t:global.icons.icon_options.inbox", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-plane", "label": "t:global.icons.icon_options.plane", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-mobile-phone", "label": "t:global.icons.icon_options.mobile_phone", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-phone", "label": "t:global.icons.icon_options.phone", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-chat", "label": "t:global.icons.icon_options.chat", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-customer-support", "label": "t:global.icons.icon_options.customer_support", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-comment", "label": "t:global.icons.icon_options.comment", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-date", "label": "t:global.icons.icon_options.date", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-info", "label": "t:global.icons.icon_options.info", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-text", "label": "t:global.icons.icon_options.text", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-ai-spark", "label": "t:global.icons.icon_options.ai_spark", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-user", "label": "t:global.icons.icon_options.user", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-news", "label": "t:global.icons.icon_options.news", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-glasses", "label": "t:global.icons.icon_options.glasses", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-craft", "label": "t:global.icons.icon_options.craft", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-compass", "label": "t:global.icons.icon_options.compass", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-asterisk", "label": "t:global.icons.icon_options.asterisk", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-microscope", "label": "t:global.icons.icon_options.microscope", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-weight", "label": "t:global.icons.icon_options.weight", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-pyramide", "label": "t:global.icons.icon_options.pyramide", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-sports", "label": "t:global.icons.icon_options.sports", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-wrap", "label": "t:global.icons.icon_options.wrap", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-expand", "label": "t:global.icons.icon_options.expand", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-measure", "label": "t:global.icons.icon_options.measure", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-cut", "label": "t:global.icons.icon_options.cut", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-furniture", "label": "t:global.icons.icon_options.furniture", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-music", "label": "t:global.icons.icon_options.music", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-drink", "label": "t:global.icons.icon_options.drink", "group": "t:global.icons.icon_options.food_and_drink_category" },
+            { "value": "picto-burger", "label": "t:global.icons.icon_options.burger", "group": "t:global.icons.icon_options.food_and_drink_category" },
+            { "value": "picto-pizza", "label": "t:global.icons.icon_options.pizza", "group": "t:global.icons.icon_options.food_and_drink_category" },
+            { "value": "picto-fork-knife", "label": "t:global.icons.icon_options.fork_knife", "group": "t:global.icons.icon_options.food_and_drink_category" },
+            { "value": "picto-chef", "label": "t:global.icons.icon_options.chef", "group": "t:global.icons.icon_options.food_and_drink_category" }
           ],
           "default": "none"
         },
@@ -837,7 +913,321 @@
     {
       "type": "video_with_text",
       "name": "t:sections.media_blocks.blocks.video_with_text.name",
-      "settings": []
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "change_color_scheme_on_hover",
+          "label": "t:sections.media_blocks.blocks.global.change_color_scheme_on_hover",
+          "info": "t:sections.media_blocks.blocks.global.change_color_scheme_on_hover_info",
+          "default": false
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-3"
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme_hover",
+          "label": "t:sections.media_blocks.blocks.global.color_scheme_hover",
+          "default": "scheme-3"
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "t:global.video.video"
+        },
+        {
+          "type": "header",
+          "content": "t:global.icons.icon"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "t:global.icons.icon",
+          "options": [
+            { "value": "none", "label": "t:global.icons.icon_options.none" },
+            { "value": "picto-heart", "label": "t:global.icons.icon_options.heart", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-star", "label": "t:global.icons.icon_options.star", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-like", "label": "t:global.icons.icon_options.like", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-sparkle", "label": "t:global.icons.icon_options.sparkle", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-store", "label": "t:global.icons.icon_options.store", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-price-tag", "label": "t:global.icons.icon_options.price_tag", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-discount-coupon", "label": "t:global.icons.icon_options.discount_coupon", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-discount-badge", "label": "t:global.icons.icon_options.discount_badge", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-ticket-star", "label": "t:global.icons.icon_options.ticket_star", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-gift-card", "label": "t:global.icons.icon_options.gift_card", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-happy", "label": "t:global.icons.icon_options.happy", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-checked", "label": "t:global.icons.icon_options.checked", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-gift-box", "label": "t:global.icons.icon_options.gift_box", "group": "t:global.icons.icon_options.shopping_and_products_category" },
+            { "value": "picto-credit-card", "label": "t:global.icons.icon_options.credit_card", "group": "t:global.icons.icon_options.payments_category" },
+            { "value": "picto-wallet", "label": "t:global.icons.icon_options.wallet", "group": "t:global.icons.icon_options.payments_category" },
+            { "value": "picto-secure", "label": "t:global.icons.icon_options.secure", "group": "t:global.icons.icon_options.payments_category" },
+            { "value": "picto-refund", "label": "t:global.icons.icon_options.refund", "group": "t:global.icons.icon_options.payments_category" },
+            { "value": "picto-invoice", "label": "t:global.icons.icon_options.invoice", "group": "t:global.icons.icon_options.payments_category" },
+            { "value": "picto-loyalty-points", "label": "t:global.icons.icon_options.loyalty_points", "group": "t:global.icons.icon_options.payments_category" },
+            { "value": "picto-location-pin", "label": "t:global.icons.icon_options.location_pin", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-truck", "label": "t:global.icons.icon_options.truck", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-express-delivery", "label": "t:global.icons.icon_options.express_delivery", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-package", "label": "t:global.icons.icon_options.package", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-shipping-protection", "label": "t:global.icons.icon_options.shipping_protection", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-return-box", "label": "t:global.icons.icon_options.return_box", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-return", "label": "t:global.icons.icon_options.return", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-fragile", "label": "t:global.icons.icon_options.fragile", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-warehouse", "label": "t:global.icons.icon_options.warehouse", "group": "t:global.icons.icon_options.shipping_and_delivery_category" },
+            { "value": "picto-analytics-graph", "label": "t:global.icons.icon_options.analytics_graph", "group": "t:global.icons.icon_options.marketing_category" },
+            { "value": "picto-social-media", "label": "t:global.icons.icon_options.social_media", "group": "t:global.icons.icon_options.marketing_category" },
+            { "value": "picto-magnifying-glass", "label": "t:global.icons.icon_options.magnifying_glass", "group": "t:global.icons.icon_options.marketing_category" },
+            { "value": "picto-trending", "label": "t:global.icons.icon_options.trending", "group": "t:global.icons.icon_options.marketing_category" },
+            { "value": "picto-megaphone", "label": "t:global.icons.icon_options.megaphone", "group": "t:global.icons.icon_options.marketing_category" },
+            { "value": "picto-recycle", "label": "t:global.icons.icon_options.recycle", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-leaf", "label": "t:global.icons.icon_options.leaf", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-tree", "label": "t:global.icons.icon_options.tree", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-science", "label": "t:global.icons.icon_options.science", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-earth", "label": "t:global.icons.icon_options.earth", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-sun", "label": "t:global.icons.icon_options.sun", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-summit", "label": "t:global.icons.icon_options.summit", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-feather", "label": "t:global.icons.icon_options.feather", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-drop-of-water", "label": "t:global.icons.icon_options.drop_of_water", "group": "t:global.icons.icon_options.nature_and_ecology_category" },
+            { "value": "picto-email", "label": "t:global.icons.icon_options.email", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-inbox", "label": "t:global.icons.icon_options.inbox", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-plane", "label": "t:global.icons.icon_options.plane", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-mobile-phone", "label": "t:global.icons.icon_options.mobile_phone", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-phone", "label": "t:global.icons.icon_options.phone", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-chat", "label": "t:global.icons.icon_options.chat", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-customer-support", "label": "t:global.icons.icon_options.customer_support", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-comment", "label": "t:global.icons.icon_options.comment", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-date", "label": "t:global.icons.icon_options.date", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-info", "label": "t:global.icons.icon_options.info", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-text", "label": "t:global.icons.icon_options.text", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-ai-spark", "label": "t:global.icons.icon_options.ai_spark", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-user", "label": "t:global.icons.icon_options.user", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-news", "label": "t:global.icons.icon_options.news", "group": "t:global.icons.icon_options.communication_category" },
+            { "value": "picto-glasses", "label": "t:global.icons.icon_options.glasses", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-craft", "label": "t:global.icons.icon_options.craft", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-compass", "label": "t:global.icons.icon_options.compass", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-asterisk", "label": "t:global.icons.icon_options.asterisk", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-microscope", "label": "t:global.icons.icon_options.microscope", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-weight", "label": "t:global.icons.icon_options.weight", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-pyramide", "label": "t:global.icons.icon_options.pyramide", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-sports", "label": "t:global.icons.icon_options.sports", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-wrap", "label": "t:global.icons.icon_options.wrap", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-expand", "label": "t:global.icons.icon_options.expand", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-measure", "label": "t:global.icons.icon_options.measure", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-cut", "label": "t:global.icons.icon_options.cut", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-furniture", "label": "t:global.icons.icon_options.furniture", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-music", "label": "t:global.icons.icon_options.music", "group": "t:global.icons.icon_options.objects_category" },
+            { "value": "picto-drink", "label": "t:global.icons.icon_options.drink", "group": "t:global.icons.icon_options.food_and_drink_category" },
+            { "value": "picto-burger", "label": "t:global.icons.icon_options.burger", "group": "t:global.icons.icon_options.food_and_drink_category" },
+            { "value": "picto-pizza", "label": "t:global.icons.icon_options.pizza", "group": "t:global.icons.icon_options.food_and_drink_category" },
+            { "value": "picto-fork-knife", "label": "t:global.icons.icon_options.fork_knife", "group": "t:global.icons.icon_options.food_and_drink_category" },
+            { "value": "picto-chef", "label": "t:global.icons.icon_options.chef", "group": "t:global.icons.icon_options.food_and_drink_category" }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "t:global.icons.custom_icon",
+          "info": "t:global.icons.custom_icon_info"
+        },
+        {
+          "type": "select",
+          "id": "icon_position",
+          "label": "t:global.position.alignment",
+          "options": [
+            { "value": "top_left", "label": "t:global.position.top_left" },
+            { "value": "top_center", "label": "t:global.position.top_center" },
+            { "value": "top_right", "label": "t:global.position.top_right" },
+            { "value": "middle_left", "label": "t:global.position.middle_left" },
+            { "value": "middle_center", "label": "t:global.position.middle_center" },
+            { "value": "middle_right", "label": "t:global.position.middle_right" },
+            { "value": "bottom_left", "label": "t:global.position.bottom_left" },
+            { "value": "bottom_center", "label": "t:global.position.bottom_center" },
+            { "value": "bottom_right", "label": "t:global.position.bottom_right" }
+          ],
+          "default": "middle_center"
+        },
+        {
+          "type": "range",
+          "id": "icon_width",
+          "min": 16,
+          "max": 128,
+          "step": 4,
+          "unit": "px",
+          "label": "t:global.icons.icon_width",
+          "default": 32
+        },
+        {
+          "type": "range",
+          "id": "mobile_icon_width",
+          "min": 16,
+          "max": 128,
+          "step": 4,
+          "unit": "px",
+          "label": "t:global.icons.mobile_icon_width",
+          "default": 24
+        },
+        {
+          "type": "header",
+          "content": "t:global.text.subheading"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "subheading",
+          "label": "t:global.text.subheading"
+        },
+        {
+          "type": "select",
+          "id": "subheading_position",
+          "label": "t:global.position.alignment",
+          "options": [
+            { "value": "top_left", "label": "t:global.position.top_left" },
+            { "value": "top_center", "label": "t:global.position.top_center" },
+            { "value": "top_right", "label": "t:global.position.top_right" },
+            { "value": "middle_left", "label": "t:global.position.middle_left" },
+            { "value": "middle_center", "label": "t:global.position.middle_center" },
+            { "value": "middle_right", "label": "t:global.position.middle_right" },
+            { "value": "bottom_left", "label": "t:global.position.bottom_left" },
+            { "value": "bottom_center", "label": "t:global.position.bottom_center" },
+            { "value": "bottom_right", "label": "t:global.position.bottom_right" }
+          ],
+          "default": "middle_center"
+        },
+        {
+          "type": "header",
+          "content": "t:global.text.heading"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "title",
+          "label": "t:global.text.heading"
+        },
+        {
+          "type": "select",
+          "id": "heading_tag",
+          "label": "t:global.text.heading_size",
+          "options": [
+            { "value": "h1", "label": "XX-Large" },
+            { "value": "h2", "label": "X-Large" },
+            { "value": "h3", "label": "Large" },
+            { "value": "h4", "label": "Medium" },
+            { "value": "h5", "label": "Small" },
+            { "value": "h6", "label": "X-Small" },
+            { "value": "h7", "label": "XX-Small" }
+          ],
+          "default": "h4"
+        },
+        {
+          "type": "select",
+          "id": "heading_position",
+          "label": "t:global.position.alignment",
+          "options": [
+            { "value": "top_left", "label": "t:global.position.top_left" },
+            { "value": "top_center", "label": "t:global.position.top_center" },
+            { "value": "top_right", "label": "t:global.position.top_right" },
+            { "value": "middle_left", "label": "t:global.position.middle_left" },
+            { "value": "middle_center", "label": "t:global.position.middle_center" },
+            { "value": "middle_right", "label": "t:global.position.middle_right" },
+            { "value": "bottom_left", "label": "t:global.position.bottom_left" },
+            { "value": "bottom_center", "label": "t:global.position.bottom_center" },
+            { "value": "bottom_right", "label": "t:global.position.bottom_right" }
+          ],
+          "default": "middle_center"
+        },
+        {
+          "type": "checkbox",
+          "id": "scrolling_title",
+          "label": "t:sections.media_blocks.show_scrolling_title"
+        },
+        {
+          "type": "select",
+          "id": "scrolling_title_separator",
+          "label": "t:sections.media_blocks.scrolling_title_separator",
+          "options": [
+            { "value": "none", "label": "t:sections.media_blocks.scrolling_title_separator_options.none" },
+            { "value": "circle", "label": "t:sections.media_blocks.scrolling_title_separator_options.circle" },
+            { "value": "square", "label": "t:sections.media_blocks.scrolling_title_separator_options.square" },
+            { "value": "diamond", "label": "t:sections.media_blocks.scrolling_title_separator_options.diamond" }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_text_vertically",
+          "label": "t:sections.media_blocks.blocks.video_with_text.show_text_vertically",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "t:global.text.content"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "t:global.text.content"
+        },
+        {
+          "type": "select",
+          "id": "text_position",
+          "label": "t:global.position.alignment",
+          "options": [
+            { "value": "top_left", "label": "t:global.position.top_left" },
+            { "value": "top_center", "label": "t:global.position.top_center" },
+            { "value": "top_right", "label": "t:global.position.top_right" },
+            { "value": "middle_left", "label": "t:global.position.middle_left" },
+            { "value": "middle_center", "label": "t:global.position.middle_center" },
+            { "value": "middle_right", "label": "t:global.position.middle_right" },
+            { "value": "bottom_left", "label": "t:global.position.bottom_left" },
+            { "value": "bottom_center", "label": "t:global.position.bottom_center" },
+            { "value": "bottom_right", "label": "t:global.position.bottom_right" }
+          ],
+          "default": "middle_center"
+        },
+        {
+          "type": "header",
+          "content": "t:global.text.button_category"
+        },
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "t:global.text.button_style",
+          "options": [
+            { "value": "outline", "label": "t:global.text.button_style_options.outline" },
+            { "value": "solid", "label": "t:global.text.button_style_options.solid" },
+            { "value": "link", "label": "t:global.text.button_style_options.link" }
+          ],
+          "default": "solid"
+        },
+        {
+          "type": "url",
+          "id": "link_url",
+          "label": "t:global.text.link_url"
+        },
+        {
+          "type": "text",
+          "id": "link_text",
+          "label": "t:global.text.link_text"
+        },
+        {
+          "type": "select",
+          "id": "link_position",
+          "label": "t:global.position.alignment",
+          "options": [
+            { "value": "top_left", "label": "t:global.position.top_left" },
+            { "value": "top_center", "label": "t:global.position.top_center" },
+            { "value": "top_right", "label": "t:global.position.top_right" },
+            { "value": "middle_left", "label": "t:global.position.middle_left" },
+            { "value": "middle_center", "label": "t:global.position.middle_center" },
+            { "value": "middle_right", "label": "t:global.position.middle_right" },
+            { "value": "bottom_left", "label": "t:global.position.bottom_left" },
+            { "value": "bottom_center", "label": "t:global.position.bottom_center" },
+            { "value": "bottom_right", "label": "t:global.position.bottom_right" }
+          ],
+          "default": "middle_center"
+        }
+      ]
     },
     {
       "type": "empty_item",
