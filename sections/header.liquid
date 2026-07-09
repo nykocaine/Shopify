@@ -289,7 +289,10 @@
             <shopify-account menu="{{ section.settings.customer_account_menu }}">
               <div slot="signed-out-avatar" class="tap-area">
                 {%- if section.settings.show_icons_text -%}
-                  <span class="md-max:hidden">{{ 'header.general.login' | t }}</span>
+                  <span class="md-max:hidden">{{ 'header.general.login' | t | upcase }}</span>
+                  <span class="md:hidden">
+                    {%- render 'icon' with 'account', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+                  </span>
                   <span class="sr-only">{{ 'header.general.login' | t }}</span>
                 {%- else -%}
                   <span class="sr-only">{{ 'header.general.login' | t }}</span>
@@ -312,7 +315,10 @@
         <li class="header__search-link {% if section.settings.mobile_layout == 'logo_center_navigation_split' %}md-max:hidden{% endif %}">
           <a href="{{ routes.search_url }}" class="block tap-area" aria-controls="search-drawer">
             {%- if section.settings.show_icons_text -%}
-              <span class="md-max:hidden">{{ 'header.general.search' | t }}</span>
+              <span class="md-max:hidden">{{ 'header.general.search' | t | upcase }}</span>
+               <span class="md:hidden">
+                {%- render 'icon' with 'search', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+              </span>
               <span class="sr-only">{{ 'header.general.search' | t }}</span>
             {%- else -%}
               <span class="sr-only">{{ 'header.general.search' | t }}</span>
@@ -324,7 +330,10 @@
         <li class="header__cart-link relative">
           <a href="{{ routes.cart_url }}" class="block tap-area" {% if settings.cart_type != 'page' and request.page_type != 'cart' %}aria-controls="cart-drawer"{% endif %} data-no-instant>
             {%- if section.settings.show_icons_text -%}
-              <span class="md-max:hidden">{{ 'header.general.cart' | t }}</span>
+              <span class="md-max:hidden">{{ 'header.general.cart' | t | upcase }}</span>
+              <span class="md:hidden">
+                {%- render 'icon' with 'cart', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+              </span>
               <span class="sr-only">{{ 'header.general.cart' | t }}</span>
             {%- else -%}
               <span class="sr-only">{{ 'header.general.cart' | t }}</span>
