@@ -97,7 +97,13 @@
        Corner radius (outer corners only)
        ------------------------------------------------------------------- */
     #shopify-section-{{ section.id }} {
-      --media-blocks-corner-radius: {% if section.settings.auto_corner_radius %}clamp(4px, 1.2vw, {{ section.settings.corner_radius }}px){% else %}{{ section.settings.corner_radius }}px{% endif %};
+      {%- comment -%}
+        Auto mode scales the radius with the viewport but the floor is relative to the merchant's
+        chosen corner_radius (50% of it) instead of a fixed px value. A fixed low floor (e.g. 4px)
+        made the radius collapse hard on mobile viewports (1.2vw is only ~4-5px around 375-430px)
+        while desktop viewports almost always hit the max, making the two look inconsistent.
+      {%- endcomment -%}
+      --media-blocks-corner-radius: {% if section.settings.auto_corner_radius %}clamp({{ section.settings.corner_radius | times: 0.5 | round }}px, 3vw, {{ section.settings.corner_radius }}px){% else %}{{ section.settings.corner_radius }}px{% endif %};
     }
 
     #shopify-section-{{ section.id }} .media-blocks__item {
@@ -624,8 +630,8 @@
     {
       "type": "checkbox",
       "id": "auto_corner_radius",
-      "label": "t:sections.media_blocks.auto_corner_radius",
-      "info": "t:sections.media_blocks.auto_corner_radius_info",
+      "label": "Automatic corner radius",
+      "info": "Scales the corner radius responsively based on screen size, up to the value set below.",
       "default": true
     },
     {
@@ -635,8 +641,8 @@
       "max": 23,
       "step": 1,
       "unit": "px",
-      "label": "t:sections.media_blocks.corner_radius",
-      "info": "t:sections.media_blocks.corner_radius_info",
+      "label": "Corner radius",
+      "info": "Applied only to the outer corners of the first and last card.",
       "default": 12
     },
     {
