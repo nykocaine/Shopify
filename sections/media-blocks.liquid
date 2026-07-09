@@ -245,7 +245,7 @@
                 -%}
 
                 {%- capture block_content -%}
-                  <div class="content-box h-full min-h-{{ section.settings.block_size }}">
+                  <div class="content-box h-full min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
                     {%- capture sizes_attribute -%}(max-width: 699px) 100vw, (max-width: 999px) 50vw, {{ 100.0 | divided_by: section.settings.items_per_row | round }}vw{%- endcapture -%}
 
                     {%- if block.settings.image != blank or block.settings.video != blank -%}
@@ -673,6 +673,35 @@
       "type": "select",
       "id": "block_size",
       "label": "t:sections.media_blocks.block_size",
+      "options": [
+        {
+          "value": "auto",
+          "label": "t:global.sizes.original_image_ratio"
+        },
+        {
+          "value": "sm",
+          "label": "t:global.sizes.small"
+        },
+        {
+          "value": "md",
+          "label": "t:global.sizes.medium"
+        },
+        {
+          "value": "lg",
+          "label": "t:global.sizes.large"
+        },
+        {
+          "value": "fill",
+          "label": "t:global.sizes.fit_screen"
+        }
+      ],
+      "info": "t:global.image.ratio_avoid_cropping_info",
+      "default": "auto"
+    },
+    {
+      "type": "select",
+      "id": "mobile_block_size",
+      "label": "Mobile block size",
       "options": [
         {
           "value": "auto",
