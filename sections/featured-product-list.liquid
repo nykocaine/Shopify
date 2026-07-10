@@ -39,7 +39,6 @@
   }
 
   .progress-bar {
-    width: 0%;
     height: 100%;
     position: absolute;
     inset: 0;
@@ -133,7 +132,7 @@
 
         {%- if section.settings.show_progress_bar_mobile or section.settings.show_progress_bar_desktop -%}
           <div class="progress-bar-container v-stack gap-4" style="background-color: {{ section.settings.progress_bar_bg_color }}; height: {{ section.settings.progress_bar_height }}px;">
-            <div class="progress-bar" style="background-color: {{ section.settings.progress_bar_color }};"></div>
+            <div class="progress-bar" style="background-color: {{ section.settings.progress_bar_color }}; width: {{ section.settings.progress_bar_initial_width }}%;"></div>
           </div>
         {%- endif -%}
     </div>
@@ -210,6 +209,16 @@
       "unit": "px",
       "label": "Progress Bar Height",
       "default": 2
+    },
+    {
+      "type": "range",
+      "id": "progress_bar_initial_width",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Ancho inicial de la barra de progreso",
+      "default": 10
     },
     {
       "type": "select",
