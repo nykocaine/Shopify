@@ -8,6 +8,7 @@ This component is used in product listing and product page to render the badges 
 @param {string} [alignment] - can be "start", "center" or "end" (default to start)
 @param {boolean} [vertical_text] - if true, badges text are shown vertically
 @param {boolean} [show_custom_badge] - if set to true, the custom badge from metafield is shown
+@param {number} [badge_border_radius] - the border radius of the custom badges
 @param {boolean} [show_sold_out_badge] - if set to true, the sold out badge is shown
 @param {boolean} [show_discount_badge] - if set to true, the discount badge is shown
 @param {string} [class] - an extra list of classes being applied to the badge list container
@@ -19,7 +20,7 @@ This component is used in product listing and product page to render the badges 
 {%- capture badges -%}
   {%- if show_custom_badge -%}
     {%- for custom_badge in product.metafields.custom.badges.value -%}
-      <span class="badge badge--custom badge--{{ custom_badge | handle }} {% if vertical_text %}vertical-text{% endif %}">{{ custom_badge }}</span>
+      <span class="badge badge--custom badge--{{ custom_badge | handle }} {% if vertical_text %}vertical-text{% endif %}" style="{% if badge_border_radius %}border-radius: {{ badge_border_radius }}px;{% endif %}">{{ custom_badge }}</span>
     {%- endfor -%}
   {%- endif -%}
 
