@@ -5,15 +5,15 @@ This component generates a review badge from the product metafields information.
 @param {boolean} [show_empty] - if set to true, the theme shows a 0.0 if there are no rating yet
 @param {boolean} [show_placeholder] - if set to true, show random value (useful for the product card placeholder)
 @param {boolean} [show_single_star] - if set to true, only one star is shown (otherwise, the number of scale)
-@param {string} [display_mode] - either "rating" (e.g.: 3.5) or "count" (e.g.: 4 reviews). Default to "rating" if none is passed
+@param {string} [display_mode] - either "rating" (e.g.: 3.5) or "count" (e.g.: 4 reviews). This parameter is no longer used.
 @param {string} [alignment] - can be "start", "center" or "end" (default to start)
 {%- enddoc -%}
 
 {%- liquid
   if product.metafields.custom.reviews_rating.value != blank
-    assign rating_value = product.metafields.custom.reviews_rating.value | round: 1
-    assign rating_count = product.metafields.custom.reviews_count.value
-    assign rating_max = 5
+    assign rating_value = product.metafields.custom.reviews_rating.value.rating | plus: 0
+    assign rating_count = product.metafields.custom.reviews_count.value | default: 0
+    assign rating_max = product.metafields.custom.reviews_rating.value.scale_max | plus: 0
   elsif show_empty
     assign rating_value = 0.0
     assign rating_count = 0
@@ -70,7 +70,6 @@ This component generates a review badge from the product metafields information.
       -%}
     </div>
 
-    <span class="subheading">({{- rating_value -}})</span>
     <span class="subheading">({{- rating_count -}})</span>
   </div>
 {%- endunless -%}
