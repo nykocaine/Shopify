@@ -10,12 +10,17 @@ This component generates a review badge from the product metafields information.
 {%- enddoc -%}
 
 {%- liquid
-  if product.metafields.custom.reviews_rating.value != blank
+  assign hide_rating = false
+  assign rating_value = 0
+  assign rating_count = 0
+  assign rating_max = 5
+
+  if product and product.metafields.custom.reviews_rating.value != blank
     assign rating_value = product.metafields.custom.reviews_rating.value.rating | plus: 0
     assign rating_count = product.metafields.custom.reviews_count.value | default: 0
     assign rating_max = product.metafields.custom.reviews_rating.value.scale_max | round
   elsif show_empty
-    assign rating_value = 0.0
+    assign rating_value = 0
     assign rating_count = 0
     assign rating_max = 5
   elsif show_placeholder
@@ -29,7 +34,11 @@ This component generates a review badge from the product metafields information.
 
 {%- unless hide_rating -%}
   <div class="rating-badge {% if alignment %}justify-{{ alignment }}{% endif %}">
-    <div class="rating-badge__stars" role="img" aria-label="{{ 'general.rating.info' | t: rating_value: rating_value, rating_max: rating_max }}">
+    <div
+      class="rating-badge__stars"
+      role="img"
+      aria-label="{{ 'general.rating.info' | t: rating_value: rating_value, rating_max: rating_max }}"
+    >
       {%- liquid
         if show_single_star
           if rating_count == 0
@@ -39,9 +48,13 @@ This component generates a review badge from the product metafields information.
           endif
         else
           for i in (1..rating_max)
-            if rating_value >= i
+            assign half_threshold = i | minus: 0.5
+
+            if rating_count == 0
+              render 'icon' with 'star-rating-empty'
+            elsif rating_value >= i
               render 'icon' with 'star-rating'
-            elsif rating_value < i and rating_value >= i | minus: 0.5
+            elsif rating_value >= half_threshold
               render 'icon' with 'star-rating-half'
             else
               render 'icon' with 'star-rating-empty'
@@ -51,6 +64,6 @@ This component generates a review badge from the product metafields information.
       -%}
     </div>
 
-    <span class="subheading">({{- rating_count -}})</span>
+    <span class="subheading">({{ rating_count }})</span>
   </div>
 {%- endunless -%}
