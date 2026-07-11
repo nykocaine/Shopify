@@ -187,13 +187,13 @@ To render an icon made of an image, you need to explicitly pass the image, and t
         <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" d="M1.333 7.333a6 6 0 1 0 12 0 6 6 0 0 0-12 0ZM11.575 11.576l3.09 3.09" />
       </svg>
 
-    {%- when 'cart' -%}
-      {%- case settings.cart_icon -%}
-        {%- when 'shopping_bag' -%}
-          <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
-            <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" d="m3 14.5-2-7h14l-2 7H3ZM3.333 7.333 6 2M12.667 7.333 10 2" />
-          </svg>
-
+   {%- when 'cart' -%}
+  {%- case settings.cart_icon -%}
+    {%- when 'shopping_bag' -%}
+      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" height="{{ mobile_width | default: 16 }}" viewBox="0 0 16 16" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon">
+        <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M2.5 5.5h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z" />
+        <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linecap="round" d="M5 5.5V5a3 3 0 0 1 6 0v.5" />
+      </svg>
         {%- when 'shopping_cart' -%}
           <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
             <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" d="M0 2.5h2.5l2 9h8l2-6H3.167" />
