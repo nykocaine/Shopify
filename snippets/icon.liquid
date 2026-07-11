@@ -190,9 +190,23 @@ To render an icon made of an image, you need to explicitly pass the image, and t
     {%- when 'cart' -%}
       {%- case settings.cart_icon -%}
         {%- when 'shopping_bag' -%}
-          <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
-            <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" d="m3 14.5-2-7h14l-2 7H3ZM3.333 7.333 6 2M12.667 7.333 10 2" />
-          </svg>
+          <svg
+  aria-hidden="true"
+  focusable="false"
+  width="{{ mobile_width | default: 16 }}"
+  fill="none"
+  class="{{ class | strip }}"
+  {% if style != blank %}style="{{ style }}"{% endif %}
+  part="icon"
+  viewBox="0 0 16 16"
+>
+  <path
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    d="M3.527 4a4.5 4.5 0 0 1 8.946 0H13.5A2.5 2.5 0 0 1 16 6.5v7a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 13.5v-7A2.5 2.5 0 0 1 2.5 4zM8 1a3.5 3.5 0 0 1 3.465 3h-6.93A3.5 3.5 0 0 1 8 1M2.5 5A1.5 1.5 0 0 0 1 6.5v7A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 13.5 5z"
+    fill="currentColor"
+  />
+</svg>
 
         {%- when 'shopping_cart' -%}
           <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
