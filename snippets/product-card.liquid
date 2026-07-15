@@ -30,6 +30,18 @@ based on your desired layout (and remove most of the settings associated), and t
 @param {object} [section]
 {%- enddoc -%}
 
+{%- if show_secondary_image -%}
+  <style>
+    .product-card--info-inside.show-secondary-image-on-hover:hover .product-card__info {
+      display: none;
+    }
+
+    .product-card--info-inside.show-secondary-image-on-hover:hover .product-card__swatch-list {
+      display: none;
+    }
+  </style>
+{%- endif -%}
+
 {%- liquid
   assign color_scheme = color_scheme | default: settings.product_card_color_scheme
   assign section_color_scheme = section_color_scheme | default: section.settings.color_scheme | default: settings.default_color_scheme
@@ -60,7 +72,15 @@ based on your desired layout (and remove most of the settings associated), and t
     endif
   endif
 
+  if show_secondary_image
+    assign show_badges_along_info = false
+  endif
+
   assign product_card_classes = 'product-card'
+
+  if show_secondary_image
+    assign product_card_classes = product_card_classes | append: ' show-secondary-image-on-hover'
+  endif
 
   if highlight_card
     assign product_card_classes = product_card_classes | append: ' product-card--highlight'
@@ -70,7 +90,7 @@ based on your desired layout (and remove most of the settings associated), and t
     assign product_card_classes = product_card_classes | append: ' product-card--bordered'
   endif
 
-  if settings.product_card_info_position == 'outside'
+  if settings.product_card_info_position == 'outside' and show_secondary_image == false
     assign product_card_classes = product_card_classes | append: ' product-card--info-outside'
   else
     assign product_card_classes = product_card_classes | append: ' product-card--info-inside'
