@@ -3373,6 +3373,27 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   .product-card__figure:has(.product-card__image--secondary):hover .badge-list:not(:has(.badge--custom)) {
     display: none;
   }
+
+  .product-card__figure:has(.product-card__image--secondary):hover {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+
+  .product-card__figure:has(.product-card__image--secondary):hover .product-card__media {
+    height: 100%;
+    width: 100%;
+  }
+
+  .product-card__figure:has(.product-card__image--secondary):hover .product-card__image--primary,
+  .product-card__figure:has(.product-card__image--secondary):hover .product-card__image--secondary {
+    aspect-ratio: auto;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
++++++++
+
 }
 
 .product-card__info {
