@@ -76,7 +76,7 @@
 </style>
 
 <height-observer variable="header">
-  <x-header class="header color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.hide_on_scroll %}hide-on-scroll{% endif %} style="padding-block: {{ section.settings.header_height_padding }}px;">
+  <x-header class="header {% if section.settings.show_bottom_border %}header--bordered{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.hide_on_scroll %}hide-on-scroll{% endif %} style="padding-block: {{ section.settings.header_height_padding }}px;">
     {%- comment -%}
     --------------------------------------------------------------------------------------------------------------------
     LOGO AREA
@@ -427,6 +427,12 @@
       "type": "checkbox",
       "id": "hide_on_scroll",
       "label": "t:sections.header.hide_on_scroll",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_bottom_border",
+      "label": "t:sections.header.show_bottom_border",
       "default": false
     },
     {
