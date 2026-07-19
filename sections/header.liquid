@@ -330,20 +330,28 @@
         <li class="header__cart-link relative">
           <a href="{{ routes.cart_url }}" class="block tap-area" {% if settings.cart_type != 'page' and request.page_type != 'cart' %}aria-controls="cart-drawer"{% endif %} data-no-instant>
             {%- if section.settings.show_icons_text -%}
-              <span class="md-max:hidden">{{ section.settings.cart_text | upcase }}</span>
+              <span class="md-max:hidden">{{ section.settings.cart_text | upcase }}{% unless section.settings.show_cart_count_as_dot %} <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count>{% endunless %}</span>
               <span class="md:hidden">
                 {%- render 'icon' with 'cart', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+                {%- unless section.settings.show_cart_count_as_dot -%}
+                  <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count>
+                {%- endunless -%}
               </span>
               <span class="sr-only">{{ section.settings.cart_text }}</span>
             {%- else -%}
               <span class="sr-only">{{ 'header.general.cart' | t }}</span>
               {%- render 'icon' with 'cart', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+              {%- unless section.settings.show_cart_count_as_dot -%}
+                <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count>
+              {%- endunless -%}
             {%- endif -%}
           </a>
 
-          <cart-count class="{% if section.settings.show_cart_count_as_dot %}header__active-dot{% else %}header__cart-count{% endif %}" {%- if cart.empty? and section.settings.show_cart_count_as_dot -%}hidden{% endif %} {%- unless section.settings.show_cart_count_as_dot -%}aria-label="{{ 'cart.general.item_count' | t: count: cart.item_count | escape }}"{%- endunless -%}>
-            <span class="{% if section.settings.show_cart_count_as_dot %}sr-only{% endif %}">{% if section.settings.show_cart_count_as_dot %}{{ 'cart.general.item_count' | t: count: cart.item_count }}{% else %}{{ cart.item_count }}{% endif %}</span>
-          </cart-count>
+          {%- if section.settings.show_cart_count_as_dot -%}
+            <cart-count class="header__active-dot" {%- if cart.empty? -%}hidden{% endif %}>
+              <span class="sr-only">{{ 'cart.general.item_count' | t: count: cart.item_count }}</span>
+            </cart-count>
+          {%- endif -%}
         </li>
 
         {%- if section.settings.mobile_layout == 'logo_left_navigation_right' -%}
