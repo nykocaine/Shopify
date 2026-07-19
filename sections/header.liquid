@@ -34,6 +34,8 @@
 
     --header-transparent-header-text-color: {{ section.settings.transparent_header_text_color.rgb }};
     --header-non-transparent-text-color: {{ section.settings.color_scheme.settings.text_color.rgb }};
+    --header-menu-gap: {{ section.settings.menu_items_spacing }}px;
+    --header-icons-gap: {{ section.settings.icons_spacing }}px;
   }
 
   @media screen and (min-width: 1000px) {
@@ -588,6 +590,30 @@
         }
       ],
       "default": "hover"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.header.spacing_category"
+    },
+    {
+      "type": "range",
+      "id": "menu_items_spacing",
+      "label": "t:sections.header.menu_items_spacing",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "icons_spacing",
+      "label": "t:sections.header.icons_spacing",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 16
     },
     {
       "type": "range",
