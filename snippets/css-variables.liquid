@@ -310,7 +310,9 @@ note that this may have impact on different places.
       --has-filled-background: {% if color_scheme.settings.background_gradient != blank or color_scheme.settings.background != 'rgba(0,0,0,0)' %}1{% else %}0{% endif %};
       --text-color: {{ color_scheme.settings.text_color.rgb }};
 
-      {%- if color_scheme.settings.background_gradient != blank -%}
+      {%- if settings.global_border_color != blank and settings.global_border_color != 'rgba(0,0,0,0)' -%}
+        --border-color: {{ settings.global_border_color.rgb }};
+      {%- elsif color_scheme.settings.background_gradient != blank -%}
         --border-color: {{ color_scheme.settings.text_color.rgb }} / 0.1;
       {%- elsif color_scheme.settings.background == 'rgba(0,0,0,0)' -%}
         --border-color: {{ color_scheme.settings.text_color.rgb }} / 0.6;

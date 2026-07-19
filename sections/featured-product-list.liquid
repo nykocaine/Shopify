@@ -98,60 +98,7 @@
                 {%- continue -%}
               {%- endif -%}
 
-              {%- capture promo_content -%}
-                {%- if block.settings.heading != blank or block.settings.content != blank or block.settings.subheading != blank -%}
-                  <div class="{{ block.settings.content_position }}">
-                    <div class="prose prose-justify-{{ block.settings.content_position | split: '-' | last }}">
-                      {%- if block.settings.subheading != blank -%}
-                        {%- render 'subheading', content: block.settings.subheading -%}
-                      {%- endif -%}
-
-                      {%- if block.settings.heading != blank -%}
-                        {%- render 'heading', content: block.settings.heading, style: block.settings.heading_size -%}
-                      {%- endif -%}
-
-                      {%- if block.settings.content != blank -%}
-                        <div class="max-w-xs">
-                          {{- block.settings.content -}}
-                        </div>
-                      {%- endif -%}
-
-                      {%- if block.settings.button_text -%}
-                        {%- render 'button',
-                            content: block.settings.button_text,
-                            href: block.settings.url,
-                            style: block.settings.style,
-                            external: block.settings.open_in_new_tab
-                        -%}
-                      {%- endif -%}
-                    </div>
-                  </div>
-                {%- endif -%}
-              {%- endcapture -%}
-
-              {%- if block.settings.image != blank -%}
-                <div class="product-list__promo md-max:hidden color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {% if settings.stagger_products %}reveal-on-scroll="true"{% endif %} style="--product-list-promo-row-span: 1; --product-list-promo-column-span: 1; border-radius: {{ section.settings.product_card_border_radius }}px; overflow: hidden;" {{ block.shopify_attributes }}>
-                  <div class="content-box min-h-full">
-                    <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }}">
-                      {%- render 'media', media: block.settings.image -%}
-                    </div>
-
-                    {{- promo_content -}}
-                  </div>
-                </div>
-              {%- endif -%}
-
-              {%- if block.settings.mobile_image != blank -%}
-                <div class="product-list__promo md:hidden color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {% if settings.stagger_products %}reveal-on-scroll="true"{% endif %} style="--product-list-promo-row-span: 1; --product-list-promo-column-span: 1; border-radius: {{ section.settings.product_card_border_radius }}px; overflow: hidden;" {{ block.shopify_attributes }}>
-                  <div class="content-box min-h-full">
-                    <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }}">
-                      {%- render 'media', media: block.settings.mobile_image -%}
-                    </div>
-
-                    {{- promo_content -}}
-                  </div>
-                </div>
-              {%- endif -%}
+              {%- render 'featured-product-list-promo', block: block, section: section -%}
             {%- endfor -%}
 
             {%- render 'product-card', product: product, reveal: true, sizes: sizes, position: forloop.index -%}
@@ -159,6 +106,18 @@
             {%- for i in (1..4) -%}
               {%- render 'product-card-placeholder', loop_index: i -%}
             {%- endfor -%}
+          {%- endfor -%}
+
+          {%- comment -%}
+          A block whose position is beyond the total number of products has no matching product to be inserted
+          before, so it would never render. We treat any such block as "show at the end" instead.
+          {%- endcomment -%}
+          {%- for block in section.blocks -%}
+            {%- if block.settings.position <= section.settings.product_list.size -%}
+              {%- continue -%}
+            {%- endif -%}
+
+            {%- render 'featured-product-list-promo', block: block, section: section -%}
           {%- endfor -%}
         </product-list>
 
