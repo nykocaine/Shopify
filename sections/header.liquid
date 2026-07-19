@@ -330,13 +330,14 @@
         <li class="header__cart-link relative">
           <a href="{{ routes.cart_url }}" class="block tap-area" {% if settings.cart_type != 'page' and request.page_type != 'cart' %}aria-controls="cart-drawer"{% endif %} data-no-instant>
             {%- if section.settings.show_icons_text -%}
-              <span class="md-max:hidden">{{ section.settings.cart_text | upcase }}{% unless section.settings.show_cart_count_as_dot %} <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count>{% endunless %}</span>
-              <span class="md:hidden">
-                {%- render 'icon' with 'cart', mobile_width: 16, width: section.settings.desktop_icon_size -%}
-                {%- unless section.settings.show_cart_count_as_dot -%}
-                  <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count>
-                {%- endunless -%}
-              </span>
+              {%- if section.settings.show_cart_count_as_dot -%}
+                <span class="md-max:hidden">{{ section.settings.cart_text | upcase }}</span>
+                <span class="md:hidden">
+                  {%- render 'icon' with 'cart', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+                </span>
+              {%- else -%}
+                <span>{{ section.settings.cart_text | upcase }} <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count></span>
+              {%- endif -%}
               <span class="sr-only">{{ section.settings.cart_text }}</span>
             {%- else -%}
               <span class="sr-only">{{ 'header.general.cart' | t }}</span>
