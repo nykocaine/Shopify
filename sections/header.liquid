@@ -291,7 +291,7 @@
             <shopify-account menu="{{ section.settings.customer_account_menu }}">
               <div slot="signed-out-avatar" class="tap-area">
                 {%- if section.settings.show_icons_text -%}
-                  <span class="md-max:hidden">{{ section.settings.account_text | upcase }}</span>
+                  <span class="subheading md-max:hidden">{{ section.settings.account_text | upcase }}</span>
                   <span class="md:hidden">
                     {%- render 'icon' with 'account', mobile_width: 16, width: section.settings.desktop_icon_size -%}
                   </span>
@@ -317,7 +317,7 @@
         <li class="header__search-link {% if section.settings.mobile_layout == 'logo_center_navigation_split' %}md-max:hidden{% endif %}">
           <a href="{{ routes.search_url }}" class="block tap-area" aria-controls="search-drawer">
             {%- if section.settings.show_icons_text -%}
-              <span class="md-max:hidden">{{ section.settings.search_text | upcase }}</span>
+              <span class="subheading md-max:hidden">{{ section.settings.search_text | upcase }}</span>
                <span class="md:hidden">
                 {%- render 'icon' with 'search', mobile_width: 16, width: section.settings.desktop_icon_size -%}
               </span>
@@ -333,12 +333,12 @@
           <a href="{{ routes.cart_url }}" class="block tap-area" {% if settings.cart_type != 'page' and request.page_type != 'cart' %}aria-controls="cart-drawer"{% endif %} data-no-instant>
             {%- if section.settings.show_icons_text -%}
               {%- if section.settings.show_cart_count_as_dot -%}
-                <span class="md-max:hidden">{{ section.settings.cart_text | upcase }}</span>
+                <span class="subheading md-max:hidden">{{ section.settings.cart_text | upcase }}</span>
                 <span class="md:hidden">
                   {%- render 'icon' with 'cart', mobile_width: 16, width: section.settings.desktop_icon_size -%}
                 </span>
               {%- else -%}
-                <span>{{ section.settings.cart_text | upcase }} <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count></span>
+                <span class="subheading">{{ section.settings.cart_text | upcase }} <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count></span>
               {%- endif -%}
               <span class="sr-only">{{ section.settings.cart_text }}</span>
             {%- else -%}
