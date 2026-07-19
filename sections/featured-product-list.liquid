@@ -3,6 +3,11 @@
     align-items: stretch;
   }
 
+  #shopify-section-{{ section.id }} .featured-product-list__container--full-width {
+    margin-inline: 0;
+    overflow: hidden;
+  }
+
   #shopify-section-{{ section.id }} .product-list__promo {
     grid-column: span 1;
   }
@@ -68,7 +73,7 @@
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
-  <div class="container">
+  <div class="container {% if section.settings.remove_side_spacing %}featured-product-list__container--full-width{% endif %}">
     <div class="section-spacing section-spacing--tight">
         {%- assign product_list_id = 'product-list-' | append: section.id -%}
 
@@ -181,6 +186,13 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_side_spacing",
+      "label": "t:sections.featured_product_list.remove_side_spacing",
+      "info": "t:sections.featured_product_list.remove_side_spacing_info",
+      "default": false
     },
     {
       "type": "product_list",
