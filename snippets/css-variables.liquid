@@ -310,15 +310,17 @@ note that this may have impact on different places.
       --has-filled-background: {% if color_scheme.settings.background_gradient != blank or color_scheme.settings.background != 'rgba(0,0,0,0)' %}1{% else %}0{% endif %};
       --text-color: {{ color_scheme.settings.text_color.rgb }};
 
-      {%- if color_scheme.settings.border_color != blank and color_scheme.settings.border_color != 'rgba(0,0,0,0)' -%}
-        --border-color: {{ color_scheme.settings.border_color.rgb }};
-      {%- elsif color_scheme.settings.background_gradient != blank -%}
+      {%- if color_scheme.settings.background_gradient != blank -%}
         --border-color: {{ color_scheme.settings.text_color.rgb }} / 0.1;
       {%- elsif color_scheme.settings.background == 'rgba(0,0,0,0)' -%}
         --border-color: {{ color_scheme.settings.text_color.rgb }} / 0.6;
       {%- else -%}
         {%- assign border_color = color_scheme.settings.text_color | color_mix: color_scheme.settings.background, 10 -%}
         --border-color: {{ border_color.rgb }};
+      {%- endif -%}
+
+      {%- if color_scheme.settings.border_color != blank and color_scheme.settings.border_color != 'rgba(0,0,0,0)' -%}
+        --button-scheme-border-color: {{ color_scheme.settings.border_color.rgb }};
       {%- endif -%}
 
       /* Subheading colors */
