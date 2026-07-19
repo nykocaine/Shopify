@@ -3344,10 +3344,24 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
     transform: scale(1.05);
   }
 
+  /*
+  The figure itself never leaves normal flow on hover (its grid-area / position stay untouched),
+  because product-card.liquid pins it to a fixed aspect-ratio. That's what keeps its parent grid
+  row from collapsing when this card is the only one occupying that row (eg. a lone card wrapped
+  onto its own trailing row) - removing the row's only height source on hover is what used to
+  shrink the card and cause a hover/unhover flicker loop. Only the figure's *children* escape to
+  fill the whole card, by switching the figure to `position: static` so they resolve their
+  containing block against .product-card (which spans the full card) instead of the figure.
+  */
   .product-list .product-card__figure:hover {
+    position: static;
+  }
+
+  .product-list .product-card__figure:hover .product-card__media {
     position: absolute;
     inset: 0;
-    z-index: 2;
+    height: 100%;
+    width: 100%;
   }
 
   .product-list .product-card__info {
@@ -3373,11 +3387,6 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 
   .product-list .product-card__figure:hover .badge-list:not(:has(.badge--custom)) {
     display: none;
-  }
-
-  .product-list .product-card__figure:hover .product-card__media {
-    height: 100%;
-    width: 100%;
   }
 
   .product-list .product-card__figure:hover .product-card__image--primary,

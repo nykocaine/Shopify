@@ -120,6 +120,26 @@ based on your desired layout (and remove most of the settings associated), and t
       assign badges_alignment = settings.product_card_badges_placement | remove: 'place-self-' | split: '-' | first
     endif
   endif
+
+  # Reserves the figure's height with a fixed aspect-ratio so the grid row it belongs to never
+  # depends on the image staying in normal flow. This is what lets the hover "expand to fill card"
+  # effect (see .product-card__figure:hover in theme.css) work without collapsing/flickering when
+  # this card is the only one occupying its row (eg. a lone card wrapped onto its own last row).
+  # Skipped for highlighted cards, since those rely on their own taller grid-row span instead.
+  unless highlight_card
+    case settings.product_card_image_aspect_ratio
+      when 'natural'
+        assign figure_aspect_ratio = product.featured_media.aspect_ratio | default: 1
+      when 'short', 'short_crop'
+        assign figure_aspect_ratio = '4 / 3'
+      when 'portrait', 'portrait_crop'
+        assign figure_aspect_ratio = '4 / 5'
+      when 'tall', 'tall_crop'
+        assign figure_aspect_ratio = '2 / 3'
+      else
+        assign figure_aspect_ratio = '1'
+    endcase
+  endunless
 -%}
 
 <product-card class="{{ product_card_classes }} color-scheme color-scheme--{{ color_scheme.id }}" {% if reveal and settings.stagger_products %}reveal-on-scroll="true"{% endif %} handle="{{ product.handle | escape }}" style="border-radius: var(--product-card-border-radius, 0); overflow: hidden;">
@@ -129,7 +149,7 @@ based on your desired layout (and remove most of the settings associated), and t
   --------------------------------------------------------------------------------------------------------------------
   {%- endcomment -%}
 
-  <div class="product-card__figure">
+  <div class="product-card__figure" {% if figure_aspect_ratio %}style="aspect-ratio: {{ figure_aspect_ratio }};"{% endif %}>
     {%- if show_badges and show_badges_along_info != true -%}
       {%- render 'product-badges', 
         product: product,
