@@ -29,6 +29,20 @@
     border-radius: var(--product-card-border-radius, 0);
   }
 
+  #shopify-section-{{ section.id }} .product-list__intro-block--mobile-only {
+    display: none;
+  }
+
+  @media screen and (max-width: 999px) {
+    #shopify-section-{{ section.id }} .product-list__intro-block--desktop-only {
+      display: none;
+    }
+
+    #shopify-section-{{ section.id }} .product-list__intro-block--mobile-only {
+      display: flex;
+    }
+  }
+
   #shopify-section-{{ section.id }} {
     --product-list-column-count: {{ section.settings.products_per_row_mobile | times: 1 }};
   }
@@ -91,30 +105,49 @@
         -%}
 
         <product-list id="{{ product_list_id }}" cell-selector=".product-card" class="product-list {{ product_list_class }}" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;" data-show-progress-bar-mobile="{{ section.settings.show_progress_bar_mobile }}" data-show-progress-bar-desktop="{{ section.settings.show_progress_bar_desktop }}">
+          {%- capture intro_block_content -%}
+            <div class="place-self-center">
+              <div class="prose prose-justify-center">
+                {%- if section.settings.intro_title != blank -%}
+                  <p class="{{ section.settings.intro_title_tag }}">{{ section.settings.intro_title }}</p>
+                {%- endif -%}
+
+                {{- section.settings.intro_content -}}
+
+                {%- if section.settings.intro_button_text != blank -%}
+                  {%- render 'button', content: section.settings.intro_button_text, href: section.settings.intro_button_link, style: section.settings.intro_button_style -%}
+                {%- endif -%}
+              </div>
+            </div>
+          {%- endcapture -%}
+
           {%- if section.settings.intro_image != blank -%}
-            <div class="product-list__intro-block color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+            <div class="product-list__intro-block product-list__intro-block--desktop-only color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
               <div class="@container/content-box h-full color-scheme color-scheme--{{ section.settings.intro_color_scheme.id }}">
                 <div class="content-box">
                   <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.intro_image_overlay.rgba }}">
-                    {{- section.settings.intro_image | image_url: width: section.settings.intro_image.width | image_tag: sizes: '(max-width: 699px) 100vw, 25vw', widths: '200,300,400,600,800,1000,1200,1400,1600,1800', class: 'size-full' -}}
+                    {{- section.settings.intro_image | image_url: width: section.settings.intro_image.width | image_tag: sizes: '25vw', widths: '200,300,400,600,800,1000,1200,1400,1600,1800', class: 'size-full' -}}
                   </div>
 
-                  <div class="place-self-center">
-                    <div class="prose prose-justify-center">
-                      {%- if section.settings.intro_title != blank -%}
-                        <p class="{{ section.settings.intro_title_tag }}">{{ section.settings.intro_title }}</p>
-                      {%- endif -%}
-
-                      {{- section.settings.intro_content -}}
-
-                      {%- if section.settings.intro_button_text != blank -%}
-                        {%- render 'button', content: section.settings.intro_button_text, href: section.settings.intro_button_link, style: section.settings.intro_button_style -%}
-                      {%- endif -%}
-                    </div>
-                  </div>
+                  {{- intro_block_content -}}
                 </div>
               </div>
             </div>
+          {%- endif -%}
+
+          {%- if section.settings.intro_image_mobile != blank -%}
+            <div class="product-list__intro-block product-list__intro-block--mobile-only color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+              <div class="@container/content-box h-full color-scheme color-scheme--{{ section.settings.intro_color_scheme.id }}">
+                <div class="content-box">
+                  <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.intro_image_overlay.rgba }}">
+                    {{- section.settings.intro_image_mobile | image_url: width: section.settings.intro_image_mobile.width | image_tag: sizes: '100vw', widths: '200,300,400,600,800,1000,1200,1400,1600,1800', class: 'size-full' -}}
+                  </div>
+
+                  {{- intro_block_content -}}
+                </div>
+              </div>
+            </div>
+          {%- endif -%}
           {%- endif -%}
 
           {%- capture sizes -%}(max-width: 699px) calc(100vw / {{ section.settings.products_per_row_mobile }} - 40px), (max-width: 999px) calc(100vw / {{ 3 | at_most: section.settings.products_per_row_desktop }} - 64px), calc((100vw - 96px) / {{ section.settings.products_per_row_desktop }}){%- endcapture -%}
@@ -267,8 +300,14 @@
     {
       "type": "image_picker",
       "id": "intro_image",
-      "label": "t:global.image.image",
+      "label": "t:sections.featured_product_list.intro_image_desktop",
       "info": "t:sections.featured_product_list.intro_image_info"
+    },
+    {
+      "type": "image_picker",
+      "id": "intro_image_mobile",
+      "label": "t:sections.featured_product_list.intro_image_mobile",
+      "info": "t:sections.featured_product_list.intro_image_mobile_info"
     },
     {
       "type": "color",
