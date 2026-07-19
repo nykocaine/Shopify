@@ -43,6 +43,14 @@ This component is used to show the buy buttons
           else
             assign button_content = 'product.general.add_to_cart_button' | t
           endif
+
+          if settings.currency_code_enabled
+            assign button_price = product.selected_or_first_available_variant.price | money_with_currency
+          else
+            assign button_price = product.selected_or_first_available_variant.price | money
+          endif
+
+          assign button_content = button_content | append: ' · ' | append: button_price
         endif
       %}
 
