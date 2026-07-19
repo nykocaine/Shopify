@@ -213,7 +213,7 @@ based on your desired layout (and remove most of the settings associated), and t
                   assign button_price = product.selected_or_first_available_variant.price | money
                 endif
               -%}
-              {%- render 'button', content: button_label | append: ' · ' | append: button_price, type: 'submit', stretch: true, background: settings.default_color_scheme.settings.background, text_color: settings.default_color_scheme.settings.text_color, class: 'touch:hidden' -%}
+              {%- render 'button', content: button_label | append: ' - ' | append: button_price, type: 'submit', stretch: true, background: settings.default_color_scheme.settings.background, text_color: settings.default_color_scheme.settings.text_color, class: 'touch:hidden' -%}
 
               <button type="submit" class="block tap-area no-touch:hidden">
                 <span class="sr-only">{{ button_label }}</span>
@@ -237,7 +237,7 @@ based on your desired layout (and remove most of the settings associated), and t
                 assign button_price = product.price_min | money
               endif
             -%}
-            {%- render 'button', content: button_label | append: ' · ' | append: button_price, aria_controls: quick_buy_id, stretch: true, background: settings.default_color_scheme.settings.background, text_color: settings.default_color_scheme.settings.text_color, class: 'touch:hidden' -%}
+            {%- render 'button', content: button_label | append: ' - ' | append: button_price, aria_controls: quick_buy_id, stretch: true, background: settings.default_color_scheme.settings.background, text_color: settings.default_color_scheme.settings.text_color, class: 'touch:hidden' -%}
           {%- endif -%}
 
           <button type="button" aria-controls="{{ quick_buy_id }}" class="block tap-area no-touch:hidden">
