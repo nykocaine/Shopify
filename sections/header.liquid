@@ -341,8 +341,8 @@
             {%- endif -%}
           </a>
 
-          <cart-count class="header__active-dot" {%- if cart.empty? -%}hidden{% endif %}>
-            <span class="sr-only">{{ 'cart.general.item_count' | t: count: cart.item_count }}</span>
+          <cart-count class="{% if section.settings.show_cart_count_as_dot %}header__active-dot{% else %}header__cart-count{% endif %}" {%- if cart.empty? and section.settings.show_cart_count_as_dot -%}hidden{% endif %} {%- unless section.settings.show_cart_count_as_dot -%}aria-label="{{ 'cart.general.item_count' | t: count: cart.item_count | escape }}"{%- endunless -%}>
+            <span class="{% if section.settings.show_cart_count_as_dot %}sr-only{% endif %}">{% if section.settings.show_cart_count_as_dot %}{{ 'cart.general.item_count' | t: count: cart.item_count }}{% else %}{{ cart.item_count }}{% endif %}</span>
           </cart-count>
         </li>
 
@@ -613,6 +613,13 @@
       "id": "cart_text",
       "label": "Cart text",
       "default": "Cart"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cart_count_as_dot",
+      "label": "t:sections.header.show_cart_count_as_dot",
+      "info": "t:sections.header.show_cart_count_as_dot_info",
+      "default": true
     },
     {
       "type": "checkbox",
