@@ -350,6 +350,13 @@ note that this may have impact on different places.
       --button-background-primary: {{ color_scheme.settings.primary_button_background.rgb }};
       --button-text-primary: {{ color_scheme.settings.primary_button_text_color.rgb }};
 
+      {%- if color_scheme.settings.primary_button_hover_background != blank -%}
+        {%- assign button_hover_background = color_scheme.settings.primary_button_hover_background -%}
+      {%- else -%}
+        {%- assign button_hover_background = color_scheme.settings.primary_button_background | color_darken: 12 -%}
+      {%- endif -%}
+      --button-hover-background: {{ button_hover_background.rgb }};
+
       /* Form inputs */
       --input-background: {% if color_scheme.settings.input_background == 'rgba(0,0,0,0)' %}0 0 0 / 0{% else %}{{ color_scheme.settings.input_background.rgb }}{% endif %};
       --input-text-color: {{ color_scheme.settings.input_text_color.rgb }};
