@@ -32,20 +32,25 @@
     --product-list-column-count: {{ section.settings.products_per_row_mobile | times: 1 }};
   }
 
-  .progress-bar-container {
+  #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
     margin-top: 2rem;
-    position: relative;
   }
 
-  .progress-bar {
-    height: 100%;
-    position: absolute;
-    inset: 0;
+  #shopify-section-{{ section.id }} .featured-product-list__scroll-controls .progress-bar {
+    flex: 1;
+  }
+
+  #shopify-section-{{ section.id }} .featured-product-list__scroll-controls .h-stack {
+    flex-shrink: 0;
+  }
+
+  #shopify-section-{{ section.id }} .featured-product-list__scroll-controls carousel-prev-button .icon-chevron-right {
+    transform: scaleX(-1);
   }
 
   {%- unless section.settings.show_progress_bar_mobile -%}
     @media screen and (max-width: 999px) {
-      .progress-bar-container {
+      #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
         display: none;
       }
     }
@@ -53,7 +58,7 @@
 
   {%- unless section.settings.show_progress_bar_desktop -%}
     @media screen and (min-width: 1000px) {
-      .progress-bar-container {
+      #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
         display: none;
       }
     }
@@ -89,7 +94,7 @@
           endif
         -%}
 
-        <product-list id="{{ product_list_id }}" cell-selector=".product-card" class="product-list {{ product_list_class }}" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;" data-show-progress-bar-mobile="{{ section.settings.show_progress_bar_mobile }}" data-show-progress-bar-desktop="{{ section.settings.show_progress_bar_desktop }}">
+        <product-list id="{{ product_list_id }}" cell-selector=".product-card" class="product-list {{ product_list_class }}" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;">
           {%- capture sizes -%}(max-width: 699px) calc(100vw / {{ section.settings.products_per_row_mobile }} - 40px), (max-width: 999px) calc(100vw / {{ 3 | at_most: section.settings.products_per_row_desktop }} - 64px), calc((100vw - 96px) / {{ section.settings.products_per_row_desktop }}){%- endcapture -%}
 
           {%- for product in section.settings.product_list -%}
@@ -122,8 +127,24 @@
         </product-list>
 
         {%- if section.settings.show_progress_bar_mobile or section.settings.show_progress_bar_desktop -%}
-          <div class="progress-bar-container v-stack gap-4" style="background-color: {{ section.settings.progress_bar_bg_color }}; height: {{ section.settings.progress_bar_height }}px;">
-            <div class="progress-bar" style="background-color: {{ section.settings.progress_bar_color }}; width: {{ section.settings.progress_bar_initial_width }}%;"></div>
+          <div class="featured-product-list__scroll-controls h-stack gap-4">
+            <progress-bar track-scroll-target="{{ product_list_id }}" class="progress-bar"></progress-bar>
+
+            <div class="h-stack gap-2">
+              <carousel-prev-button aria-controls="{{ product_list_id }}">
+                <button disabled class="circle-button circle-button--outline">
+                  <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
+                  {%- render 'icon' with 'chevron-right', width: 8 -%}
+                </button>
+              </carousel-prev-button>
+
+              <carousel-next-button aria-controls="{{ product_list_id }}">
+                <button class="circle-button circle-button--outline">
+                  <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
+                  {%- render 'icon' with 'chevron-right', width: 8 -%}
+                </button>
+              </carousel-next-button>
+            </div>
           </div>
         {%- endif -%}
     </div>
@@ -172,51 +193,19 @@
     },
     {
       "type": "header",
-      "content": "Progress Bar"
+      "content": "Scroll controls"
     },
     {
       "type": "checkbox",
       "id": "show_progress_bar_mobile",
-      "label": "Show progress bar on mobile",
+      "label": "Show scroll controls on mobile",
       "default": true
     },
     {
       "type": "checkbox",
       "id": "show_progress_bar_desktop",
-      "label": "Show progress bar on desktop",
+      "label": "Show scroll controls on desktop",
       "default": false
-    },
-    {
-      "type": "color",
-      "id": "progress_bar_bg_color",
-      "label": "Progress Bar Background Color",
-      "default": "#e5e5e5"
-    },
-    {
-      "type": "color",
-      "id": "progress_bar_color",
-      "label": "Progress Bar Color",
-      "default": "#000000"
-    },
-    {
-      "type": "range",
-      "id": "progress_bar_height",
-      "min": 1,
-      "max": 10,
-      "step": 1,
-      "unit": "px",
-      "label": "Progress Bar Height",
-      "default": 2
-    },
-    {
-      "type": "range",
-      "id": "progress_bar_initial_width",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "%",
-      "label": "Ancho inicial de la barra de progreso",
-      "default": 10
     },
     {
       "type": "select",
