@@ -19,6 +19,12 @@
       #shopify-section-{{ section.id }} {
         --scrolling-content-gap: 2.5rem;
       }
+
+      {%- if section.settings.full_width -%}
+        #shopify-section-{{ section.id }} .announcement-bar {
+          padding-inline: var(--container-gutter);
+        }
+      {%- endif -%}
     </style>
 
     <height-observer variable="announcement-bar">
