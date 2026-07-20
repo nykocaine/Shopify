@@ -1,11 +1,12 @@
 {%- if section.blocks.size > 0 -%}
-  {%- if section.settings.transition_type != 'fade' -%}
-    <style>
-      #shopify-section-{{ section.id }} {
+  <style>
+    #shopify-section-{{ section.id }} {
+      padding-block-start: var(--container-gutter);
+      {%- if section.settings.transition_type != 'fade' -%}
         --slideshow-background: {{ section.settings.background.rgb }};
-      }
-    </style>
-  {%- endif -%}
+      {%- endif -%}
+    }
+  </style>
 
   <div class="slideshow-wrapper {% unless section.settings.full_width %}container{% endunless %}">
     <slideshow-carousel id="slideshow-{{ section.id }}" allow-swipe cell-selector=".slideshow__slide" {% if section.settings.allow_transparent_header %}allow-transparent-header{% endif %} class="slideshow" transition="{{ section.settings.transition_type }}" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}" {% if section.settings.pause_auto_rotate_on_hover %}pause-on-hover{% endif %}{% endif %} style="border-radius: {{ section.settings.border_radius }}px;" role="region">
