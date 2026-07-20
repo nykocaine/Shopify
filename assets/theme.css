@@ -5561,12 +5561,14 @@ product-rerender {
   padding: 0;
 }
 
-.drawer--cart::part(content) {
-  margin: var(--container-gutter);
-  height: calc(100% - (var(--container-gutter) * 2));
-  border-radius: var(--drawer-border-radius);
-  overflow: hidden;
-  -webkit-mask-image: -webkit-radial-gradient(white, black);
+@media screen and (max-width: 999px) {
+  .drawer--cart::part(content) {
+    margin: var(--container-gutter);
+    height: calc(100% - (var(--container-gutter) * 2));
+    border-radius: var(--drawer-border-radius);
+    overflow: hidden;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+  }
 }
 
 .drawer--cart .free-shipping-bar {
@@ -5582,9 +5584,8 @@ product-rerender {
     position: absolute;
     inset: 0;
     margin: auto !important;
-    width: min(90vw, 26rem);
-    height: auto;
-    max-height: min(85vh, 40rem);
+    width: min(calc(100% - (var(--container-gutter) * 2)), 26rem);
+    height: min(calc(100% - (var(--container-gutter) * 2)), 40rem);
     background: var(--drawer-mobile-box-color, rgb(var(--background)));
     background-image: none;
     border-radius: var(--drawer-border-radius, 1.25rem);
@@ -6926,6 +6927,10 @@ shopify-account::part(signed-out-avatar) {
   }
 }
 
+.menu-drawer__close-button button {
+  display: none;
+}
+
 @media screen and (max-width: 999px) {
   .drawer-mobile-centered .menu-drawer::part(overlay) {
     background: var(--drawer-mobile-overlay-color, rgb(var(--page-overlay)));
@@ -6936,12 +6941,26 @@ shopify-account::part(signed-out-avatar) {
     position: fixed;
     inset: 0;
     margin: auto;
-    width: min(90vw, 26rem);
+    width: min(calc(100% - (var(--container-gutter) * 2)), 26rem);
     max-width: none;
-    height: auto;
-    max-height: min(85vh, 40rem);
+    height: min(calc(100% - (var(--container-gutter) * 2)), 40rem);
     border-block-start: none;
     background: var(--drawer-mobile-box-color, rgb(var(--background)));
+  }
+
+  .drawer-mobile-centered .menu-drawer__close-button button {
+    color: currentColor;
+    cursor: pointer;
+    background: none;
+    border: none;
+    place-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: grid;
+    position: absolute;
+    inset-block-start: 1rem;
+    inset-inline-end: 1rem;
+    z-index: 1;
   }
 }
 

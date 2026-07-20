@@ -109,12 +109,18 @@ note that this may have impact on different places.
     --transform-origin-end: right;
 
     /* Button animation */
-    --button-marquee-border-color: {% if settings.button_marquee_border_color != blank %}rgb({{ settings.button_marquee_border_color.rgb }}){% endif %};
+    {%- if settings.button_marquee_border_color != blank -%}
+      --button-marquee-border-color: rgb({{ settings.button_marquee_border_color.rgb }});
+    {%- endif -%}
 
     /* Drawers */
     --drawer-border-radius: {{ settings.drawer_border_radius }}px;
-    --drawer-mobile-overlay-color: {% if settings.drawer_mobile_overlay_color != blank %}rgb({{ settings.drawer_mobile_overlay_color.rgb }}){% endif %};
-    --drawer-mobile-box-color: {% if settings.drawer_mobile_box_color != blank %}rgb({{ settings.drawer_mobile_box_color.rgb }}){% endif %};
+    {%- if settings.drawer_mobile_overlay_color != blank -%}
+      --drawer-mobile-overlay-color: rgb({{ settings.drawer_mobile_overlay_color.rgb }});
+    {%- endif -%}
+    {%- if settings.drawer_mobile_box_color != blank -%}
+      --drawer-mobile-box-color: rgb({{ settings.drawer_mobile_box_color.rgb }});
+    {%- endif -%}
 
     /* Badges */
     --badge-font-size: {{ settings.badge_font_size_mobile | divided_by: 16.0 }}rem;
