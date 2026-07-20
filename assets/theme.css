@@ -5573,6 +5573,24 @@ product-rerender {
   margin-block-start: -.25rem;
 }
 
+@media screen and (max-width: 999px) {
+  .drawer-mobile-centered :is(.drawer--cart, .drawer--search)::part(overlay) {
+    background: var(--drawer-mobile-overlay-color, rgb(var(--page-overlay)));
+  }
+
+  .drawer-mobile-centered :is(.drawer--cart, .drawer--search)::part(content) {
+    position: absolute;
+    inset: 0;
+    margin: auto !important;
+    width: min(90vw, 26rem);
+    height: auto;
+    max-height: min(85vh, 40rem);
+    background: var(--drawer-mobile-box-color, rgb(var(--background)));
+    background-image: none;
+    border-radius: var(--drawer-border-radius, 1.25rem);
+  }
+}
+
 .drawer--cart .tab-pills {
   grid-template-rows: auto minmax(0, 1fr);
 }
@@ -6905,6 +6923,25 @@ shopify-account::part(signed-out-avatar) {
 @supports (height: 100dvh) {
   .menu-drawer::part(content) {
     height: calc(100dvh - var(--menu-offset-top, 0px) - var(--container-gutter));
+  }
+}
+
+@media screen and (max-width: 999px) {
+  .drawer-mobile-centered .menu-drawer::part(overlay) {
+    background: var(--drawer-mobile-overlay-color, rgb(var(--page-overlay)));
+    inset-block-start: 0;
+  }
+
+  .drawer-mobile-centered .menu-drawer::part(content) {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(90vw, 26rem);
+    max-width: none;
+    height: auto;
+    max-height: min(85vh, 40rem);
+    border-block-start: none;
+    background: var(--drawer-mobile-box-color, rgb(var(--background)));
   }
 }
 
