@@ -7,13 +7,15 @@
     </style>
   {%- endif -%}
 
-  <slideshow-carousel id="slideshow-{{ section.id }}" allow-swipe cell-selector=".slideshow__slide" {% if section.settings.allow_transparent_header %}allow-transparent-header{% endif %} class="slideshow" transition="{{ section.settings.transition_type }}" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}" {% if section.settings.pause_auto_rotate_on_hover %}pause-on-hover{% endif %}{% endif %} role="region">
-    {%- content_for 'blocks' -%}
+  <div class="{% unless section.settings.full_width %}container{% endunless %}">
+    <slideshow-carousel id="slideshow-{{ section.id }}" allow-swipe cell-selector=".slideshow__slide" {% if section.settings.allow_transparent_header %}allow-transparent-header{% endif %} class="slideshow" transition="{{ section.settings.transition_type }}" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}" {% if section.settings.pause_auto_rotate_on_hover %}pause-on-hover{% endif %}{% endif %} style="border-radius: {{ section.settings.border_radius }}px;" role="region">
+      {%- content_for 'blocks' -%}
 
-    {%- if section.blocks.size > 1 -%}
-      {%- content_for 'block', type: '_slideshow-controls', id: 'slideshow-controls' -%}
-    {%- endif -%}
-  </slideshow-carousel>
+      {%- if section.blocks.size > 1 -%}
+        {%- content_for 'block', type: '_slideshow-controls', id: 'slideshow-controls' -%}
+      {%- endif -%}
+    </slideshow-carousel>
+  </div>
 {%- endif -%}
 
 {% schema %}
@@ -32,6 +34,23 @@
       "label": "t:global.section.allow_transparent_header",
       "info": "t:global.section.allow_transparent_header_info",
       "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full width",
+      "info": "When disabled, the slideshow uses the same side margins as the rest of the store.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0
     },
     {
       "type": "select",
