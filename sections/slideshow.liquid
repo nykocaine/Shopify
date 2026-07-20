@@ -7,7 +7,7 @@
     </style>
   {%- endif -%}
 
-  <div class="{% unless section.settings.full_width %}container{% endunless %}">
+  <div class="slideshow-wrapper {% unless section.settings.full_width %}container{% endunless %}">
     <slideshow-carousel id="slideshow-{{ section.id }}" allow-swipe cell-selector=".slideshow__slide" {% if section.settings.allow_transparent_header %}allow-transparent-header{% endif %} class="slideshow" transition="{{ section.settings.transition_type }}" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}" {% if section.settings.pause_auto_rotate_on_hover %}pause-on-hover{% endif %}{% endif %} style="border-radius: {{ section.settings.border_radius }}px;" role="region">
       {%- content_for 'blocks' -%}
 
