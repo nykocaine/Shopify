@@ -601,14 +601,14 @@ height-observer {
 
   .button:has(.button__content[marquee])::after {
     content: "";
-    inset: -1px;
+    inset: 0;
     border-radius: inherit;
     opacity: 0;
     background-image:
-      linear-gradient(90deg, currentColor 50%, transparent 0),
-      linear-gradient(90deg, currentColor 50%, transparent 0),
-      linear-gradient(0deg, currentColor 50%, transparent 0),
-      linear-gradient(0deg, currentColor 50%, transparent 0);
+      linear-gradient(90deg, var(--button-marquee-border-color, currentColor) 50%, transparent 0),
+      linear-gradient(90deg, var(--button-marquee-border-color, currentColor) 50%, transparent 0),
+      linear-gradient(0deg, var(--button-marquee-border-color, currentColor) 50%, transparent 0),
+      linear-gradient(0deg, var(--button-marquee-border-color, currentColor) 50%, transparent 0);
     background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
     background-size: 8px 1px, 8px 1px, 1px 8px, 1px 8px;
     background-position: 0 0, 0 100%, 0 0, 100% 0;
