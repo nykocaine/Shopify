@@ -24,7 +24,7 @@
     <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
       <height-observer variable="announcement-bar">
         {%- if section.settings.display_mode == 'marquee' -%}
-          <marquee-text speed="{{ section.settings.scrolling_speed }}" direction="{{ section.settings.scroll_direction }}" {% if section.settings.pause_on_hover %}pause-on-hover{% endif %} class="announcement-bar scrolling-content">
+          <marquee-text speed="{{ section.settings.scrolling_speed }}" direction="{{ section.settings.scroll_direction }}" {% if section.settings.pause_on_hover %}pause-on-hover{% endif %} class="announcement-bar scrolling-content" style="padding-block: {{ section.settings.vertical_padding }}px;">
             <div class="scrolling-content__item">
               {%- for block in section.blocks -%}
                 {%- if block.settings.text != blank -%}
@@ -38,7 +38,7 @@
         {%- else -%}
           {%- assign carousel_id = 'carousel-' | append: section.id -%}
 
-          <announcement-bar id="{{ carousel_id }}" allow-swipe cell-selector=".announcement-bar__message-list > *" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}"{% endif %} class="announcement-bar">
+          <announcement-bar id="{{ carousel_id }}" allow-swipe cell-selector=".announcement-bar__message-list > *" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}"{% endif %} class="announcement-bar" style="padding-block: {{ section.settings.vertical_padding }}px;">
             {%- if section.blocks.size > 1 and section.settings.hide_arrows == false -%}
               <carousel-prev-button aria-controls="{{ carousel_id }}">
                 <button type="button" class="tap-area">
@@ -92,6 +92,17 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "vertical_padding",
+      "min": 0,
+      "max": 15,
+      "step": 1,
+      "unit": "px",
+      "label": "t:sections.announcement_bar.vertical_padding",
+      "info": "t:sections.announcement_bar.vertical_padding_info",
+      "default": 11
     },
     {
       "type": "checkbox",
