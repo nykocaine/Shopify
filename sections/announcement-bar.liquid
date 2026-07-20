@@ -23,51 +23,53 @@
 
     <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
       <height-observer variable="announcement-bar">
-        {%- if section.settings.display_mode == 'marquee' -%}
-          <marquee-text speed="{{ section.settings.scrolling_speed }}" direction="{{ section.settings.scroll_direction }}" {% if section.settings.pause_on_hover %}pause-on-hover{% endif %} class="announcement-bar scrolling-content" style="padding-block: {{ section.settings.vertical_padding }}px;">
-            <div class="scrolling-content__item">
-              {%- for block in section.blocks -%}
-                {%- if block.settings.text != blank -%}
-                  <div class="scrolling-content__text prose" {{ block.shopify_attributes }}>
-                    <p>{{ block.settings.text }}</p>
-                  </div>
-                {%- endif -%}
-              {%- endfor -%}
-            </div>
-          </marquee-text>
-        {%- else -%}
-          {%- assign carousel_id = 'carousel-' | append: section.id -%}
+        <div class="{% unless section.settings.full_width %}container{% endunless %}">
+          {%- if section.settings.display_mode == 'marquee' -%}
+            <marquee-text speed="{{ section.settings.scrolling_speed }}" direction="{{ section.settings.scroll_direction }}" {% if section.settings.pause_on_hover %}pause-on-hover{% endif %} class="announcement-bar scrolling-content" style="padding-block: {{ section.settings.vertical_padding }}px; border-radius: {{ section.settings.border_radius }}px;">
+              <div class="scrolling-content__item">
+                {%- for block in section.blocks -%}
+                  {%- if block.settings.text != blank -%}
+                    <div class="scrolling-content__text prose" {{ block.shopify_attributes }}>
+                      <p>{{ block.settings.text }}</p>
+                    </div>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            </marquee-text>
+          {%- else -%}
+            {%- assign carousel_id = 'carousel-' | append: section.id -%}
 
-          <announcement-bar id="{{ carousel_id }}" allow-swipe cell-selector=".announcement-bar__message-list > *" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}"{% endif %} class="announcement-bar" style="padding-block: {{ section.settings.vertical_padding }}px;">
-            {%- if section.blocks.size > 1 and section.settings.hide_arrows == false -%}
-              <carousel-prev-button aria-controls="{{ carousel_id }}">
-                <button type="button" class="tap-area">
-                  <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
-                  {%- render 'icon' with 'arrow-left', direction_aware: true -%}
-                </button>
-              </carousel-prev-button>
-            {%- endif -%}
+            <announcement-bar id="{{ carousel_id }}" allow-swipe cell-selector=".announcement-bar__message-list > *" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}"{% endif %} class="announcement-bar" style="padding-block: {{ section.settings.vertical_padding }}px; border-radius: {{ section.settings.border_radius }}px;">
+              {%- if section.blocks.size > 1 and section.settings.hide_arrows == false -%}
+                <carousel-prev-button aria-controls="{{ carousel_id }}">
+                  <button type="button" class="tap-area">
+                    <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
+                    {%- render 'icon' with 'arrow-left', direction_aware: true -%}
+                  </button>
+                </carousel-prev-button>
+              {%- endif -%}
 
-            <div class="announcement-bar__message-list">
-              {%- for block in section.blocks -%}
-                {%- if block.settings.text != blank -%}
-                  <div class="{% if forloop.first %}is-selected{% endif %} prose prose-justify-center" {{ block.shopify_attributes }}>
-                    <p>{{ block.settings.text }}</p>
-                  </div>
-                {%- endif -%}
-              {%- endfor -%}
-            </div>
+              <div class="announcement-bar__message-list">
+                {%- for block in section.blocks -%}
+                  {%- if block.settings.text != blank -%}
+                    <div class="{% if forloop.first %}is-selected{% endif %} prose prose-justify-center" {{ block.shopify_attributes }}>
+                      <p>{{ block.settings.text }}</p>
+                    </div>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
 
-            {%- if section.blocks.size > 1 and section.settings.hide_arrows == false -%}
-              <carousel-next-button aria-controls="{{ carousel_id }}">
-                <button type="button" class="tap-area">
-                  <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
-                  {%- render 'icon' with 'arrow-right', direction_aware: true -%}
-                </button>
-              </carousel-next-button>
-            {%- endif -%}
-          </announcement-bar>
-        {%- endif -%}
+              {%- if section.blocks.size > 1 and section.settings.hide_arrows == false -%}
+                <carousel-next-button aria-controls="{{ carousel_id }}">
+                  <button type="button" class="tap-area">
+                    <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
+                    {%- render 'icon' with 'arrow-right', direction_aware: true -%}
+                  </button>
+                </carousel-next-button>
+              {%- endif -%}
+            </announcement-bar>
+          {%- endif -%}
+        </div>
       </height-observer>
     </div>
 
@@ -115,6 +117,23 @@
       "id": "show_on_homepage_only",
       "label": "t:sections.announcement_bar.show_on_homepage_only",
       "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full width",
+      "info": "When disabled, the announcement bar uses the same side margins as the rest of the store.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0
     },
     {
       "type": "header",
