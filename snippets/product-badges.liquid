@@ -7,7 +7,9 @@ This component is used in product listing and product page to render the badges 
 @param {string} [direction] - can be "column" or "row". If none is passed, it defaults to "row"
 @param {string} [alignment] - can be "start", "center" or "end" (default to start)
 @param {boolean} [vertical_text] - if true, badges text are shown vertically
-@param {boolean} [show_custom_badge] - if set to true, the custom badge from metafield is shown
+@param {boolean} [show_custom_badge] - if set to true, the custom badge from metafield is shown. Colors can be
+  overridden per-product via the product.metafields.custom.badge_background_color and
+  product.metafields.custom.badge_text_color color metafields (falls back to the theme setting when blank)
 @param {number} [badge_border_radius] - the border radius of the custom badges
 @param {boolean} [show_sold_out_badge] - if set to true, the sold out badge is shown
 @param {boolean} [show_discount_badge] - if set to true, the discount badge is shown
@@ -19,8 +21,14 @@ This component is used in product listing and product page to render the badges 
 
 {%- capture badges -%}
   {%- if show_custom_badge -%}
+    {%- capture custom_badge_style -%}
+      {%- if badge_border_radius -%}border-radius: {{ badge_border_radius }}px;{%- endif -%}
+      {%- if product.metafields.custom.badge_background_color != blank -%}background: {{ product.metafields.custom.badge_background_color }};{%- endif -%}
+      {%- if product.metafields.custom.badge_text_color != blank -%}color: {{ product.metafields.custom.badge_text_color }};{%- endif -%}
+    {%- endcapture -%}
+
     {%- for custom_badge in product.metafields.custom.badges.value -%}
-      <span class="badge badge--custom badge--{{ custom_badge | handle }} {% if vertical_text %}vertical-text{% endif %}" style="{% if badge_border_radius %}border-radius: {{ badge_border_radius }}px;{% endif %}">{{ custom_badge }}</span>
+      <span class="badge badge--custom badge--{{ custom_badge | handle }} {% if vertical_text %}vertical-text{% endif %}" style="{{ custom_badge_style }}">{{ custom_badge }}</span>
     {%- endfor -%}
   {%- endif -%}
 
