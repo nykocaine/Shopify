@@ -590,6 +590,35 @@ height-observer {
       content: attr(up-text) / "";
     }
   }
+
+  .button:has(.button__content[marquee])::after {
+    content: "";
+    inset: 3px;
+    border-radius: inherit;
+    opacity: 0;
+    background-image:
+      linear-gradient(90deg, currentColor 50%, transparent 0),
+      linear-gradient(90deg, currentColor 50%, transparent 0),
+      linear-gradient(0deg, currentColor 50%, transparent 0),
+      linear-gradient(0deg, currentColor 50%, transparent 0);
+    background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+    background-size: 8px 1px, 8px 1px, 1px 8px, 1px 8px;
+    background-position: 0 0, 0 100%, 0 0, 100% 0;
+    transition: opacity .2s ease-in-out;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .button:has(.button__content[marquee]):hover::after {
+    opacity: 1;
+    animation: button-marquee-border .5s linear infinite;
+  }
+}
+
+@keyframes button-marquee-border {
+  to {
+    background-position: 8px 0, -8px 100%, 0 -8px, 100% 8px;
+  }
 }
 
 .button-group {
