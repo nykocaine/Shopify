@@ -1,7 +1,9 @@
 {%- if section.blocks.size > 0 -%}
   <style>
     #shopify-section-{{ section.id }} {
-      padding-block-start: var(--container-gutter);
+      {%- unless section.settings.allow_transparent_header -%}
+        padding-block-start: var(--container-gutter);
+      {%- endunless -%}
       {%- if section.settings.transition_type != 'fade' -%}
         --slideshow-background: {{ section.settings.background.rgb }};
       {%- endif -%}
