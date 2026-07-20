@@ -73,7 +73,7 @@ note that this may have impact on different places.
   :root {
     /* Container */
     --container-max-width: 100%;
-    --container-gutter: 1.25rem;
+    --container-gutter: {{ settings.container_gutter | times: 0.41667 | round: 3 }}rem;
 
     /* Spacing */
     --section-vertical-spacing: {% if settings.section_spacing == 'tight' %}2rem{% elsif settings.section_spacing == 'normal' %}2.5rem{% else %}3rem{% endif %};
@@ -223,7 +223,7 @@ note that this may have impact on different places.
       --subheading-font-size: {{ settings.subheading_font_size_desktop | divided_by: 16.0 }}rem;
 
       /* Spacing */
-      --container-gutter: 2rem;
+      --container-gutter: {{ settings.container_gutter | times: 0.66667 | round: 3 }}rem;
 
       /* Form settings */
       --form-gap: 1.25rem; /* Gap between fieldset and submit button */
@@ -255,7 +255,7 @@ note that this may have impact on different places.
     :root {
       /* Spacing settings */
       --section-vertical-spacing: {% if settings.section_spacing == 'tight' %}3.5rem{% elsif settings.section_spacing == 'normal' %}4.5rem{% else %}5.5rem{% endif %};
-      --container-gutter: 3rem;
+      --container-gutter: {{ settings.container_gutter }}rem;
     }
   }
 
