@@ -15,41 +15,59 @@
           top: calc(var(--header-is-sticky, 0) * var(--header-is-visible, 0) * var(--header-height, 0px));
         }
       {%- endif -%}
+
+      #shopify-section-{{ section.id }} {
+        --scrolling-content-gap: 2.5rem;
+      }
     </style>
 
     <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
       <height-observer variable="announcement-bar">
-        {%- assign carousel_id = 'carousel-' | append: section.id -%}
+        {%- if section.settings.display_mode == 'marquee' -%}
+          <marquee-text speed="{{ section.settings.scrolling_speed }}" direction="{{ section.settings.scroll_direction }}" {% if section.settings.pause_on_hover %}pause-on-hover{% endif %} class="announcement-bar scrolling-content">
+            <div class="scrolling-content__item">
+              {%- for block in section.blocks -%}
+                {%- if block.settings.text != blank -%}
+                  <div class="scrolling-content__text prose" {{ block.shopify_attributes }}>
+                    <p class="subheading subheading-xs">{{ block.settings.text }}</p>
+                  </div>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          </marquee-text>
+        {%- else -%}
+          {%- assign carousel_id = 'carousel-' | append: section.id -%}
 
-        <announcement-bar id="{{ carousel_id }}" allow-swipe cell-selector=".announcement-bar__message-list > *" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}"{% endif %} class="announcement-bar">
-          {%- if section.blocks.size > 1 -%}
-            <carousel-prev-button aria-controls="{{ carousel_id }}">
-              <button type="button" class="tap-area">
-                <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
-                {%- render 'icon' with 'arrow-left', direction_aware: true -%}
-              </button>
-            </carousel-prev-button>
-          {%- endif -%}
+          <announcement-bar id="{{ carousel_id }}" allow-swipe cell-selector=".announcement-bar__message-list > *" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}"{% endif %} class="announcement-bar">
+            {%- if section.blocks.size > 1 and section.settings.hide_arrows == false -%}
+              <carousel-prev-button aria-controls="{{ carousel_id }}">
+                <button type="button" class="tap-area">
+                  <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
+                  {%- render 'icon' with 'arrow-left', direction_aware: true -%}
+                </button>
+              </carousel-prev-button>
+            {%- endif -%}
 
-          <div class="announcement-bar__message-list">
-            {%- for block in section.blocks -%}
-              {%- if block.settings.text != blank -%}
-                <div class="{% if forloop.first %}is-selected{% endif %} prose prose-justify-center" {{ block.shopify_attributes }}>
-                  <p class="subheading subheading-xs">{{ block.settings.text }}</p>
-                </div>
-              {%- endif -%}
-            {%- endfor -%}
-          </div>
+            <div class="announcement-bar__message-list">
+              {%- for block in section.blocks -%}
+                {%- if block.settings.text != blank -%}
+                  <div class="{% if forloop.first %}is-selected{% endif %} prose prose-justify-center" {{ block.shopify_attributes }}>
+                    <p class="subheading subheading-xs">{{ block.settings.text }}</p>
+                  </div>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
 
-          {%- if section.blocks.size > 1 -%}
-            <carousel-next-button aria-controls="{{ carousel_id }}">
-              <button type="button" class="tap-area">
-                <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
-                {%- render 'icon' with 'arrow-right', direction_aware: true -%}
-              </button>
-            </carousel-next-button>
-          {%- endif -%}
-        </announcement-bar>
+            {%- if section.blocks.size > 1 and section.settings.hide_arrows == false -%}
+              <carousel-next-button aria-controls="{{ carousel_id }}">
+                <button type="button" class="tap-area">
+                  <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
+                  {%- render 'icon' with 'arrow-right', direction_aware: true -%}
+                </button>
+              </carousel-next-button>
+            {%- endif -%}
+          </announcement-bar>
+        {%- endif -%}
       </height-observer>
     </div>
 
@@ -88,10 +106,38 @@
       "default": false
     },
     {
+      "type": "header",
+      "content": "t:sections.announcement_bar.display_category"
+    },
+    {
+      "type": "select",
+      "id": "display_mode",
+      "label": "t:sections.announcement_bar.display_mode",
+      "options": [
+        {
+          "value": "original",
+          "label": "t:sections.announcement_bar.display_mode_options.original"
+        },
+        {
+          "value": "marquee",
+          "label": "t:sections.announcement_bar.display_mode_options.marquee"
+        }
+      ],
+      "default": "original"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_arrows",
+      "label": "t:sections.announcement_bar.hide_arrows",
+      "default": false,
+      "visible_if": "{{ section.settings.display_mode == 'original' }}"
+    },
+    {
       "type": "checkbox",
       "id": "autoplay",
       "label": "t:sections.announcement_bar.auto_rotate_between_messages",
-      "default": false
+      "default": false,
+      "visible_if": "{{ section.settings.display_mode == 'original' }}"
     },
     {
       "type": "range",
@@ -102,7 +148,41 @@
       "id": "cycle_speed",
       "label": "t:sections.announcement_bar.cycle_speed",
       "default": 5,
-      "visible_if": "{{ section.settings.autoplay }}"
+      "visible_if": "{{ section.settings.display_mode == 'original' and section.settings.autoplay }}"
+    },
+    {
+      "type": "range",
+      "id": "scrolling_speed",
+      "min": 0.1,
+      "max": 1,
+      "step": 0.1,
+      "label": "t:sections.scrolling_content.scrolling_speed",
+      "default": 0.3,
+      "visible_if": "{{ section.settings.display_mode == 'marquee' }}"
+    },
+    {
+      "type": "select",
+      "id": "scroll_direction",
+      "label": "t:sections.scrolling_content.scroll_direction",
+      "options": [
+        {
+          "value": "end-to-start",
+          "label": "t:sections.scrolling_content.scroll_direction_options.to_left"
+        },
+        {
+          "value": "start-to-end",
+          "label": "t:sections.scrolling_content.scroll_direction_options.to_right"
+        }
+      ],
+      "default": "start-to-end",
+      "visible_if": "{{ section.settings.display_mode == 'marquee' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "t:sections.scrolling_content.pause_on_hover",
+      "default": false,
+      "visible_if": "{{ section.settings.display_mode == 'marquee' }}"
     }
   ],
   "blocks": [
