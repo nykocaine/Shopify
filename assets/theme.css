@@ -5582,21 +5582,15 @@ product-rerender {
 
   .drawer-mobile-centered :is(.drawer--cart, .drawer--search)::part(content) {
     position: absolute;
-    inset: 0;
-    margin: auto !important;
-    width: min(calc(100% - (var(--container-gutter) * 2)), 26rem);
-    height: min(calc(100vh - (var(--container-gutter) * 2)), 40rem);
+    inset: var(--container-gutter);
+    margin: 0 !important;
+    width: auto;
+    height: auto;
     background: var(--drawer-mobile-box-color, rgb(var(--background)));
     background-image: none;
     border-radius: var(--drawer-border-radius, 1.25rem);
     overflow: hidden;
     -webkit-mask-image: -webkit-radial-gradient(white, black);
-  }
-
-  @supports (height: 100dvh) {
-    .drawer-mobile-centered :is(.drawer--cart, .drawer--search)::part(content) {
-      height: min(calc(100dvh - (var(--container-gutter) * 2)), 40rem);
-    }
   }
 }
 
@@ -6948,20 +6942,14 @@ shopify-account::part(signed-out-avatar) {
 
   .drawer-mobile-centered .menu-drawer::part(content) {
     position: fixed;
-    inset: 0;
-    margin: auto;
-    width: min(calc(100% - (var(--container-gutter) * 2)), 26rem);
+    inset: var(--container-gutter);
+    margin: 0;
+    width: auto;
     max-width: none;
-    height: min(calc(100vh - (var(--container-gutter) * 2)), 40rem);
+    height: auto;
     border-block-start: none;
     background: var(--drawer-mobile-box-color, rgb(var(--background)));
     z-index: 999;
-  }
-
-  @supports (height: 100dvh) {
-    .drawer-mobile-centered .menu-drawer::part(content) {
-      height: min(calc(100dvh - (var(--container-gutter) * 2)), 40rem);
-    }
   }
 
   .drawer-mobile-centered .menu-drawer__close-button button {
