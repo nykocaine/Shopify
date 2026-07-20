@@ -591,9 +591,17 @@ height-observer {
     }
   }
 
+  .button:has(.button__content[marquee]) {
+    transition: all .2s ease-in-out, border-color 0s;
+  }
+
+  .button:has(.button__content[marquee]):hover {
+    border-color: transparent;
+  }
+
   .button:has(.button__content[marquee])::after {
     content: "";
-    inset: 3px;
+    inset: -1px;
     border-radius: inherit;
     opacity: 0;
     background-image:
