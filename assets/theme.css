@@ -3408,11 +3408,11 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   fill the whole card, by switching the figure to `position: static` so they resolve their
   containing block against .product-card (which spans the full card) instead of the figure.
   */
-  .product-list .product-card__figure:hover {
+  .product-list .product-card__figure:hover:has(.product-card__image--secondary) {
     position: static;
   }
 
-  .product-list .product-card__figure:hover .product-card__media {
+  .product-list .product-card__figure:hover:has(.product-card__image--secondary) .product-card__media {
     position: absolute;
     inset: 0;
     height: 100%;
@@ -3423,28 +3423,28 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
     transition: opacity .15s ease-in-out;
   }
 
-  .product-list .product-card__figure:hover ~ .product-card__info {
+  .product-list .product-card__figure:hover:has(.product-card__image--secondary) ~ .product-card__info {
     opacity: 0;
     pointer-events: none;
   }
 
-  .product-list .product-card__figure:hover ~ .product-card__swatch-list {
+  .product-list .product-card__figure:hover:has(.product-card__image--secondary) ~ .product-card__swatch-list {
     display: none;
   }
 
-  .product-list .product-card__figure:hover .product-card__floating-size-selector {
+  .product-list .product-card__figure:hover:has(.product-card__image--secondary) .product-card__floating-size-selector {
     display: none;
   }
 
-  .product-list .product-card__figure:hover .badge:not(.badge--custom) {
+  .product-list .product-card__figure:hover:has(.product-card__image--secondary) .badge:not(.badge--custom) {
     display: none;
   }
 
-  .product-list .product-card__figure:hover .badge-list:not(:has(.badge--custom)) {
+  .product-list .product-card__figure:hover:has(.product-card__image--secondary) .badge-list:not(:has(.badge--custom)) {
     display: none;
   }
 
-  .product-list .product-card__figure:hover .product-card__image--primary,
+  .product-list .product-card__figure:hover:has(.product-card__image--secondary) .product-card__image--primary,
   .product-list .product-card__figure:hover .product-card__image--secondary {
     aspect-ratio: auto;
     width: 100%;
