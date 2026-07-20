@@ -111,6 +111,9 @@ note that this may have impact on different places.
     /* Button animation */
     --button-marquee-border-color: {% if settings.button_marquee_border_color != blank %}rgb({{ settings.button_marquee_border_color.rgb }}){% endif %};
 
+    /* Badges */
+    --badge-font-size: {{ settings.badge_font_size_mobile | divided_by: 16.0 }}rem;
+
     /**
      * ---------------------------------------------------------------------
      * TYPOGRAPHY
@@ -224,6 +227,9 @@ note that this may have impact on different places.
       --text-base: {{ settings.text_font_size_desktop | divided_by: 16.0 }}rem;
       --text-lg: {{ settings.text_font_size_desktop | plus: 3 | divided_by: 16.0 }}rem;
       --subheading-font-size: {{ settings.subheading_font_size_desktop | divided_by: 16.0 }}rem;
+
+      /* Badges */
+      --badge-font-size: {{ settings.badge_font_size_desktop | divided_by: 16.0 }}rem;
 
       /* Spacing */
       --container-gutter: {{ settings.container_gutter | times: 0.66667 | round: 3 }}rem;
