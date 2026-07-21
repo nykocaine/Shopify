@@ -12,19 +12,15 @@
     -%}
 
     <style>
-      .modal--newsletter::part(base) {
+      .modal--newsletter::part(content) {
         {%- if section.settings.center_popup -%}
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        {%- endif -%}
-      }
-      @media screen and (min-width: 700px) {
-        .modal--newsletter::part(content) {
-          {%- if section.settings.center_popup -%}
           place-self: center;
-          {%- endif -%}
-        }
+        {%- endif -%}
+        {%- if section.settings.popup_border_radius > 0 -%}
+          border-radius: {{ section.settings.popup_border_radius }}px;
+          overflow: hidden;
+          -webkit-mask-image: -webkit-radial-gradient(white, black);
+        {%- endif -%}
       }
     </style>
     <newsletter-popup class="modal modal--newsletter color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.show_only_once %}only-once{% endif %} apparition-delay="{{ section.settings.apparition_delay }}" {% if posted_successfully %}open{% endif %} title="{{ 'sections.newsletter_popup.accessibility_title' | t | escape }}" handle-editor-events>
@@ -128,6 +124,16 @@
       "id": "center_popup",
       "label": "Center popup",
       "default": false
+    },
+    {
+      "type": "range",
+      "id": "popup_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0
     },
     {
       "type": "image_picker",
