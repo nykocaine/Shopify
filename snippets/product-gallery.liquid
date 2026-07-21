@@ -46,6 +46,10 @@ This component is used to show the product gallery (used in product page and fea
       }
     {%- endif -%}
   }
+
+  #shopify-section-{{ section.id }} .product-gallery carousel-prev-button .icon-chevron-right {
+    transform: scaleX(-1);
+  }
 </style>
 
 {%- comment -%}
@@ -285,6 +289,30 @@ only way to do it on Shopify right now.
         </carousel-navigation>
       {%- endcapture -%}
 
+      {%- comment -%}BAR{%- endcomment -%}
+
+      {%- capture bar_controls -%}
+        <div class="h-stack gap-4 align-self-center" style="width: 100%">
+          <progress-bar track-scroll-target="{{ product_gallery_carousel_id }}" class="progress-bar grow"></progress-bar>
+
+          <div class="h-stack gap-2">
+            <carousel-prev-button aria-controls="{{ product_gallery_carousel_id }}">
+              <button type="button" class="circle-button circle-button--outline">
+                <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
+                {%- render 'icon' with 'chevron-right', width: 8 -%}
+              </button>
+            </carousel-prev-button>
+
+            <carousel-next-button aria-controls="{{ product_gallery_carousel_id }}">
+              <button type="button" class="circle-button circle-button--outline">
+                <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
+                {%- render 'icon' with 'chevron-right', width: 8 -%}
+              </button>
+            </carousel-next-button>
+          </div>
+        </div>
+      {%- endcapture -%}
+
       {%- if desktop_layout == 'carousel' -%}
         <div class="{% if desktop_carousel_controls != 'thumbnails_under' %}product-gallery__controls-floating{% endif %} hidden md:contents">
           {%- liquid
@@ -320,6 +348,9 @@ only way to do it on Shopify right now.
 
               when 'numbers'
                 echo numbers_controls
+
+              when 'bar'
+                echo bar_controls
             endcase
           -%}
         </div>
