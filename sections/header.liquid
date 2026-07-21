@@ -38,9 +38,24 @@
     --header-icons-gap: {{ section.settings.icons_spacing }}px;
     {%- if section.settings.floating_header -%}
       padding-block-start: var(--container-gutter);
-      background-color: #ffffff;
+      position: relative;
     {%- endif -%}
   }
+
+  {%- if section.settings.floating_header -%}
+    {%- comment -%}
+    Only the padding-start gap gets a solid fill; the area behind the header itself is left transparent so allow-transparent-header can show through instead of being masked by an opaque background.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }}::before {
+      content: "";
+      background-color: #ffffff;
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline: 0;
+      height: var(--container-gutter);
+      pointer-events: none;
+    }
+  {%- endif -%}
 
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} {
