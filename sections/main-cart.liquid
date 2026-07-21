@@ -1,4 +1,4 @@
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_cart %} section-floating{% endif %}">
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_cart %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_cart %} style="border-end-start-radius: {{ section.settings.cart_border_radius }}px; border-end-end-radius: {{ section.settings.cart_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div class="container">
       <div class="max-w-2xl mx-auto">
@@ -246,8 +246,19 @@
       "type": "checkbox",
       "id": "floating_cart",
       "label": "Floating Cart",
-      "info": "Adds side margins around the cart, using the store's global side margin.",
+      "info": "Adds margins around the cart (bottom and sides), using the store's global side margin.",
       "default": false
+    },
+    {
+      "type": "range",
+      "id": "cart_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_cart }}"
     },
     {
       "type": "checkbox",

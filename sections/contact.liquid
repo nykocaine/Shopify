@@ -111,7 +111,7 @@
         </div>
       </div>
     {%- else -%}
-      <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_contact %} section-floating{% endif %}">
+      <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_contact %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_contact %} style="border-end-start-radius: {{ section.settings.contact_border_radius }}px; border-end-end-radius: {{ section.settings.contact_border_radius }}px; overflow: hidden;"{% endif %}>
         <div class="section-spacing">
           <div class="container">
             <div class="section-stack max-w-md mx-auto text-center">
@@ -166,9 +166,20 @@
       "type": "checkbox",
       "id": "floating_contact",
       "label": "Floating Contact",
-      "info": "Adds side margins around the section, using the store's global side margin.",
+      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
       "default": false,
       "visible_if": "{{ section.settings.image == blank and section.settings.layout == 'stacked' }}"
+    },
+    {
+      "type": "range",
+      "id": "contact_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.image == blank and section.settings.layout == 'stacked' and section.settings.floating_contact }}"
     },
     {
       "type": "checkbox",
