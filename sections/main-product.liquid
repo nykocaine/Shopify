@@ -16,7 +16,7 @@
     }
   {%- endif -%}
 
-  {%- if section.settings.allow_transparent_header == false -%}
+  {%- if section.settings.allow_transparent_header == false and section.settings.desktop_card_layout == false -%}
     @media screen and (min-width: 1000px) {
       {%- if section.settings.desktop_gallery_on_right -%}
         #shopify-section-{{ section.id }} .product-gallery {
@@ -49,6 +49,71 @@
     {%- endif -%}
   }
 
+  {%- if section.settings.desktop_card_layout -%}
+    {%- comment -%}
+    The gallery/info frames only get a color-scheme--X class when this checkbox is on, so when it's off
+    there's nothing to reset anywhere. When it's on, we still reset every custom property a color scheme
+    defines (not just background/text/border) at mobile widths, so the desktop-only card look never bleeds
+    into the mobile layout, regardless of this checkbox's state.
+    {%- endcomment -%}
+    @media screen and (max-width: 999px) {
+      #shopify-section-{{ section.id }} .product-gallery-frame,
+      #shopify-section-{{ section.id }} .product-info-frame {
+        background-color: transparent;
+        background-image: none;
+        color: inherit;
+        border-color: inherit;
+        --accent: inherit;
+        --background: inherit;
+        --background-gradient: inherit;
+        --background-secondary: inherit;
+        --has-transparent-background: inherit;
+        --has-filled-background: inherit;
+        --text-color: inherit;
+        --border-color: inherit;
+        --button-scheme-border-color: inherit;
+        --subheading-background: inherit;
+        --subheading-border: inherit;
+        --subheading-text-color: inherit;
+        --subheading-has-padding: inherit;
+        --heading-highlight-accent-color: inherit;
+        --heading-highlight-text-color: inherit;
+        --button-background-primary: inherit;
+        --button-text-primary: inherit;
+        --button-hover-background: inherit;
+        --input-background: inherit;
+        --input-text-color: inherit;
+        --input-text-transform: inherit;
+      }
+    }
+
+    @media screen and (min-width: 1000px) {
+      {%- comment -%}
+      Real gap instead of the theme's default one-sided padding, so the page background shows between the
+      two cards. overflow:hidden only goes on the gallery frame: it doesn't wrap product-info, which uses
+      position:sticky and breaks under any ancestor with overflow other than visible. The info frame gets
+      the same radius without overflow:hidden — safe, because text/buttons never touch its exact edge.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product {
+        gap: 2.25rem;
+        align-items: stretch;
+      }
+
+      #shopify-section-{{ section.id }} .product-info {
+        padding-inline: 0;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery-frame {
+        border-radius: {{ section.settings.desktop_card_radius }}px;
+        overflow: hidden;
+      }
+
+      #shopify-section-{{ section.id }} .product-info-frame {
+        border-radius: {{ section.settings.desktop_card_radius }}px;
+        padding: 2.5rem;
+      }
+    }
+  {%- endif -%}
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}{% if section.settings.floating_product %} style="border-end-start-radius: {{ section.settings.product_border_radius }}px; border-end-end-radius: {{ section.settings.product_border_radius }}px; overflow: hidden;"{% endif %}>
@@ -58,26 +123,30 @@
     <product-rerender id="product-info-{{ product.id }}-{{ section.id }}" observe-form="{{ product_form_id }}" allow-partial-rerender>
       <div class="product">
         {%- if product.media.size > 0 -%}
-          {%- render 'product-gallery',
-              product: product,
-              product_form_id: product_form_id,
-              desktop_layout: section.settings.desktop_media_layout,
-              desktop_carousel_controls: section.settings.desktop_carousel_controls,
-              mobile_controls: section.settings.mobile_controls,
-              enable_media_autoplay: section.settings.enable_media_autoplay,
-              enable_video_looping: section.settings.enable_video_looping,
-              enable_image_zoom: section.settings.enable_image_zoom,
-              max_image_zoom_level: section.settings.max_image_zoom_level,
-              gallery_border_radius: section.settings.gallery_border_radius
-          -%}
+          <div class="product-gallery-frame{% if section.settings.desktop_card_layout %} color-scheme color-scheme--{{ section.settings.desktop_gallery_color_scheme.id }}{% endif %}">
+            {%- render 'product-gallery',
+                product: product,
+                product_form_id: product_form_id,
+                desktop_layout: section.settings.desktop_media_layout,
+                desktop_carousel_controls: section.settings.desktop_carousel_controls,
+                mobile_controls: section.settings.mobile_controls,
+                enable_media_autoplay: section.settings.enable_media_autoplay,
+                enable_video_looping: section.settings.enable_video_looping,
+                enable_image_zoom: section.settings.enable_image_zoom,
+                max_image_zoom_level: section.settings.max_image_zoom_level,
+                gallery_border_radius: section.settings.gallery_border_radius
+            -%}
+          </div>
         {%- endif -%}
 
-        {%- render 'product-info',
-            product: product,
-            product_form_id: product_form_id,
-            content_alignment: section.settings.content_alignment,
-            context: 'main_product'
-        -%}
+        <div class="product-info-frame{% if section.settings.desktop_card_layout %} color-scheme color-scheme--{{ section.settings.desktop_info_color_scheme.id }}{% endif %}">
+          {%- render 'product-info',
+              product: product,
+              product_form_id: product_form_id,
+              content_alignment: section.settings.content_alignment,
+              context: 'main_product'
+          -%}
+        </div>
       </div>
     </product-rerender>
   </div>
@@ -140,6 +209,42 @@
       "label": "Gallery corner radius",
       "info": "Rounds the bottom corners of the images on mobile.",
       "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Card layout (desktop)"
+    },
+    {
+      "type": "checkbox",
+      "id": "desktop_card_layout",
+      "label": "Card layout",
+      "info": "Splits the gallery and info into two separate cards with their own colors on desktop.",
+      "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "desktop_gallery_color_scheme",
+      "label": "Gallery color scheme",
+      "default": "scheme-1",
+      "visible_if": "{{ section.settings.desktop_card_layout }}"
+    },
+    {
+      "type": "color_scheme",
+      "id": "desktop_info_color_scheme",
+      "label": "Info color scheme",
+      "default": "scheme-1",
+      "visible_if": "{{ section.settings.desktop_card_layout }}"
+    },
+    {
+      "type": "range",
+      "id": "desktop_card_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Card corner radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.desktop_card_layout }}"
     },
     {
       "type": "checkbox",
