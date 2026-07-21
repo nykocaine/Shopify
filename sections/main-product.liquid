@@ -94,6 +94,24 @@
       position:sticky and breaks under any ancestor with overflow other than visible. The info frame gets
       the same radius without overflow:hidden — safe, because text/buttons never touch its exact edge.
       {%- endcomment -%}
+      {%- if section.settings.floating_product -%}
+        {%- comment -%}
+        .container adds its own margin-inline on top of Floating Product's own side margin, and .product
+        carries the theme's default padding-block-end — together they left the cards inset from Floating
+        Product's own edges instead of touching them. Canceling both, then adding a top padding equal to
+        the side margin (container-gutter), makes the cards flush with Floating Product on the sides and
+        bottom, with a matching gap only on top. Only makes sense when Floating Product is actually on.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} .container {
+          margin-inline: 0;
+        }
+
+        #shopify-section-{{ section.id }} .product {
+          padding-block-start: var(--container-gutter);
+          padding-block-end: 0;
+        }
+      {%- endif -%}
+
       #shopify-section-{{ section.id }} .product {
         gap: 2.25rem;
         align-items: stretch;
