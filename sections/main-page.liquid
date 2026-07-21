@@ -1,6 +1,6 @@
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
   <div class="section-spacing section-spacing--tight">
-    <div class="container">
+    <div class="{% unless section.settings.full_width %}container{% endunless %}">
       <div class="max-w-{{ section.settings.content_width }} mx-auto">
         <div class="section-stack">
           {%- if section.settings.show_title -%}
@@ -35,6 +35,13 @@
       "id": "show_title",
       "label": "t:sections.main_page.show_title",
       "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full width",
+      "info": "When disabled, the page uses the same side margins as the rest of the store.",
+      "default": false
     },
     {
       "type": "select",
