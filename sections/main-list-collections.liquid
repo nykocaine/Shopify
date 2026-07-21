@@ -1,4 +1,4 @@
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_list_collections %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_list_collections %} style="border-end-start-radius: {{ section.settings.list_collections_border_radius }}px; border-end-end-radius: {{ section.settings.list_collections_border_radius }}px; overflow: hidden;"{% endif %}>
   {%- if collections.size == 0 -%}
     <div class="empty-state">
       <div class="prose prose-justify-center">
@@ -74,6 +74,24 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_list_collections",
+      "label": "Floating Collections List",
+      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "list_collections_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_list_collections }}"
     },
     {
       "type": "collection_list",

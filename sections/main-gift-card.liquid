@@ -1,4 +1,4 @@
-<div class="color-scheme color-scheme--{{ section.settings.content_color_scheme.id }}">
+<div class="color-scheme color-scheme--{{ section.settings.content_color_scheme.id }}{% if section.settings.floating_gift_card %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_gift_card %} style="border-end-start-radius: {{ section.settings.gift_card_border_radius }}px; border-end-end-radius: {{ section.settings.gift_card_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-split sm:min-h-fill">
     <div class="section-split__column section-split__column--image section-split__column--flushed">
       <div class="content-box h-full min-h-xs color-scheme color-scheme--{{ section.settings.image_color_scheme.id }}">
@@ -109,6 +109,24 @@
       "id": "content_color_scheme",
       "label": "t:sections.main_gift_card.content_color_scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_gift_card",
+      "label": "Floating Gift Card",
+      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "gift_card_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_gift_card }}"
     },
     {
       "type": "image_picker",
