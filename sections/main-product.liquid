@@ -50,16 +50,26 @@
   }
 
   @media screen and (min-width: 1000px) {
-    #shopify-section-{{ section.id }} .product-gallery-frame {
+    #shopify-section-{{ section.id }} .product-gallery-frame,
+    #shopify-section-{{ section.id }} .product-info-frame {
       background-color: transparent;
       background-image: none;
       color: inherit;
       border-color: inherit;
     }
   }
+
+  {%- if section.settings.floating_product -%}
+    @media screen and (max-width: 999px) {
+      #shopify-section-{{ section.id }} .product-info-frame {
+        border-radius: {{ section.settings.product_border_radius }}px;
+        overflow: hidden;
+      }
+    }
+  {%- endif -%}
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}{% if section.settings.floating_product %} style="border-end-start-radius: {{ section.settings.product_border_radius }}px; border-end-end-radius: {{ section.settings.product_border_radius }}px; overflow: hidden;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}>
   <div class="container">
     {%- capture product_form_id -%}product-form-main-{{ product.id }}-{{ section.id }}{%- endcapture -%}
 
@@ -82,12 +92,14 @@
           </div>
         {%- endif -%}
 
-        {%- render 'product-info',
-            product: product,
-            product_form_id: product_form_id,
-            content_alignment: section.settings.content_alignment,
-            context: 'main_product'
-        -%}
+        <div class="product-info-frame color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} bleed md:unbleed{% endif %}">
+          {%- render 'product-info',
+              product: product,
+              product_form_id: product_form_id,
+              content_alignment: section.settings.content_alignment,
+              context: 'main_product'
+          -%}
+        </div>
       </div>
     </product-rerender>
   </div>
@@ -136,7 +148,8 @@
       "max": 30,
       "step": 2,
       "unit": "px",
-      "label": "Corner radius",
+      "label": "Info box corner radius",
+      "info": "Rounds all corners of the info box (title, price, description, etc.) on mobile.",
       "default": 0,
       "visible_if": "{{ section.settings.floating_product }}"
     },
