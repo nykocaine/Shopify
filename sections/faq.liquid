@@ -68,7 +68,7 @@
         </div>
       </div>
     {%- else -%}
-      <div class="{% unless section.settings.full_width %}container{% endunless %} section-spacing">
+      <div class="container section-spacing">
         <div class="section-stack max-w-lg mx-auto text-center">
           {{- section_header -}}
           {{- section_content -}}
@@ -131,14 +131,6 @@
         }
       ],
       "default": "stacked"
-    },
-    {
-      "type": "checkbox",
-      "id": "full_width",
-      "label": "Full width",
-      "info": "When disabled, the section uses the same side margins as the rest of the store.",
-      "default": false,
-      "visible_if": "{{ section.settings.layout == 'stacked' }}"
     },
     {
       "type": "select",

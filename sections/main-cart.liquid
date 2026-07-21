@@ -1,6 +1,7 @@
-<div class="section-spacing">
-  <div class="{% unless section.settings.full_width %}container{% endunless %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
-    <div class="max-w-2xl mx-auto">
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+  <div class="section-spacing">
+    <div class="container">
+      <div class="max-w-2xl mx-auto">
         {%- if cart.empty? -%}
           <div class="empty-state">
             <div class="prose prose-justify-center">
@@ -227,6 +228,7 @@
       </div>
     </div>
   </div>
+</div>
 
 {% schema %}
 {
@@ -239,13 +241,6 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
-    },
-    {
-      "type": "checkbox",
-      "id": "full_width",
-      "label": "Full width",
-      "info": "When disabled, the page uses the same side margins as the rest of the store.",
-      "default": false
     },
     {
       "type": "checkbox",
