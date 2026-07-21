@@ -48,6 +48,23 @@
       }
     {%- endif -%}
   }
+
+  @media screen and (max-width: 999px) {
+    #shopify-section-{{ section.id }} .product-gallery-frame {
+      border-end-start-radius: {{ section.settings.gallery_border_radius }}px;
+      border-end-end-radius: {{ section.settings.gallery_border_radius }}px;
+      overflow: hidden;
+    }
+  }
+
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} .product-gallery-frame {
+      background-color: transparent;
+      background-image: none;
+      color: inherit;
+      border-color: inherit;
+    }
+  }
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}{% if section.settings.floating_product %} style="border-end-start-radius: {{ section.settings.product_border_radius }}px; border-end-end-radius: {{ section.settings.product_border_radius }}px; overflow: hidden;"{% endif %}>
@@ -57,17 +74,19 @@
     <product-rerender id="product-info-{{ product.id }}-{{ section.id }}" observe-form="{{ product_form_id }}" allow-partial-rerender>
       <div class="product">
         {%- if product.media.size > 0 -%}
-          {%- render 'product-gallery',
-              product: product,
-              product_form_id: product_form_id,
-              desktop_layout: section.settings.desktop_media_layout,
-              desktop_carousel_controls: section.settings.desktop_carousel_controls,
-              mobile_controls: section.settings.mobile_controls,
-              enable_media_autoplay: section.settings.enable_media_autoplay,
-              enable_video_looping: section.settings.enable_video_looping,
-              enable_image_zoom: section.settings.enable_image_zoom,
-              max_image_zoom_level: section.settings.max_image_zoom_level
-          -%}
+          <div class="product-gallery-frame color-scheme color-scheme--{{ section.settings.gallery_color_scheme.id }} bleed md:unbleed">
+            {%- render 'product-gallery',
+                product: product,
+                product_form_id: product_form_id,
+                desktop_layout: section.settings.desktop_media_layout,
+                desktop_carousel_controls: section.settings.desktop_carousel_controls,
+                mobile_controls: section.settings.mobile_controls,
+                enable_media_autoplay: section.settings.enable_media_autoplay,
+                enable_video_looping: section.settings.enable_video_looping,
+                enable_image_zoom: section.settings.enable_image_zoom,
+                max_image_zoom_level: section.settings.max_image_zoom_level
+            -%}
+          </div>
         {%- endif -%}
 
         {%- render 'product-info',
@@ -127,6 +146,28 @@
       "label": "Corner radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_product }}"
+    },
+    {
+      "type": "header",
+      "content": "Gallery (mobile)"
+    },
+    {
+      "type": "color_scheme",
+      "id": "gallery_color_scheme",
+      "label": "Gallery color scheme",
+      "info": "Independent from the section's color scheme above. Only applies on mobile for now.",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "gallery_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Gallery corner radius",
+      "info": "Rounds the bottom corners of the gallery on mobile.",
+      "default": 0
     },
     {
       "type": "checkbox",
