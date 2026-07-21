@@ -1,4 +1,12 @@
-<div class="footer color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+{%- if section.settings.floating_footer -%}
+  <style>
+    #shopify-section-{{ section.id }} {
+      padding-block-end: var(--container-gutter);
+    }
+  </style>
+{%- endif -%}
+
+<div class="footer {% if section.settings.floating_footer %}footer--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.floating_footer %}style="border-end-start-radius: {{ section.settings.footer_border_radius }}px; border-end-end-radius: {{ section.settings.footer_border_radius }}px;"{% endif %}>
   <div class="container">
     {%- assign scrolling_logo_block = section.blocks | where: 'type', 'scrolling_logo' | first -%}
 
@@ -233,6 +241,24 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-2"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_footer",
+      "label": "t:sections.footer.floating_footer",
+      "info": "t:sections.footer.floating_footer_info",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "footer_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.footer.footer_border_radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_footer }}"
     },
     {
       "type": "checkbox",

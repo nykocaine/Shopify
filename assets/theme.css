@@ -5809,7 +5809,7 @@ product-rerender {
 
 .collection__toolbar {
   padding-block: 1.25rem;
-  padding-inline: min(1.75rem, var(--container-gutter));
+  padding-inline: var(--container-gutter);
   border-block-start-width: 1px;
   justify-content: space-between;
   align-items: center;
@@ -5861,7 +5861,7 @@ product-rerender {
 }
 
 .collection__results {
-  padding-inline: var(--product-list-padding-inline);
+  padding-inline: calc(var(--container-gutter) + var(--product-list-padding-inline));
 }
 
 .collection__sidebar {
@@ -5916,7 +5916,7 @@ product-rerender {
     top: calc(var(--sticky-area-height) + 20px);
     width: var(--collection-sidebar-width);
     margin-block-start: 1.5rem;
-    margin-inline: min(var(--container-gutter), 1.75rem);
+    margin-inline: var(--container-gutter);
     grid-template-columns: minmax(0, 1fr);
     grid-column-end: -2;
     row-gap: 1.5rem;
@@ -6357,6 +6357,10 @@ product-rerender {
 
 .shopify-section--trust-icons + .shopify-section--footer .footer {
   border-block-start-width: 0;
+}
+
+.footer--floating {
+  margin-inline: var(--container-gutter);
 }
 
 .footer__content {
