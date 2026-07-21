@@ -36,6 +36,9 @@
     --header-non-transparent-text-color: {{ section.settings.color_scheme.settings.text_color.rgb }};
     --header-menu-gap: {{ section.settings.menu_items_spacing }}px;
     --header-icons-gap: {{ section.settings.icons_spacing }}px;
+    {%- if section.settings.floating_header -%}
+      padding-block-start: var(--container-gutter);
+    {%- endif -%}
   }
 
   @media screen and (min-width: 1000px) {
@@ -78,7 +81,7 @@
 </style>
 
 <height-observer variable="header">
-  <x-header class="header {% if section.settings.show_bottom_border %}header--bordered{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.hide_on_scroll %}hide-on-scroll{% endif %} style="padding-block: {{ section.settings.header_height_padding }}px;">
+  <x-header class="header {% if section.settings.show_bottom_border %}header--bordered{% endif %} {% if section.settings.floating_header %}header--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.hide_on_scroll %}hide-on-scroll{% endif %} style="padding-block: {{ section.settings.header_height_padding }}px; {% if section.settings.floating_header %}border-radius: {{ section.settings.header_border_radius }}px;{% endif %}">
     {%- comment -%}
     --------------------------------------------------------------------------------------------------------------------
     LOGO AREA
@@ -445,6 +448,24 @@
       "id": "show_bottom_border",
       "label": "t:sections.header.show_bottom_border",
       "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_header",
+      "label": "t:sections.header.floating_header",
+      "info": "t:sections.header.floating_header_info",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "header_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.header.header_border_radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_header }}"
     },
     {
       "type": "select",
