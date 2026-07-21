@@ -49,103 +49,35 @@
     {%- endif -%}
   }
 
-  @media screen and (min-width: 1000px) {
-    {%- comment -%}
-    A color-scheme--X class defines ~20 CSS custom properties (button colors, input colors, subheading
-    colors, etc.), not just background/text/border. Resetting only those 3 direct properties left every
-    other property (button/input/subheading colors) still cascading from the gallery/info scheme into their
-    children on desktop. Forcing every variable back to "inherit" here makes these frames fall through to
-    the section's own color scheme on desktop, exactly like before this feature existed.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .product-gallery-frame,
-    #shopify-section-{{ section.id }} .product-info-frame {
-      background-color: transparent;
-      background-image: none;
-      color: inherit;
-      border-color: inherit;
-      --accent: inherit;
-      --background: inherit;
-      --background-gradient: inherit;
-      --background-secondary: inherit;
-      --has-transparent-background: inherit;
-      --has-filled-background: inherit;
-      --text-color: inherit;
-      --border-color: inherit;
-      --button-scheme-border-color: inherit;
-      --subheading-background: inherit;
-      --subheading-border: inherit;
-      --subheading-text-color: inherit;
-      --subheading-has-padding: inherit;
-      --heading-highlight-accent-color: inherit;
-      --heading-highlight-text-color: inherit;
-      --button-background-primary: inherit;
-      --button-text-primary: inherit;
-      --button-hover-background: inherit;
-      --input-background: inherit;
-      --input-text-color: inherit;
-      --input-text-transform: inherit;
-    }
-  }
-
-  @media screen and (max-width: 999px) {
-    #shopify-section-{{ section.id }} .product-info-frame {
-      padding: 1.25rem;
-    }
-
-    {%- if section.settings.info_border_radius > 0 -%}
-      #shopify-section-{{ section.id }} .product-info-frame {
-        border-radius: {{ section.settings.info_border_radius }}px;
-        overflow: hidden;
-      }
-    {%- endif -%}
-  }
-
-  {%- if section.settings.floating_product -%}
-    {%- comment -%}
-    Overflow:hidden can't live on the outer wrapper: product-info uses position:sticky on desktop, and
-    sticky breaks under any ancestor with overflow:hidden. So instead of clipping at the outer level, we
-    clip the gallery specifically (it doesn't wrap product-info, so sticky stays unaffected) using the same
-    radius, which keeps every corner rounded without breaking the sticky column.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .product-gallery-frame {
-      border-end-start-radius: {{ section.settings.product_border_radius }}px;
-      border-end-end-radius: {{ section.settings.product_border_radius }}px;
-      overflow: hidden;
-    }
-  {%- endif -%}
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}{% if section.settings.floating_product %} style="border-end-start-radius: {{ section.settings.product_border_radius }}px; border-end-end-radius: {{ section.settings.product_border_radius }}px;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}{% if section.settings.floating_product %} style="border-end-start-radius: {{ section.settings.product_border_radius }}px; border-end-end-radius: {{ section.settings.product_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="container">
     {%- capture product_form_id -%}product-form-main-{{ product.id }}-{{ section.id }}{%- endcapture -%}
 
     <product-rerender id="product-info-{{ product.id }}-{{ section.id }}" observe-form="{{ product_form_id }}" allow-partial-rerender>
       <div class="product">
         {%- if product.media.size > 0 -%}
-          <div class="product-gallery-frame color-scheme color-scheme--{{ section.settings.gallery_color_scheme.id }} bleed md:unbleed">
-            {%- render 'product-gallery',
-                product: product,
-                product_form_id: product_form_id,
-                desktop_layout: section.settings.desktop_media_layout,
-                desktop_carousel_controls: section.settings.desktop_carousel_controls,
-                mobile_controls: section.settings.mobile_controls,
-                enable_media_autoplay: section.settings.enable_media_autoplay,
-                enable_video_looping: section.settings.enable_video_looping,
-                enable_image_zoom: section.settings.enable_image_zoom,
-                max_image_zoom_level: section.settings.max_image_zoom_level,
-                gallery_border_radius: section.settings.gallery_border_radius
-            -%}
-          </div>
-        {%- endif -%}
-
-        <div class="product-info-frame color-scheme color-scheme--{{ section.settings.info_color_scheme.id }} bleed md:unbleed">
-          {%- render 'product-info',
+          {%- render 'product-gallery',
               product: product,
               product_form_id: product_form_id,
-              content_alignment: section.settings.content_alignment,
-              context: 'main_product'
+              desktop_layout: section.settings.desktop_media_layout,
+              desktop_carousel_controls: section.settings.desktop_carousel_controls,
+              mobile_controls: section.settings.mobile_controls,
+              enable_media_autoplay: section.settings.enable_media_autoplay,
+              enable_video_looping: section.settings.enable_video_looping,
+              enable_image_zoom: section.settings.enable_image_zoom,
+              max_image_zoom_level: section.settings.max_image_zoom_level,
+              gallery_border_radius: section.settings.gallery_border_radius
           -%}
-        </div>
+        {%- endif -%}
+
+        {%- render 'product-info',
+            product: product,
+            product_form_id: product_form_id,
+            content_alignment: section.settings.content_alignment,
+            context: 'main_product'
+        -%}
       </div>
     </product-rerender>
   </div>
@@ -199,17 +131,6 @@
       "visible_if": "{{ section.settings.floating_product }}"
     },
     {
-      "type": "header",
-      "content": "Gallery (mobile)"
-    },
-    {
-      "type": "color_scheme",
-      "id": "gallery_color_scheme",
-      "label": "Gallery color scheme",
-      "info": "Independent from the section's color scheme above. Only applies on mobile for now.",
-      "default": "scheme-1"
-    },
-    {
       "type": "range",
       "id": "gallery_border_radius",
       "min": 0,
@@ -217,29 +138,7 @@
       "step": 2,
       "unit": "px",
       "label": "Gallery corner radius",
-      "info": "Rounds the bottom corners of the images (not the whole gallery card) on mobile.",
-      "default": 0
-    },
-    {
-      "type": "header",
-      "content": "Info (mobile)"
-    },
-    {
-      "type": "color_scheme",
-      "id": "info_color_scheme",
-      "label": "Info color scheme",
-      "info": "Independent from the section's color scheme and the gallery's. Pick a different scheme than both so the info card actually stands out. Only applies on mobile for now.",
-      "default": "scheme-1"
-    },
-    {
-      "type": "range",
-      "id": "info_border_radius",
-      "min": 0,
-      "max": 30,
-      "step": 2,
-      "unit": "px",
-      "label": "Info corner radius",
-      "info": "Rounds all corners of the info card on mobile.",
+      "info": "Rounds the bottom corners of the images on mobile.",
       "default": 0
     },
     {
