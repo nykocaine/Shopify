@@ -59,6 +59,17 @@ This component is used to show the product gallery (used in product page and fea
         border-end-end-radius: {{ gallery_border_radius }}px;
         overflow: hidden;
       }
+
+      {%- comment -%}
+      The carousel's own .bleed padding-inline reserves peek space for the next/prev slide, which keeps the
+      image itself inset from the true edge even though the frame around it reaches full width. Since the
+      frame is meant to hug the image exactly, we cancel that peek padding here (margin from .bleed is kept,
+      so the carousel still reaches the frame's edge).
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery__carousel-frame .product-gallery__carousel {
+        padding-inline: 0;
+        scroll-padding-inline: 0;
+      }
     }
   {%- endif -%}
 </style>
