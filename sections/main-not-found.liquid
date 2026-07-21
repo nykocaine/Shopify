@@ -1,4 +1,4 @@
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_not_found %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_not_found %} style="border-radius: {{ section.settings.not_found_border_radius }}px; overflow: hidden;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_not_found %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_not_found %} style="border-end-start-radius: {{ section.settings.not_found_border_radius }}px; border-end-end-radius: {{ section.settings.not_found_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="container">
     <div class="empty-state" data-background-text="404">
       <div class="prose prose-justify-center">
@@ -28,7 +28,7 @@
       "type": "checkbox",
       "id": "floating_not_found",
       "label": "Floating 404",
-      "info": "Adds margins around the section (top, bottom and sides), using the store's global side margin.",
+      "info": "Adds margins around the section (bottom and sides only), using the store's global side margin.",
       "default": false
     },
     {
