@@ -50,12 +50,40 @@
   }
 
   @media screen and (min-width: 1000px) {
+    {%- comment -%}
+    A color-scheme--X class defines ~20 CSS custom properties (button colors, input colors, subheading
+    colors, etc.), not just background/text/border. Resetting only those 3 direct properties left every
+    other property (button/input/subheading colors) still cascading from the gallery/info scheme into their
+    children on desktop. Forcing every variable back to "inherit" here makes these frames fall through to
+    the section's own color scheme on desktop, exactly like before this feature existed.
+    {%- endcomment -%}
     #shopify-section-{{ section.id }} .product-gallery-frame,
     #shopify-section-{{ section.id }} .product-info-frame {
       background-color: transparent;
       background-image: none;
       color: inherit;
       border-color: inherit;
+      --accent: inherit;
+      --background: inherit;
+      --background-gradient: inherit;
+      --background-secondary: inherit;
+      --has-transparent-background: inherit;
+      --has-filled-background: inherit;
+      --text-color: inherit;
+      --border-color: inherit;
+      --button-scheme-border-color: inherit;
+      --subheading-background: inherit;
+      --subheading-border: inherit;
+      --subheading-text-color: inherit;
+      --subheading-has-padding: inherit;
+      --heading-highlight-accent-color: inherit;
+      --heading-highlight-text-color: inherit;
+      --button-background-primary: inherit;
+      --button-text-primary: inherit;
+      --button-hover-background: inherit;
+      --input-background: inherit;
+      --input-text-color: inherit;
+      --input-text-transform: inherit;
     }
   }
 
