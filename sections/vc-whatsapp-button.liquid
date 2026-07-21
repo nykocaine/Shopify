@@ -49,16 +49,16 @@
     "
   >
     {% if section.settings.show_close_button %}
-      <button type="button" class="vc-whatsapp-close-button" aria-label="Cerrar">&times;</button>
+      <button type="button" class="vc-whatsapp-close-button color-scheme color-scheme--{{ section.settings.popup_color_scheme.id }}" aria-label="Cerrar">&times;</button>
     {% endif %}
 
     <div class="vc-whatsapp-main-container">
       {% if section.settings.show_tooltip and section.settings.tooltip_text != blank %}
-        <div class="vc-whatsapp-tooltip">{{ section.settings.tooltip_text }}</div>
+        <div class="vc-whatsapp-tooltip color-scheme color-scheme--{{ section.settings.popup_color_scheme.id }}">{{ section.settings.tooltip_text }}</div>
       {% endif %}
 
       {% if has_agents %}
-        <div class="vc-whatsapp-agents-list" hidden>
+        <div class="vc-whatsapp-agents-list color-scheme color-scheme--{{ section.settings.popup_color_scheme.id }}" hidden>
           <div class="vc-whatsapp-agents-list-header">Elige un contacto</div>
           {% for block in agents %}
             {% liquid
@@ -180,8 +180,8 @@
     left: var(--wa-anchor-left);
     right: var(--wa-anchor-right);
     white-space: nowrap;
-    background-color: #ffffff;
-    color: #1a1a1a;
+    background-color: rgb(var(--background));
+    color: rgb(var(--text-color));
     padding: 10px 16px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -202,9 +202,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #ffffff;
-    color: #333333;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: rgb(var(--background));
+    color: rgb(var(--text-color));
+    border: 1px solid rgb(var(--border-color));
     border-radius: 50%;
     font-size: 16px;
     line-height: 1;
@@ -221,9 +221,9 @@
     right: var(--wa-anchor-right);
     min-width: 220px;
     max-width: min(280px, 90vw);
-    background-color: #ffffff;
+    background-color: rgb(var(--background));
     border-radius: var(--wa-agents-radius);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgb(var(--border-color));
     overflow: hidden;
     font-family: inherit;
   }
@@ -238,7 +238,7 @@
     font-size: inherit;
     font-weight: inherit;
     color: inherit;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgb(var(--border-color));
   }
 
   .vc-whatsapp-agent-item {
@@ -249,7 +249,7 @@
     font-family: inherit;
     font-size: inherit;
     font-weight: inherit;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid rgb(var(--border-color));
   }
 
   .vc-whatsapp-agent-item:last-child {
@@ -257,7 +257,7 @@
   }
 
   .vc-whatsapp-agent-item:hover {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: rgb(var(--text-color) / .04);
   }
 
   .hide-on-mobile {
@@ -380,6 +380,7 @@
     { "type": "color", "id": "background_color", "label": "Color de fondo", "default": "#25D366" },
     { "type": "color", "id": "icon_color", "label": "Color del ícono y texto", "default": "#FFFFFF" },
     { "type": "select", "id": "shadow_intensity", "label": "Intensidad de la sombra", "options": [{ "value": "none", "label": "Ninguna" }, { "value": "sm", "label": "Pequeña" }, { "value": "md", "label": "Mediana" }, { "value": "lg", "label": "Grande" }], "default": "md" },
+    { "type": "color_scheme", "id": "popup_color_scheme", "label": "Esquema de color (tooltip y caja de agentes)", "default": "scheme-1" },
     { "type": "header", "content": "Mensaje flotante (tooltip)" },
     { "type": "checkbox", "id": "show_tooltip", "label": "Mostrar mensaje flotante", "default": false },
     { "type": "text", "id": "tooltip_text", "label": "Texto del mensaje flotante", "default": "¡Chatea con nosotros!" },
