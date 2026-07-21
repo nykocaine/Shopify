@@ -6,7 +6,6 @@
   endif
 -%}
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
   {%- capture section_header -%}
     <div class="v-stack justify-items-{{ text_alignment }} gap-6 sm:gap-8">
       {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank -%}
@@ -88,7 +87,7 @@
   {%- endcapture -%}
 
   {%- if section.settings.image != blank -%}
-    <div class="section-split">
+    <div class="section-split color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
       <div class="section-split__column section-split__column--image {% unless section.settings.add_image_spacing %}section-split__column--flushed{% endunless %}">
         {{- section.settings.image | image_url: width: section.settings.image.width | image_tag: sizes: '(max-width: 699px) 100vw, 50vw', widths: '300,400,500,600,800,1000,1200,1400,1600,1800,2000', class: 'size-full' -}}
       </div>
@@ -102,7 +101,7 @@
     </div>
   {%- else -%}
     {%- if section.settings.layout == 'split' -%}
-      <div class="section-split">
+      <div class="section-split color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
         <div class="section-split__column">
           {{- section_header -}}
         </div>
@@ -112,15 +111,16 @@
         </div>
       </div>
     {%- else -%}
-      <div class="container section-spacing">
-        <div class="section-stack max-w-md mx-auto text-center">
-          {{- section_header -}}
-          {{- section_main_content -}}
+      <div class="section-spacing">
+        <div class="{% unless section.settings.floating_contact %}container{% endunless %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+          <div class="section-stack max-w-md mx-auto text-center">
+            {{- section_header -}}
+            {{- section_main_content -}}
+          </div>
         </div>
       </div>
     {%- endif -%}
   {%- endif -%}
-</div>
 
 {% schema %}
 {
@@ -159,6 +159,14 @@
       ],
       "default": "stacked",
       "visible_if": "{{ section.settings.image == blank }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_contact",
+      "label": "Floating Contact",
+      "info": "Adds side margins around the section, using the store's global side margin.",
+      "default": false,
+      "visible_if": "{{ section.settings.image == blank and section.settings.layout == 'stacked' }}"
     },
     {
       "type": "checkbox",

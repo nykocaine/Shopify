@@ -1,5 +1,4 @@
 {%- if section.blocks.size > 0 -%}
-  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
     {%- capture section_header -%}
       {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank or section.settings.button_text != blank -%}
         <div class="section-header">
@@ -58,7 +57,7 @@
     {%- endcapture -%}
 
     {%- if section.settings.layout == 'split' -%}
-      <div class="section-split">
+      <div class="section-split color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
         <div class="section-split__column">
           {{- section_header -}}
         </div>
@@ -68,14 +67,15 @@
         </div>
       </div>
     {%- else -%}
-      <div class="container section-spacing">
-        <div class="section-stack max-w-lg mx-auto text-center">
-          {{- section_header -}}
-          {{- section_content -}}
+      <div class="section-spacing">
+        <div class="{% unless section.settings.floating_faq %}container{% endunless %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+          <div class="section-stack max-w-lg mx-auto text-center">
+            {{- section_header -}}
+            {{- section_content -}}
+          </div>
         </div>
       </div>
     {%- endif -%}
-  </div>
 
   {%- comment -%}We also output the content with JSON microdata for SEO{%- endcomment -%}
 
@@ -131,6 +131,14 @@
         }
       ],
       "default": "stacked"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_faq",
+      "label": "Floating FAQ",
+      "info": "Adds side margins around the section, using the store's global side margin.",
+      "default": false,
+      "visible_if": "{{ section.settings.layout == 'stacked' }}"
     },
     {
       "type": "select",

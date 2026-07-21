@@ -1,8 +1,7 @@
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
-  <div class="section-spacing">
-    <div class="container">
-      <div class="max-w-2xl mx-auto">
-        {%- if cart.empty? -%}
+<div class="section-spacing">
+  <div class="{% unless section.settings.floating_cart %}container{% endunless %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+    <div class="max-w-2xl mx-auto">
+      {%- if cart.empty? -%}
           <div class="empty-state">
             <div class="prose prose-justify-center">
               <h1 class="h3">{{ 'cart.general.title' | t }}</h1>
@@ -228,7 +227,6 @@
       </div>
     </div>
   </div>
-</div>
 
 {% schema %}
 {
@@ -241,6 +239,13 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_cart",
+      "label": "Floating Cart",
+      "info": "Adds side margins around the cart, using the store's global side margin.",
+      "default": false
     },
     {
       "type": "checkbox",
