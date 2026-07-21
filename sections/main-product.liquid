@@ -57,9 +57,23 @@
       border-color: inherit;
     }
   }
+
+  {%- if section.settings.floating_product -%}
+    {%- comment -%}
+    Overflow:hidden can't live on the outer wrapper: product-info uses position:sticky on desktop, and
+    sticky breaks under any ancestor with overflow:hidden. So instead of clipping at the outer level, we
+    clip the gallery specifically (it doesn't wrap product-info, so sticky stays unaffected) using the same
+    radius, which keeps every corner rounded without breaking the sticky column.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-gallery-frame {
+      border-end-start-radius: {{ section.settings.product_border_radius }}px;
+      border-end-end-radius: {{ section.settings.product_border_radius }}px;
+      overflow: hidden;
+    }
+  {%- endif -%}
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}{% if section.settings.floating_product %} style="border-end-start-radius: {{ section.settings.product_border_radius }}px; border-end-end-radius: {{ section.settings.product_border_radius }}px; overflow: hidden;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}{% if section.settings.floating_product %} style="border-end-start-radius: {{ section.settings.product_border_radius }}px; border-end-end-radius: {{ section.settings.product_border_radius }}px;"{% endif %}>
   <div class="container">
     {%- capture product_form_id -%}product-form-main-{{ product.id }}-{{ section.id }}{%- endcapture -%}
 
