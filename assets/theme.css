@@ -5567,16 +5567,6 @@ product-rerender {
   padding: 0;
 }
 
-@media screen and (max-width: 999px) {
-  .drawer--cart::part(content) {
-    margin: var(--container-gutter);
-    height: calc(100% - (var(--container-gutter) * 2));
-    border-radius: var(--drawer-border-radius);
-    overflow: hidden;
-    -webkit-mask-image: -webkit-radial-gradient(white, black);
-  }
-}
-
 .drawer--cart .free-shipping-bar {
   margin-block-start: -.25rem;
 }
@@ -5597,7 +5587,7 @@ product-rerender {
     height: auto;
     background: var(--drawer-mobile-box-color, rgb(var(--background)));
     background-image: none;
-    border-radius: var(--drawer-border-radius, 1.25rem);
+    border-radius: var(--drawer-border-radius);
     overflow: hidden;
     -webkit-mask-image: -webkit-radial-gradient(white, black);
   }
@@ -6916,25 +6906,23 @@ shopify-account::part(signed-out-avatar) {
 }
 
 .menu-drawer::part(content) {
-  width: auto;
+  width: 100%;
   max-width: 480px;
-  height: calc(100vh - var(--menu-offset-top, 0px) - var(--container-gutter));
+  height: calc(100vh - var(--menu-offset-top, 0px));
   border-block-start: 1px solid rgb(var(--border-color));
-  border-radius: var(--drawer-border-radius);
   background: inherit;
   color: inherit;
   grid-auto-rows: minmax(0, 1fr);
   display: grid;
   position: absolute;
   inset-block-start: 100%;
-  inset-inline: var(--container-gutter);
+  inset-inline-start: 0;
   overflow: clip;
-  -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
 
 @supports (height: 100dvh) {
   .menu-drawer::part(content) {
-    height: calc(100dvh - var(--menu-offset-top, 0px) - var(--container-gutter));
+    height: calc(100dvh - var(--menu-offset-top, 0px));
   }
 }
 
@@ -6957,7 +6945,10 @@ shopify-account::part(signed-out-avatar) {
     max-width: none;
     height: auto;
     border-block-start: none;
+    border-radius: var(--drawer-border-radius);
     background: var(--drawer-mobile-box-color, rgb(var(--background)));
+    overflow: hidden;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
     z-index: 999;
   }
 
