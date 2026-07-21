@@ -50,12 +50,26 @@
   }
 
   @media screen and (min-width: 1000px) {
-    #shopify-section-{{ section.id }} .product-gallery-frame {
+    #shopify-section-{{ section.id }} .product-gallery-frame,
+    #shopify-section-{{ section.id }} .product-info-frame {
       background-color: transparent;
       background-image: none;
       color: inherit;
       border-color: inherit;
     }
+  }
+
+  @media screen and (max-width: 999px) {
+    #shopify-section-{{ section.id }} .product-info-frame {
+      padding: 1.25rem;
+    }
+
+    {%- if section.settings.info_border_radius > 0 -%}
+      #shopify-section-{{ section.id }} .product-info-frame {
+        border-radius: {{ section.settings.info_border_radius }}px;
+        overflow: hidden;
+      }
+    {%- endif -%}
   }
 
   {%- if section.settings.floating_product -%}
@@ -96,12 +110,14 @@
           </div>
         {%- endif -%}
 
-        {%- render 'product-info',
-            product: product,
-            product_form_id: product_form_id,
-            content_alignment: section.settings.content_alignment,
-            context: 'main_product'
-        -%}
+        <div class="product-info-frame color-scheme color-scheme--{{ section.settings.info_color_scheme.id }} bleed md:unbleed">
+          {%- render 'product-info',
+              product: product,
+              product_form_id: product_form_id,
+              content_alignment: section.settings.content_alignment,
+              context: 'main_product'
+          -%}
+        </div>
       </div>
     </product-rerender>
   </div>
@@ -173,7 +189,29 @@
       "step": 2,
       "unit": "px",
       "label": "Gallery corner radius",
-      "info": "Rounds the bottom corners of the gallery on mobile.",
+      "info": "Rounds the bottom corners of the images (not the whole gallery card) on mobile.",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Info (mobile)"
+    },
+    {
+      "type": "color_scheme",
+      "id": "info_color_scheme",
+      "label": "Info color scheme",
+      "info": "Independent from the section's color scheme and the gallery's. Pick a different scheme than both so the info card actually stands out. Only applies on mobile for now.",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "info_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Info corner radius",
+      "info": "Rounds all corners of the info card on mobile.",
       "default": 0
     },
     {
