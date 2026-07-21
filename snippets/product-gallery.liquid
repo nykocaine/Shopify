@@ -10,6 +10,7 @@ This component is used to show the product gallery (used in product page and fea
 @param {boolean} [enable_video_looping] - if set to true videos automatically loop when finished
 @param {boolean} [enable_image_zoom] - if set to true the gallery allow zoom
 @param {number} [max_image_zoom_level] - the maximum zoom level allowed (if enabled)
+@param {number} [gallery_border_radius] - if set, rounds the bottom corners of the image carousel on mobile
 @param {string} [class] - extra class applied on the container
 @param {object} [section]
 {%- enddoc -%}
@@ -50,6 +51,16 @@ This component is used to show the product gallery (used in product page and fea
   #shopify-section-{{ section.id }} .product-gallery carousel-prev-button .icon-chevron-right {
     transform: scaleX(-1);
   }
+
+  {%- if gallery_border_radius -%}
+    @media screen and (max-width: 999px) {
+      #shopify-section-{{ section.id }} .product-gallery__carousel-frame {
+        border-end-start-radius: {{ gallery_border_radius }}px;
+        border-end-end-radius: {{ gallery_border_radius }}px;
+        overflow: hidden;
+      }
+    }
+  {%- endif -%}
 </style>
 
 {%- comment -%}
@@ -90,7 +101,7 @@ only way to do it on Shopify right now.
     ----------------------------------------------------------------------------------------------------------------------
     {%- endcomment -%}
 
-    <div class="relative">
+    <div class="relative {% if gallery_border_radius %}product-gallery__carousel-frame bleed md:unbleed{% endif %}">
       <scroll-carousel adaptive-height id="{{ product_gallery_carousel_id }}" class="product-gallery__carousel scroll-area bleed md:unbleed" role="region">
         {%- if product != blank -%}
           {%- assign image_index = 0 -%}

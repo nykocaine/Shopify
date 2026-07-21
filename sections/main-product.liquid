@@ -49,14 +49,6 @@
     {%- endif -%}
   }
 
-  @media screen and (max-width: 999px) {
-    #shopify-section-{{ section.id }} .product-gallery-frame {
-      border-end-start-radius: {{ section.settings.gallery_border_radius }}px;
-      border-end-end-radius: {{ section.settings.gallery_border_radius }}px;
-      overflow: hidden;
-    }
-  }
-
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} .product-gallery-frame {
       background-color: transparent;
@@ -84,7 +76,8 @@
                 enable_media_autoplay: section.settings.enable_media_autoplay,
                 enable_video_looping: section.settings.enable_video_looping,
                 enable_image_zoom: section.settings.enable_image_zoom,
-                max_image_zoom_level: section.settings.max_image_zoom_level
+                max_image_zoom_level: section.settings.max_image_zoom_level,
+                gallery_border_radius: section.settings.gallery_border_radius
             -%}
           </div>
         {%- endif -%}
