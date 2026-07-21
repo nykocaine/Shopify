@@ -61,17 +61,8 @@
 
   {%- if section.settings.floating_product -%}
     @media screen and (max-width: 999px) {
-      {%- comment -%}
-      The outer wrapper uses the same color scheme as the gallery/info frames inside it, so without this,
-      the frames' rounded corners would just reveal more of the exact same color behind them (invisible).
-      Making the outer wrapper transparent here lets the real page background show through instead.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .product-section-frame {
-        background-color: transparent;
-        background-image: none;
-      }
-
       #shopify-section-{{ section.id }} .product-info-frame {
+        padding: 1.25rem;
         border-radius: {{ section.settings.product_border_radius }}px;
         overflow: hidden;
       }
@@ -102,7 +93,7 @@
           </div>
         {%- endif -%}
 
-        <div class="product-info-frame color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} bleed md:unbleed{% endif %}">
+        <div class="product-info-frame color-scheme color-scheme--{{ section.settings.info_color_scheme.id }}{% if section.settings.floating_product %} bleed md:unbleed{% endif %}">
           {%- render 'product-info',
               product: product,
               product_form_id: product_form_id,
@@ -150,6 +141,14 @@
       "label": "Floating Product",
       "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
       "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "info_color_scheme",
+      "label": "Info box color scheme",
+      "info": "Give it a different color than the main color scheme above so the corner radius is actually visible.",
+      "default": "scheme-1",
+      "visible_if": "{{ section.settings.floating_product }}"
     },
     {
       "type": "range",
