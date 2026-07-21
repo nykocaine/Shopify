@@ -124,6 +124,13 @@ note that this may have impact on different places.
 
     /* Free shipping bar */
     --free-shipping-bar-radius: {{ settings.cart_free_shipping_bar_radius }}px;
+    --free-shipping-bar-height: {{ settings.cart_free_shipping_bar_height }}px;
+    {%- if settings.cart_free_shipping_bar_background_color != blank -%}
+      --free-shipping-bar-background-color: rgb({{ settings.cart_free_shipping_bar_background_color.rgb }});
+    {%- endif -%}
+    {%- if settings.cart_free_shipping_bar_border_color != blank -%}
+      --free-shipping-bar-border-color: rgb({{ settings.cart_free_shipping_bar_border_color.rgb }});
+    {%- endif -%}
 
     /* Badges */
     --badge-font-size: {{ settings.badge_font_size_mobile | divided_by: 16.0 }}rem;
