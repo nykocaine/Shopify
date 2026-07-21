@@ -306,7 +306,7 @@ note that this may have impact on different places.
     {%- assign product_sold_out_badge_brightness = settings.product_sold_out_badge_background | color_brightness -%}
     {%- assign product_custom_badge_brightness = settings.product_custom_badge_background | color_brightness -%}
 
-    --page-overlay: 0 0 0 / 0.4;
+    --page-overlay: {{ settings.dialog_backdrop_color.rgb }} / {{ settings.dialog_backdrop_opacity | divided_by: 100.0 }};
     --dialog-backdrop-blur: {{ settings.dialog_backdrop_blur }}px;
 
     /* Status colors */
