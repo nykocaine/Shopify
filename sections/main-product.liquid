@@ -61,6 +61,16 @@
 
   {%- if section.settings.floating_product -%}
     @media screen and (max-width: 999px) {
+      {%- comment -%}
+      The outer wrapper uses the same color scheme as the gallery/info frames inside it, so without this,
+      the frames' rounded corners would just reveal more of the exact same color behind them (invisible).
+      Making the outer wrapper transparent here lets the real page background show through instead.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-section-frame {
+        background-color: transparent;
+        background-image: none;
+      }
+
       #shopify-section-{{ section.id }} .product-info-frame {
         border-radius: {{ section.settings.product_border_radius }}px;
         overflow: hidden;
@@ -69,7 +79,7 @@
   {%- endif -%}
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}>
+<div class="product-section-frame color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}>
   <div class="container">
     {%- capture product_form_id -%}product-form-main-{{ product.id }}-{{ section.id }}{%- endcapture -%}
 
