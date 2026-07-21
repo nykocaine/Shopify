@@ -1,6 +1,7 @@
-<div class="section-spacing">
-  <div class="{% unless section.settings.floating_cart %}container{% endunless %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
-    <div class="max-w-2xl mx-auto">
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_cart %} section-floating{% endif %}">
+  <div class="section-spacing">
+    <div class="container">
+      <div class="max-w-2xl mx-auto">
       {%- if cart.empty? -%}
           <div class="empty-state">
             <div class="prose prose-justify-center">
@@ -227,6 +228,7 @@
       </div>
     </div>
   </div>
+</div>
 
 {% schema %}
 {

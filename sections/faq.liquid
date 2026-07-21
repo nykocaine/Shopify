@@ -67,11 +67,13 @@
         </div>
       </div>
     {%- else -%}
-      <div class="section-spacing">
-        <div class="{% unless section.settings.floating_faq %}container{% endunless %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
-          <div class="section-stack max-w-lg mx-auto text-center">
-            {{- section_header -}}
-            {{- section_content -}}
+      <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_faq %} section-floating{% endif %}">
+        <div class="section-spacing">
+          <div class="container">
+            <div class="section-stack max-w-lg mx-auto text-center">
+              {{- section_header -}}
+              {{- section_content -}}
+            </div>
           </div>
         </div>
       </div>

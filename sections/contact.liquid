@@ -111,11 +111,13 @@
         </div>
       </div>
     {%- else -%}
-      <div class="section-spacing">
-        <div class="{% unless section.settings.floating_contact %}container{% endunless %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
-          <div class="section-stack max-w-md mx-auto text-center">
-            {{- section_header -}}
-            {{- section_main_content -}}
+      <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_contact %} section-floating{% endif %}">
+        <div class="section-spacing">
+          <div class="container">
+            <div class="section-stack max-w-md mx-auto text-center">
+              {{- section_header -}}
+              {{- section_main_content -}}
+            </div>
           </div>
         </div>
       </div>
