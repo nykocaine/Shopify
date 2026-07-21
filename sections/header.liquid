@@ -38,6 +38,7 @@
     --header-icons-gap: {{ section.settings.icons_spacing }}px;
     {%- if section.settings.floating_header -%}
       padding-block-start: var(--container-gutter);
+      background-color: #ffffff;
     {%- endif -%}
   }
 
@@ -81,7 +82,7 @@
 </style>
 
 <height-observer variable="header">
-  <x-header class="header {% if section.settings.show_bottom_border %}header--bordered{% endif %} {% if section.settings.floating_header %}header--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.hide_on_scroll %}hide-on-scroll{% endif %} style="padding-block: {{ section.settings.header_height_padding }}px; {% if section.settings.floating_header %}border-radius: {{ section.settings.header_border_radius }}px;{% endif %}">
+  <x-header class="header {% if section.settings.show_bottom_border %}header--bordered{% endif %} {% if section.settings.floating_header %}header--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.hide_on_scroll %}hide-on-scroll{% endif %} style="padding-block: {{ section.settings.header_height_padding }}px; {% if section.settings.floating_header %}border-start-start-radius: {{ section.settings.header_border_radius }}px; border-start-end-radius: {{ section.settings.header_border_radius }}px;{% endif %}">
     {%- comment -%}
     --------------------------------------------------------------------------------------------------------------------
     LOGO AREA
