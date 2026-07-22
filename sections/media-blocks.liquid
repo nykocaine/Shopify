@@ -25,12 +25,12 @@
       }
 
       {%- comment -%}
-        Make the carousel block a bit wider than the other blocks on desktop, without pushing it
-        (or anything after it) onto its own row: it spans 2 grid columns instead of 1, so it stays
-        inline with whatever other blocks share its row.
+        Cap the carousel block's own width to 60% on desktop, without touching how it's placed in
+        the grid (no spanning, no forcing a full row): it just doesn't grow past 60% of whatever
+        column width it would normally get.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .media-blocks__item--carousel {
-        grid-column: span {{ 2 | at_most: section.settings.items_per_row }};
+        width: 60%;
       }
     }
 
