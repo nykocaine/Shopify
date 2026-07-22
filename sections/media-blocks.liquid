@@ -535,13 +535,21 @@
                             <div class="content-box h-full min-h-{{ block.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}" style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                               <div class="content-box__background-media">
                                 {%- if slide_video != blank -%}
-                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: false, controls: false, show_play_button: false, sizes: '85vw' -%}
+                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: false, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
 
-                                  <button type="button" class="carousel-video-sound-toggle circle-button" style="width: 1.75rem; height: 1.75rem; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
-                                    <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
-                                    {%- render 'icon' with 'volume', width: 12, class: 'carousel-video-sound-icon' -%}
-                                    {%- render 'icon' with 'slideshow-pause', width: 9, class: 'carousel-video-pause-icon hidden' -%}
-                                  </button>
+                                  <div class="h-stack gap-2" style="position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1;">
+                                    <button type="button" class="carousel-video-play-toggle circle-button" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
+                                      <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
+                                      {%- render 'icon' with 'slideshow-pause', width: 9, class: 'carousel-video-pause-icon' -%}
+                                      {%- render 'icon' with 'slideshow-play', width: 10, class: 'carousel-video-play-icon hidden' -%}
+                                    </button>
+
+                                    <button type="button" class="carousel-video-sound-toggle circle-button" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
+                                      <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
+                                      {%- render 'icon' with 'volume-off', width: 12, class: 'carousel-video-sound-off-icon' -%}
+                                      {%- render 'icon' with 'volume', width: 12, class: 'carousel-video-sound-icon hidden' -%}
+                                    </button>
+                                  </div>
                                 {%- elsif slide_image != blank -%}
                                   {%- render 'media' with slide_image, sizes: '85vw', class: 'image-cover' -%}
                                 {%- else -%}
@@ -624,23 +632,43 @@
                           carousel.addEventListener('carousel:change', scheduleAdvance);
                           scheduleAdvance();
 
-                          Array.prototype.forEach.call(carousel.querySelectorAll('.carousel-video-sound-toggle'), function(button) {
-                            var video = button.closest('.content-box__background-media').querySelector('video');
-                            var soundIcon = button.querySelector('.carousel-video-sound-icon');
-                            var pauseIcon = button.querySelector('.carousel-video-pause-icon');
-                            var soundActivated = false;
+                          Array.prototype.forEach.call(carousel.querySelectorAll('.content-box__background-media'), function(mediaBox) {
+                            var video = mediaBox.querySelector('video');
 
-                            button.addEventListener('click', function() {
-                              if (!soundActivated) {
-                                video.muted = false;
-                                soundIcon.classList.add('hidden');
-                                pauseIcon.classList.remove('hidden');
-                                soundActivated = true;
-                              } else if (video.paused) {
+                            if (!video) {
+                              return;
+                            }
+
+                            var playButton = mediaBox.querySelector('.carousel-video-play-toggle');
+                            var pauseIcon = playButton.querySelector('.carousel-video-pause-icon');
+                            var playIcon = playButton.querySelector('.carousel-video-play-icon');
+
+                            playButton.addEventListener('click', function() {
+                              if (video.paused) {
                                 video.play().catch(function() {});
                               } else {
                                 video.pause();
                               }
+                            });
+
+                            video.addEventListener('play', function() {
+                              pauseIcon.classList.remove('hidden');
+                              playIcon.classList.add('hidden');
+                            });
+
+                            video.addEventListener('pause', function() {
+                              pauseIcon.classList.add('hidden');
+                              playIcon.classList.remove('hidden');
+                            });
+
+                            var soundButton = mediaBox.querySelector('.carousel-video-sound-toggle');
+                            var soundOffIcon = soundButton.querySelector('.carousel-video-sound-off-icon');
+                            var soundOnIcon = soundButton.querySelector('.carousel-video-sound-icon');
+
+                            soundButton.addEventListener('click', function() {
+                              video.muted = !video.muted;
+                              soundOffIcon.classList.toggle('hidden', !video.muted);
+                              soundOnIcon.classList.toggle('hidden', video.muted);
                             });
                           });
                         })();
