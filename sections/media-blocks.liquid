@@ -667,6 +667,7 @@
                               return;
                             }
 
+                            var videoMedia = mediaBox.querySelector('video-media');
                             var pauseButton = mediaBox.querySelector('.carousel-video-pause-toggle');
                             var pauseIcon = pauseButton.querySelector('.carousel-video-pause-icon');
                             var playIcon = pauseButton.querySelector('.carousel-video-play-icon');
@@ -681,10 +682,10 @@
                             pauseButton.addEventListener('click', function(event) {
                               event.stopPropagation();
 
-                              if (video.paused) {
-                                video.play().catch(function() {});
+                              if (videoMedia.playing) {
+                                videoMedia.pause();
                               } else {
-                                video.pause();
+                                videoMedia.play();
                               }
                             });
 
