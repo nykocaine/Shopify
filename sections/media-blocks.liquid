@@ -514,10 +514,6 @@
                       grid: auto / auto-flow 45%;
                     }
                   }
-
-                  #shopify-section-{{ section.id }} carousel-next-button .icon-chevron-right {
-                    transform: scaleX(-1);
-                  }
                 </style>
 
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
@@ -571,19 +567,19 @@
                         <progress-bar track-scroll-target="carousel-{{ block.id }}" class="progress-bar"></progress-bar>
 
                         <div class="h-stack gap-2">
-                          <carousel-next-button aria-controls="carousel-{{ block.id }}">
+                          <carousel-prev-button aria-controls="carousel-{{ block.id }}">
                             <button disabled class="circle-button circle-button--outline">
                               <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
-                              {%- render 'icon' with 'chevron-right', width: 8 -%}
-                            </button>
-                          </carousel-next-button>
-
-                          <carousel-prev-button aria-controls="carousel-{{ block.id }}">
-                            <button class="circle-button circle-button--outline">
-                              <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
-                              {%- render 'icon' with 'chevron-right', width: 8 -%}
+                              {%- render 'icon' with 'big-arrow-left', direction_aware: true, width: 14 -%}
                             </button>
                           </carousel-prev-button>
+
+                          <carousel-next-button aria-controls="carousel-{{ block.id }}">
+                            <button class="circle-button circle-button--outline">
+                              <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
+                              {%- render 'icon' with 'big-arrow-right', direction_aware: true, width: 14 -%}
+                            </button>
+                          </carousel-next-button>
                         </div>
                       </div>
                     {%- endif -%}
