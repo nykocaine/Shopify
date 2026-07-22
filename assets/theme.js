@@ -4749,7 +4749,7 @@ var HighlightedHeading = class extends HTMLElement {
     this.addEventListener("split-lines:split", __privateMethod(this, _HighlightedHeading_instances, onSplit_fn).bind(this));
   }
   connectedCallback() {
-    if (__privateGet(this, _HighlightedHeading_instances, effect_get) !== "italic") {
+    if (!["italic", "stroke"].includes(__privateGet(this, _HighlightedHeading_instances, effect_get))) {
       inView9(this, __privateMethod(this, _HighlightedHeading_instances, onBecameVisible_fn).bind(this), { margin: __privateGet(this, _HighlightedHeading_instances, showAnimation_get) ? "0% 0% -15% 0%" : "1000px 0px" });
     }
   }

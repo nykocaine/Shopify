@@ -173,6 +173,7 @@ note that this may have impact on different places.
     --heading-italic-font-family: {{ settings.heading_italic_font.family }}, {{ settings.heading_italic_font.fallback_families }};
     --heading-italic-font-weight: {{ settings.heading_italic_font.weight }};
     --heading-italic-font-size-multiplier: {% if settings.heading_font.family != settings.heading_italic_font.family %}{{ settings.heading_italic_font_size_multiplier }}{% else %}0{% endif %}%;
+    --heading-stroke-width: {{ settings.heading_stroke_width | divided_by: 100.0 }}em;
     {%- if settings.text_font_source == 'apple' -%}
     --text-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --text-font-weight: {{ settings.text_font_weight }};

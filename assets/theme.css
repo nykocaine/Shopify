@@ -2064,6 +2064,16 @@ label:focus-within:has(:focus-visible) {
   font-size: calc(100% + var(--heading-italic-font-size-multiplier));
 }
 
+.highlighted-heading[effect="stroke"] em {
+  font-style: inherit;
+  text-indent: 0;
+  /* A thin stroke barely reads on regular/light weights, so this effect always uses the
+     boldest weight available, regardless of the heading's configured font weight. */
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: var(--heading-stroke-width, 0.04em) rgb(var(--heading-highlight-accent-color));
+}
+
 .highlighted-heading:where([effect="marker"], [effect="tilted-marker"]) em {
   --highlight-inline-padding: 8px;
   --highlight-block-padding: .2em;
