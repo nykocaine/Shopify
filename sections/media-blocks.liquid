@@ -517,6 +517,14 @@
                   #carousel-{{ block.id }} .carousel-video-spinner .icon-spinner {
                     animation: 1s linear infinite spin;
                   }
+
+                  #carousel-{{ block.id }} video-media {
+                    pointer-events: none;
+                  }
+
+                  #carousel-{{ block.id }} video-media::part(play-button) {
+                    display: none;
+                  }
                 </style>
 
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
@@ -539,7 +547,7 @@
                             <div class="content-box h-full min-h-{{ block.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}" style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                               <div class="content-box__background-media">
                                 {%- if slide_video != blank -%}
-                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: false, controls: false, show_play_button: false, playsinline: true, sizes: '85vw', style: 'pointer-events: none;' -%}
+                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: false, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
 
                                   <div class="carousel-video-spinner" style="width: 2rem; height: 2rem; position: absolute; inset-block-start: 50%; inset-inline-start: 50%; transform: translate(-50%, -50%); z-index: 1; color: #fff; pointer-events: none;">
                                     {%- render 'icon' with 'spinner', width: 32, class: 'icon-spinner' -%}
