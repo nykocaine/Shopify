@@ -662,6 +662,13 @@
                             var pauseButton = mediaBox.querySelector('.carousel-video-pause-toggle');
                             var pauseIcon = pauseButton.querySelector('.carousel-video-pause-icon');
                             var playIcon = pauseButton.querySelector('.carousel-video-play-icon');
+                            var poster = mediaBox.querySelector('video-media > img');
+
+                            video.addEventListener('playing', function() {
+                              if (poster) {
+                                poster.classList.add('carousel-video-poster-hidden');
+                              }
+                            });
 
                             pauseButton.addEventListener('click', function() {
                               if (video.paused) {
