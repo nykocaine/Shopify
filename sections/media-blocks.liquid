@@ -505,7 +505,6 @@
                   #carousel-{{ block.id }} {
                     grid: auto / auto-flow 85%;
                     gap: .75rem;
-                    padding-inline-end: 1.25rem;
                     display: grid;
                   }
 
@@ -513,6 +512,10 @@
                     #carousel-{{ block.id }} {
                       grid: auto / auto-flow 45%;
                     }
+                  }
+
+                  #shopify-section-{{ section.id }} carousel-prev-button .icon-chevron-right {
+                    transform: scaleX(-1);
                   }
                 </style>
 
@@ -570,14 +573,14 @@
                           <carousel-prev-button aria-controls="carousel-{{ block.id }}">
                             <button disabled class="circle-button circle-button--outline">
                               <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
-                              {%- render 'icon' with 'big-arrow-left', direction_aware: true, width: 14 -%}
+                              {%- render 'icon' with 'chevron-right', width: 8 -%}
                             </button>
                           </carousel-prev-button>
 
                           <carousel-next-button aria-controls="carousel-{{ block.id }}">
                             <button class="circle-button circle-button--outline">
                               <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
-                              {%- render 'icon' with 'big-arrow-right', direction_aware: true, width: 14 -%}
+                              {%- render 'icon' with 'chevron-right', width: 8 -%}
                             </button>
                           </carousel-next-button>
                         </div>
