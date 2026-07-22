@@ -4087,10 +4087,59 @@ var VideoMedia = class extends BaseMedia {
       this.attachShadow({ mode: "open" }).appendChild(document.getElementById("video-media-default-template").content.cloneNode(true));
     }
     if (this.getAttribute("type") === "video") {
+      this.#selectVideoSource();
       inView8(this, () => {
         this.querySelector("video")?.setAttribute("preload", "auto");
       }, { margin: "800px" });
     }
+  }
+  /**
+   * Shopify generates several resolutions for an uploaded video, but a plain <video> just plays
+   * whichever <source> comes first regardless of how large it is actually rendered or how fast
+   * the connection is. This drops every <source> except the lowest resolution that still covers
+   * the element's real display size (in device pixels), going one tier lower on connections the
+   * browser reports as slow or in data-saver mode (navigator.connection is Chromium-only, so this
+   * part is a bonus rather than a requirement). It runs once per connection to the DOM, and is a
+   * no-op afterwards since only one <source> is left for the current source set.
+   */
+  #selectVideoSource() {
+    const video = this.querySelector("video");
+
+    if (!video) {
+      return;
+    }
+
+    const matchingSources = Array.from(video.querySelectorAll("source")).filter((source) => !source.media || window.matchMedia(source.media).matches);
+
+    if (matchingSources.length <= 1) {
+      return;
+    }
+
+    const devicePixelRatio = window.devicePixelRatio || 1;
+    let targetWidth = this.getBoundingClientRect().width * devicePixelRatio;
+
+    if (!targetWidth) {
+      return;
+    }
+
+    if ("connection" in navigator && navigator.connection) {
+      const { saveData, effectiveType } = navigator.connection;
+
+      if (saveData || ["slow-2g", "2g", "3g"].includes(effectiveType)) {
+        targetWidth = targetWidth / 2;
+      }
+    }
+
+    const sortedSources = matchingSources.slice().sort((a, b) => a.width - b.width);
+    const bestFit = sortedSources.find((source) => source.width >= targetWidth) || sortedSources[sortedSources.length - 1];
+
+    matchingSources.forEach((source) => {
+      if (source !== bestFit) {
+        source.remove();
+      }
+    });
+
+    video.load();
   }
   play({ restart = false } = {}) {
     if (restart && !this.hasAttribute("host")) {
