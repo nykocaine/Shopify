@@ -535,16 +535,20 @@
                             <div class="content-box h-full min-h-{{ block.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}" style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                               <div class="content-box__background-media">
                                 {%- if slide_video != blank -%}
-                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: false, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
+                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: false, controls: false, show_play_button: false, playsinline: true, sizes: '85vw', style: 'pointer-events: none;' -%}
 
-                                  <div class="h-stack gap-2" style="width: auto; height: auto; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1;">
-                                    <button type="button" class="carousel-video-play-toggle circle-button" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
+                                  <div class="carousel-video-spinner" style="width: 2rem; height: 2rem; position: absolute; inset-block-start: 50%; inset-inline-start: 50%; transform: translate(-50%, -50%); z-index: 1; color: #fff; pointer-events: none;">
+                                    {%- render 'icon' with 'spinner', width: 32, class: 'icon-spinner' -%}
+                                  </div>
+
+                                  <div class="h-stack gap-2" style="width: auto; height: auto; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1; pointer-events: auto;">
+                                    <button type="button" class="carousel-video-play-toggle circle-button" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary)); pointer-events: auto;">
                                       <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
-                                      {%- render 'icon' with 'slideshow-pause', width: 9, class: 'carousel-video-pause-icon' -%}
-                                      {%- render 'icon' with 'slideshow-play', width: 10, class: 'carousel-video-play-icon hidden' -%}
+                                      {%- render 'icon' with 'slideshow-pause', width: 9, class: 'carousel-video-pause-icon hidden' -%}
+                                      {%- render 'icon' with 'slideshow-play', width: 10, class: 'carousel-video-play-icon' -%}
                                     </button>
 
-                                    <button type="button" class="carousel-video-sound-toggle circle-button" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
+                                    <button type="button" class="carousel-video-sound-toggle circle-button" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary)); pointer-events: auto;">
                                       <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
                                       {%- render 'icon' with 'volume-off', width: 12, class: 'carousel-video-sound-off-icon' -%}
                                       {%- render 'icon' with 'volume', width: 12, class: 'carousel-video-sound-icon hidden' -%}
