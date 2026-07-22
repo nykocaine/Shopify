@@ -465,9 +465,51 @@
                   <!-- Empty item -->
                 </div>
 
-              {%- when '_carousel' -%}
-                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %}">
-                  {%- render block -%}
+              {%- when 'carousel' -%}
+                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {{ block.shopify_attributes }}>
+                  <slideshow-carousel id="carousel-{{ block.id }}" allow-swipe cell-selector=".slideshow__slide" class="slideshow h-full" transition="fade" autoplay="{{ block.settings.cycle_speed }}" role="region">
+                    {%- for i in (1..4) -%}
+                      {%- capture image_key -%}image_{{ i }}{%- endcapture -%}
+                      {%- capture video_key -%}video_{{ i }}{%- endcapture -%}
+                      {%- capture heading_key -%}heading_{{ i }}{%- endcapture -%}
+                      {%- capture text_key -%}text_{{ i }}{%- endcapture -%}
+
+                      {%- assign slide_image = block.settings[image_key] -%}
+                      {%- assign slide_video = block.settings[video_key] -%}
+                      {%- assign slide_heading = block.settings[heading_key] -%}
+                      {%- assign slide_text = block.settings[text_key] -%}
+
+                      {%- if slide_image != blank or slide_video != blank or slide_heading != blank or slide_text != blank -%}
+                        <div class="slideshow__slide {% if forloop.first %}is-selected{% endif %}" data-slide-type="{% if slide_video != blank %}video{% else %}image{% endif %}" role="group">
+                          <div class="content-box h-full min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
+                            <div class="content-box__background-media">
+                              {%- if slide_video != blank -%}
+                                {%- render 'media', media: slide_video, autoplay: true, loop: true, controls: false, sizes: '100vw' -%}
+                              {%- elsif slide_image != blank -%}
+                                {%- render 'media' with slide_image, sizes: '100vw' -%}
+                              {%- else -%}
+                                {{- 'hero-apparel-1' | placeholder_svg_tag: 'size-full' -}}
+                              {%- endif -%}
+                            </div>
+
+                            {%- if slide_heading != blank or slide_text != blank -%}
+                              <div class="place-self-center" style="max-width: 30rem">
+                                <div class="prose prose-justify-center">
+                                  {%- if slide_heading != blank -%}
+                                    {%- render 'heading', content: slide_heading, style: 'h3', html_tag: 'h3' -%}
+                                  {%- endif -%}
+
+                                  {%- if slide_text != blank -%}
+                                    <div>{{ slide_text }}</div>
+                                  {%- endif -%}
+                                </div>
+                              </div>
+                            {%- endif -%}
+                          </div>
+                        </div>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </slideshow-carousel>
                 </div>
             {%- endcase -%}
           {%- endfor -%}
@@ -2352,7 +2394,126 @@
       ]
     },
     {
-      "type": "_carousel"
+      "type": "carousel",
+      "name": "Carousel",
+      "settings": [
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-3"
+        },
+        {
+          "type": "range",
+          "id": "cycle_speed",
+          "min": 2,
+          "max": 20,
+          "step": 1,
+          "unit": "sec",
+          "label": "Seconds between slides",
+          "default": 5
+        },
+        {
+          "type": "header",
+          "content": "Image 1"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_1",
+          "label": "t:global.image.image"
+        },
+        {
+          "type": "video",
+          "id": "video_1",
+          "label": "t:global.video.video",
+          "info": "If set, this plays instead of the image above."
+        },
+        {
+          "type": "inline_richtext",
+          "id": "heading_1",
+          "label": "t:global.text.heading"
+        },
+        {
+          "type": "richtext",
+          "id": "text_1",
+          "label": "t:global.text.content"
+        },
+        {
+          "type": "header",
+          "content": "Image 2"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_2",
+          "label": "t:global.image.image"
+        },
+        {
+          "type": "video",
+          "id": "video_2",
+          "label": "t:global.video.video",
+          "info": "If set, this plays instead of the image above."
+        },
+        {
+          "type": "inline_richtext",
+          "id": "heading_2",
+          "label": "t:global.text.heading"
+        },
+        {
+          "type": "richtext",
+          "id": "text_2",
+          "label": "t:global.text.content"
+        },
+        {
+          "type": "header",
+          "content": "Image 3"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_3",
+          "label": "t:global.image.image"
+        },
+        {
+          "type": "video",
+          "id": "video_3",
+          "label": "t:global.video.video",
+          "info": "If set, this plays instead of the image above."
+        },
+        {
+          "type": "inline_richtext",
+          "id": "heading_3",
+          "label": "t:global.text.heading"
+        },
+        {
+          "type": "richtext",
+          "id": "text_3",
+          "label": "t:global.text.content"
+        },
+        {
+          "type": "header",
+          "content": "Image 4"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_4",
+          "label": "t:global.image.image"
+        },
+        {
+          "type": "video",
+          "id": "video_4",
+          "label": "t:global.video.video",
+          "info": "If set, this plays instead of the image above."
+        },
+        {
+          "type": "inline_richtext",
+          "id": "heading_4",
+          "label": "t:global.text.heading"
+        },
+        {
+          "type": "richtext",
+          "id": "text_4",
+          "label": "t:global.text.content"
+        }
+      ]
     }
   ],
   "presets": [
