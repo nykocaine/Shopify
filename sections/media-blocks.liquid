@@ -1,4 +1,27 @@
 {%- if section.blocks.size > 0 -%}
+  {%- liquid
+    # When the section is just a carousel block + one other block, the carousel should take 60%
+    # of the row and the other block the remaining 40% (whichever column each one lands in).
+    assign carousel_count = 0
+    assign carousel_block_index = 0
+
+    for block in section.blocks
+      if block.type == 'carousel'
+        assign carousel_count = carousel_count | plus: 1
+
+        if carousel_block_index == 0
+          assign carousel_block_index = forloop.index
+        endif
+      endif
+    endfor
+
+    assign use_carousel_split = false
+
+    if carousel_count == 1 and section.blocks.size == 2
+      assign use_carousel_split = true
+    endif
+  -%}
+
   <style>
     #shopify-section-{{ section.id }} {
       --media-blocks-grid: {% if section.settings.stack_on_mobile %}auto-flow / minmax(0, 1fr){% else %}auto / auto-flow 78vw{% endif %};
@@ -21,16 +44,7 @@
 
     @media screen and (min-width: 1000px) {
       #shopify-section-{{ section.id }} {
-        --media-blocks-grid: auto-flow / repeat({{ section.settings.items_per_row }}, minmax(0, 1fr));
-      }
-
-      {%- comment -%}
-        Cap the carousel block's own width to 60% on desktop, without touching how it's placed in
-        the grid (no spanning, no forcing a full row): it just doesn't grow past 60% of whatever
-        column width it would normally get.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .media-blocks__item--carousel {
-        width: 60%;
+        --media-blocks-grid: auto-flow / {% if use_carousel_split %}{% if carousel_block_index == 1 %}3fr 2fr{% else %}2fr 3fr{% endif %}{% else %}repeat({{ section.settings.items_per_row }}, minmax(0, 1fr)){% endif %};
       }
     }
 
@@ -543,7 +557,7 @@
                   }
                 </style>
 
-                <div class="media-blocks__item media-blocks__item--carousel {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
+                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
                   <div class="v-stack gap-4">
                     <div style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                     <product-list id="carousel-{{ block.id }}" cell-selector=".snap-start" class="scroll-area snap-x">
