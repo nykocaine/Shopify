@@ -515,9 +515,9 @@
                   }
                 </style>
 
-                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {{ block.shopify_attributes }}>
+                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
                   <div class="v-stack gap-4">
-                    <div id="carousel-{{ block.id }}" class="scroll-area snap-x bleed">
+                    <product-list id="carousel-{{ block.id }}" cell-selector=".snap-start" class="scroll-area snap-x">
                       {%- for i in (1..4) -%}
                         {%- capture image_key -%}image_{{ i }}{%- endcapture -%}
                         {%- capture video_key -%}video_{{ i }}{%- endcapture -%}
@@ -559,7 +559,7 @@
                           </div>
                         {%- endif -%}
                       {%- endfor -%}
-                    </div>
+                    </product-list>
 
                     {%- if carousel_slide_count > 1 -%}
                       <div class="h-stack gap-4" style="{% if block.settings.controls_position == 'left' %}justify-content: flex-start;{% elsif block.settings.controls_position == 'right' %}justify-content: flex-end;{% else %}justify-content: center;{% endif %}">
