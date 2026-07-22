@@ -607,18 +607,17 @@
 
                             carousel.cells.forEach(function(cell) {
                               if (cell !== carousel.selectedCell) {
-                                var otherVideoMedia = cell.querySelector('video-media');
-                                if (otherVideoMedia) {
-                                  otherVideoMedia.pause();
+                                var otherVideo = cell.querySelector('video');
+                                if (otherVideo) {
+                                  otherVideo.pause();
                                 }
                               }
                             });
 
                             var video = carousel.selectedCell ? carousel.selectedCell.querySelector('video') : null;
-                            var videoMedia = carousel.selectedCell ? carousel.selectedCell.querySelector('video-media') : null;
 
-                            if (video && videoMedia) {
-                              videoMedia.play();
+                            if (video) {
+                              video.play().catch(function() {});
 
                               video.addEventListener('ended', function onEnded() {
                                 video.removeEventListener('ended', onEnded);
@@ -636,9 +635,8 @@
 
                           Array.prototype.forEach.call(carousel.querySelectorAll('.content-box__background-media'), function(mediaBox) {
                             var video = mediaBox.querySelector('video');
-                            var videoMedia = mediaBox.querySelector('video-media');
 
-                            if (!video || !videoMedia) {
+                            if (!video) {
                               return;
                             }
 
@@ -648,9 +646,9 @@
 
                             pauseButton.addEventListener('click', function() {
                               if (video.paused) {
-                                videoMedia.play();
+                                video.play().catch(function() {});
                               } else {
-                                videoMedia.pause();
+                                video.pause();
                               }
                             });
 
