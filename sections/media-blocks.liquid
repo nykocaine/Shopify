@@ -535,7 +535,13 @@
                             <div class="content-box h-full min-h-{{ block.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}" style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                               <div class="content-box__background-media">
                                 {%- if slide_video != blank -%}
-                                  {%- render 'media', media: slide_video, autoplay: true, loop: true, controls: false, sizes: '85vw' -%}
+                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: false, controls: false, show_play_button: false, sizes: '85vw' -%}
+
+                                  <button type="button" class="carousel-video-sound-toggle circle-button" style="position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
+                                    <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
+                                    {%- render 'icon' with 'volume', width: 12, class: 'carousel-video-sound-icon' -%}
+                                    {%- render 'icon' with 'slideshow-pause', width: 9, class: 'carousel-video-pause-icon hidden' -%}
+                                  </button>
                                 {%- elsif slide_image != blank -%}
                                   {%- render 'media' with slide_image, sizes: '85vw', class: 'image-cover' -%}
                                 {%- else -%}
@@ -565,22 +571,78 @@
 
                     {%- if carousel_slide_count > 1 -%}
                       <progress-bar track-scroll-target="carousel-{{ block.id }}" class="progress-bar w-full"></progress-bar>
+                    {%- endif -%}
 
+                    {%- if carousel_slide_count >= 1 -%}
                       <script>
                         (function() {
                           var carousel = document.getElementById('carousel-{{ block.id }}');
 
-                          if (!carousel || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                          if (!carousel) {
                             return;
                           }
 
-                          setInterval(function() {
+                          var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                          var advanceTimer;
+
+                          function goToNext() {
                             if (carousel.selectedIndex >= carousel.cells.length - 1) {
                               carousel.select(0);
                             } else {
                               carousel.next();
                             }
-                          }, {{ block.settings.cycle_speed | times: 1000 }});
+                          }
+
+                          function scheduleAdvance() {
+                            clearTimeout(advanceTimer);
+
+                            carousel.cells.forEach(function(cell) {
+                              if (cell !== carousel.selectedCell) {
+                                var otherVideo = cell.querySelector('video');
+                                if (otherVideo) {
+                                  otherVideo.pause();
+                                }
+                              }
+                            });
+
+                            var video = carousel.selectedCell ? carousel.selectedCell.querySelector('video') : null;
+
+                            if (video) {
+                              video.play().catch(function() {});
+
+                              video.addEventListener('ended', function onEnded() {
+                                video.removeEventListener('ended', onEnded);
+                                if (!reduceMotion) {
+                                  goToNext();
+                                }
+                              });
+                            } else if (!reduceMotion) {
+                              advanceTimer = setTimeout(goToNext, {{ block.settings.cycle_speed | times: 1000 }});
+                            }
+                          }
+
+                          carousel.addEventListener('carousel:change', scheduleAdvance);
+                          scheduleAdvance();
+
+                          Array.prototype.forEach.call(carousel.querySelectorAll('.carousel-video-sound-toggle'), function(button) {
+                            var video = button.closest('.content-box__background-media').querySelector('video');
+                            var soundIcon = button.querySelector('.carousel-video-sound-icon');
+                            var pauseIcon = button.querySelector('.carousel-video-pause-icon');
+                            var soundActivated = false;
+
+                            button.addEventListener('click', function() {
+                              if (!soundActivated) {
+                                video.muted = false;
+                                soundIcon.classList.add('hidden');
+                                pauseIcon.classList.remove('hidden');
+                                soundActivated = true;
+                              } else if (video.paused) {
+                                video.play().catch(function() {});
+                              } else {
+                                video.pause();
+                              }
+                            });
+                          });
                         })();
                       </script>
                     {%- endif -%}

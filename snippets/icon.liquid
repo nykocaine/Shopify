@@ -182,6 +182,12 @@ To render an icon made of an image, you need to explicitly pass the image, and t
         <path stroke="currentColor" stroke-linecap="square" stroke-linejoin="round" stroke-width="2" d="M1.5 1.5v8M7.5 1.5v8"/>
       </svg>
 
+    {%- when 'volume' -%}
+      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 14 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
+        <path fill="currentColor" d="M1 6h2.5L7 3v10L3.5 10H1V6Z"/>
+        <path stroke="currentColor" stroke-width="{{ settings.icon_stroke_width }}" stroke-linecap="round" d="M10.5 5.5a4 4 0 0 1 0 5M12.5 3.5a7 7 0 0 1 0 9"/>
+      </svg>
+
     {%- when 'search' -%}
       <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
         <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" d="M1.333 7.333a6 6 0 1 0 12 0 6 6 0 0 0-12 0ZM11.575 11.576l3.09 3.09" />
