@@ -513,10 +513,6 @@
                       grid: auto / auto-flow 45%;
                     }
                   }
-
-                  #shopify-section-{{ section.id }} carousel-next-button .icon-chevron-right {
-                    transform: scaleX(-1);
-                  }
                 </style>
 
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
@@ -535,7 +531,7 @@
 
                         {%- if slide_image != blank or slide_video != blank or slide_heading != blank or slide_text != blank -%}
                           <div class="snap-start">
-                            <div class="content-box h-full min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}" style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
+                            <div class="content-box h-full min-h-{{ block.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}" style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                               <div class="content-box__background-media">
                                 {%- if slide_video != blank -%}
                                   {%- render 'media', media: slide_video, autoplay: true, loop: true, controls: false, sizes: '85vw' -%}
@@ -566,25 +562,7 @@
                     </product-list>
 
                     {%- if carousel_slide_count > 1 -%}
-                      <div class="h-stack gap-4" style="{% if block.settings.controls_position == 'left' %}justify-content: flex-start;{% elsif block.settings.controls_position == 'right' %}justify-content: flex-end;{% else %}justify-content: center;{% endif %}">
-                        <progress-bar track-scroll-target="carousel-{{ block.id }}" class="progress-bar"></progress-bar>
-
-                        <div class="h-stack gap-2">
-                          <carousel-next-button aria-controls="carousel-{{ block.id }}">
-                            <button disabled class="circle-button circle-button--outline">
-                              <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
-                              {%- render 'icon' with 'chevron-right', width: 8 -%}
-                            </button>
-                          </carousel-next-button>
-
-                          <carousel-prev-button aria-controls="carousel-{{ block.id }}">
-                            <button class="circle-button circle-button--outline">
-                              <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
-                              {%- render 'icon' with 'chevron-right', width: 8 -%}
-                            </button>
-                          </carousel-prev-button>
-                        </div>
-                      </div>
+                      <progress-bar track-scroll-target="carousel-{{ block.id }}" class="progress-bar w-full"></progress-bar>
                     {%- endif -%}
                   </div>
                 </div>
@@ -2492,23 +2470,32 @@
         },
         {
           "type": "select",
-          "id": "controls_position",
-          "label": "Controls position",
+          "id": "mobile_block_size",
+          "label": "Mobile image height",
           "options": [
             {
-              "value": "left",
-              "label": "t:global.position.left"
+              "value": "auto",
+              "label": "t:global.sizes.original_image_ratio"
             },
             {
-              "value": "center",
-              "label": "t:global.position.center"
+              "value": "sm",
+              "label": "t:global.sizes.small"
             },
             {
-              "value": "right",
-              "label": "t:global.position.right"
+              "value": "md",
+              "label": "t:global.sizes.medium"
+            },
+            {
+              "value": "lg",
+              "label": "t:global.sizes.large"
+            },
+            {
+              "value": "fill",
+              "label": "t:global.sizes.fit_screen"
             }
           ],
-          "default": "center"
+          "info": "t:global.image.ratio_avoid_cropping_info",
+          "default": "auto"
         },
         {
           "type": "header",
