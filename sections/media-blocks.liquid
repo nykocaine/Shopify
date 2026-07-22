@@ -518,9 +518,19 @@
                     }
                   }
 
-                  #carousel-{{ block.id }} video-media > img {
+                  #carousel-{{ block.id }} video-media > img,
+                  #carousel-{{ block.id }} video-media > video {
                     opacity: 1 !important;
+                  }
+
+                  #carousel-{{ block.id }} video-media > img {
                     z-index: 1;
+                    transition: opacity .3s ease;
+                  }
+
+                  #carousel-{{ block.id }} video-media > img.carousel-video-poster-hidden {
+                    opacity: 0 !important;
+                    pointer-events: none;
                   }
                 </style>
 
@@ -544,7 +554,7 @@
                             <div class="content-box h-full min-h-{{ block.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}" style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                               <div class="content-box__background-media">
                                 {%- if slide_video != blank -%}
-                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: false, controls: false, playsinline: true, sizes: '85vw' -%}
+                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: false, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
 
                                   <div class="h-stack gap-2" style="width: auto; height: auto; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1;">
                                     <button type="button" class="carousel-video-pause-toggle circle-button hidden" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
