@@ -76,8 +76,8 @@ note that this may have impact on different places.
     --container-gutter: {{ settings.container_gutter | times: 0.41667 | round: 3 }}rem;
 
     /* Spacing */
-    --section-vertical-spacing: var(--container-gutter);
-    --section-stack-row-gap: calc(var(--container-gutter) * 0.75);
+    --section-vertical-spacing: {{ settings.section_spacing | times: 0.41667 | round: 3 }}rem;
+    --section-stack-row-gap: calc(var(--section-vertical-spacing) * 0.75);
 
     /* Form settings */
     --form-gap: 1rem; /* Gap between fieldset and submit button */
@@ -258,6 +258,7 @@ note that this may have impact on different places.
 
       /* Spacing */
       --container-gutter: {{ settings.container_gutter | times: 0.66667 | round: 3 }}rem;
+      --section-vertical-spacing: {{ settings.section_spacing | times: 0.66667 | round: 3 }}rem;
 
       /* Form settings */
       --form-gap: 1.25rem; /* Gap between fieldset and submit button */
@@ -281,6 +282,7 @@ note that this may have impact on different places.
     :root {
       /* Spacing settings */
       --container-gutter: {{ settings.container_gutter }}rem;
+      --section-vertical-spacing: {{ settings.section_spacing }}rem;
     }
   }
 
