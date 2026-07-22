@@ -1,0 +1,96 @@
+{%- capture slide -%}
+  <div class="content-box min-h-md sm:min-h-lg">
+    <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }}">
+      {%- if block.settings.video != blank -%}
+        {%- render 'media', media: block.settings.video, autoplay: true, loop: true, controls: false, sizes: '100vw' -%}
+      {%- elsif block.settings.image != blank -%}
+        {%- render 'media' with block.settings.image, sizes: '100vw' -%}
+      {%- else -%}
+        {{- 'hero-apparel-1' | placeholder_svg_tag: 'size-full' -}}
+      {%- endif -%}
+    </div>
+
+    {%- if block.settings.heading != blank or block.settings.text != blank -%}
+      <div class="place-self-center" style="max-width: 40rem">
+        <div class="prose prose-justify-center">
+          {%- if block.settings.heading != blank -%}
+            {%- render 'heading', content: block.settings.heading, style: 'h3', html_tag: 'h3' -%}
+          {%- endif -%}
+
+          {%- if block.settings.text != blank -%}
+            <div>{{ block.settings.text }}</div>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+{%- endcapture -%}
+
+<div class="slideshow__slide color-scheme color-scheme--{{ block.settings.color_scheme.id }}" data-slide-type="{% if block.settings.video != blank %}video{% else %}image{% endif %}" role="group" {{ block.shopify_attributes }}>
+  {{- slide -}}
+</div>
+
+{% schema %}
+{
+  "name": "Carousel slide",
+  "tag": null,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:global.colors.scheme",
+      "default": "scheme-3"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:global.image.image"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "t:global.video.video",
+      "info": "If set, this plays instead of the image above."
+    },
+    {
+      "type": "header",
+      "content": "t:global.text.content"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "t:global.text.heading"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "t:global.text.content"
+    },
+    {
+      "type": "header",
+      "content": "t:global.colors.category"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "t:global.colors.image_overlay_color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "t:global.colors.image_overlay_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 20
+    }
+  ],
+  "presets": [
+    {
+      "name": "Carousel slide"
+    }
+  ]
+}
+{% endschema %}

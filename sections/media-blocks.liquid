@@ -464,6 +464,11 @@
                 <div class="media-blocks__item color-scheme color-scheme--{{ block.settings.color_scheme.id }} md-max:hidden" {{ block.shopify_attributes }}>
                   <!-- Empty item -->
                 </div>
+
+              {%- when '_carousel' -%}
+                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %}">
+                  {%- render block -%}
+                </div>
             {%- endcase -%}
           {%- endfor -%}
         </div>
@@ -2345,6 +2350,9 @@
           "default": "scheme-2"
         }
       ]
+    },
+    {
+      "type": "_carousel"
     }
   ],
   "presets": [

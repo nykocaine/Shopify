@@ -1,0 +1,97 @@
+<slideshow-carousel id="carousel-{{ block.id }}" allow-swipe cell-selector=".slideshow__slide" class="slideshow" transition="{{ block.settings.transition_type }}" {% if block.settings.autoplay %}autoplay="{{ block.settings.cycle_speed }}" {% if block.settings.pause_auto_rotate_on_hover %}pause-on-hover{% endif %}{% endif %} style="border-radius: {{ block.settings.border_radius }}px;" role="region" {{ block.shopify_attributes }}>
+  {%- content_for 'blocks' -%}
+</slideshow-carousel>
+
+{% schema %}
+{
+  "name": "Carousel",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "transition_type",
+      "label": "t:sections.slideshow.transition_type",
+      "options": [
+        {
+          "value": "fade",
+          "label": "t:sections.slideshow.transition_type_options.fade"
+        },
+        {
+          "value": "vertical_reveal",
+          "label": "t:sections.slideshow.transition_type_options.vertical_reveal"
+        },
+        {
+          "value": "curtain",
+          "label": "t:sections.slideshow.transition_type_options.curtain"
+        },
+        {
+          "value": "distortion",
+          "label": "t:sections.slideshow.transition_type_options.distortion"
+        },
+        {
+          "value": "perspective",
+          "label": "t:sections.slideshow.transition_type_options.perspective"
+        },
+        {
+          "value": "scale_down",
+          "label": "t:sections.slideshow.transition_type_options.scale_down"
+        }
+      ],
+      "default": "fade"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "t:sections.slideshow.auto_rotate_between_slides",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_auto_rotate_on_hover",
+      "label": "t:sections.slideshow.pause_auto_rotate_on_hover",
+      "default": false,
+      "visible_if": "{{ block.settings.autoplay }}"
+    },
+    {
+      "type": "range",
+      "id": "cycle_speed",
+      "min": 2,
+      "max": 20,
+      "step": 1,
+      "unit": "sec",
+      "label": "Seconds between slides",
+      "default": 5,
+      "visible_if": "{{ block.settings.autoplay }}"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0
+    }
+  ],
+  "max_blocks": 4,
+  "blocks": [
+    {
+      "type": "_carousel-slide"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Carousel",
+      "blocks": [
+        {
+          "type": "_carousel-slide"
+        },
+        {
+          "type": "_carousel-slide"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
