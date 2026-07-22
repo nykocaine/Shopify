@@ -466,8 +466,43 @@
                 </div>
 
               {%- when 'carousel' -%}
+                {%- liquid
+                  assign carousel_slide_count = 0
+
+                  for i in (1..4)
+                    capture image_key
+                      echo 'image_'
+                      echo i
+                    endcapture
+
+                    capture video_key
+                      echo 'video_'
+                      echo i
+                    endcapture
+
+                    capture heading_key
+                      echo 'heading_'
+                      echo i
+                    endcapture
+
+                    capture text_key
+                      echo 'text_'
+                      echo i
+                    endcapture
+
+                    assign slide_image = block.settings[image_key]
+                    assign slide_video = block.settings[video_key]
+                    assign slide_heading = block.settings[heading_key]
+                    assign slide_text = block.settings[text_key]
+
+                    if slide_image != blank or slide_video != blank or slide_heading != blank or slide_text != blank
+                      assign carousel_slide_count = carousel_slide_count | plus: 1
+                    endif
+                  endfor
+                -%}
+
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {{ block.shopify_attributes }}>
-                  <slideshow-carousel id="carousel-{{ block.id }}" allow-swipe cell-selector=".slideshow__slide" class="slideshow h-full" transition="fade" autoplay="{{ block.settings.cycle_speed }}" role="region">
+                  <slideshow-carousel id="carousel-{{ block.id }}" allow-swipe cell-selector=".slideshow__slide" class="slideshow h-full" transition="fade" autoplay="{{ block.settings.cycle_speed }}" style="position: relative;" role="region">
                     {%- for i in (1..4) -%}
                       {%- capture image_key -%}image_{{ i }}{%- endcapture -%}
                       {%- capture video_key -%}video_{{ i }}{%- endcapture -%}
@@ -486,7 +521,7 @@
                               {%- if slide_video != blank -%}
                                 {%- render 'media', media: slide_video, autoplay: true, loop: true, controls: false, sizes: '100vw' -%}
                               {%- elsif slide_image != blank -%}
-                                {%- render 'media' with slide_image, sizes: '100vw' -%}
+                                {%- render 'media' with slide_image, sizes: '100vw', class: 'image-cover' -%}
                               {%- else -%}
                                 {{- 'hero-apparel-1' | placeholder_svg_tag: 'size-full' -}}
                               {%- endif -%}
@@ -509,6 +544,35 @@
                         </div>
                       {%- endif -%}
                     {%- endfor -%}
+
+                    {%- if carousel_slide_count > 1 -%}
+                      <div class="h-stack gap-4" style="position: absolute; inset-block-end: 1.25rem; inset-inline: 1.25rem; z-index: 1; {% if block.settings.controls_position == 'left' %}justify-content: flex-start;{% elsif block.settings.controls_position == 'right' %}justify-content: flex-end;{% else %}justify-content: center;{% endif %}">
+                        <carousel-navigation class="scroll-marker-group scroll-marker-group--lines scroll-marker-group--autoplay" aria-controls="carousel-{{ block.id }}">
+                          {%- for n in (1..carousel_slide_count) -%}
+                            <button class="scroll-marker tap-area tap-area--sm" aria-current="{% if forloop.first %}true{% else %}false{% endif %}">
+                              <span class="sr-only">{{ 'general.accessibility.go_to_item' | t: index: forloop.index }}</span>
+                              <span class="scroll-marker-group__line-progress"></span>
+                            </button>
+                          {%- endfor -%}
+                        </carousel-navigation>
+
+                        <div class="h-stack gap-2">
+                          <carousel-prev-button aria-controls="carousel-{{ block.id }}">
+                            <button disabled class="circle-button circle-button--outline">
+                              <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
+                              {%- render 'icon' with 'chevron-right', width: 8 -%}
+                            </button>
+                          </carousel-prev-button>
+
+                          <carousel-next-button aria-controls="carousel-{{ block.id }}">
+                            <button class="circle-button circle-button--outline">
+                              <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
+                              {%- render 'icon' with 'chevron-right', width: 8 -%}
+                            </button>
+                          </carousel-next-button>
+                        </div>
+                      </div>
+                    {%- endif -%}
                   </slideshow-carousel>
                 </div>
             {%- endcase -%}
@@ -2412,6 +2476,26 @@
           "unit": "sec",
           "label": "Seconds between slides",
           "default": 5
+        },
+        {
+          "type": "select",
+          "id": "controls_position",
+          "label": "Controls position",
+          "options": [
+            {
+              "value": "left",
+              "label": "t:global.position.left"
+            },
+            {
+              "value": "center",
+              "label": "t:global.position.center"
+            },
+            {
+              "value": "right",
+              "label": "t:global.position.right"
+            }
+          ],
+          "default": "center"
         },
         {
           "type": "header",
