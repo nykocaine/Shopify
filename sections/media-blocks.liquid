@@ -512,10 +512,6 @@
                     #carousel-{{ block.id }} {
                       grid: auto / auto-flow 45%;
                     }
-
-                    #carousel-{{ block.id }} .carousel-video-pause-toggle {
-                      display: none !important;
-                    }
                   }
 
                   #carousel-{{ block.id }} video-media > img,
@@ -560,13 +556,13 @@
                                 {%- if slide_video != blank -%}
                                   {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: true, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
 
-                                  <div class="h-stack gap-2" style="width: auto; height: auto; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1;">
-                                    <button type="button" class="carousel-video-pause-toggle circle-button hidden" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
-                                      <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
-                                      {%- render 'icon' with 'slideshow-pause', width: 9, class: 'carousel-video-pause-icon' -%}
-                                      {%- render 'icon' with 'slideshow-play', width: 10, class: 'carousel-video-play-icon hidden' -%}
-                                    </button>
+                                  <button type="button" class="carousel-video-pause-toggle circle-button hidden" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary)); position: absolute; inset-block-start: 50%; inset-inline-start: 50%; transform: translate(-50%, -50%); z-index: 1;">
+                                    <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
+                                    {%- render 'icon' with 'slideshow-pause', width: 9, class: 'carousel-video-pause-icon' -%}
+                                    {%- render 'icon' with 'slideshow-play', width: 10, class: 'carousel-video-play-icon hidden' -%}
+                                  </button>
 
+                                  <div class="h-stack gap-2" style="width: auto; height: auto; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1;">
                                     <button type="button" class="carousel-video-sound-toggle circle-button" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
                                       <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
                                       {%- render 'icon' with 'volume-off', width: 12, class: 'carousel-video-sound-off-icon' -%}
@@ -652,6 +648,10 @@
                           carousel.addEventListener('carousel:change', scheduleAdvance);
                           scheduleAdvance();
 
+                          // Tracks the mute-setter of every video in this carousel, so that unmuting one can
+                          // mute every other one (only one video can have sound at a time).
+                          var muteSetters = [];
+
                           Array.prototype.forEach.call(carousel.querySelectorAll('.content-box__background-media'), function(mediaBox) {
                             var video = mediaBox.querySelector('video');
 
@@ -695,11 +695,27 @@
                             var soundOffIcon = soundButton.querySelector('.carousel-video-sound-off-icon');
                             var soundOnIcon = soundButton.querySelector('.carousel-video-sound-icon');
 
-                            function toggleSound() {
-                              video.muted = !video.muted;
-                              soundOffIcon.classList.toggle('hidden', !video.muted);
-                              soundOnIcon.classList.toggle('hidden', video.muted);
+                            function setMuted(muted) {
+                              video.muted = muted;
+                              soundOffIcon.classList.toggle('hidden', !muted);
+                              soundOnIcon.classList.toggle('hidden', muted);
                             }
+
+                            function toggleSound() {
+                              var wasMuted = video.muted;
+
+                              if (wasMuted) {
+                                muteSetters.forEach(function(otherSetMuted) {
+                                  if (otherSetMuted !== setMuted) {
+                                    otherSetMuted(true);
+                                  }
+                                });
+                              }
+
+                              setMuted(!wasMuted);
+                            }
+
+                            muteSetters.push(setMuted);
 
                             soundButton.addEventListener('click', function(event) {
                               event.stopPropagation();
