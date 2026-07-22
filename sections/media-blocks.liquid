@@ -532,6 +532,10 @@
                     opacity: 0 !important;
                     pointer-events: none;
                   }
+
+                  #carousel-{{ block.id }} .carousel-video-tap-to-unmute {
+                    cursor: pointer;
+                  }
                 </style>
 
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
@@ -552,7 +556,7 @@
                         {%- if slide_image != blank or slide_video != blank or slide_heading != blank or slide_text != blank -%}
                           <div class="snap-start">
                             <div class="content-box h-full min-h-{{ block.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}" style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
-                              <div class="content-box__background-media">
+                              <div class="content-box__background-media {% if slide_video != blank %}carousel-video-tap-to-unmute{% endif %}">
                                 {%- if slide_video != blank -%}
                                   {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: false, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
 
@@ -670,7 +674,9 @@
                               }
                             });
 
-                            pauseButton.addEventListener('click', function() {
+                            pauseButton.addEventListener('click', function(event) {
+                              event.stopPropagation();
+
                               if (video.paused) {
                                 video.play().catch(function() {});
                               } else {
@@ -693,10 +699,21 @@
                             var soundOffIcon = soundButton.querySelector('.carousel-video-sound-off-icon');
                             var soundOnIcon = soundButton.querySelector('.carousel-video-sound-icon');
 
-                            soundButton.addEventListener('click', function() {
+                            function toggleSound() {
                               video.muted = !video.muted;
                               soundOffIcon.classList.toggle('hidden', !video.muted);
                               soundOnIcon.classList.toggle('hidden', video.muted);
+                            }
+
+                            soundButton.addEventListener('click', function(event) {
+                              event.stopPropagation();
+                              toggleSound();
+                            });
+
+                            // Tolstoy-style tap-to-unmute: tapping anywhere on the video (not just the small
+                            // sound button) toggles sound in place, matching how Tolstoy's thumbnail behaves.
+                            mediaBox.addEventListener('click', function() {
+                              toggleSound();
                             });
                           });
                           });
