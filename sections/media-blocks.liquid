@@ -615,17 +615,18 @@
 
                             carousel.cells.forEach(function(cell) {
                               if (cell !== carousel.selectedCell) {
-                                var otherVideo = cell.querySelector('video');
-                                if (otherVideo) {
-                                  otherVideo.pause();
+                                var otherVideoMedia = cell.querySelector('video-media');
+                                if (otherVideoMedia) {
+                                  otherVideoMedia.pause();
                                 }
                               }
                             });
 
                             var video = carousel.selectedCell ? carousel.selectedCell.querySelector('video') : null;
+                            var videoMedia = carousel.selectedCell ? carousel.selectedCell.querySelector('video-media') : null;
 
-                            if (video) {
-                              video.play().catch(function() {});
+                            if (video && videoMedia) {
+                              videoMedia.play();
 
                               video.addEventListener('ended', function onEnded() {
                                 video.removeEventListener('ended', onEnded);
@@ -643,8 +644,9 @@
 
                           Array.prototype.forEach.call(carousel.querySelectorAll('.content-box__background-media'), function(mediaBox) {
                             var video = mediaBox.querySelector('video');
+                            var videoMedia = mediaBox.querySelector('video-media');
 
-                            if (!video) {
+                            if (!video || !videoMedia) {
                               return;
                             }
 
@@ -655,9 +657,9 @@
 
                             playButton.addEventListener('click', function() {
                               if (video.paused) {
-                                video.play().catch(function() {});
+                                videoMedia.play();
                               } else {
-                                video.pause();
+                                videoMedia.pause();
                               }
                             });
 
