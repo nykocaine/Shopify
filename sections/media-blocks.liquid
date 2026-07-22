@@ -616,6 +616,14 @@
                           customElements.whenDefined('product-list').then(function() {
                           var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                           var advanceTimer;
+                          // Tracks which video currently owns the "ended -> advance" listener. Some
+                          // carousel:change events can fire more than once for the same slide (e.g. the
+                          // scroll settling recalculation), and scheduleAdvance() runs again each time.
+                          // Without this guard, a fresh 'ended' listener would stack on top of the
+                          // existing one, so a single video ending would call goToNext() twice and skip
+                          // a slide.
+                          var advanceVideo = null;
+                          var advanceHandler = null;
 
                           function goToNext() {
                             if (carousel.selectedIndex >= carousel.cells.length - 1) {
@@ -639,15 +647,29 @@
 
                             var video = carousel.selectedCell ? carousel.selectedCell.querySelector('video') : null;
 
+                            if (advanceVideo && advanceVideo !== video) {
+                              advanceVideo.removeEventListener('ended', advanceHandler);
+                              advanceVideo = null;
+                              advanceHandler = null;
+                            }
+
                             if (video) {
                               video.play().catch(function() {});
 
-                              video.addEventListener('ended', function onEnded() {
-                                video.removeEventListener('ended', onEnded);
-                                if (!reduceMotion) {
-                                  goToNext();
-                                }
-                              });
+                              if (advanceVideo !== video) {
+                                advanceHandler = function onEnded() {
+                                  video.removeEventListener('ended', advanceHandler);
+                                  advanceVideo = null;
+                                  advanceHandler = null;
+
+                                  if (!reduceMotion) {
+                                    goToNext();
+                                  }
+                                };
+
+                                video.addEventListener('ended', advanceHandler);
+                                advanceVideo = video;
+                              }
                             } else if (!reduceMotion) {
                               advanceTimer = setTimeout(goToNext, {{ block.settings.cycle_speed | times: 1000 }});
                             }
