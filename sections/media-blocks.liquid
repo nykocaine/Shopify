@@ -590,6 +590,7 @@
                             return;
                           }
 
+                          customElements.whenDefined('product-list').then(function() {
                           var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                           var advanceTimer;
 
@@ -670,6 +671,7 @@
                               soundOffIcon.classList.toggle('hidden', !video.muted);
                               soundOnIcon.classList.toggle('hidden', video.muted);
                             });
+                          });
                           });
                         })();
                       </script>
