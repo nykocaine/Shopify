@@ -4133,6 +4133,14 @@ var VideoMedia = class extends BaseMedia {
     const sortedSources = matchingSources.slice().sort((a, b) => a.width - b.width);
     const bestFit = sortedSources.find((source) => source.width >= targetWidth) || sortedSources[sortedSources.length - 1];
 
+    // The browser always resolves to the first matching <source> in DOM order. If that is
+    // already our best fit, there is nothing to change, so skip video.load() entirely: calling
+    // it unconditionally would abort and restart whatever the browser had already started
+    // fetching for that same source, adding a redundant round-trip to every video on the page.
+    if (bestFit === matchingSources[0]) {
+      return;
+    }
+
     matchingSources.forEach((source) => {
       if (source !== bestFit) {
         source.remove();

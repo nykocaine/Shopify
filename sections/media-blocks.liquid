@@ -626,20 +626,28 @@
 
                             carousel.cells.forEach(function(cell) {
                               if (cell !== carousel.selectedCell) {
-                                var otherVideo = cell.querySelector('video');
-                                if (otherVideo) {
-                                  otherVideo.pause();
+                                // Go through the <video-media> wrapper's own pause(), not the raw <video>
+                                // tag directly: the wrapper tracks its own "playing" state and only the
+                                // wrapper's play()/pause() keep that state (and the "loaded" attribute
+                                // driving its CSS) in sync.
+                                var otherVideoMedia = cell.querySelector('video-media');
+                                if (otherVideoMedia) {
+                                  otherVideoMedia.pause();
                                 }
                               }
                             });
 
-                            var video = carousel.selectedCell ? carousel.selectedCell.querySelector('video') : null;
+                            var videoMedia = carousel.selectedCell ? carousel.selectedCell.querySelector('video-media') : null;
 
-                            if (video) {
+                            if (videoMedia) {
                               // Tolstoy-style: the video loops forever in its own thumbnail (loop: true
                               // on the <video> tag), so the carousel never auto-advances while a video
                               // slide is selected. Moving on is left entirely to manual swipe/scroll.
-                              video.play().catch(function() {});
+                              //
+                              // Calling video-media's own play() (instead of the raw <video>.play()) matters
+                              // on mobile: if the browser blocks this autoplay attempt, the wrapper falls
+                              // back to showing native controls instead of leaving a silently-stuck video.
+                              videoMedia.play();
                             } else if (!reduceMotion) {
                               advanceTimer = setTimeout(goToNext, {{ block.settings.cycle_speed | times: 1000 }});
                             }
