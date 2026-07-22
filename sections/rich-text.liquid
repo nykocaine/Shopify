@@ -13,7 +13,7 @@
     assign second_column = ''
   -%}
 
-  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_rich_text %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_rich_text %} style="border-end-start-radius: {{ section.settings.rich_text_border_radius }}px; border-end-end-radius: {{ section.settings.rich_text_border_radius }}px; overflow: hidden;"{% endif %}>
+  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_rich_text %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_rich_text %} style="border-radius: {{ section.settings.rich_text_border_radius }}px; overflow: hidden;"{% endif %}>
     <div class="container section-spacing">
       <div class="rich-text justify-items-{{ section.settings.text_alignment | replace: 'left', 'start' | replace: 'right', 'end' }}">
         {%- for block in section.blocks -%}
