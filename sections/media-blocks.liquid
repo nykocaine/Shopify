@@ -514,7 +514,7 @@
                     }
                   }
 
-                  #shopify-section-{{ section.id }} carousel-prev-button .icon-chevron-right {
+                  #shopify-section-{{ section.id }} carousel-next-button .icon-chevron-right {
                     transform: scaleX(-1);
                   }
                 </style>
@@ -570,19 +570,19 @@
                         <progress-bar track-scroll-target="carousel-{{ block.id }}" class="progress-bar"></progress-bar>
 
                         <div class="h-stack gap-2">
-                          <carousel-prev-button aria-controls="carousel-{{ block.id }}">
+                          <carousel-next-button aria-controls="carousel-{{ block.id }}">
                             <button disabled class="circle-button circle-button--outline">
                               <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
                               {%- render 'icon' with 'chevron-right', width: 8 -%}
                             </button>
-                          </carousel-prev-button>
+                          </carousel-next-button>
 
-                          <carousel-next-button aria-controls="carousel-{{ block.id }}">
+                          <carousel-prev-button aria-controls="carousel-{{ block.id }}">
                             <button class="circle-button circle-button--outline">
                               <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
                               {%- render 'icon' with 'chevron-right', width: 8 -%}
                             </button>
-                          </carousel-next-button>
+                          </carousel-prev-button>
                         </div>
                       </div>
                     {%- endif -%}
