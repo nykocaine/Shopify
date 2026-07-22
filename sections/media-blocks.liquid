@@ -25,16 +25,12 @@
       }
 
       {%- comment -%}
-        The carousel block always spans the section's full row width on desktop (regardless of
-        items_per_row), then caps its own visible content to 60% of that row. This keeps it at a
-        fixed 60% of the section width without resizing any other block's column.
+        Make the carousel block a bit wider than the other blocks on desktop, without pushing it
+        (or anything after it) onto its own row: it spans 2 grid columns instead of 1, so it stays
+        inline with whatever other blocks share its row.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .media-blocks__item--carousel {
-        grid-column: 1 / -1;
-      }
-
-      #shopify-section-{{ section.id }} .media-blocks__item--carousel > .v-stack {
-        width: 60%;
+        grid-column: span {{ 2 | at_most: section.settings.items_per_row }};
       }
     }
 
