@@ -558,7 +558,7 @@
                             <div class="content-box h-full min-h-{{ block.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}" style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                               <div class="content-box__background-media {% if slide_video != blank %}carousel-video-tap-to-unmute{% endif %}">
                                 {%- if slide_video != blank -%}
-                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: false, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
+                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: true, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
 
                                   <div class="h-stack gap-2" style="width: auto; height: auto; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1;">
                                     <button type="button" class="carousel-video-pause-toggle circle-button hidden" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
@@ -616,14 +616,6 @@
                           customElements.whenDefined('product-list').then(function() {
                           var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                           var advanceTimer;
-                          // Tracks which video currently owns the "ended -> advance" listener. Some
-                          // carousel:change events can fire more than once for the same slide (e.g. the
-                          // scroll settling recalculation), and scheduleAdvance() runs again each time.
-                          // Without this guard, a fresh 'ended' listener would stack on top of the
-                          // existing one, so a single video ending would call goToNext() twice and skip
-                          // a slide.
-                          var advanceVideo = null;
-                          var advanceHandler = null;
 
                           function goToNext() {
                             if (carousel.selectedIndex >= carousel.cells.length - 1) {
@@ -647,29 +639,11 @@
 
                             var video = carousel.selectedCell ? carousel.selectedCell.querySelector('video') : null;
 
-                            if (advanceVideo && advanceVideo !== video) {
-                              advanceVideo.removeEventListener('ended', advanceHandler);
-                              advanceVideo = null;
-                              advanceHandler = null;
-                            }
-
                             if (video) {
+                              // Tolstoy-style: the video loops forever in its own thumbnail (loop: true
+                              // on the <video> tag), so the carousel never auto-advances while a video
+                              // slide is selected. Moving on is left entirely to manual swipe/scroll.
                               video.play().catch(function() {});
-
-                              if (advanceVideo !== video) {
-                                advanceHandler = function onEnded() {
-                                  video.removeEventListener('ended', advanceHandler);
-                                  advanceVideo = null;
-                                  advanceHandler = null;
-
-                                  if (!reduceMotion) {
-                                    goToNext();
-                                  }
-                                };
-
-                                video.addEventListener('ended', advanceHandler);
-                                advanceVideo = video;
-                              }
                             } else if (!reduceMotion) {
                               advanceTimer = setTimeout(goToNext, {{ block.settings.cycle_speed | times: 1000 }});
                             }
