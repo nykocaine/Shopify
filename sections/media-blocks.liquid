@@ -651,6 +651,7 @@
                             var playButton = mediaBox.querySelector('.carousel-video-play-toggle');
                             var pauseIcon = playButton.querySelector('.carousel-video-pause-icon');
                             var playIcon = playButton.querySelector('.carousel-video-play-icon');
+                            var spinner = mediaBox.querySelector('.carousel-video-spinner');
 
                             playButton.addEventListener('click', function() {
                               if (video.paused) {
@@ -660,9 +661,18 @@
                               }
                             });
 
-                            video.addEventListener('play', function() {
+                            video.addEventListener('playing', function() {
                               pauseIcon.classList.remove('hidden');
                               playIcon.classList.add('hidden');
+                              if (spinner) {
+                                spinner.classList.add('hidden');
+                              }
+                            });
+
+                            video.addEventListener('waiting', function() {
+                              if (spinner) {
+                                spinner.classList.remove('hidden');
+                              }
                             });
 
                             video.addEventListener('pause', function() {
