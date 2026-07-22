@@ -513,18 +513,6 @@
                       grid: auto / auto-flow 45%;
                     }
                   }
-
-                  #carousel-{{ block.id }} .carousel-video-spinner .icon-spinner {
-                    animation: 1s linear infinite spin;
-                  }
-
-                  #carousel-{{ block.id }} video-media {
-                    pointer-events: none;
-                  }
-
-                  #carousel-{{ block.id }} video-media::part(play-button) {
-                    display: none;
-                  }
                 </style>
 
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
@@ -547,20 +535,16 @@
                             <div class="content-box h-full min-h-{{ block.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}" style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                               <div class="content-box__background-media">
                                 {%- if slide_video != blank -%}
-                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: false, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
+                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: false, controls: false, playsinline: true, sizes: '85vw' -%}
 
-                                  <div class="carousel-video-spinner" style="width: 2rem; height: 2rem; position: absolute; inset-block-start: 50%; inset-inline-start: 50%; transform: translate(-50%, -50%); z-index: 1; color: #fff; pointer-events: none;">
-                                    {%- render 'icon' with 'spinner', width: 32, class: 'icon-spinner' -%}
-                                  </div>
-
-                                  <div class="h-stack gap-2" style="width: auto; height: auto; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1; pointer-events: auto;">
-                                    <button type="button" class="carousel-video-play-toggle circle-button" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary)); pointer-events: auto;">
+                                  <div class="h-stack gap-2" style="width: auto; height: auto; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1;">
+                                    <button type="button" class="carousel-video-pause-toggle circle-button hidden" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
                                       <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
-                                      {%- render 'icon' with 'slideshow-pause', width: 9, class: 'carousel-video-pause-icon hidden' -%}
-                                      {%- render 'icon' with 'slideshow-play', width: 10, class: 'carousel-video-play-icon' -%}
+                                      {%- render 'icon' with 'slideshow-pause', width: 9, class: 'carousel-video-pause-icon' -%}
+                                      {%- render 'icon' with 'slideshow-play', width: 10, class: 'carousel-video-play-icon hidden' -%}
                                     </button>
 
-                                    <button type="button" class="carousel-video-sound-toggle circle-button" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary)); pointer-events: auto;">
+                                    <button type="button" class="carousel-video-sound-toggle circle-button" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
                                       <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
                                       {%- render 'icon' with 'volume-off', width: 12, class: 'carousel-video-sound-off-icon' -%}
                                       {%- render 'icon' with 'volume', width: 12, class: 'carousel-video-sound-icon hidden' -%}
@@ -658,12 +642,11 @@
                               return;
                             }
 
-                            var playButton = mediaBox.querySelector('.carousel-video-play-toggle');
-                            var pauseIcon = playButton.querySelector('.carousel-video-pause-icon');
-                            var playIcon = playButton.querySelector('.carousel-video-play-icon');
-                            var spinner = mediaBox.querySelector('.carousel-video-spinner');
+                            var pauseButton = mediaBox.querySelector('.carousel-video-pause-toggle');
+                            var pauseIcon = pauseButton.querySelector('.carousel-video-pause-icon');
+                            var playIcon = pauseButton.querySelector('.carousel-video-play-icon');
 
-                            playButton.addEventListener('click', function() {
+                            pauseButton.addEventListener('click', function() {
                               if (video.paused) {
                                 videoMedia.play();
                               } else {
@@ -672,17 +655,9 @@
                             });
 
                             video.addEventListener('playing', function() {
+                              pauseButton.classList.remove('hidden');
                               pauseIcon.classList.remove('hidden');
                               playIcon.classList.add('hidden');
-                              if (spinner) {
-                                spinner.classList.add('hidden');
-                              }
-                            });
-
-                            video.addEventListener('waiting', function() {
-                              if (spinner) {
-                                spinner.classList.remove('hidden');
-                              }
                             });
 
                             video.addEventListener('pause', function() {
