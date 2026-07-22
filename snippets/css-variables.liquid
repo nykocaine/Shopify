@@ -76,8 +76,8 @@ note that this may have impact on different places.
     --container-gutter: {{ settings.container_gutter | times: 0.41667 | round: 3 }}rem;
 
     /* Spacing */
-    --section-vertical-spacing: {% if settings.section_spacing == 'tight' %}2rem{% elsif settings.section_spacing == 'normal' %}2.5rem{% else %}3rem{% endif %};
-    --section-stack-row-gap: {% if settings.section_spacing == 'tight' %}1.5rem{% else %}2rem{% endif %};
+    --section-vertical-spacing: var(--container-gutter);
+    --section-stack-row-gap: calc(var(--container-gutter) * 0.75);
 
     /* Form settings */
     --form-gap: 1rem; /* Gap between fieldset and submit button */
@@ -277,18 +277,9 @@ note that this may have impact on different places.
     }
   }
 
-  @media screen and (min-width: 1000px) {
-    :root {
-      /* Spacing settings */
-      --section-vertical-spacing: {% if settings.section_spacing == 'tight' %}3rem{% elsif settings.section_spacing == 'normal' %}3.5rem{% else %}4.5rem{% endif %};
-      --section-stack-row-gap: {% if settings.section_spacing == 'tight' %}2.5rem{% else %}3rem{% endif %};
-    }
-  }
-
   @media screen and (min-width: 1399px) {
     :root {
       /* Spacing settings */
-      --section-vertical-spacing: {% if settings.section_spacing == 'tight' %}3.5rem{% elsif settings.section_spacing == 'normal' %}4.5rem{% else %}5.5rem{% endif %};
       --container-gutter: {{ settings.container_gutter }}rem;
     }
   }
