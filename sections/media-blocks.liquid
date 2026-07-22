@@ -565,6 +565,24 @@
 
                     {%- if carousel_slide_count > 1 -%}
                       <progress-bar track-scroll-target="carousel-{{ block.id }}" class="progress-bar w-full"></progress-bar>
+
+                      <script>
+                        (function() {
+                          var carousel = document.getElementById('carousel-{{ block.id }}');
+
+                          if (!carousel || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                            return;
+                          }
+
+                          setInterval(function() {
+                            if (carousel.selectedIndex >= carousel.cells.length - 1) {
+                              carousel.select(0);
+                            } else {
+                              carousel.next();
+                            }
+                          }, {{ block.settings.cycle_speed | times: 1000 }});
+                        })();
+                      </script>
                     {%- endif -%}
                   </div>
                 </div>
