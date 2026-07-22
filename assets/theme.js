@@ -4087,8 +4087,8 @@ var VideoMedia = class extends BaseMedia {
       this.attachShadow({ mode: "open" }).appendChild(document.getElementById("video-media-default-template").content.cloneNode(true));
     }
     if (this.getAttribute("type") === "video") {
-      this.#selectVideoSource();
       inView8(this, () => {
+        this.#selectVideoSource();
         this.querySelector("video")?.setAttribute("preload", "auto");
       }, { margin: "800px" });
     }
