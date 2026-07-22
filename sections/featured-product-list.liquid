@@ -94,7 +94,7 @@
           endif
         -%}
 
-        <product-list id="{{ product_list_id }}" cell-selector=".product-card" class="product-list {{ product_list_class }}" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;">
+        <product-list id="{{ product_list_id }}" cell-selector=".product-card, .product-list__promo" class="product-list {{ product_list_class }}" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;">
           {%- capture sizes -%}(max-width: 699px) calc(100vw / {{ section.settings.products_per_row_mobile }} - 40px), (max-width: 999px) calc(100vw / {{ 3 | at_most: section.settings.products_per_row_desktop }} - 64px), calc((100vw - 96px) / {{ section.settings.products_per_row_desktop }}){%- endcapture -%}
 
           {%- for product in section.settings.product_list -%}

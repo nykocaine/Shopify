@@ -6,6 +6,19 @@ Desktop and mobile images are independent: each variant only renders when its ow
 @param {object} section
 {%- enddoc -%}
 
+{%- liquid
+  assign has_desktop_image = false
+  assign has_mobile_image = false
+
+  if block.settings.image != blank
+    assign has_desktop_image = true
+  endif
+
+  if block.settings.mobile_image != blank
+    assign has_mobile_image = true
+  endif
+-%}
+
 {%- capture promo_content -%}
   {%- if block.settings.heading != blank or block.settings.content != blank or block.settings.subheading != blank -%}
     <div class="{{ block.settings.content_position }}">
@@ -37,26 +50,33 @@ Desktop and mobile images are independent: each variant only renders when its ow
   {%- endif -%}
 {%- endcapture -%}
 
-{%- if block.settings.image != blank -%}
-  <div class="product-list__promo {% if settings.product_listing_spacing == 'none' %}outline{% endif %} md-max:hidden color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {% if settings.stagger_products %}reveal-on-scroll="true"{% endif %} style="--product-list-promo-row-span: 1; --product-list-promo-column-span: 1; border-radius: {{ section.settings.product_card_border_radius }}px; overflow: hidden;" {{ block.shopify_attributes }}>
-    <div class="content-box min-h-full">
-      <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }}">
-        {%- render 'media', media: block.settings.image -%}
+{%- if has_desktop_image or has_mobile_image -%}
+  {%- comment -%}
+    This must always render as a single element matching the product-list's cell-selector
+    (".product-card, .product-list__promo"), even when only one of the two image variants is
+    set. Splitting it into two separate top-level elements (one per breakpoint) makes the
+    carousel count the promo as two cells instead of one, which throws off prev/next navigation
+    (clicking the arrow ends up skipping over an extra product).
+  {%- endcomment -%}
+  <div class="product-list__promo {% if settings.product_listing_spacing == 'none' %}outline{% endif %} {% if has_desktop_image and has_mobile_image == false %}md-max:hidden{% elsif has_mobile_image and has_desktop_image == false %}md:hidden{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {% if settings.stagger_products %}reveal-on-scroll="true"{% endif %} style="--product-list-promo-row-span: 1; --product-list-promo-column-span: 1; border-radius: {{ section.settings.product_card_border_radius }}px; overflow: hidden;" {{ block.shopify_attributes }}>
+    {%- if has_desktop_image -%}
+      <div class="content-box min-h-full {% if has_mobile_image %}md-max:hidden{% endif %}">
+        <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }}">
+          {%- render 'media', media: block.settings.image -%}
+        </div>
+
+        {{- promo_content -}}
       </div>
+    {%- endif -%}
 
-      {{- promo_content -}}
-    </div>
-  </div>
-{%- endif -%}
+    {%- if has_mobile_image -%}
+      <div class="content-box min-h-full {% if has_desktop_image %}md:hidden{% endif %}">
+        <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }}">
+          {%- render 'media', media: block.settings.mobile_image -%}
+        </div>
 
-{%- if block.settings.mobile_image != blank -%}
-  <div class="product-list__promo {% if settings.product_listing_spacing == 'none' %}outline{% endif %} md:hidden color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {% if settings.stagger_products %}reveal-on-scroll="true"{% endif %} style="--product-list-promo-row-span: 1; --product-list-promo-column-span: 1; border-radius: {{ section.settings.product_card_border_radius }}px; overflow: hidden;" {{ block.shopify_attributes }}>
-    <div class="content-box min-h-full">
-      <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }}">
-        {%- render 'media', media: block.settings.mobile_image -%}
+        {{- promo_content -}}
       </div>
-
-      {{- promo_content -}}
-    </div>
+    {%- endif -%}
   </div>
 {%- endif -%}
