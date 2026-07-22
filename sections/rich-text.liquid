@@ -13,7 +13,7 @@
     assign second_column = ''
   -%}
 
-  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_rich_text %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_rich_text %} style="border-end-start-radius: {{ section.settings.rich_text_border_radius }}px; border-end-end-radius: {{ section.settings.rich_text_border_radius }}px; overflow: hidden;"{% endif %}>
     <div class="container section-spacing">
       <div class="rich-text justify-items-{{ section.settings.text_alignment | replace: 'left', 'start' | replace: 'right', 'end' }}">
         {%- for block in section.blocks -%}
@@ -147,6 +147,24 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_rich_text",
+      "label": "Floating",
+      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "rich_text_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_rich_text }}"
     },
     {
       "type": "select",
