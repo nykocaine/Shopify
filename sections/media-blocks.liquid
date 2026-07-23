@@ -523,15 +523,24 @@
                     endif
                   endfor
 
-                  # Video width (desktop): only meaningful when the section has a fixed desktop block
-                  # size to derive a width from (block_size 'auto' sizes itself off the video/image's own
-                  # ratio already, and 'none' means the feature is off). Both the aspect-ratio and the
-                  # target height are resolved to explicit, deterministic CSS values (not intrinsic sizing
-                  # like max-content or a bare min-height) precisely so that the derived width is exact,
-                  # instead of relying on any browser auto-sizing edge case.
+                  # Video width (mobile + desktop): only meaningful when the relevant block size setting
+                  # is fixed (mobile_block_size / block_size 'auto' sizes itself off the video/image's own
+                  # ratio already, and 'none' means the feature is off entirely). Both the aspect-ratio and
+                  # the target height are resolved to explicit, deterministic CSS values (not intrinsic
+                  # sizing like max-content or a bare min-height) precisely so the derived width is exact,
+                  # instead of relying on any browser auto-sizing edge case. Mobile and desktop are resolved
+                  # independently since they read from mobile_block_size/block_size respectively, and one
+                  # can be 'auto' while the other isn't.
+                  #
+                  # The clamp() values below are copied from the theme's own min-h-* utility classes
+                  # (assets/theme.css) that mobile_block_size/block_size already render as: the unprefixed
+                  # ones (35/45/55vmax) for mobile_block_size, the md: breakpoint ones (40/50/60vmax, used
+                  # from 700px up, which is also where this carousel's own grid switches) for block_size.
                   assign carousel_video_aspect_ratio = nil
+                  assign carousel_video_mobile_box_height = nil
+                  assign carousel_video_box_height = nil
 
-                  if section.settings.carousel_video_width != 'none' and section.settings.block_size != 'auto'
+                  if section.settings.carousel_video_width != 'none'
                     case section.settings.carousel_video_width
                       when '4-5'
                         assign carousel_video_aspect_ratio = '4 / 5'
@@ -544,16 +553,31 @@
                         assign carousel_video_width_ratio = 0.5625
                     endcase
 
-                    case section.settings.block_size
-                      when 'sm'
-                        assign carousel_video_box_height = 'clamp(15rem, 35vmax, 25rem)'
-                      when 'md'
-                        assign carousel_video_box_height = 'clamp(20rem, 45vmax, 35rem)'
-                      when 'lg'
-                        assign carousel_video_box_height = 'clamp(25rem, 55vmax, 45rem)'
-                      when 'fill'
-                        assign carousel_video_box_height = 'calc(100svh - var(--sticky-area-height, 0px))'
-                    endcase
+                    if section.settings.mobile_block_size != 'auto'
+                      case section.settings.mobile_block_size
+                        when 'sm'
+                          assign carousel_video_mobile_box_height = 'clamp(15rem, 35vmax, 25rem)'
+                        when 'md'
+                          assign carousel_video_mobile_box_height = 'clamp(20rem, 45vmax, 35rem)'
+                        when 'lg'
+                          assign carousel_video_mobile_box_height = 'clamp(25rem, 55vmax, 45rem)'
+                        when 'fill'
+                          assign carousel_video_mobile_box_height = 'calc(100svh - var(--sticky-area-height, 0px))'
+                      endcase
+                    endif
+
+                    if section.settings.block_size != 'auto'
+                      case section.settings.block_size
+                        when 'sm'
+                          assign carousel_video_box_height = 'clamp(15rem, 40vmax, 25rem)'
+                        when 'md'
+                          assign carousel_video_box_height = 'clamp(20rem, 50vmax, 35rem)'
+                        when 'lg'
+                          assign carousel_video_box_height = 'clamp(25rem, 60vmax, 45rem)'
+                        when 'fill'
+                          assign carousel_video_box_height = 'calc(100svh - var(--sticky-area-height, 0px))'
+                      endcase
+                    endif
                   endif
                 -%}
 
