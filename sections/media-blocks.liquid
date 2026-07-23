@@ -553,8 +553,12 @@
                         assign carousel_video_width_ratio = 0.5625
                     endcase
 
-                    if section.settings.mobile_block_size != 'auto'
-                      case section.settings.mobile_block_size
+                    # The carousel block's own slides read block.settings.mobile_block_size ("Mobile
+                    # image height") for their mobile height, NOT section.settings.mobile_block_size
+                    # (a separate, section-wide setting only used by the image_with_text/video_with_text
+                    # blocks) - so that's the one to match here too.
+                    if block.settings.mobile_block_size != 'auto'
+                      case block.settings.mobile_block_size
                         when 'sm'
                           assign carousel_video_mobile_box_height = 'clamp(15rem, 35vmax, 25rem)'
                         when 'md'
