@@ -564,18 +564,19 @@
                     cursor: pointer;
                   }
 
+                  /* Comprar, Sonido and Play/Pausa always fade in/out together, as a single group, with
+                     the exact same duration and easing (see revealControls() in the script below). */
                   #carousel-{{ block.id }} .carousel-video-sound-toggle,
+                  #carousel-{{ block.id }} .carousel-video-pause-toggle,
                   #carousel-{{ block.id }} .carousel-video-product-link {
-                    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-                  }
-
-                  #carousel-{{ block.id }} .carousel-video-pause-toggle {
                     opacity: 0;
                     transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
                     pointer-events: none;
                   }
 
-                  #carousel-{{ block.id }} .carousel-video-pause-toggle.is-visible {
+                  #carousel-{{ block.id }} .carousel-video-sound-toggle.is-visible,
+                  #carousel-{{ block.id }} .carousel-video-pause-toggle.is-visible,
+                  #carousel-{{ block.id }} .carousel-video-product-link.is-visible {
                     opacity: 1;
                     pointer-events: auto;
                   }
@@ -584,7 +585,7 @@
                     #carousel-{{ block.id }} .carousel-video-pause-toggle:not([disabled]):hover,
                     #carousel-{{ block.id }} .carousel-video-sound-toggle:not([disabled]):hover,
                     #carousel-{{ block.id }} .carousel-video-product-link:not([disabled]):hover {
-                      background: var(--control-button-hover-background-color, var(--control-button-background-color, rgb(var(--button-background-primary))));
+                      background: var(--control-button-hover-background-color, var(--control-button-background-color, #333333));
                     }
                   }
 
@@ -622,7 +623,7 @@
                                   {%- render 'media', media: slide_video, autoplay: false, muted: true, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
 
                                   {%- capture control_button_style -%}
-                                    width: var(--control-button-size, 1.75rem); height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, rgb(var(--button-background-primary))); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, rgb(var(--border-color))); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, rgb(var(--button-text-primary)));
+                                    width: var(--control-button-size, 1.75rem); height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, #000000); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, #000000); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, #ffffff);
                                   {%- endcapture -%}
 
                                   {%- assign show_product_button = false -%}
@@ -631,11 +632,22 @@
                                     {%- assign show_product_button = true -%}
 
                                     {%- capture product_button_style -%}
-                                      height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, rgb(var(--button-background-primary))); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, rgb(var(--border-color))); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, rgb(var(--button-text-primary))); {% if block.settings.product_button_type == 'text' %}width: auto; padding-inline: 0.75rem;{% else %}width: var(--control-button-size, 1.75rem);{% endif %}
+                                      height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, #000000); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, #000000); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, #ffffff); {% if block.settings.product_button_type == 'text' %}width: auto; padding-inline: 0.75rem;{% else %}width: var(--control-button-size, 1.75rem);{% endif %}
                                     {%- endcapture -%}
                                   {%- endif -%}
 
                                   <div class="h-stack gap-2" style="width: auto; height: auto; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1;">
+                                    {%- if show_product_button -%}
+                                      <a href="{{ slide_product.url }}" class="carousel-video-product-link circle-button" style="{{ product_button_style }}">
+                                        {%- if block.settings.product_button_type == 'text' -%}
+                                          <span class="carousel-video-product-link__text">{{ block.settings.product_button_text | default: slide_product.title }}</span>
+                                        {%- else -%}
+                                          <span class="sr-only">{{ block.settings.product_button_text | default: slide_product.title }}</span>
+                                          {%- render 'icon' with 'cart', width: 14 -%}
+                                        {%- endif -%}
+                                      </a>
+                                    {%- endif -%}
+
                                     <button type="button" class="carousel-video-sound-toggle circle-button" style="{{ control_button_style }}">
                                       <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
                                       {%- render 'icon' with 'volume-off', width: 14, class: 'carousel-video-sound-off-icon' -%}
@@ -647,17 +659,6 @@
                                       {%- render 'icon' with 'slideshow-pause', width: 14, class: 'carousel-video-pause-icon' -%}
                                       {%- render 'icon' with 'slideshow-play', width: 14, class: 'carousel-video-play-icon hidden' -%}
                                     </button>
-
-                                    {%- if show_product_button -%}
-                                      <a href="{{ slide_product.url }}" class="carousel-video-product-link circle-button" style="{{ product_button_style }}">
-                                        {%- if block.settings.product_button_type == 'text' -%}
-                                          <span class="carousel-video-product-link__text">{{ block.settings.product_button_text | default: slide_product.title }}</span>
-                                        {%- else -%}
-                                          <span class="sr-only">{{ block.settings.product_button_text | default: slide_product.title }}</span>
-                                          {%- render 'icon' with 'cart', width: 14 -%}
-                                        {%- endif -%}
-                                      </a>
-                                    {%- endif -%}
                                   </div>
                                 {%- elsif slide_image != blank -%}
                                   {%- render 'media' with slide_image, sizes: '85vw', class: 'image-cover' -%}
@@ -761,15 +762,23 @@
                             var pauseButton = mediaBox.querySelector('.carousel-video-pause-toggle');
                             var pauseIcon = pauseButton.querySelector('.carousel-video-pause-icon');
                             var playIcon = pauseButton.querySelector('.carousel-video-play-icon');
+                            var soundButton = mediaBox.querySelector('.carousel-video-sound-toggle');
+                            var productLink = mediaBox.querySelector('.carousel-video-product-link');
                             var poster = mediaBox.querySelector('video-media > img');
 
-                            // Hidden by default (see CSS): not focusable by keyboard until it is actually
-                            // revealed, matching its opacity/pointer-events: none resting state.
-                            pauseButton.tabIndex = -1;
+                            // Comprar / Sonido / Play-Pausa fade in and out together, as a single group:
+                            // hidden by default (see CSS) and not focusable by keyboard until revealed.
+                            var groupControls = productLink ? [soundButton, pauseButton, productLink] : [soundButton, pauseButton];
 
-                            function revealPauseButton() {
-                              pauseButton.classList.add('is-visible');
-                              pauseButton.removeAttribute('tabindex');
+                            groupControls.forEach(function(control) {
+                              control.tabIndex = -1;
+                            });
+
+                            function revealControls() {
+                              groupControls.forEach(function(control) {
+                                control.classList.add('is-visible');
+                                control.removeAttribute('tabindex');
+                              });
                             }
 
                             video.addEventListener('playing', function() {
@@ -777,11 +786,12 @@
                                 poster.classList.add('carousel-video-poster-hidden');
                               }
 
-                              // Desktop: the pause button appears the moment autoplay actually starts. On
-                              // touch devices it stays hidden until the visitor unmutes (see setMuted below),
-                              // since the video is autoplaying silently and there is nothing to pause yet.
+                              // Desktop: the whole control group appears the moment autoplay actually starts.
+                              // On touch devices it stays hidden until the visitor unmutes (see setMuted
+                              // below), since the video is autoplaying silently and there is nothing to
+                              // pause/shop yet.
                               if (!isTouchDevice) {
-                                revealPauseButton();
+                                revealControls();
                               }
                             });
 
@@ -817,7 +827,6 @@
                               }
                             });
 
-                            var soundButton = mediaBox.querySelector('.carousel-video-sound-toggle');
                             var soundOffIcon = soundButton.querySelector('.carousel-video-sound-off-icon');
                             var soundOnIcon = soundButton.querySelector('.carousel-video-sound-icon');
 
@@ -826,11 +835,11 @@
                               soundOffIcon.classList.toggle('hidden', !muted);
                               soundOnIcon.classList.toggle('hidden', muted);
 
-                              // On touch devices, unmuting is what hands control over to the custom pause
-                              // button (see the 'playing' listener above for the desktop equivalent). Once
-                              // revealed it stays revealed, even if the visitor mutes again afterwards.
+                              // On touch devices, unmuting is what hands control over to the whole custom
+                              // control group (see the 'playing' listener above for the desktop equivalent).
+                              // Once revealed it stays revealed, even if the visitor mutes again afterwards.
                               if (!muted && isTouchDevice) {
-                                revealPauseButton();
+                                revealControls();
                               }
                             }
 
@@ -857,8 +866,6 @@
 
                             // The "go to product" link navigates on its own; it just needs to not also
                             // trigger the tap-to-unmute handler below.
-                            var productLink = mediaBox.querySelector('.carousel-video-product-link');
-
                             if (productLink) {
                               productLink.addEventListener('click', function(event) {
                                 event.stopPropagation();
