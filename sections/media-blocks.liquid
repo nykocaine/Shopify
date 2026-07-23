@@ -935,9 +935,6 @@
                             }
                           }
 
-                          carousel.addEventListener('carousel:change', scheduleAdvance);
-                          scheduleAdvance();
-
                           // Tracks the mute-setter of every video in this carousel, so that unmuting one can
                           // mute every other one (only one video can have sound at a time).
                           var muteSetters = [];
@@ -1096,6 +1093,17 @@
                               toggleSound();
                             });
                           });
+
+                          // Only now, after every mediaBox above has its buttons queried and listeners
+                          // attached, is it safe to run scheduleAdvance() for the first time: it is what
+                          // moves the initially-selected slide's controls group into controlsSlot when
+                          // "next to the progress bar" is active. Running it any earlier (as it was before)
+                          // relocated that group out of its mediaBox before the loop above reached it, so
+                          // mediaBox.querySelector('.carousel-video-pause-toggle') came back null there,
+                          // threw on the next line, and aborted the whole forEach - leaving every slide
+                          // after the selected one (and the selected one itself) without listeners at all.
+                          carousel.addEventListener('carousel:change', scheduleAdvance);
+                          scheduleAdvance();
                           });
                         })();
                       </script>
