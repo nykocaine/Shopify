@@ -552,27 +552,37 @@
                     pointer-events: none;
                   }
 
+                  /* If autoplay is blocked by the browser, the shared video-media component falls back to
+                     the native play button (sets [suspended] + controls) so playback can still be started
+                     manually. Our poster image would otherwise sit on top of it and hide/block taps. */
+                  #carousel-{{ block.id }} video-media[suspended] > img {
+                    opacity: 0 !important;
+                    pointer-events: none;
+                  }
+
                   #carousel-{{ block.id }} .carousel-video-tap-to-unmute {
                     cursor: pointer;
                   }
 
+                  #carousel-{{ block.id }} .carousel-video-sound-toggle {
+                    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+                  }
+
                   #carousel-{{ block.id }} .carousel-video-pause-toggle {
                     opacity: 0;
-                    transform: scale(0.85);
-                    transition: opacity 0.2s ease, transform 0.2s ease;
+                    transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
                     pointer-events: none;
                   }
 
                   #carousel-{{ block.id }} .carousel-video-pause-toggle.is-visible {
                     opacity: 1;
-                    transform: scale(1);
                     pointer-events: auto;
                   }
 
-                  @media screen and (prefers-reduced-motion: reduce) {
-                    #carousel-{{ block.id }} .carousel-video-pause-toggle {
-                      transition: opacity 0.2s ease;
-                      transform: none;
+                  @media screen and (pointer: fine) {
+                    #carousel-{{ block.id }} .carousel-video-pause-toggle:not([disabled]):hover,
+                    #carousel-{{ block.id }} .carousel-video-sound-toggle:not([disabled]):hover {
+                      background: var(--control-button-hover-background-color, var(--control-button-background-color, rgb(var(--button-background-primary))));
                     }
                   }
                 </style>
@@ -606,14 +616,14 @@
                                   <div class="h-stack gap-2" style="width: auto; height: auto; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1;">
                                     <button type="button" class="carousel-video-pause-toggle circle-button" style="{{ control_button_style }}">
                                       <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
-                                      {%- render 'icon' with 'slideshow-pause', width: 9, class: 'carousel-video-pause-icon' -%}
-                                      {%- render 'icon' with 'slideshow-play', width: 10, class: 'carousel-video-play-icon hidden' -%}
+                                      {%- render 'icon' with 'slideshow-pause', width: 14, class: 'carousel-video-pause-icon' -%}
+                                      {%- render 'icon' with 'slideshow-play', width: 14, class: 'carousel-video-play-icon hidden' -%}
                                     </button>
 
                                     <button type="button" class="carousel-video-sound-toggle circle-button" style="{{ control_button_style }}">
                                       <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
-                                      {%- render 'icon' with 'volume-off', width: 12, class: 'carousel-video-sound-off-icon' -%}
-                                      {%- render 'icon' with 'volume', width: 12, class: 'carousel-video-sound-icon hidden' -%}
+                                      {%- render 'icon' with 'volume-off', width: 14, class: 'carousel-video-sound-off-icon' -%}
+                                      {%- render 'icon' with 'volume', width: 14, class: 'carousel-video-sound-icon hidden' -%}
                                     </button>
                                   </div>
                                 {%- elsif slide_image != blank -%}
