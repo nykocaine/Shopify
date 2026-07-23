@@ -721,12 +721,13 @@
                     z-index: 1;
                   }
 
-                  {%- if section.settings.controls_position == 'progress_bar' -%}
+                  {%- if section.settings.controls_position == 'progress_bar' and carousel_slide_count > 1 -%}
                     {%- comment -%}
                       "Next to the progress bar" mode: Comprar is hidden (same element, same JS, just not
                       rendered visually), and the active slide's own controls group (same DOM node, moved
                       by the script below - never cloned) drops its absolute positioning once relocated
-                      into the shared slot next to the progress bar.
+                      into the shared slot next to the progress bar. Gated on carousel_slide_count > 1,
+                      same as the progress bar itself, so a single-slide carousel is fully unaffected.
                     {%- endcomment -%}
                     #carousel-{{ block.id }} .carousel-video-product-link {
                       display: none;
