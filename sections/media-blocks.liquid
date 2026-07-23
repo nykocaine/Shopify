@@ -564,28 +564,59 @@
                     cursor: pointer;
                   }
 
-                  /* Comprar, Sonido and Play/Pausa always fade in/out together, as a single group, with
-                     the exact same duration and easing (see revealControls() in the script below). */
+                  /* Root cause of controls inheriting Color Scheme colors: .circle-button (theme-wide,
+                     assets/theme.css) paints a scheme-derived tint via its own ::before pseudo-element on
+                     top of whatever background we set, and shifts icon `color` on hover via a separate
+                     scheme-derived color-mix(). Both are killed below for our 3 buttons specifically, the
+                     same way the theme already opts individual variants out via ".circle-button--outline:
+                     before { content: none; }" - reusing that existing pattern rather than patching around
+                     it with extra specificity. From here on, background/border/icon color come exclusively
+                     from the --control-button-* variables (Global > Controls). */
+                  #carousel-{{ block.id }} .carousel-video-sound-toggle:before,
+                  #carousel-{{ block.id }} .carousel-video-pause-toggle:before,
+                  #carousel-{{ block.id }} .carousel-video-product-link:before {
+                    content: none;
+                  }
+
                   #carousel-{{ block.id }} .carousel-video-sound-toggle,
                   #carousel-{{ block.id }} .carousel-video-pause-toggle,
                   #carousel-{{ block.id }} .carousel-video-product-link {
-                    opacity: 0;
                     transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-                    pointer-events: none;
                   }
 
-                  #carousel-{{ block.id }} .carousel-video-sound-toggle.is-visible,
-                  #carousel-{{ block.id }} .carousel-video-pause-toggle.is-visible,
-                  #carousel-{{ block.id }} .carousel-video-product-link.is-visible {
-                    opacity: 1;
-                    pointer-events: auto;
-                  }
-
+                  /* Desktop: Comprar / Sonido / Play-Pausa are visible from the start and stay visible for
+                     good - no entrance fade, never hidden for inactivity. */
                   @media screen and (pointer: fine) {
+                    #carousel-{{ block.id }} .carousel-video-sound-toggle,
+                    #carousel-{{ block.id }} .carousel-video-pause-toggle,
+                    #carousel-{{ block.id }} .carousel-video-product-link {
+                      opacity: 1;
+                      pointer-events: auto;
+                    }
+
                     #carousel-{{ block.id }} .carousel-video-pause-toggle:not([disabled]):hover,
                     #carousel-{{ block.id }} .carousel-video-sound-toggle:not([disabled]):hover,
                     #carousel-{{ block.id }} .carousel-video-product-link:not([disabled]):hover {
                       background: var(--control-button-hover-background-color, var(--control-button-background-color, #333333));
+                      color: var(--control-button-icon-color, #ffffff);
+                    }
+                  }
+
+                  /* Mobile: hidden by default, fade in as a single group (revealControls() below), and
+                     fade out again after a few seconds of inactivity (scheduleHide() below). */
+                  @media screen and (pointer: coarse) {
+                    #carousel-{{ block.id }} .carousel-video-sound-toggle,
+                    #carousel-{{ block.id }} .carousel-video-pause-toggle,
+                    #carousel-{{ block.id }} .carousel-video-product-link {
+                      opacity: 0;
+                      pointer-events: none;
+                    }
+
+                    #carousel-{{ block.id }} .carousel-video-sound-toggle.is-visible,
+                    #carousel-{{ block.id }} .carousel-video-pause-toggle.is-visible,
+                    #carousel-{{ block.id }} .carousel-video-product-link.is-visible {
+                      opacity: 1;
+                      pointer-events: auto;
                     }
                   }
 
@@ -766,37 +797,54 @@
                             var productLink = mediaBox.querySelector('.carousel-video-product-link');
                             var poster = mediaBox.querySelector('video-media > img');
 
-                            // Comprar / Sonido / Play-Pausa fade in and out together, as a single group:
-                            // hidden by default (see CSS) and not focusable by keyboard until revealed.
+                            // Comprar / Sonido / Play-Pausa fade in and out together, as a single group. On
+                            // desktop they are simply always visible (see CSS) - no reveal logic needed here.
+                            // On touch devices they start hidden and not focusable by keyboard until revealed
+                            // (see setMuted below), and auto-hide again after a few seconds of inactivity.
                             var groupControls = productLink ? [soundButton, pauseButton, productLink] : [soundButton, pauseButton];
+                            var INACTIVITY_HIDE_DELAY = 3000;
+                            var inactivityTimer;
 
-                            groupControls.forEach(function(control) {
-                              control.tabIndex = -1;
-                            });
+                            if (isTouchDevice) {
+                              groupControls.forEach(function(control) {
+                                control.tabIndex = -1;
+                              });
+                            }
+
+                            function hideControls() {
+                              groupControls.forEach(function(control) {
+                                control.classList.remove('is-visible');
+                                control.tabIndex = -1;
+                              });
+                            }
+
+                            function scheduleHide() {
+                              if (!isTouchDevice) {
+                                return;
+                              }
+
+                              clearTimeout(inactivityTimer);
+                              inactivityTimer = setTimeout(hideControls, INACTIVITY_HIDE_DELAY);
+                            }
 
                             function revealControls() {
                               groupControls.forEach(function(control) {
                                 control.classList.add('is-visible');
                                 control.removeAttribute('tabindex');
                               });
+
+                              scheduleHide();
                             }
 
                             video.addEventListener('playing', function() {
                               if (poster) {
                                 poster.classList.add('carousel-video-poster-hidden');
                               }
-
-                              // Desktop: the whole control group appears the moment autoplay actually starts.
-                              // On touch devices it stays hidden until the visitor unmutes (see setMuted
-                              // below), since the video is autoplaying silently and there is nothing to
-                              // pause/shop yet.
-                              if (!isTouchDevice) {
-                                revealControls();
-                              }
                             });
 
                             pauseButton.addEventListener('click', function(event) {
                               event.stopPropagation();
+                              revealControls();
 
                               if (videoMedia.playing) {
                                 videoMedia.pause();
@@ -815,11 +863,17 @@
                               playIcon.classList.remove('hidden');
                             });
 
-                            // The video has no loop attribute, so it fires 'ended' once per playthrough:
-                            // advance to the next slide (or wrap to the first) so the carousel cycles through
-                            // every video, always starting the next one muted. With a single video slide,
-                            // there is nowhere to advance to, so just replay it in place.
+                            // The video has no loop attribute, so it fires 'ended' once per playthrough. On
+                            // touch devices this advances to the next slide (or wraps to the first) so the
+                            // carousel cycles through every video, always starting the next one muted; with a
+                            // single video slide, there is nowhere to advance to, so it just replays in place.
+                            // On desktop the carousel never auto-advances: the video simply ends, and the
+                            // visitor decides when to move on via the carousel's own navigation.
                             video.addEventListener('ended', function() {
+                              if (!isTouchDevice) {
+                                return;
+                              }
+
                               if (carousel.cells.length > 1) {
                                 goToNext();
                               } else {
@@ -836,8 +890,8 @@
                               soundOnIcon.classList.toggle('hidden', muted);
 
                               // On touch devices, unmuting is what hands control over to the whole custom
-                              // control group (see the 'playing' listener above for the desktop equivalent).
-                              // Once revealed it stays revealed, even if the visitor mutes again afterwards.
+                              // control group (on desktop it is simply always visible, see CSS). Once
+                              // revealed it stays revealed, even if the visitor mutes again afterwards.
                               if (!muted && isTouchDevice) {
                                 revealControls();
                               }
@@ -861,6 +915,7 @@
 
                             soundButton.addEventListener('click', function(event) {
                               event.stopPropagation();
+                              revealControls();
                               toggleSound();
                             });
 
@@ -869,12 +924,15 @@
                             if (productLink) {
                               productLink.addEventListener('click', function(event) {
                                 event.stopPropagation();
+                                revealControls();
                               });
                             }
 
                             // Tolstoy-style tap-to-unmute: tapping anywhere on the video (not just the small
                             // sound button) toggles sound in place, matching how Tolstoy's thumbnail behaves.
+                            // Also counts as interaction for the mobile inactivity auto-hide timer.
                             mediaBox.addEventListener('click', function() {
+                              revealControls();
                               toggleSound();
                             });
                           });
