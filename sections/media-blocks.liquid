@@ -656,31 +656,38 @@
                      before { content: none; }" - reusing that existing pattern rather than patching around
                      it with extra specificity. From here on, background/border/icon color come exclusively
                      from the --control-button-* variables (Global > Controls). */
-                  #carousel-{{ block.id }} .carousel-video-sound-toggle:before,
-                  #carousel-{{ block.id }} .carousel-video-pause-toggle:before,
-                  #carousel-{{ block.id }} .carousel-video-product-link:before {
+                  {%- comment -%}
+                    Scoped to #carousel-wrapper-{{ block.id }} (the shared ancestor of both the slide
+                    track and the progress bar row), NOT #carousel-{{ block.id }} (the <product-list>
+                    itself): in "next to the progress bar" mode the controls group is moved outside the
+                    <product-list> entirely (see the script below), so scoping to the narrower ID would
+                    silently stop matching the moment it's relocated.
+                  {%- endcomment -%}
+                  #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle:before,
+                  #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle:before,
+                  #carousel-wrapper-{{ block.id }} .carousel-video-product-link:before {
                     content: none;
                   }
 
-                  #carousel-{{ block.id }} .carousel-video-sound-toggle,
-                  #carousel-{{ block.id }} .carousel-video-pause-toggle,
-                  #carousel-{{ block.id }} .carousel-video-product-link {
+                  #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
+                  #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
+                  #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
                     transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
                   }
 
                   /* Desktop: Comprar / Sonido / Play-Pausa are visible from the start and stay visible for
                      good - no entrance fade, never hidden for inactivity. */
                   @media screen and (pointer: fine) {
-                    #carousel-{{ block.id }} .carousel-video-sound-toggle,
-                    #carousel-{{ block.id }} .carousel-video-pause-toggle,
-                    #carousel-{{ block.id }} .carousel-video-product-link {
+                    #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
+                    #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
+                    #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
                       opacity: 1;
                       pointer-events: auto;
                     }
 
-                    #carousel-{{ block.id }} .carousel-video-pause-toggle:not([disabled]):hover,
-                    #carousel-{{ block.id }} .carousel-video-sound-toggle:not([disabled]):hover,
-                    #carousel-{{ block.id }} .carousel-video-product-link:not([disabled]):hover {
+                    #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle:not([disabled]):hover,
+                    #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle:not([disabled]):hover,
+                    #carousel-wrapper-{{ block.id }} .carousel-video-product-link:not([disabled]):hover {
                       background: var(--control-button-hover-background-color, var(--control-button-background-color, #333333));
                       color: var(--control-button-icon-color, #ffffff);
                     }
@@ -689,30 +696,30 @@
                   /* Mobile: hidden by default, fade in as a single group (revealControls() below), and
                      fade out again after a few seconds of inactivity (scheduleHide() below). */
                   @media screen and (pointer: coarse) {
-                    #carousel-{{ block.id }} .carousel-video-sound-toggle,
-                    #carousel-{{ block.id }} .carousel-video-pause-toggle,
-                    #carousel-{{ block.id }} .carousel-video-product-link {
+                    #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
+                    #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
+                    #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
                       opacity: 0;
                       pointer-events: none;
                     }
 
-                    #carousel-{{ block.id }} .carousel-video-sound-toggle.is-visible,
-                    #carousel-{{ block.id }} .carousel-video-pause-toggle.is-visible,
-                    #carousel-{{ block.id }} .carousel-video-product-link.is-visible {
+                    #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle.is-visible,
+                    #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle.is-visible,
+                    #carousel-wrapper-{{ block.id }} .carousel-video-product-link.is-visible {
                       opacity: 1;
                       pointer-events: auto;
                     }
                   }
 
                   /* Text mode reuses the theme's body text styling as-is (no independent typography). */
-                  #carousel-{{ block.id }} .carousel-video-product-link__text {
+                  #carousel-wrapper-{{ block.id }} .carousel-video-product-link__text {
                     font: var(--text-font-style) var(--text-font-weight) var(--text-base) / var(--text-line-height) var(--text-font-family);
                     text-transform: var(--text-transform);
                     letter-spacing: var(--text-letter-spacing);
                     white-space: nowrap;
                   }
 
-                  #carousel-{{ block.id }} .carousel-video-controls {
+                  #carousel-wrapper-{{ block.id }} .carousel-video-controls {
                     width: auto;
                     height: auto;
                     position: absolute;
@@ -724,16 +731,21 @@
                   {%- if section.settings.controls_position == 'progress_bar' and carousel_slide_count > 1 -%}
                     {%- comment -%}
                       "Next to the progress bar" mode: Comprar is hidden (same element, same JS, just not
-                      rendered visually), and the active slide's own controls group (same DOM node, moved
-                      by the script below - never cloned) drops its absolute positioning once relocated
-                      into the shared slot next to the progress bar. Gated on carousel_slide_count > 1,
-                      same as the progress bar itself, so a single-slide carousel is fully unaffected.
+                      rendered visually). Every controls group is hidden by default here as a CSS safety
+                      net (so nothing can ever show "on top of" a video, even before the script below runs
+                      or if it fails for any reason) and only re-shown once it is an actual descendant of
+                      the slot - i.e. only the active slide's group, once the script moves it there.
                     {%- endcomment -%}
-                    #carousel-{{ block.id }} .carousel-video-product-link {
+                    #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
                       display: none;
                     }
 
-                    #carousel-{{ block.id }} #carousel-controls-slot-{{ block.id }} .carousel-video-controls {
+                    #carousel-wrapper-{{ block.id }} .carousel-video-controls {
+                      display: none;
+                    }
+
+                    #carousel-controls-slot-{{ block.id }} .carousel-video-controls {
+                      display: flex;
                       position: static;
                       inset: auto;
                     }
@@ -741,7 +753,7 @@
                 </style>
 
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
-                  <div class="v-stack gap-4">
+                  <div class="v-stack gap-4" id="carousel-wrapper-{{ block.id }}">
                     <div style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                     <product-list id="carousel-{{ block.id }}" cell-selector=".snap-start" class="scroll-area snap-x">
                       {%- for i in (1..8) -%}
@@ -862,6 +874,19 @@
                           var controlsAtProgressBar = {% if section.settings.controls_position == 'progress_bar' %}true{% else %}false{% endif %};
                           var controlsSlot = controlsAtProgressBar ? document.getElementById('carousel-controls-slot-{{ block.id }}') : null;
 
+                          // Captured once, up front, while every controls group is still in its original
+                          // slide - NOT re-queried via cell.querySelector() on every scheduleAdvance() call,
+                          // since once a group has been moved into the slot it is no longer a descendant of
+                          // its cell and would silently fail to be found again (leaving stale duplicates
+                          // behind instead of being moved back home).
+                          var controlsEntries = controlsSlot ? carousel.cells.map(function(cell) {
+                            return {
+                              cell: cell,
+                              group: cell.querySelector('.carousel-video-controls'),
+                              home: cell.querySelector('.content-box__background-media')
+                            };
+                          }) : [];
+
                           function goToNext() {
                             if (carousel.selectedIndex >= carousel.cells.length - 1) {
                               carousel.select(0);
@@ -884,21 +909,17 @@
                                   otherVideoMedia.pause();
                                 }
                               }
+                            });
 
-                              if (controlsSlot) {
-                                var controlsGroup = cell.querySelector('.carousel-video-controls');
+                            controlsEntries.forEach(function(entry) {
+                              if (!entry.group) {
+                                return;
+                              }
 
-                                if (controlsGroup) {
-                                  if (cell === carousel.selectedCell) {
-                                    controlsSlot.appendChild(controlsGroup);
-                                  } else {
-                                    var controlsHome = cell.querySelector('.content-box__background-media');
-
-                                    if (controlsHome) {
-                                      controlsHome.appendChild(controlsGroup);
-                                    }
-                                  }
-                                }
+                              if (entry.cell === carousel.selectedCell) {
+                                controlsSlot.appendChild(entry.group);
+                              } else if (entry.home) {
+                                entry.home.appendChild(entry.group);
                               }
                             });
 
