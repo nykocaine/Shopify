@@ -583,24 +583,32 @@
 
                 <style>
                   #carousel-{{ block.id }} {
-                    grid: auto / auto-flow 85%;
+                    grid: auto / auto-flow {% if carousel_video_mobile_box_height %}calc({{ carousel_video_mobile_box_height }} * {{ carousel_video_width_ratio }}){% else %}85%{% endif %};
                     gap: .75rem;
                     display: grid;
                   }
 
+                  {%- comment -%}
+                    The column width above is the same calc() as this height * ratio, computed explicitly
+                    instead of relying on intrinsic/max-content sizing - so image-only slides in the same
+                    carousel (which don't match :has(video-media) below and so keep their existing
+                    min-height) still land in a column of the correct, exact width, rather than risking
+                    collapsing to zero under max-content sizing.
+                  {%- endcomment -%}
+                  {%- if carousel_video_mobile_box_height -%}
+                    #carousel-{{ block.id }} .content-box:has(video-media) {
+                      height: {{ carousel_video_mobile_box_height }};
+                      aspect-ratio: {{ carousel_video_aspect_ratio }};
+                      width: auto;
+                    }
+                  {%- endif -%}
+
                   @media screen and (min-width: 700px) {
                     #carousel-{{ block.id }} {
-                      grid: auto / auto-flow {% if carousel_video_aspect_ratio %}calc({{ carousel_video_box_height }} * {{ carousel_video_width_ratio }}){% else %}45%{% endif %};
+                      grid: auto / auto-flow {% if carousel_video_box_height %}calc({{ carousel_video_box_height }} * {{ carousel_video_width_ratio }}){% else %}45%{% endif %};
                     }
 
-                    {%- if carousel_video_aspect_ratio -%}
-                      {%- comment -%}
-                        The column width above is the same calc() as this height * ratio, computed
-                        explicitly instead of relying on intrinsic/max-content sizing - so image-only
-                        slides in the same carousel (which don't match :has(video-media) below and so
-                        keep their existing min-height) still land in a column of the correct, exact
-                        width, rather than risking collapsing to zero under max-content sizing.
-                      {%- endcomment -%}
+                    {%- if carousel_video_box_height -%}
                       #carousel-{{ block.id }} .content-box:has(video-media) {
                         height: {{ carousel_video_box_height }};
                         aspect-ratio: {{ carousel_video_aspect_ratio }};
