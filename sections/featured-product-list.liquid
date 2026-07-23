@@ -3,11 +3,6 @@
     align-items: stretch;
   }
 
-  #shopify-section-{{ section.id }} .featured-product-list__container--full-width {
-    margin-inline: 0;
-    overflow: hidden;
-  }
-
   #shopify-section-{{ section.id }} .product-list__promo {
     grid-column: span 1;
   }
@@ -77,8 +72,8 @@
   }
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
-  <div class="container {% if section.settings.remove_side_spacing %}featured-product-list__container--full-width{% endif %}">
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product_list %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_product_list %} style="border-radius: {{ section.settings.product_list_border_radius }}px; overflow: hidden;"{% endif %}>
+  <div class="container">
     <div class="section-spacing section-spacing--tight">
         {%- assign product_list_id = 'product-list-' | append: section.id -%}
 
@@ -169,10 +164,21 @@
     },
     {
       "type": "checkbox",
-      "id": "remove_side_spacing",
-      "label": "t:sections.featured_product_list.remove_side_spacing",
-      "info": "t:sections.featured_product_list.remove_side_spacing_info",
+      "id": "floating_product_list",
+      "label": "Floating",
+      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
       "default": false
+    },
+    {
+      "type": "range",
+      "id": "product_list_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_product_list }}"
     },
     {
       "type": "product_list",
