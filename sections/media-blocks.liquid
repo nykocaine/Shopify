@@ -711,6 +711,32 @@
                     letter-spacing: var(--text-letter-spacing);
                     white-space: nowrap;
                   }
+
+                  #carousel-{{ block.id }} .carousel-video-controls {
+                    width: auto;
+                    height: auto;
+                    position: absolute;
+                    inset-block-start: 1rem;
+                    inset-inline-end: 1rem;
+                    z-index: 1;
+                  }
+
+                  {%- if section.settings.controls_position == 'progress_bar' -%}
+                    {%- comment -%}
+                      "Next to the progress bar" mode: Comprar is hidden (same element, same JS, just not
+                      rendered visually), and the active slide's own controls group (same DOM node, moved
+                      by the script below - never cloned) drops its absolute positioning once relocated
+                      into the shared slot next to the progress bar.
+                    {%- endcomment -%}
+                    #carousel-{{ block.id }} .carousel-video-product-link {
+                      display: none;
+                    }
+
+                    #carousel-{{ block.id }} #carousel-controls-slot-{{ block.id }} .carousel-video-controls {
+                      position: static;
+                      inset: auto;
+                    }
+                  {%- endif -%}
                 </style>
 
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
@@ -751,7 +777,7 @@
                                     {%- endcapture -%}
                                   {%- endif -%}
 
-                                  <div class="h-stack gap-2" style="width: auto; height: auto; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1;">
+                                  <div class="h-stack gap-2 carousel-video-controls">
                                     {%- if show_product_button -%}
                                       <a href="{{ slide_product.url }}" class="carousel-video-product-link circle-button" style="{{ product_button_style }}">
                                         {%- if block.settings.product_button_type == 'text' -%}
@@ -803,7 +829,14 @@
                     </div>
 
                     {%- if carousel_slide_count > 1 -%}
-                      <progress-bar track-scroll-target="carousel-{{ block.id }}" class="progress-bar w-full"></progress-bar>
+                      {%- if section.settings.controls_position == 'progress_bar' -%}
+                        <div class="h-stack gap-4">
+                          <progress-bar track-scroll-target="carousel-{{ block.id }}" class="progress-bar grow"></progress-bar>
+                          <div class="h-stack gap-2" id="carousel-controls-slot-{{ block.id }}"></div>
+                        </div>
+                      {%- else -%}
+                        <progress-bar track-scroll-target="carousel-{{ block.id }}" class="progress-bar w-full"></progress-bar>
+                      {%- endif -%}
                     {%- endif -%}
 
                     {%- if carousel_slide_count >= 1 -%}
@@ -822,6 +855,11 @@
                           // appearing as soon as playback starts.
                           var isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
                           var advanceTimer;
+                          // "Next to the progress bar" mode: the selected slide's own controls group
+                          // (the exact same DOM node, never cloned) is moved into this slot; every other
+                          // slide's group is moved back to its own slide (see scheduleAdvance below).
+                          var controlsAtProgressBar = {% if section.settings.controls_position == 'progress_bar' %}true{% else %}false{% endif %};
+                          var controlsSlot = controlsAtProgressBar ? document.getElementById('carousel-controls-slot-{{ block.id }}') : null;
 
                           function goToNext() {
                             if (carousel.selectedIndex >= carousel.cells.length - 1) {
@@ -843,6 +881,22 @@
                                 var otherVideoMedia = cell.querySelector('video-media');
                                 if (otherVideoMedia) {
                                   otherVideoMedia.pause();
+                                }
+                              }
+
+                              if (controlsSlot) {
+                                var controlsGroup = cell.querySelector('.carousel-video-controls');
+
+                                if (controlsGroup) {
+                                  if (cell === carousel.selectedCell) {
+                                    controlsSlot.appendChild(controlsGroup);
+                                  } else {
+                                    var controlsHome = cell.querySelector('.content-box__background-media');
+
+                                    if (controlsHome) {
+                                      controlsHome.appendChild(controlsGroup);
+                                    }
+                                  }
                                 }
                               }
                             });
