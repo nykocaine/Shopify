@@ -48,33 +48,6 @@
       }
     }
 
-    {%- comment -%}
-      Video width (desktop only, carousel blocks). Applies uniformly to every carousel video in this
-      section instance: the video's own box shrinks/grows to the chosen aspect ratio (height stays
-      exactly as set by the existing block size settings; only width is derived from it), and is
-      centered within its slide. The slide/grid/scroll-snap mechanics, spacing and mobile layout are
-      untouched, since only the <video-media> element itself (not its container) is resized.
-    {%- endcomment -%}
-    {%- if section.settings.carousel_video_width != 'none' -%}
-      {%- case section.settings.carousel_video_width -%}
-        {%- when '4-5' -%}
-          {%- assign carousel_video_aspect_ratio = '4 / 5' -%}
-        {%- when '3-4' -%}
-          {%- assign carousel_video_aspect_ratio = '3 / 4' -%}
-        {%- when '9-16' -%}
-          {%- assign carousel_video_aspect_ratio = '9 / 16' -%}
-      {%- endcase -%}
-
-      @media screen and (min-width: 700px) {
-        #shopify-section-{{ section.id }} [id^="carousel-"] video-media {
-          aspect-ratio: {{ carousel_video_aspect_ratio }};
-          width: auto;
-          height: 100%;
-          margin-inline: auto;
-        }
-      }
-    {%- endif -%}
-
     @media screen and (pointer: fine) {
       {%- for block in section.blocks -%}
         {%- if block.settings.change_color_scheme_on_hover -%}
