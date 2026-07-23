@@ -555,6 +555,26 @@
                   #carousel-{{ block.id }} .carousel-video-tap-to-unmute {
                     cursor: pointer;
                   }
+
+                  #carousel-{{ block.id }} .carousel-video-pause-toggle {
+                    opacity: 0;
+                    transform: scale(0.85);
+                    transition: opacity 0.2s ease, transform 0.2s ease;
+                    pointer-events: none;
+                  }
+
+                  #carousel-{{ block.id }} .carousel-video-pause-toggle.is-visible {
+                    opacity: 1;
+                    transform: scale(1);
+                    pointer-events: auto;
+                  }
+
+                  @media screen and (prefers-reduced-motion: reduce) {
+                    #carousel-{{ block.id }} .carousel-video-pause-toggle {
+                      transition: opacity 0.2s ease;
+                      transform: none;
+                    }
+                  }
                 </style>
 
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
@@ -577,16 +597,20 @@
                             <div class="content-box h-full min-h-{{ block.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}" style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                               <div class="content-box__background-media {% if slide_video != blank %}carousel-video-tap-to-unmute{% endif %}">
                                 {%- if slide_video != blank -%}
-                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, loop: true, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
+                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
+
+                                  {%- capture control_button_style -%}
+                                    width: var(--control-button-size, 1.75rem); height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, rgb(var(--button-background-primary))); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, rgb(var(--border-color))); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, rgb(var(--button-text-primary)));
+                                  {%- endcapture -%}
 
                                   <div class="h-stack gap-2" style="width: auto; height: auto; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1;">
-                                    <button type="button" class="carousel-video-pause-toggle circle-button hidden" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
+                                    <button type="button" class="carousel-video-pause-toggle circle-button" style="{{ control_button_style }}">
                                       <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
                                       {%- render 'icon' with 'slideshow-pause', width: 9, class: 'carousel-video-pause-icon' -%}
                                       {%- render 'icon' with 'slideshow-play', width: 10, class: 'carousel-video-play-icon hidden' -%}
                                     </button>
 
-                                    <button type="button" class="carousel-video-sound-toggle circle-button" style="width: 1.75rem; height: 1.75rem; background: rgb(var(--button-background-primary)); border: 1px solid rgb(var(--border-color)); border-radius: 100%; color: rgb(var(--button-text-primary));">
+                                    <button type="button" class="carousel-video-sound-toggle circle-button" style="{{ control_button_style }}">
                                       <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
                                       {%- render 'icon' with 'volume-off', width: 12, class: 'carousel-video-sound-off-icon' -%}
                                       {%- render 'icon' with 'volume', width: 12, class: 'carousel-video-sound-icon hidden' -%}
@@ -634,9 +658,9 @@
 
                           customElements.whenDefined('product-list').then(function() {
                           var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                          // Coarse pointer (touch) devices don't get JS-driven autoplay: iOS/Android require
-                          // a real tap on the video before playback, so those slides rely on the native
-                          // <video> play button instead (see isTouchDevice usage below).
+                          // Touch devices still autoplay muted like desktop, but the pause/play button stays
+                          // hidden until the visitor unmutes (see isTouchDevice usage below) instead of
+                          // appearing as soon as playback starts.
                           var isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
                           var advanceTimer;
 
@@ -667,16 +691,10 @@
                             var videoMedia = carousel.selectedCell ? carousel.selectedCell.querySelector('video-media') : null;
 
                             if (videoMedia) {
-                              // Tolstoy-style: the video loops forever in its own thumbnail (loop: true
-                              // on the <video> tag), so the carousel never auto-advances while a video
-                              // slide is selected. Moving on is left entirely to manual swipe/scroll.
-                              //
-                              // Only autoplay on pointer-fine (desktop) devices. Touch devices are excluded
-                              // because muted autoplay would otherwise start silently there too; those
-                              // slides wait for a real tap on the native play button instead.
-                              if (!isTouchDevice) {
-                                videoMedia.play();
-                              }
+                              // The video plays through once (no loop attribute) and its own 'ended' handler
+                              // advances the carousel, so there is nothing to schedule here: moving on happens
+                              // exactly when the video finishes, on every device.
+                              videoMedia.play();
                             } else if (!reduceMotion) {
                               advanceTimer = setTimeout(goToNext, {{ block.settings.cycle_speed | times: 1000 }});
                             }
@@ -702,22 +720,25 @@
                             var playIcon = pauseButton.querySelector('.carousel-video-play-icon');
                             var poster = mediaBox.querySelector('video-media > img');
 
-                            // No autoplay on touch devices: show the small native play button until the
-                            // visitor taps it, then hand off to our own pause/sound buttons above. The
-                            // poster image sits on top of (and would otherwise hide/block taps on) the
-                            // native control, so it needs to get out of the way immediately instead of
-                            // waiting for the 'playing' event like it does on desktop.
-                            if (isTouchDevice) {
-                              video.controls = true;
+                            // Hidden by default (see CSS): not focusable by keyboard until it is actually
+                            // revealed, matching its opacity/pointer-events: none resting state.
+                            pauseButton.tabIndex = -1;
 
-                              if (poster) {
-                                poster.classList.add('carousel-video-poster-hidden');
-                              }
+                            function revealPauseButton() {
+                              pauseButton.classList.add('is-visible');
+                              pauseButton.removeAttribute('tabindex');
                             }
 
                             video.addEventListener('playing', function() {
                               if (poster) {
                                 poster.classList.add('carousel-video-poster-hidden');
+                              }
+
+                              // Desktop: the pause button appears the moment autoplay actually starts. On
+                              // touch devices it stays hidden until the visitor unmutes (see setMuted below),
+                              // since the video is autoplaying silently and there is nothing to pause yet.
+                              if (!isTouchDevice) {
+                                revealPauseButton();
                               }
                             });
 
@@ -732,11 +753,6 @@
                             });
 
                             video.addEventListener('playing', function() {
-                              if (isTouchDevice) {
-                                video.controls = false;
-                              }
-
-                              pauseButton.classList.remove('hidden');
                               pauseIcon.classList.remove('hidden');
                               playIcon.classList.add('hidden');
                             });
@@ -744,6 +760,18 @@
                             video.addEventListener('pause', function() {
                               pauseIcon.classList.add('hidden');
                               playIcon.classList.remove('hidden');
+                            });
+
+                            // The video has no loop attribute, so it fires 'ended' once per playthrough:
+                            // advance to the next slide (or wrap to the first) so the carousel cycles through
+                            // every video, always starting the next one muted. With a single video slide,
+                            // there is nowhere to advance to, so just replay it in place.
+                            video.addEventListener('ended', function() {
+                              if (carousel.cells.length > 1) {
+                                goToNext();
+                              } else {
+                                videoMedia.play();
+                              }
                             });
 
                             var soundButton = mediaBox.querySelector('.carousel-video-sound-toggle');
@@ -754,6 +782,13 @@
                               video.muted = muted;
                               soundOffIcon.classList.toggle('hidden', !muted);
                               soundOnIcon.classList.toggle('hidden', muted);
+
+                              // On touch devices, unmuting is what hands control over to the custom pause
+                              // button (see the 'playing' listener above for the desktop equivalent). Once
+                              // revealed it stays revealed, even if the visitor mutes again afterwards.
+                              if (!muted && isTouchDevice) {
+                                revealPauseButton();
+                              }
                             }
 
                             function toggleSound() {

@@ -136,6 +136,20 @@ note that this may have impact on different places.
       --progress-bar-fill-color: rgb({{ settings.progress_bar_fill_color.rgb }});
     {%- endif -%}
 
+    /* Controls (custom media control buttons, e.g. Media Blocks video carousel sound/play-pause buttons) */
+    --control-button-border-width: {{ settings.control_button_border_width }}px;
+    --control-button-border-radius: {{ settings.control_button_border_radius }}px;
+    --control-button-size: {{ settings.control_button_size_mobile }}px;
+    {%- if settings.control_button_background_color != blank -%}
+      --control-button-background-color: rgb({{ settings.control_button_background_color.rgb }});
+    {%- endif -%}
+    {%- if settings.control_button_icon_color != blank -%}
+      --control-button-icon-color: rgb({{ settings.control_button_icon_color.rgb }});
+    {%- endif -%}
+    {%- if settings.control_button_border_color != blank -%}
+      --control-button-border-color: rgb({{ settings.control_button_border_color.rgb }});
+    {%- endif -%}
+
     /* Badges */
     --badge-font-size: {{ settings.badge_font_size_mobile | divided_by: 16.0 }}rem;
 
@@ -263,6 +277,9 @@ note that this may have impact on different places.
 
       /* Badges */
       --badge-font-size: {{ settings.badge_font_size_desktop | divided_by: 16.0 }}rem;
+
+      /* Controls */
+      --control-button-size: {{ settings.control_button_size }}px;
 
       /* Spacing */
       --container-gutter: {{ settings.container_gutter | times: 0.66667 | round: 3 }}rem;
