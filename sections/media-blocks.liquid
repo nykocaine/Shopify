@@ -564,7 +564,8 @@
                     cursor: pointer;
                   }
 
-                  #carousel-{{ block.id }} .carousel-video-sound-toggle {
+                  #carousel-{{ block.id }} .carousel-video-sound-toggle,
+                  #carousel-{{ block.id }} .carousel-video-product-link {
                     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
                   }
 
@@ -581,9 +582,18 @@
 
                   @media screen and (pointer: fine) {
                     #carousel-{{ block.id }} .carousel-video-pause-toggle:not([disabled]):hover,
-                    #carousel-{{ block.id }} .carousel-video-sound-toggle:not([disabled]):hover {
+                    #carousel-{{ block.id }} .carousel-video-sound-toggle:not([disabled]):hover,
+                    #carousel-{{ block.id }} .carousel-video-product-link:not([disabled]):hover {
                       background: var(--control-button-hover-background-color, var(--control-button-background-color, rgb(var(--button-background-primary))));
                     }
+                  }
+
+                  /* Text mode reuses the theme's body text styling as-is (no independent typography). */
+                  #carousel-{{ block.id }} .carousel-video-product-link__text {
+                    font: var(--text-font-style) var(--text-font-weight) var(--text-base) / var(--text-line-height) var(--text-font-family);
+                    text-transform: var(--text-transform);
+                    letter-spacing: var(--text-letter-spacing);
+                    white-space: nowrap;
                   }
                 </style>
 
@@ -594,11 +604,13 @@
                       {%- for i in (1..4) -%}
                         {%- capture image_key -%}image_{{ i }}{%- endcapture -%}
                         {%- capture video_key -%}video_{{ i }}{%- endcapture -%}
+                        {%- capture product_key -%}product_{{ i }}{%- endcapture -%}
                         {%- capture heading_key -%}heading_{{ i }}{%- endcapture -%}
                         {%- capture text_key -%}text_{{ i }}{%- endcapture -%}
 
                         {%- assign slide_image = block.settings[image_key] -%}
                         {%- assign slide_video = block.settings[video_key] -%}
+                        {%- assign slide_product = block.settings[product_key] -%}
                         {%- assign slide_heading = block.settings[heading_key] -%}
                         {%- assign slide_text = block.settings[text_key] -%}
 
@@ -613,18 +625,39 @@
                                     width: var(--control-button-size, 1.75rem); height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, rgb(var(--button-background-primary))); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, rgb(var(--border-color))); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, rgb(var(--button-text-primary)));
                                   {%- endcapture -%}
 
+                                  {%- assign show_product_button = false -%}
+
+                                  {%- if block.settings.show_product_button and slide_product != blank -%}
+                                    {%- assign show_product_button = true -%}
+
+                                    {%- capture product_button_style -%}
+                                      height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, rgb(var(--button-background-primary))); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, rgb(var(--border-color))); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, rgb(var(--button-text-primary))); {% if block.settings.product_button_type == 'text' %}width: auto; padding-inline: 0.75rem;{% else %}width: var(--control-button-size, 1.75rem);{% endif %}
+                                    {%- endcapture -%}
+                                  {%- endif -%}
+
                                   <div class="h-stack gap-2" style="width: auto; height: auto; position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1;">
+                                    <button type="button" class="carousel-video-sound-toggle circle-button" style="{{ control_button_style }}">
+                                      <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
+                                      {%- render 'icon' with 'volume-off', width: 14, class: 'carousel-video-sound-off-icon' -%}
+                                      {%- render 'icon' with 'volume', width: 14, class: 'carousel-video-sound-icon hidden' -%}
+                                    </button>
+
                                     <button type="button" class="carousel-video-pause-toggle circle-button" style="{{ control_button_style }}">
                                       <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
                                       {%- render 'icon' with 'slideshow-pause', width: 14, class: 'carousel-video-pause-icon' -%}
                                       {%- render 'icon' with 'slideshow-play', width: 14, class: 'carousel-video-play-icon hidden' -%}
                                     </button>
 
-                                    <button type="button" class="carousel-video-sound-toggle circle-button" style="{{ control_button_style }}">
-                                      <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
-                                      {%- render 'icon' with 'volume-off', width: 14, class: 'carousel-video-sound-off-icon' -%}
-                                      {%- render 'icon' with 'volume', width: 14, class: 'carousel-video-sound-icon hidden' -%}
-                                    </button>
+                                    {%- if show_product_button -%}
+                                      <a href="{{ slide_product.url }}" class="carousel-video-product-link circle-button" style="{{ product_button_style }}">
+                                        {%- if block.settings.product_button_type == 'text' -%}
+                                          <span class="carousel-video-product-link__text">{{ block.settings.product_button_text | default: slide_product.title }}</span>
+                                        {%- else -%}
+                                          <span class="sr-only">{{ block.settings.product_button_text | default: slide_product.title }}</span>
+                                          {%- render 'icon' with 'cart', width: 14 -%}
+                                        {%- endif -%}
+                                      </a>
+                                    {%- endif -%}
                                   </div>
                                 {%- elsif slide_image != blank -%}
                                   {%- render 'media' with slide_image, sizes: '85vw', class: 'image-cover' -%}
@@ -821,6 +854,16 @@
                               event.stopPropagation();
                               toggleSound();
                             });
+
+                            // The "go to product" link navigates on its own; it just needs to not also
+                            // trigger the tap-to-unmute handler below.
+                            var productLink = mediaBox.querySelector('.carousel-video-product-link');
+
+                            if (productLink) {
+                              productLink.addEventListener('click', function(event) {
+                                event.stopPropagation();
+                              });
+                            }
 
                             // Tolstoy-style tap-to-unmute: tapping anywhere on the video (not just the small
                             // sound button) toggles sound in place, matching how Tolstoy's thumbnail behaves.
@@ -2767,6 +2810,42 @@
         },
         {
           "type": "header",
+          "content": "Product button"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_product_button",
+          "label": "Show \"Go to product\" button",
+          "info": "Only shows on slides where a product is set below. Sits alongside the sound and play/pause buttons.",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "product_button_type",
+          "label": "Button type",
+          "options": [
+            {
+              "value": "icon",
+              "label": "Icon"
+            },
+            {
+              "value": "text",
+              "label": "Text"
+            }
+          ],
+          "default": "icon",
+          "visible_if": "{{ block.settings.show_product_button }}"
+        },
+        {
+          "type": "text",
+          "id": "product_button_text",
+          "label": "Button text",
+          "info": "Also used as the accessible label when the button type is set to Icon.",
+          "default": "Shop now",
+          "visible_if": "{{ block.settings.show_product_button }}"
+        },
+        {
+          "type": "header",
           "content": "Image 1"
         },
         {
@@ -2779,6 +2858,12 @@
           "id": "video_1",
           "label": "t:global.video.video",
           "info": "If set, this plays instead of the image above."
+        },
+        {
+          "type": "product",
+          "id": "product_1",
+          "label": "Product",
+          "info": "Powers the \"Go to product\" button for this slide."
         },
         {
           "type": "inline_richtext",
@@ -2806,6 +2891,12 @@
           "info": "If set, this plays instead of the image above."
         },
         {
+          "type": "product",
+          "id": "product_2",
+          "label": "Product",
+          "info": "Powers the \"Go to product\" button for this slide."
+        },
+        {
           "type": "inline_richtext",
           "id": "heading_2",
           "label": "t:global.text.heading"
@@ -2831,6 +2922,12 @@
           "info": "If set, this plays instead of the image above."
         },
         {
+          "type": "product",
+          "id": "product_3",
+          "label": "Product",
+          "info": "Powers the \"Go to product\" button for this slide."
+        },
+        {
           "type": "inline_richtext",
           "id": "heading_3",
           "label": "t:global.text.heading"
@@ -2854,6 +2951,12 @@
           "id": "video_4",
           "label": "t:global.video.video",
           "info": "If set, this plays instead of the image above."
+        },
+        {
+          "type": "product",
+          "id": "product_4",
+          "label": "Product",
+          "info": "Powers the \"Go to product\" button for this slide."
         },
         {
           "type": "inline_richtext",
