@@ -963,33 +963,6 @@
                           var revealOnDemand = isTouchDevice !== controlsAtProgressBar;
                           var desktopHoverReveal = controlsAtProgressBar && !isTouchDevice;
 
-                          // Desktop only, see the click-to-promote listener further below: carousel.select()
-                          // reads carousel.scrollLeft synchronously to compute where to scroll to, and that
-                          // read is only meaningful once the previous scroll has actually settled. Calling
-                          // select() again before that (e.g. two quick clicks on different slides) asks the
-                          // browser to retarget a scroll-snap container's smooth-scroll animation mid-flight,
-                          // which is a known way for scroll-snap to settle on the wrong nearby cell instead
-                          // of the intended one - exactly the "jumps a slide or two" symptom. 'scrollend' is
-                          // the carousel's own native signal that it is safe to call select() again (it is
-                          // what the carousel's internal _hasPendingProgrammaticScroll flag is cleared on
-                          // too, just not exposed publicly), so a second click is simply ignored until then
-                          // rather than queued or estimated - never two overlapping select() calls in flight.
-                          // select() skips scrollTo() (and so never fires 'scrollend') on the rare occasion
-                          // its target already equals the current scrollLeft; this timeout is only a safety
-                          // net for that edge case, so the gate can never get stuck permanently closed - it
-                          // is not used to guess when the animation "should" be done.
-                          var carouselIsSettling = false;
-                          var carouselSettleTimeout;
-
-                          function markCarouselSettled() {
-                            clearTimeout(carouselSettleTimeout);
-                            carouselIsSettling = false;
-                          }
-
-                          if (!isTouchDevice) {
-                            carousel.addEventListener('scrollend', markCarouselSettled);
-                          }
-
                           // Captured once, up front, while every controls group is still in its original
                           // slide - NOT re-queried via cell.querySelector() on every scheduleAdvance() call,
                           // since once a group has been moved into the slot it is no longer a descendant of
@@ -1065,29 +1038,31 @@
                             var videoMedia = mediaBox.querySelector('video-media');
 
                             // Desktop only: interacting with any non-selected slide's video (clicking it,
-                            // or clicking any of its buttons - sound, play/pause, product) brings that
-                            // slide to the first visible position via the carousel's own select(), the same
-                            // API swipe navigation already uses. That triggers a normal 'carousel:change',
-                            // so scheduleAdvance() above (unchanged) is what actually pauses every other
-                            // video and starts this one - no second play/pause path is introduced. A
-                            // capture-phase listener is used (instead of adding this to each individual
-                            // click handler) so it still fires even though the sound/pause/product-link
-                            // handlers call event.stopPropagation() during the bubble phase.
+                            // or clicking any of its buttons - sound, play/pause, product) physically aligns
+                            // that slide with the carousel's left edge, using its real, current offsetLeft -
+                            // the same coordinate the carousel's own cells are laid out and snapped against
+                            // (cell-selector=".snap-start" -> scroll-snap-align: start), not an index. Once
+                            // the resulting scroll settles, the carousel's own existing scroll tracking
+                            // (unchanged) recognizes this cell as selected and dispatches its normal
+                            // 'carousel:change', which is what scheduleAdvance() above (unchanged) already
+                            // reacts to by pausing every other video and starting this one - no second
+                            // play/pause path is introduced. A capture-phase listener is used (instead of
+                            // adding this to each individual click handler) so it still fires even though
+                            // the sound/pause/product-link handlers call event.stopPropagation() during the
+                            // bubble phase.
                             if (!isTouchDevice) {
                               var cell = mediaBox.closest('.snap-start');
 
                               mediaBox.addEventListener('click', function() {
-                                if (carouselIsSettling) {
+                                if (cell === carousel.selectedCell) {
                                   return;
                                 }
 
-                                var index = carousel.cells.indexOf(cell);
+                                var targetScrollLeft = document.dir === 'rtl'
+                                  ? cell.offsetLeft + cell.offsetWidth - carousel.clientWidth
+                                  : cell.offsetLeft;
 
-                                if (index !== -1 && cell !== carousel.selectedCell) {
-                                  carouselIsSettling = true;
-                                  carouselSettleTimeout = setTimeout(markCarouselSettled, 1000);
-                                  carousel.select(index);
-                                }
+                                carousel.scrollTo({ left: targetScrollLeft, behavior: 'smooth' });
                               }, true);
                             }
 
