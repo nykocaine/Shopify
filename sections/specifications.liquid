@@ -1,5 +1,11 @@
 {%- if section.blocks.size > 0 -%}
-  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+  {%- liquid
+    assign show_floating = false
+    if section.settings.image == blank and section.settings.layout == 'stacked' and section.settings.floating_specifications
+      assign show_floating = true
+    endif
+  -%}
+  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if show_floating %} section-floating section-floating--block-end{% endif %}"{% if show_floating %} style="border-end-start-radius: {{ section.settings.specifications_border_radius }}px; border-end-end-radius: {{ section.settings.specifications_border_radius }}px; overflow: hidden;"{% endif %}>
     {%- capture section_header -%}
       {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank -%}
         <div class="prose {% if section.settings.layout == 'stacked' and section.settings.image == blank %}prose-justify-center{% endif %}">
@@ -93,7 +99,7 @@
         </div>
       {%- else -%}
         <div class="container section-spacing">
-          <div class="section-stack max-w-md mx-auto">
+          <div class="section-stack max-w-md mx-auto"{% if show_floating %} style="padding-inline: {{ section.settings.specifications_content_padding }}px; padding-block: {{ section.settings.specifications_content_padding }}px;"{% endif %}>
             {{- section_header -}}
             {{- section_content -}}
           </div>
@@ -140,6 +146,36 @@
       ],
       "default": "stacked",
       "visible_if": "{{ section.settings.image == blank }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_specifications",
+      "label": "Floating",
+      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "default": false,
+      "visible_if": "{{ section.settings.image == blank and section.settings.layout == 'stacked' }}"
+    },
+    {
+      "type": "range",
+      "id": "specifications_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.image == blank and section.settings.layout == 'stacked' and section.settings.floating_specifications }}"
+    },
+    {
+      "type": "range",
+      "id": "specifications_content_padding",
+      "min": 0,
+      "max": 64,
+      "step": 4,
+      "unit": "px",
+      "label": "Content padding",
+      "default": 0,
+      "visible_if": "{{ section.settings.image == blank and section.settings.layout == 'stacked' and section.settings.floating_specifications }}"
     },
     {
       "type": "checkbox",
