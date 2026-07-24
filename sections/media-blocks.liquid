@@ -963,6 +963,33 @@
                           var revealOnDemand = isTouchDevice !== controlsAtProgressBar;
                           var desktopHoverReveal = controlsAtProgressBar && !isTouchDevice;
 
+                          // Desktop only, see the click-to-promote listener further below: carousel.select()
+                          // reads carousel.scrollLeft synchronously to compute where to scroll to, and that
+                          // read is only meaningful once the previous scroll has actually settled. Calling
+                          // select() again before that (e.g. two quick clicks on different slides) asks the
+                          // browser to retarget a scroll-snap container's smooth-scroll animation mid-flight,
+                          // which is a known way for scroll-snap to settle on the wrong nearby cell instead
+                          // of the intended one - exactly the "jumps a slide or two" symptom. 'scrollend' is
+                          // the carousel's own native signal that it is safe to call select() again (it is
+                          // what the carousel's internal _hasPendingProgrammaticScroll flag is cleared on
+                          // too, just not exposed publicly), so a second click is simply ignored until then
+                          // rather than queued or estimated - never two overlapping select() calls in flight.
+                          // select() skips scrollTo() (and so never fires 'scrollend') on the rare occasion
+                          // its target already equals the current scrollLeft; this timeout is only a safety
+                          // net for that edge case, so the gate can never get stuck permanently closed - it
+                          // is not used to guess when the animation "should" be done.
+                          var carouselIsSettling = false;
+                          var carouselSettleTimeout;
+
+                          function markCarouselSettled() {
+                            clearTimeout(carouselSettleTimeout);
+                            carouselIsSettling = false;
+                          }
+
+                          if (!isTouchDevice) {
+                            carousel.addEventListener('scrollend', markCarouselSettled);
+                          }
+
                           // Captured once, up front, while every controls group is still in its original
                           // slide - NOT re-queried via cell.querySelector() on every scheduleAdvance() call,
                           // since once a group has been moved into the slot it is no longer a descendant of
@@ -1050,9 +1077,15 @@
                               var cell = mediaBox.closest('.snap-start');
 
                               mediaBox.addEventListener('click', function() {
+                                if (carouselIsSettling) {
+                                  return;
+                                }
+
                                 var index = carousel.cells.indexOf(cell);
 
                                 if (index !== -1 && cell !== carousel.selectedCell) {
+                                  carouselIsSettling = true;
+                                  carouselSettleTimeout = setTimeout(markCarouselSettled, 1000);
                                   carousel.select(index);
                                 }
                               }, true);
