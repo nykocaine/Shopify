@@ -1478,7 +1478,7 @@
       "type": "select",
       "id": "controls_position",
       "label": "Controls position",
-      "info": "\"Next to the progress bar\" only shows the sound and play/pause buttons there (the \"go to product\" button is hidden in this layout); it has no effect on carousel blocks with a single slide, since there is no progress bar to sit next to.",
+      "info": "On mobile, \"Next to the progress bar\" always sits the sound and play/pause buttons to the left of the progress bar (the \"go to product\" button is hidden in this layout). On desktop, it instead overlays them on the video itself, on hover - see \"Desktop controls position\" below. Has no effect on carousel blocks with a single slide, since there is no progress bar to sit next to.",
       "options": [
         {
           "value": "top",
@@ -1490,6 +1490,24 @@
         }
       ],
       "default": "top"
+    },
+    {
+      "type": "select",
+      "id": "desktop_controls_position",
+      "label": "Desktop controls position",
+      "info": "Only applies on desktop when \"Controls position\" above is set to \"Next to the progress bar\".",
+      "options": [
+        {
+          "value": "top_right",
+          "label": "Top right"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ],
+      "default": "top_right",
+      "visible_if": "{{ section.settings.controls_position == 'progress_bar' }}"
     }
   ],
   "blocks": [
