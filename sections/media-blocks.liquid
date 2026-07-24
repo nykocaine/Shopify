@@ -1036,36 +1036,6 @@
                             }
 
                             var videoMedia = mediaBox.querySelector('video-media');
-
-                            // Desktop only: interacting with any non-selected slide's video (clicking it,
-                            // or clicking any of its buttons - sound, play/pause, product) physically aligns
-                            // that slide with the carousel's left edge, using its real, current offsetLeft -
-                            // the same coordinate the carousel's own cells are laid out and snapped against
-                            // (cell-selector=".snap-start" -> scroll-snap-align: start), not an index. Once
-                            // the resulting scroll settles, the carousel's own existing scroll tracking
-                            // (unchanged) recognizes this cell as selected and dispatches its normal
-                            // 'carousel:change', which is what scheduleAdvance() above (unchanged) already
-                            // reacts to by pausing every other video and starting this one - no second
-                            // play/pause path is introduced. A capture-phase listener is used (instead of
-                            // adding this to each individual click handler) so it still fires even though
-                            // the sound/pause/product-link handlers call event.stopPropagation() during the
-                            // bubble phase.
-                            if (!isTouchDevice) {
-                              var cell = mediaBox.closest('.snap-start');
-
-                              mediaBox.addEventListener('click', function() {
-                                if (cell === carousel.selectedCell) {
-                                  return;
-                                }
-
-                                var targetScrollLeft = document.dir === 'rtl'
-                                  ? cell.offsetLeft + cell.offsetWidth - carousel.clientWidth
-                                  : cell.offsetLeft;
-
-                                carousel.scrollTo({ left: targetScrollLeft, behavior: 'smooth' });
-                              }, true);
-                            }
-
                             var pauseButton = mediaBox.querySelector('.carousel-video-pause-toggle');
                             var pauseIcon = pauseButton.querySelector('.carousel-video-pause-icon');
                             var playIcon = pauseButton.querySelector('.carousel-video-play-icon');
