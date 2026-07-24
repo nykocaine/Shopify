@@ -1760,28 +1760,38 @@ document.addEventListener("cart:refresh", () => {
 });
 
 // js/common/cart/cart-count.js
-var _abortController4, _CartCount_instances, updateFromServer_fn;
+var _abortController4, _lastCount, _CartCount_instances, updateFromServer_fn;
 var CartCount = class extends HTMLElement {
   constructor() {
     super(...arguments);
     __privateAdd(this, _CartCount_instances);
     __privateAdd(this, _abortController4);
+    __privateAdd(this, _lastCount);
   }
   connectedCallback() {
     __privateSet(this, _abortController4, new AbortController());
     document.addEventListener("cart:change", (event) => this.itemCount = event.detail["cart"]["item_count"], { signal: __privateGet(this, _abortController4).signal });
     document.addEventListener("cart:refresh", __privateMethod(this, _CartCount_instances, updateFromServer_fn).bind(this), { signal: __privateGet(this, _abortController4).signal });
-    window.addEventListener("pageshow", __privateMethod(this, _CartCount_instances, updateFromServer_fn).bind(this), { signal: __privateGet(this, _abortController4).signal });
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted) {
+        __privateMethod(this, _CartCount_instances, updateFromServer_fn).call(this);
+      }
+    }, { signal: __privateGet(this, _abortController4).signal });
   }
   disconnectedCallback() {
     __privateGet(this, _abortController4).abort();
   }
   set itemCount(count) {
+    if (__privateGet(this, _lastCount) === count) {
+      return;
+    }
+    __privateSet(this, _lastCount, count);
     this.hidden = count === 0;
     this.querySelector("span").innerText = count;
   }
 };
 _abortController4 = new WeakMap();
+_lastCount = new WeakMap();
 _CartCount_instances = new WeakSet();
 updateFromServer_fn = async function() {
   this.itemCount = (await fetchCart)["item_count"];
@@ -5157,12 +5167,8 @@ onBundleSection_fn = function(event) {
  * When the cart changes, we need to re-render the cart drawer
  */
 onCartChange_fn = function(event) {
-  const html = new DOMParser().parseFromString(event.detail.cart["sections"][__privateGet(this, _sectionId)], "text/html"), itemCount = event.detail.cart["item_count"], newCartDrawer = document.createRange().createContextualFragment(html.getElementById(`shopify-section-${__privateGet(this, _sectionId)}`).querySelector("cart-drawer").innerHTML);
-  if (itemCount === 0) {
-    this.replaceChildren(...newCartDrawer.children);
-  } else {
-    this.replaceChildren(...newCartDrawer.children);
-  }
+  const html = new DOMParser().parseFromString(event.detail.cart["sections"][__privateGet(this, _sectionId)], "text/html"), newCartDrawer = document.createRange().createContextualFragment(html.getElementById(`shopify-section-${__privateGet(this, _sectionId)}`).querySelector("cart-drawer").innerHTML);
+  this.replaceChildren(...newCartDrawer.children);
   __privateMethod(this, _CartDrawer_instances, replaceContent_fn).call(this, event.detail.cart["sections"][__privateGet(this, _sectionId)]);
   if (window.themeVariables.settings.cartType === "drawer" && !this.open && event.detail.baseEvent === "variant:add") {
     this.show();
@@ -5178,12 +5184,9 @@ refreshCart_fn = async function() {
   __privateMethod(this, _CartDrawer_instances, replaceContent_fn).call(this, await (await fetch(`${Shopify.routes.root}?section_id=${__privateGet(this, _sectionId)}`)).text());
 };
 replaceContent_fn = async function(html) {
-  const domElement = new DOMParser().parseFromString(html, "text/html"), newCartDrawer = document.createRange().createContextualFragment(domElement.getElementById(`shopify-section-${__privateGet(this, _sectionId)}`).querySelector("cart-drawer").innerHTML), itemCount = (await fetchCart)["item_count"];
-  if (itemCount === 0) {
-    this.replaceChildren(...newCartDrawer.children);
-  } else {
-    this.replaceChildren(...newCartDrawer.children);
-  }
+  const domElement = new DOMParser().parseFromString(html, "text/html"), newCartDrawer = document.createRange().createContextualFragment(domElement.getElementById(`shopify-section-${__privateGet(this, _sectionId)}`).querySelector("cart-drawer").innerHTML);
+  await fetchCart;
+  this.replaceChildren(...newCartDrawer.children);
   this.dispatchEvent(new CustomEvent("cart-drawer:refreshed", { bubbles: true }));
 };
 if (!window.customElements.get("cart-drawer")) {
