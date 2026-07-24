@@ -675,16 +675,41 @@
                     transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
                   }
 
-                  /* Desktop: Comprar / Sonido / Play-Pausa are visible from the start and stay visible for
-                     good - no entrance fade, never hidden for inactivity. */
-                  @media screen and (pointer: fine) {
-                    #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
-                    #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
-                    #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
-                      opacity: 1;
-                      pointer-events: auto;
-                    }
+                  {%- if section.settings.controls_position == 'progress_bar' -%}
+                    /* Desktop + "next to the progress bar": controls belong to whichever video the visitor
+                       is interacting with, so they fade in on hover/mouse movement and fade out again after
+                       a few seconds of inactivity or on mouseleave (see the mousemove/mouseenter/mouseleave
+                       listeners below, which reuse the exact same revealControls()/hideControls() as
+                       mobile's inactivity fade - not a second implementation). */
+                    @media screen and (pointer: fine) {
+                      #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
+                      #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
+                      #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
+                        opacity: 0;
+                        pointer-events: none;
+                      }
 
+                      #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle.is-visible,
+                      #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle.is-visible,
+                      #carousel-wrapper-{{ block.id }} .carousel-video-product-link.is-visible {
+                        opacity: 1;
+                        pointer-events: auto;
+                      }
+                    }
+                  {%- else -%}
+                    /* Desktop + "top" (default): Comprar / Sonido / Play-Pausa are visible from the start
+                       and stay visible for good - no entrance fade, never hidden for inactivity. */
+                    @media screen and (pointer: fine) {
+                      #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
+                      #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
+                      #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
+                        opacity: 1;
+                        pointer-events: auto;
+                      }
+                    }
+                  {%- endif -%}
+
+                  @media screen and (pointer: fine) {
                     #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle:not([disabled]):hover,
                     #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle:not([disabled]):hover,
                     #carousel-wrapper-{{ block.id }} .carousel-video-product-link:not([disabled]):hover {
@@ -748,6 +773,30 @@
                       display: flex;
                       position: static;
                       inset: auto;
+                    }
+
+                    {%- comment -%}
+                      Mobile (default/no media query): controls on the left, progress bar filling the rest
+                      on the right. Desktop overrides back to the original order (progress bar, then
+                      controls) - same two flex children, same markup, just reordered visually per
+                      breakpoint via the standard flexbox `order` property.
+                    {%- endcomment -%}
+                    #carousel-wrapper-{{ block.id }} .progress-bar.grow {
+                      order: 2;
+                    }
+
+                    #carousel-controls-slot-{{ block.id }} {
+                      order: 1;
+                    }
+
+                    @media screen and (min-width: 700px) {
+                      #carousel-wrapper-{{ block.id }} .progress-bar.grow {
+                        order: 1;
+                      }
+
+                      #carousel-controls-slot-{{ block.id }} {
+                        order: 2;
+                      }
                     }
                   {%- endif -%}
                 </style>
@@ -874,6 +923,16 @@
                           var controlsAtProgressBar = {% if section.settings.controls_position == 'progress_bar' %}true{% else %}false{% endif %};
                           var controlsSlot = controlsAtProgressBar ? document.getElementById('carousel-controls-slot-{{ block.id }}') : null;
 
+                          // Whether a slide's controls start hidden (vs. always visible, "top" + desktop
+                          // only) - mirrors the CSS above exactly. Whether the few-seconds inactivity timer
+                          // is actually armed once revealed: on for "top" + touch (existing mobile fade) and
+                          // for "progress bar" + desktop (new hover fade below); off for "progress bar" +
+                          // touch (stays visible once shown, per the mobile controls requirement) and for
+                          // "top" + desktop (never hidden at all).
+                          var startsHidden = isTouchDevice || controlsAtProgressBar;
+                          var autoHideEnabled = isTouchDevice !== controlsAtProgressBar;
+                          var desktopHoverReveal = controlsAtProgressBar && !isTouchDevice;
+
                           // Captured once, up front, while every controls group is still in its original
                           // slide - NOT re-queried via cell.querySelector() on every scheduleAdvance() call,
                           // since once a group has been moved into the slot it is no longer a descendant of
@@ -954,15 +1013,16 @@
                             var productLink = mediaBox.querySelector('.carousel-video-product-link');
                             var poster = mediaBox.querySelector('video-media > img');
 
-                            // Comprar / Sonido / Play-Pausa fade in and out together, as a single group. On
-                            // desktop they are simply always visible (see CSS) - no reveal logic needed here.
-                            // On touch devices they start hidden and not focusable by keyboard until revealed
-                            // (see setMuted below), and auto-hide again after a few seconds of inactivity.
+                            // Comprar / Sonido / Play-Pausa fade in and out together, as a single group.
+                            // Whether they start hidden, and whether they auto-hide again after a few
+                            // seconds, depends on device + layout (see startsHidden/autoHideEnabled above) -
+                            // the reveal/hide mechanics themselves are the same regardless of what triggers
+                            // them (unmute, click, hover, ...).
                             var groupControls = productLink ? [soundButton, pauseButton, productLink] : [soundButton, pauseButton];
                             var INACTIVITY_HIDE_DELAY = 3000;
                             var inactivityTimer;
 
-                            if (isTouchDevice) {
+                            if (startsHidden) {
                               groupControls.forEach(function(control) {
                                 control.tabIndex = -1;
                               });
@@ -976,7 +1036,7 @@
                             }
 
                             function scheduleHide() {
-                              if (!isTouchDevice) {
+                              if (!autoHideEnabled) {
                                 return;
                               }
 
@@ -991,6 +1051,18 @@
                               });
 
                               scheduleHide();
+                            }
+
+                            // Desktop + "next to the progress bar": controls belong to whichever video is
+                            // being hovered - fade in on hover/movement, fade out on mouseleave (immediately,
+                            // not waiting for the inactivity timer) or after a few seconds of no movement.
+                            if (desktopHoverReveal) {
+                              mediaBox.addEventListener('mouseenter', revealControls);
+                              mediaBox.addEventListener('mousemove', revealControls);
+                              mediaBox.addEventListener('mouseleave', function() {
+                                clearTimeout(inactivityTimer);
+                                hideControls();
+                              });
                             }
 
                             video.addEventListener('playing', function() {
