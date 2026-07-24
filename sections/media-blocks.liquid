@@ -675,12 +675,22 @@
                     transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
                   }
 
+                  {%- comment -%}
+                    Device and layout combine into exactly 4 cases, all driven by the same two facts
+                    (pointer type, controls_position) on both the CSS side here and the JS side below -
+                    they must never disagree, so both read the exact same two signals:
+                      - Desktop + Top:          always visible, overlaid top-right. Untouched.
+                      - Mobile  + Top:          hidden until unmuted, then fades, then auto-hides again
+                                                after inactivity. Untouched.
+                      - Desktop + Progress bar: overlaid on ITS OWN video (top-right or centered per
+                                                desktop_controls_position below), hidden until hovered,
+                                                fades in/out with the cursor. Never moves to the slot.
+                      - Mobile  + Progress bar: always visible, no fade, moved next to the progress bar
+                                                (never overlaid on the video).
+                  {%- endcomment -%}
                   {%- if section.settings.controls_position == 'progress_bar' -%}
-                    /* Desktop + "next to the progress bar": controls belong to whichever video the visitor
-                       is interacting with, so they fade in on hover/mouse movement and fade out again after
-                       a few seconds of inactivity or on mouseleave (see the mousemove/mouseenter/mouseleave
-                       listeners below, which reuse the exact same revealControls()/hideControls() as
-                       mobile's inactivity fade - not a second implementation). */
+                    {%- assign desktop_controls_position = section.settings.desktop_controls_position | default: 'top_right' -%}
+
                     @media screen and (pointer: fine) {
                       #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
                       #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
@@ -695,14 +705,72 @@
                         opacity: 1;
                         pointer-events: auto;
                       }
+
+                      {%- if desktop_controls_position == 'center' -%}
+                        #carousel-wrapper-{{ block.id }} .carousel-video-controls {
+                          inset-block-start: 50%;
+                          inset-inline-end: auto;
+                          inset-inline-start: 50%;
+                          transform: translate(-50%, -50%);
+                        }
+                      {%- endif -%}
+
+                      {%- comment -%}
+                        Desktop never moves controls into the slot (see script below), so the slot is
+                        always empty here - hide it outright so it stops taking up gap/space and the
+                        progress bar's own flex-grow fills 100% of the row, exactly like before this
+                        layout existed.
+                      {%- endcomment -%}
+                      #carousel-controls-slot-{{ block.id }} {
+                        display: none;
+                      }
+                    }
+
+                    @media screen and (pointer: coarse) {
+                      #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
+                      #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
+                      #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
+                        opacity: 1;
+                        pointer-events: auto;
+                      }
+
+                      {%- comment -%}
+                        Mobile is the only device that relocates the controls group into the slot (see
+                        script below), so it is the only one that needs to hide it at its original,
+                        overlaid-on-video position and only show it once it is an actual descendant of
+                        the slot.
+                      {%- endcomment -%}
+                      #carousel-wrapper-{{ block.id }} .carousel-video-controls {
+                        display: none;
+                      }
+
+                      #carousel-controls-slot-{{ block.id }} .carousel-video-controls {
+                        display: flex;
+                        position: static;
+                        inset: auto;
+                      }
                     }
                   {%- else -%}
-                    /* Desktop + "top" (default): Comprar / Sonido / Play-Pausa are visible from the start
-                       and stay visible for good - no entrance fade, never hidden for inactivity. */
                     @media screen and (pointer: fine) {
                       #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
                       #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
                       #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
+                        opacity: 1;
+                        pointer-events: auto;
+                      }
+                    }
+
+                    @media screen and (pointer: coarse) {
+                      #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
+                      #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
+                      #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
+                        opacity: 0;
+                        pointer-events: none;
+                      }
+
+                      #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle.is-visible,
+                      #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle.is-visible,
+                      #carousel-wrapper-{{ block.id }} .carousel-video-product-link.is-visible {
                         opacity: 1;
                         pointer-events: auto;
                       }
@@ -715,24 +783,6 @@
                     #carousel-wrapper-{{ block.id }} .carousel-video-product-link:not([disabled]):hover {
                       background: var(--control-button-hover-background-color, var(--control-button-background-color, #333333));
                       color: var(--control-button-icon-color, #ffffff);
-                    }
-                  }
-
-                  /* Mobile: hidden by default, fade in as a single group (revealControls() below), and
-                     fade out again after a few seconds of inactivity (scheduleHide() below). */
-                  @media screen and (pointer: coarse) {
-                    #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
-                    #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
-                    #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
-                      opacity: 0;
-                      pointer-events: none;
-                    }
-
-                    #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle.is-visible,
-                    #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle.is-visible,
-                    #carousel-wrapper-{{ block.id }} .carousel-video-product-link.is-visible {
-                      opacity: 1;
-                      pointer-events: auto;
                     }
                   }
 
@@ -755,48 +805,21 @@
 
                   {%- if section.settings.controls_position == 'progress_bar' and carousel_slide_count > 1 -%}
                     {%- comment -%}
-                      "Next to the progress bar" mode: Comprar is hidden (same element, same JS, just not
-                      rendered visually). Every controls group is hidden by default here as a CSS safety
-                      net (so nothing can ever show "on top of" a video, even before the script below runs
-                      or if it fails for any reason) and only re-shown once it is an actual descendant of
-                      the slot - i.e. only the active slide's group, once the script moves it there.
+                      Comprar stays hidden in this layout on both devices (same element, same JS, just not
+                      rendered visually). Controls sit on the left, progress bar fills the rest on the
+                      right, on mobile - same two flex children as always, just reordered visually via the
+                      standard flexbox `order` property, not duplicated markup.
                     {%- endcomment -%}
                     #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
                       display: none;
                     }
 
-                    #carousel-wrapper-{{ block.id }} .carousel-video-controls {
-                      display: none;
-                    }
-
-                    #carousel-controls-slot-{{ block.id }} .carousel-video-controls {
-                      display: flex;
-                      position: static;
-                      inset: auto;
-                    }
-
-                    {%- comment -%}
-                      Mobile (default/no media query): controls on the left, progress bar filling the rest
-                      on the right. Desktop overrides back to the original order (progress bar, then
-                      controls) - same two flex children, same markup, just reordered visually per
-                      breakpoint via the standard flexbox `order` property.
-                    {%- endcomment -%}
                     #carousel-wrapper-{{ block.id }} .progress-bar.grow {
                       order: 2;
                     }
 
                     #carousel-controls-slot-{{ block.id }} {
                       order: 1;
-                    }
-
-                    @media screen and (min-width: 700px) {
-                      #carousel-wrapper-{{ block.id }} .progress-bar.grow {
-                        order: 1;
-                      }
-
-                      #carousel-controls-slot-{{ block.id }} {
-                        order: 2;
-                      }
                     }
                   {%- endif -%}
                 </style>
