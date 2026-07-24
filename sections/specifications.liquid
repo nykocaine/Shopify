@@ -5,7 +5,7 @@
       assign show_floating = true
     endif
   -%}
-  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if show_floating %} section-floating section-floating--block-end{% endif %}" {% if show_floating %}style="border-end-start-radius: {{ section.settings.specifications_border_radius }}px; border-end-end-radius: {{ section.settings.specifications_border_radius }}px; overflow: hidden;"{% endif %}>
+  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if show_floating %} section-floating section-floating--block-end{% endif %}" {% if show_floating %}style="border-radius: {{ section.settings.specifications_border_radius }}px; overflow: hidden;"{% endif %}>
     {%- capture section_header -%}
       {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank -%}
         <div class="prose {% if section.settings.layout == 'stacked' and section.settings.image == blank %}prose-justify-center{% endif %}">
