@@ -1036,6 +1036,28 @@
                             }
 
                             var videoMedia = mediaBox.querySelector('video-media');
+
+                            // Desktop only: interacting with any non-selected slide's video (clicking it,
+                            // or clicking any of its buttons - sound, play/pause, product) brings that
+                            // slide to the first visible position via the carousel's own select(), the same
+                            // API swipe navigation already uses. That triggers a normal 'carousel:change',
+                            // so scheduleAdvance() above (unchanged) is what actually pauses every other
+                            // video and starts this one - no second play/pause path is introduced. A
+                            // capture-phase listener is used (instead of adding this to each individual
+                            // click handler) so it still fires even though the sound/pause/product-link
+                            // handlers call event.stopPropagation() during the bubble phase.
+                            if (!isTouchDevice) {
+                              var cell = mediaBox.closest('.snap-start');
+
+                              mediaBox.addEventListener('click', function() {
+                                var index = carousel.cells.indexOf(cell);
+
+                                if (index !== -1 && cell !== carousel.selectedCell) {
+                                  carousel.select(index);
+                                }
+                              }, true);
+                            }
+
                             var pauseButton = mediaBox.querySelector('.carousel-video-pause-toggle');
                             var pauseIcon = pauseButton.querySelector('.carousel-video-pause-icon');
                             var playIcon = pauseButton.querySelector('.carousel-video-play-icon');
