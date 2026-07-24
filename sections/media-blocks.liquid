@@ -676,6 +676,20 @@
                   }
 
                   {%- comment -%}
+                    Base position (top-right, matches "top" layout exactly). Declared before the
+                    device/layout rules below on purpose: the "center" override further down has the same
+                    specificity (#id .class), so it only wins because it comes later in the cascade.
+                  {%- endcomment -%}
+                  #carousel-wrapper-{{ block.id }} .carousel-video-controls {
+                    width: auto;
+                    height: auto;
+                    position: absolute;
+                    inset-block-start: 1rem;
+                    inset-inline-end: 1rem;
+                    z-index: 1;
+                  }
+
+                  {%- comment -%}
                     Device and layout combine into exactly 4 cases, all driven by the same two facts
                     (pointer type, controls_position) on both the CSS side here and the JS side below -
                     they must never disagree, so both read the exact same two signals:
@@ -792,15 +806,6 @@
                     text-transform: var(--text-transform);
                     letter-spacing: var(--text-letter-spacing);
                     white-space: nowrap;
-                  }
-
-                  #carousel-wrapper-{{ block.id }} .carousel-video-controls {
-                    width: auto;
-                    height: auto;
-                    position: absolute;
-                    inset-block-start: 1rem;
-                    inset-inline-end: 1rem;
-                    z-index: 1;
                   }
 
                   {%- if section.settings.controls_position == 'progress_bar' and carousel_slide_count > 1 -%}
@@ -940,20 +945,22 @@
                           // appearing as soon as playback starts.
                           var isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
                           var advanceTimer;
-                          // "Next to the progress bar" mode: the selected slide's own controls group
-                          // (the exact same DOM node, never cloned) is moved into this slot; every other
-                          // slide's group is moved back to its own slide (see scheduleAdvance below).
                           var controlsAtProgressBar = {% if section.settings.controls_position == 'progress_bar' %}true{% else %}false{% endif %};
-                          var controlsSlot = controlsAtProgressBar ? document.getElementById('carousel-controls-slot-{{ block.id }}') : null;
 
-                          // Whether a slide's controls start hidden (vs. always visible, "top" + desktop
-                          // only) - mirrors the CSS above exactly. Whether the few-seconds inactivity timer
-                          // is actually armed once revealed: on for "top" + touch (existing mobile fade) and
-                          // for "progress bar" + desktop (new hover fade below); off for "progress bar" +
-                          // touch (stays visible once shown, per the mobile controls requirement) and for
-                          // "top" + desktop (never hidden at all).
-                          var startsHidden = isTouchDevice || controlsAtProgressBar;
-                          var autoHideEnabled = isTouchDevice !== controlsAtProgressBar;
+                          // Only mobile relocates the selected slide's controls group into the slot next to
+                          // the progress bar (the exact same DOM node, never cloned; every other slide's
+                          // group is moved back to its own slide - see scheduleAdvance below). Desktop never
+                          // does this: its controls stay overlaid on their own video at all times, same as
+                          // "top", just with a different reveal trigger (see revealOnDemand below).
+                          var controlsSlot = (controlsAtProgressBar && isTouchDevice) ? document.getElementById('carousel-controls-slot-{{ block.id }}') : null;
+
+                          // The 4 device/layout combinations collapse to a single boolean, matching the CSS
+                          // above exactly: controls start hidden AND auto-hide again after a few seconds,
+                          // whenever exactly one of (touch device, progress-bar layout) is true - "top" on
+                          // touch (existing mobile fade, revealed on unmute) and "progress bar" on desktop
+                          // (new hover fade below). The other two combinations ("top" on desktop, "progress
+                          // bar" on touch) are always visible, so there is nothing to reveal or auto-hide.
+                          var revealOnDemand = isTouchDevice !== controlsAtProgressBar;
                           var desktopHoverReveal = controlsAtProgressBar && !isTouchDevice;
 
                           // Captured once, up front, while every controls group is still in its original
@@ -1037,15 +1044,14 @@
                             var poster = mediaBox.querySelector('video-media > img');
 
                             // Comprar / Sonido / Play-Pausa fade in and out together, as a single group.
-                            // Whether they start hidden, and whether they auto-hide again after a few
-                            // seconds, depends on device + layout (see startsHidden/autoHideEnabled above) -
-                            // the reveal/hide mechanics themselves are the same regardless of what triggers
-                            // them (unmute, click, hover, ...).
+                            // Whether they start hidden and auto-hide again after a few seconds depends on
+                            // device + layout (see revealOnDemand above) - the reveal/hide mechanics
+                            // themselves are the same regardless of what triggers them (unmute, click, hover).
                             var groupControls = productLink ? [soundButton, pauseButton, productLink] : [soundButton, pauseButton];
                             var INACTIVITY_HIDE_DELAY = 3000;
                             var inactivityTimer;
 
-                            if (startsHidden) {
+                            if (revealOnDemand) {
                               groupControls.forEach(function(control) {
                                 control.tabIndex = -1;
                               });
@@ -1059,7 +1065,7 @@
                             }
 
                             function scheduleHide() {
-                              if (!autoHideEnabled) {
+                              if (!revealOnDemand) {
                                 return;
                               }
 
@@ -1190,13 +1196,14 @@
                           });
 
                           // Only now, after every mediaBox above has its buttons queried and listeners
-                          // attached, is it safe to run scheduleAdvance() for the first time: it is what
-                          // moves the initially-selected slide's controls group into controlsSlot when
-                          // "next to the progress bar" is active. Running it any earlier (as it was before)
-                          // relocated that group out of its mediaBox before the loop above reached it, so
-                          // mediaBox.querySelector('.carousel-video-pause-toggle') came back null there,
-                          // threw on the next line, and aborted the whole forEach - leaving every slide
-                          // after the selected one (and the selected one itself) without listeners at all.
+                          // attached, is it safe to run scheduleAdvance() for the first time: on mobile with
+                          // "next to the progress bar" active, it moves the initially-selected slide's
+                          // controls group into controlsSlot (desktop never does this - see controlsSlot
+                          // above). Running it any earlier relocated that group out of its mediaBox before
+                          // the loop above reached it, so mediaBox.querySelector('.carousel-video-pause-toggle')
+                          // came back null there, threw on the next line, and aborted the whole forEach -
+                          // leaving every slide after the selected one (and the selected one itself) without
+                          // listeners at all.
                           carousel.addEventListener('carousel:change', scheduleAdvance);
                           scheduleAdvance();
                           });
