@@ -4,7 +4,11 @@ no card" at desktop widths, so the two settings are collapsed into a single effe
 being checked independently throughout the file.
 {%- endcomment -%}
 {%- liquid
-  assign card_layout = section.settings.floating_product or section.settings.desktop_card_layout
+  if section.settings.floating_product or section.settings.desktop_card_layout
+    assign card_layout = true
+  else
+    assign card_layout = false
+  endif
 -%}
 
 <style>
