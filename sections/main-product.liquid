@@ -1,3 +1,12 @@
+{%- comment -%}
+Floating Product always implies the Card layout on desktop: there is no supported combination of "floating,
+no card" at desktop widths, so the two settings are collapsed into a single effective value here instead of
+being checked independently throughout the file.
+{%- endcomment -%}
+{%- liquid
+  assign card_layout = section.settings.floating_product or section.settings.desktop_card_layout
+-%}
+
 <style>
   {%- if section.settings.allow_transparent_header and section.settings.transparent_header_use_primary_colors -%}
     {%- comment -%}
@@ -10,13 +19,13 @@
     }
   {%- endif -%}
 
-  {%- if section.settings.allow_transparent_header == false and section.settings.add_top_spacing -%}
+  {%- if section.settings.allow_transparent_header == false and section.settings.add_top_spacing and section.settings.floating_product == false -%}
     #shopify-section-{{ section.id }} .product {
       padding-block-start: min(1.75rem, var(--container-gutter));
     }
   {%- endif -%}
 
-  {%- if section.settings.allow_transparent_header == false and section.settings.desktop_card_layout == false -%}
+  {%- if section.settings.allow_transparent_header == false and card_layout == false -%}
     @media screen and (min-width: 1000px) {
       {%- if section.settings.desktop_gallery_on_right -%}
         #shopify-section-{{ section.id }} .product-gallery {
@@ -49,12 +58,26 @@
     {%- endif -%}
   }
 
-  {%- if section.settings.desktop_card_layout -%}
+  {%- if section.settings.floating_product -%}
     {%- comment -%}
-    The gallery/info frames only get a color-scheme--X class when this checkbox is on, so when it's off
-    there's nothing to reset anywhere. When it's on, we still reset every custom property a color scheme
-    defines (not just background/text/border) at mobile widths, so the desktop-only card look never bleeds
-    into the mobile layout, regardless of this checkbox's state.
+    Floating Product always reserves a gutter-sized gap on every side, on every viewport. The side gutters
+    come from the .section-floating / .section-floating--block-end utility classes on the wrapper below (the
+    same ones every other floating section in the theme uses), so here we only cancel .product's own default
+    block spacing to avoid doubling up with those margins, and add a matching top gutter.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product {
+      padding-block-start: var(--container-gutter);
+      padding-block-end: 0;
+    }
+  {%- endif -%}
+
+  {%- if card_layout -%}
+    {%- comment -%}
+    The gallery/info frames only get a color-scheme--X class when Card layout is in effect (including when
+    it's forced on by Floating Product), so when it's off there's nothing to reset anywhere. When it's on, we
+    still reset every custom property a color scheme defines (not just background/text/border) at mobile
+    widths, so the desktop-only card look never bleeds into the mobile layout: Floating Product must always
+    render as a single block on mobile, never as two split cards.
     {%- endcomment -%}
     @media screen and (max-width: 999px) {
       #shopify-section-{{ section.id }} .product-gallery-frame,
@@ -96,19 +119,13 @@
       {%- endcomment -%}
       {%- if section.settings.floating_product -%}
         {%- comment -%}
-        .container adds its own margin-inline on top of Floating Product's own side margin, and .product
-        carries the theme's default padding-block-end — together they left the cards inset from Floating
-        Product's own edges instead of touching them. Canceling both, then adding a top padding equal to
-        the side margin (container-gutter), makes the cards flush with Floating Product on the sides and
-        bottom, with a matching gap only on top. Only makes sense when Floating Product is actually on.
+        On desktop, Floating Product's two cards must touch the floating boundary exactly (the .section-floating
+        margin becomes the only gutter). .container's own centering margin would otherwise inset both cards an
+        extra time, so it's canceled here. Desktop-only: on mobile the layout above resets to a single block, so
+        .container's margin is needed there as ordinary inner content padding.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .container {
           margin-inline: 0;
-        }
-
-        #shopify-section-{{ section.id }} .product {
-          padding-block-start: var(--container-gutter);
-          padding-block-end: 0;
         }
       {%- endif -%}
 
@@ -134,14 +151,14 @@
   {%- endif -%}
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}{% if section.settings.floating_product %} style="border-end-start-radius: {{ section.settings.product_border_radius }}px; border-end-end-radius: {{ section.settings.product_border_radius }}px; overflow: hidden;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}{% if section.settings.floating_product %} style="border-end-start-radius: {{ section.settings.product_border_radius }}px; border-end-end-radius: {{ section.settings.product_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="container">
     {%- capture product_form_id -%}product-form-main-{{ product.id }}-{{ section.id }}{%- endcapture -%}
 
     <product-rerender id="product-info-{{ product.id }}-{{ section.id }}" observe-form="{{ product_form_id }}" allow-partial-rerender>
       <div class="product">
         {%- if product.media.size > 0 -%}
-          <div class="product-gallery-frame{% if section.settings.desktop_card_layout %} color-scheme color-scheme--{{ section.settings.desktop_gallery_color_scheme.id }}{% endif %}">
+          <div class="product-gallery-frame{% if card_layout %} color-scheme color-scheme--{{ section.settings.desktop_gallery_color_scheme.id }}{% endif %}">
             {%- render 'product-gallery',
                 product: product,
                 product_form_id: product_form_id,
@@ -157,7 +174,7 @@
           </div>
         {%- endif -%}
 
-        <div class="product-info-frame{% if section.settings.desktop_card_layout %} color-scheme color-scheme--{{ section.settings.desktop_info_color_scheme.id }}{% endif %}">
+        <div class="product-info-frame{% if card_layout %} color-scheme color-scheme--{{ section.settings.desktop_info_color_scheme.id }}{% endif %}">
           {%- render 'product-info',
               product: product,
               product_form_id: product_form_id,
@@ -203,7 +220,7 @@
       "type": "checkbox",
       "id": "floating_product",
       "label": "Floating Product",
-      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "info": "Adds margins around the section (top, bottom and sides), using the store's global side margin. Always uses the Card layout on desktop; on mobile the gallery and info stay in a single block.",
       "default": false
     },
     {
@@ -236,22 +253,23 @@
       "type": "checkbox",
       "id": "desktop_card_layout",
       "label": "Card layout",
-      "info": "Splits the gallery and info into two separate cards with their own colors on desktop.",
-      "default": false
+      "info": "Splits the gallery and info into two separate cards with their own colors on desktop. Always on when Floating Product is enabled.",
+      "default": false,
+      "visible_if": "{{ section.settings.floating_product == false }}"
     },
     {
       "type": "color_scheme",
       "id": "desktop_gallery_color_scheme",
       "label": "Gallery color scheme",
       "default": "scheme-1",
-      "visible_if": "{{ section.settings.desktop_card_layout }}"
+      "visible_if": "{{ section.settings.desktop_card_layout or section.settings.floating_product }}"
     },
     {
       "type": "color_scheme",
       "id": "desktop_info_color_scheme",
       "label": "Info color scheme",
       "default": "scheme-1",
-      "visible_if": "{{ section.settings.desktop_card_layout }}"
+      "visible_if": "{{ section.settings.desktop_card_layout or section.settings.floating_product }}"
     },
     {
       "type": "range",
@@ -262,7 +280,7 @@
       "unit": "px",
       "label": "Card corner radius",
       "default": 0,
-      "visible_if": "{{ section.settings.desktop_card_layout }}"
+      "visible_if": "{{ section.settings.desktop_card_layout or section.settings.floating_product }}"
     },
     {
       "type": "checkbox",
@@ -283,7 +301,7 @@
       "id": "add_top_spacing",
       "label": "t:sections.main_product.add_top_spacing",
       "default": true,
-      "visible_if": "{{ section.settings.allow_transparent_header == false }}"
+      "visible_if": "{{ section.settings.allow_transparent_header == false and section.settings.floating_product == false }}"
     },
     {
       "type": "checkbox",
