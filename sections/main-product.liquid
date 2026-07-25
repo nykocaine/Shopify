@@ -1,16 +1,3 @@
-{%- comment -%}
-Floating Product always implies the Card layout on desktop: there is no supported combination of "floating,
-no card" at desktop widths, so the two settings are collapsed into a single effective value here instead of
-being checked independently throughout the file.
-{%- endcomment -%}
-{%- liquid
-  if section.settings.floating_product or section.settings.desktop_card_layout
-    assign card_layout = true
-  else
-    assign card_layout = false
-  endif
--%}
-
 <style>
   {%- if section.settings.allow_transparent_header and section.settings.transparent_header_use_primary_colors -%}
     {%- comment -%}
@@ -29,7 +16,7 @@ being checked independently throughout the file.
     }
   {%- endif -%}
 
-  {%- if section.settings.allow_transparent_header == false and card_layout == false -%}
+  {%- if section.settings.allow_transparent_header == false and section.settings.floating_product == false -%}
     @media screen and (min-width: 1000px) {
       {%- if section.settings.desktop_gallery_on_right -%}
         #shopify-section-{{ section.id }} .product-gallery {
@@ -64,74 +51,26 @@ being checked independently throughout the file.
 
   {%- if section.settings.floating_product -%}
     {%- comment -%}
-    Floating Product always reserves a gutter-sized gap on every side, on every viewport. The side gutters
-    come from the .section-floating / .section-floating--block-end utility classes on the wrapper below (the
-    same ones every other floating section in the theme uses), so here we only cancel .product's own default
-    block spacing to avoid doubling up with those margins, and add a matching top gutter.
+    Floating Product always reserves a gutter-sized gap on every side, on every viewport, and always splits
+    into two cards on desktop (gallery + info), stacking back into a single block on mobile automatically
+    (the grid only splits from --product-grid inside the min-width:1000px query below). The side gutters come
+    from the .section-floating / .section-floating--block-end utility classes on the wrapper below (the same
+    ones every other floating section in the theme uses), so here we only cancel .product's own default block
+    spacing to avoid doubling up with those margins, and add a matching top gutter.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .product {
       padding-block-start: var(--container-gutter);
       padding-block-end: 0;
     }
-  {%- endif -%}
-
-  {%- if card_layout -%}
-    {%- comment -%}
-    The gallery/info frames only get a color-scheme--X class when Card layout is in effect (including when
-    it's forced on by Floating Product), so when it's off there's nothing to reset anywhere. When it's on, we
-    still reset every custom property a color scheme defines (not just background/text/border) at mobile
-    widths, so the desktop-only card look never bleeds into the mobile layout: Floating Product must always
-    render as a single block on mobile, never as two split cards.
-    {%- endcomment -%}
-    @media screen and (max-width: 999px) {
-      #shopify-section-{{ section.id }} .product-gallery-frame,
-      #shopify-section-{{ section.id }} .product-info-frame {
-        background-color: transparent;
-        background-image: none;
-        color: inherit;
-        border-color: inherit;
-        --accent: inherit;
-        --background: inherit;
-        --background-gradient: inherit;
-        --background-secondary: inherit;
-        --has-transparent-background: inherit;
-        --has-filled-background: inherit;
-        --text-color: inherit;
-        --border-color: inherit;
-        --button-scheme-border-color: inherit;
-        --subheading-background: inherit;
-        --subheading-border: inherit;
-        --subheading-text-color: inherit;
-        --subheading-has-padding: inherit;
-        --heading-highlight-accent-color: inherit;
-        --heading-highlight-text-color: inherit;
-        --button-background-primary: inherit;
-        --button-text-primary: inherit;
-        --button-hover-background: inherit;
-        --input-background: inherit;
-        --input-text-color: inherit;
-        --input-text-transform: inherit;
-      }
-    }
 
     @media screen and (min-width: 1000px) {
       {%- comment -%}
-      Real gap instead of the theme's default one-sided padding, so the page background shows between the
-      two cards. overflow:hidden only goes on the gallery frame: it doesn't wrap product-info, which uses
-      position:sticky and breaks under any ancestor with overflow other than visible. The info frame gets
-      the same radius without overflow:hidden — safe, because text/buttons never touch its exact edge.
+      .container's own centering margin would otherwise inset both cards a second time on top of the
+      .section-floating margin, leaving them inset from the floating boundary instead of touching it.
       {%- endcomment -%}
-      {%- if section.settings.floating_product -%}
-        {%- comment -%}
-        On desktop, Floating Product's two cards must touch the floating boundary exactly (the .section-floating
-        margin becomes the only gutter). .container's own centering margin would otherwise inset both cards an
-        extra time, so it's canceled here. Desktop-only: on mobile the layout above resets to a single block, so
-        .container's margin is needed there as ordinary inner content padding.
-        {%- endcomment -%}
-        #shopify-section-{{ section.id }} .container {
-          margin-inline: 0;
-        }
-      {%- endif -%}
+      #shopify-section-{{ section.id }} .container {
+        margin-inline: 0;
+      }
 
       #shopify-section-{{ section.id }} .product {
         gap: 2.25rem;
@@ -142,13 +81,18 @@ being checked independently throughout the file.
         padding-inline: 0;
       }
 
+      {%- comment -%}
+      overflow:hidden only goes on the gallery frame: it doesn't wrap product-info, which uses position:sticky
+      and breaks under any ancestor with overflow other than visible. The info frame gets the same radius
+      without overflow:hidden — safe, because text/buttons never touch its exact edge.
+      {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-gallery-frame {
-        border-radius: {{ section.settings.desktop_card_radius }}px;
+        border-radius: {{ section.settings.product_border_radius }}px;
         overflow: hidden;
       }
 
       #shopify-section-{{ section.id }} .product-info-frame {
-        border-radius: {{ section.settings.desktop_card_radius }}px;
+        border-radius: {{ section.settings.product_border_radius }}px;
         padding: 2.5rem;
       }
     }
@@ -162,7 +106,7 @@ being checked independently throughout the file.
     <product-rerender id="product-info-{{ product.id }}-{{ section.id }}" observe-form="{{ product_form_id }}" allow-partial-rerender>
       <div class="product">
         {%- if product.media.size > 0 -%}
-          <div class="product-gallery-frame{% if card_layout %} color-scheme color-scheme--{{ section.settings.desktop_gallery_color_scheme.id }}{% endif %}">
+          <div class="product-gallery-frame">
             {%- render 'product-gallery',
                 product: product,
                 product_form_id: product_form_id,
@@ -178,7 +122,7 @@ being checked independently throughout the file.
           </div>
         {%- endif -%}
 
-        <div class="product-info-frame{% if card_layout %} color-scheme color-scheme--{{ section.settings.desktop_info_color_scheme.id }}{% endif %}">
+        <div class="product-info-frame">
           {%- render 'product-info',
               product: product,
               product_form_id: product_form_id,
@@ -224,7 +168,7 @@ being checked independently throughout the file.
       "type": "checkbox",
       "id": "floating_product",
       "label": "Floating Product",
-      "info": "Adds margins around the section (top, bottom and sides), using the store's global side margin. Always uses the Card layout on desktop; on mobile the gallery and info stay in a single block.",
+      "info": "Adds margins around the section (top, bottom and sides), using the store's global side margin. On desktop, the gallery and info are split into two cards; on mobile they stay in a single block.",
       "default": false
     },
     {
@@ -235,6 +179,7 @@ being checked independently throughout the file.
       "step": 2,
       "unit": "px",
       "label": "Corner radius",
+      "info": "Applies to the floating block on mobile, and to both cards on desktop.",
       "default": 0,
       "visible_if": "{{ section.settings.floating_product }}"
     },
@@ -248,43 +193,6 @@ being checked independently throughout the file.
       "label": "Gallery corner radius",
       "info": "Rounds the bottom corners of the images on mobile.",
       "default": 0
-    },
-    {
-      "type": "header",
-      "content": "Card layout (desktop)"
-    },
-    {
-      "type": "checkbox",
-      "id": "desktop_card_layout",
-      "label": "Card layout",
-      "info": "Splits the gallery and info into two separate cards with their own colors on desktop. Always on when Floating Product is enabled.",
-      "default": false,
-      "visible_if": "{{ section.settings.floating_product == false }}"
-    },
-    {
-      "type": "color_scheme",
-      "id": "desktop_gallery_color_scheme",
-      "label": "Gallery color scheme",
-      "default": "scheme-1",
-      "visible_if": "{{ section.settings.desktop_card_layout or section.settings.floating_product }}"
-    },
-    {
-      "type": "color_scheme",
-      "id": "desktop_info_color_scheme",
-      "label": "Info color scheme",
-      "default": "scheme-1",
-      "visible_if": "{{ section.settings.desktop_card_layout or section.settings.floating_product }}"
-    },
-    {
-      "type": "range",
-      "id": "desktop_card_radius",
-      "min": 0,
-      "max": 30,
-      "step": 2,
-      "unit": "px",
-      "label": "Card corner radius",
-      "default": 0,
-      "visible_if": "{{ section.settings.desktop_card_layout or section.settings.floating_product }}"
     },
     {
       "type": "checkbox",
