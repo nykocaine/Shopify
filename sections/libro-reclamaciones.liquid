@@ -1,0 +1,291 @@
+{% comment %}
+  Libro de Reclamaciones Virtual (Perú) — Ley N.° 29571, D.S. N.° 011-2011-PCM,
+  Ley N.° 32495. Envía vía el formulario nativo `{% form 'contact' %}` de
+  Shopify (sin backend propio); los reclamos llegan al correo configurado en
+  Settings → Notifications.
+
+  Limitaciones de cumplimiento conocidas de este enfoque (documentadas para el
+  comerciante, no ocultas):
+  - No existe un archivo/registro consultable más allá de esa bandeja de
+    correo: debe revisarse a diario y archivarse por 2 años.
+  - El formulario nativo no reenvía copia automática al consumidor; si la
+    solicita, debe reenviarse manualmente.
+  - El "Código de Reclamación" se genera en el navegador (fecha + aleatorio),
+    no es un contador correlativo centralizado.
+  - El texto de plazo de respuesta es editable desde el schema porque, a la
+    fecha, el reglamento adaptado a comercio electrónico sigue en consulta
+    pública (no hay texto final que hardcodear con certeza).
+{% endcomment %}
+
+{%- capture provider_summary -%}
+  <p>{{ 'libro_reclamaciones.aviso.provider_label' | t }}: {{ section.settings.provider_business_name }}</p>
+  <p>RUC: {{ section.settings.provider_ruc }}</p>
+  <p>{{ 'libro_reclamaciones.aviso.address_label' | t }}: {{ section.settings.provider_address }}</p>
+  <p>{{ 'libro_reclamaciones.aviso.email_label' | t }}: {{ section.settings.provider_email }}</p>
+{%- endcapture -%}
+
+{%- capture section_header -%}
+  <div class="v-stack justify-items-center gap-6 sm:gap-8">
+    <div class="prose prose-justify-center">
+      {%- render 'subheading', content: section.settings.subheading -%}
+      {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.heading_size, html_tag: 'h1' -%}
+
+      <div class="max-w-md mx-auto">
+        {{- section.settings.content -}}
+      </div>
+    </div>
+  </div>
+{%- endcapture -%}
+
+{%- capture section_main_content -%}
+  <div class="rc-aviso prose">
+    <p><strong>{{ 'libro_reclamaciones.aviso.title' | t }}</strong></p>
+    {{- provider_summary -}}
+    {{- section.settings.response_deadline_text -}}
+    {{- section.settings.retention_notice -}}
+    <p>{{ 'libro_reclamaciones.aviso.reclamo_vs_queja' | t }}</p>
+  </div>
+
+  {%- assign posted_successfully = false -%}
+
+  {%- form 'contact', class: 'form', id: 'libro-reclamaciones-form' -%}
+    {%- if form.posted_successfully? -%}
+      {%- assign posted_successfully = true -%}
+    {%- endif -%}
+
+    {%- if form.errors -%}
+      {%- capture error_content -%}{{ form.errors.translated_fields[form.errors.first] | capitalize }} {{ form.errors.messages[form.errors.first] }}{%- endcapture -%}
+      {%- render 'banner', status: 'error', content: error_content -%}
+    {%- endif -%}
+
+    {%- unless posted_successfully -%}
+      <input type="hidden" name="contact[Formulario]" value="Libro de Reclamaciones">
+      <input type="hidden" id="rc-code" name="contact[Código de Reclamación]" value="">
+      <input type="hidden" id="rc-datetime" name="contact[Fecha y hora de registro]" value="">
+
+      <fieldset class="v-stack gap-3">
+        <legend class="text-subdued">{{ 'libro_reclamaciones.form.request_type_legend' | t }}</legend>
+
+        <div class="h-stack gap-6" style="flex-wrap: wrap;">
+          {%- render 'checkbox', type: 'radio', name: 'contact[Tipo de solicitud]', value: 'libro_reclamaciones.form.request_type_reclamo' | t, label: 'libro_reclamaciones.form.request_type_reclamo' | t, required: true, id_prefix: 'reclamo' -%}
+          {%- render 'checkbox', type: 'radio', name: 'contact[Tipo de solicitud]', value: 'libro_reclamaciones.form.request_type_queja' | t, label: 'libro_reclamaciones.form.request_type_queja' | t, required: true, id_prefix: 'queja' -%}
+        </div>
+
+        <p class="text-xs text-subdued">
+          <strong>{{ 'libro_reclamaciones.form.request_type_reclamo' | t }}:</strong> {{ 'libro_reclamaciones.form.request_type_reclamo_info' | t }}<br>
+          <strong>{{ 'libro_reclamaciones.form.request_type_queja' | t }}:</strong> {{ 'libro_reclamaciones.form.request_type_queja_info' | t }}
+        </p>
+      </fieldset>
+
+      <div class="fieldset">
+        <div class="fieldset-row">
+          {%- render 'input', type: 'text', name: 'contact[name]', label: 'libro_reclamaciones.form.name' | t, value: customer.name, required: true, autocomplete: 'name' -%}
+          {%- render 'input', type: 'email', name: 'contact[email]', label: 'libro_reclamaciones.form.email' | t, value: customer.email, required: true, autocomplete: 'email' -%}
+        </div>
+
+        <div class="fieldset-row">
+          {%- capture document_type_values -%}{{ 'libro_reclamaciones.form.document_type_dni' | t }},{{ 'libro_reclamaciones.form.document_type_ce' | t }},{{ 'libro_reclamaciones.form.document_type_passport' | t }}{%- endcapture -%}
+          {%- assign document_type_options = document_type_values | split: ',' -%}
+          {%- render 'select', option_values: document_type_options, show_empty_value: true, name: 'contact[Tipo de documento]', label: 'libro_reclamaciones.form.document_type' | t, required: true -%}
+
+          {%- render 'input', type: 'text', name: 'contact[Número de documento]', label: 'libro_reclamaciones.form.document_number' | t, required: true, pattern: '\d{8}|[A-Za-z0-9]{6,12}', minlength: 6, maxlength: 12 -%}
+        </div>
+
+        <div class="fieldset-row">
+          {%- render 'input', type: 'text', name: 'contact[Domicilio]', label: 'libro_reclamaciones.form.address' | t, required: true, maxlength: 200 -%}
+          {%- render 'input', type: 'tel', name: 'contact[Teléfono]', label: 'libro_reclamaciones.form.phone' | t, required: true, pattern: '[0-9+()\-\s]{6,20}', autocomplete: 'tel' -%}
+        </div>
+
+        <div class="fieldset-row">
+          {%- render 'input', type: 'text', name: 'contact[Descripción del bien o servicio]', label: 'libro_reclamaciones.form.product_service' | t, required: true, maxlength: 200 -%}
+          {%- render 'input', type: 'number', name: 'contact[Monto reclamado]', label: 'libro_reclamaciones.form.amount' | t -%}
+        </div>
+
+        {%- render 'input', name: 'contact[Detalle del reclamo o queja]', label: 'libro_reclamaciones.form.detail' | t, multiline: 6, required: true, minlength: 20, maxlength: 2000, show_max_characters_count: true -%}
+
+        {%- render 'input', name: 'contact[Pedido concreto del consumidor]', label: 'libro_reclamaciones.form.consumer_request' | t, multiline: 4, required: true, minlength: 10, maxlength: 500, show_max_characters_count: true -%}
+
+        <div class="v-stack gap-3">
+          {%- render 'checkbox', name: 'contact[Es menor de edad]', value: 'Sí', label: 'libro_reclamaciones.form.is_minor' | t, id_prefix: 'is-minor' -%}
+          <div id="rc-minor-fields" class="fieldset-row" hidden>
+            {%- render 'input', type: 'text', name: 'contact[Nombre del padre, madre o representante legal]', label: 'libro_reclamaciones.form.guardian_name' | t, disabled: true -%}
+            {%- render 'input', type: 'text', name: 'contact[Documento del representante legal]', label: 'libro_reclamaciones.form.guardian_document' | t, disabled: true -%}
+          </div>
+        </div>
+
+        <div class="checkbox-control">
+          {%- if shop.privacy_policy != blank -%}
+            {%- render 'checkbox', name: 'contact[Declaración de conformidad y consentimiento]', value: 'Acepto', label: 'libro_reclamaciones.form.consent_html' | t: link: shop.privacy_policy.url, required: true, id_prefix: 'consent' -%}
+          {%- else -%}
+            {%- render 'checkbox', name: 'contact[Declaración de conformidad y consentimiento]', value: 'Acepto', label: 'libro_reclamaciones.form.consent' | t, required: true, id_prefix: 'consent' -%}
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div>
+        {%- render 'button', content: 'libro_reclamaciones.form.submit' | t, type: 'submit' -%}
+      </div>
+    {%- endunless -%}
+  {%- endform -%}
+
+  {%- if posted_successfully -%}
+    <div id="rc-confirmation" class="rc-print-area v-stack gap-4">
+      {%- render 'banner', status: 'success', content: 'libro_reclamaciones.form.success_message' | t -%}
+
+      <p data-rc-fallback hidden>{{ 'libro_reclamaciones.confirmation.fallback' | t }}</p>
+
+      <div class="prose">
+        <p>{{ 'libro_reclamaciones.confirmation.code_label' | t }}: <strong data-rc-code></strong></p>
+        <p>{{ 'libro_reclamaciones.confirmation.type_label' | t }}: <strong data-rc-type></strong></p>
+        <p>{{ 'libro_reclamaciones.confirmation.date_label' | t }}: <strong data-rc-date></strong></p>
+      </div>
+
+      <div class="rc-aviso prose">
+        <p><strong>{{ 'libro_reclamaciones.aviso.title' | t }}</strong></p>
+        {{- provider_summary -}}
+      </div>
+
+      <div class="print:hidden">
+        <button type="button" class="button button--outline" data-rc-print>{{ 'libro_reclamaciones.confirmation.print' | t }}</button>
+      </div>
+    </div>
+  {%- endif -%}
+{%- endcapture -%}
+
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_libro_reclamaciones %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_libro_reclamaciones %} style="border-end-start-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; border-end-end-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; overflow: hidden;"{% endif %}>
+  <div class="section-spacing">
+    <div class="container">
+      <div class="section-stack max-w-lg mx-auto">
+        {{- section_header -}}
+        {{- section_main_content -}}
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ 'libro-reclamaciones.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'libro-reclamaciones.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "t:sections.libro_reclamaciones.name",
+  "class": "shopify-section--libro-reclamaciones",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "custom.overlay"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:sections.libro_reclamaciones.editor_notice"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:global.colors.scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_libro_reclamaciones",
+      "label": "Floating Libro de Reclamaciones",
+      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "libro_reclamaciones_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_libro_reclamaciones }}"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "subheading",
+      "label": "t:global.text.subheading",
+      "default": "Atención al consumidor"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "title",
+      "label": "t:global.text.heading",
+      "default": "Libro de Reclamaciones"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "t:global.text.heading_size",
+      "options": [
+        { "value": "display-xl", "label": "Display XL" },
+        { "value": "display-l", "label": "Display L" },
+        { "value": "display-m", "label": "Display M" },
+        { "value": "h1", "label": "XX-Large" },
+        { "value": "h2", "label": "X-Large" },
+        { "value": "h3", "label": "Large" },
+        { "value": "h4", "label": "Medium" },
+        { "value": "h5", "label": "Small" },
+        { "value": "h6", "label": "X-Small" },
+        { "value": "h7", "label": "XX-Small" }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": "t:global.text.content",
+      "default": "<p>Este canal te permite presentar un reclamo o una queja respecto de productos o servicios adquiridos, conforme a la Ley N.° 29571.</p>"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.libro_reclamaciones.provider_header"
+    },
+    {
+      "type": "text",
+      "id": "provider_business_name",
+      "label": "t:sections.libro_reclamaciones.provider_business_name",
+      "default": "[REQUIERE DATO DEL PROVEEDOR]"
+    },
+    {
+      "type": "text",
+      "id": "provider_ruc",
+      "label": "t:sections.libro_reclamaciones.provider_ruc",
+      "default": "[REQUIERE DATO DEL PROVEEDOR]"
+    },
+    {
+      "type": "text",
+      "id": "provider_address",
+      "label": "t:sections.libro_reclamaciones.provider_address",
+      "default": "[REQUIERE DATO DEL PROVEEDOR]"
+    },
+    {
+      "type": "text",
+      "id": "provider_email",
+      "label": "t:sections.libro_reclamaciones.provider_email",
+      "default": "[REQUIERE DATO DEL PROVEEDOR]"
+    },
+    {
+      "type": "richtext",
+      "id": "response_deadline_text",
+      "label": "t:sections.libro_reclamaciones.response_deadline_text",
+      "default": "<p>Atenderemos su reclamo o queja dentro del plazo establecido por la normativa vigente (Decreto Supremo N.° 011-2011-PCM y disposiciones de INDECOPI).</p>"
+    },
+    {
+      "type": "richtext",
+      "id": "retention_notice",
+      "label": "t:sections.libro_reclamaciones.retention_notice",
+      "default": "<p>Sus datos personales se conservarán durante 2 años y se utilizarán únicamente para atender este reclamo o queja, conforme a nuestra Política de Privacidad.</p>"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.libro_reclamaciones.name",
+      "category": "t:global.categories.call_to_action",
+      "settings": {}
+    }
+  ]
+}
+{% endschema %}

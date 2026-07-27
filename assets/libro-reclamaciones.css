@@ -1,0 +1,28 @@
+.rc-aviso {
+  padding: 1.25rem;
+  border: 1px solid rgb(var(--text-color) / 0.12);
+  border-radius: min(12px, var(--input-border-radius));
+}
+
+.rc-aviso p {
+  margin: 0;
+}
+
+@media print {
+  body.rc-printing * {
+    visibility: hidden;
+  }
+
+  body.rc-printing .rc-print-area,
+  body.rc-printing .rc-print-area * {
+    visibility: visible;
+  }
+
+  body.rc-printing .rc-print-area {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    width: 100%;
+    padding: 2rem;
+  }
+}
