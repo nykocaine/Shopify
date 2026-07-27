@@ -48,6 +48,30 @@
 
   {%- assign posted_successfully = false -%}
 
+  {%- comment -%} render tags cannot apply filters inline, so every translated label is pre-computed here (same pattern as sections/contact.liquid). {%- endcomment -%}
+  {%- assign request_type_reclamo_label = 'libro_reclamaciones.form.request_type_reclamo' | t -%}
+  {%- assign request_type_queja_label = 'libro_reclamaciones.form.request_type_queja' | t -%}
+  {%- assign name_label = 'libro_reclamaciones.form.name' | t -%}
+  {%- assign email_label = 'libro_reclamaciones.form.email' | t -%}
+  {%- assign document_type_label = 'libro_reclamaciones.form.document_type' | t -%}
+  {%- assign document_number_label = 'libro_reclamaciones.form.document_number' | t -%}
+  {%- assign address_label = 'libro_reclamaciones.form.address' | t -%}
+  {%- assign phone_label = 'libro_reclamaciones.form.phone' | t -%}
+  {%- assign product_service_label = 'libro_reclamaciones.form.product_service' | t -%}
+  {%- assign amount_label = 'libro_reclamaciones.form.amount' | t -%}
+  {%- assign detail_label = 'libro_reclamaciones.form.detail' | t -%}
+  {%- assign consumer_request_label = 'libro_reclamaciones.form.consumer_request' | t -%}
+  {%- assign is_minor_label = 'libro_reclamaciones.form.is_minor' | t -%}
+  {%- assign guardian_name_label = 'libro_reclamaciones.form.guardian_name' | t -%}
+  {%- assign guardian_document_label = 'libro_reclamaciones.form.guardian_document' | t -%}
+  {%- assign submit_label = 'libro_reclamaciones.form.submit' | t -%}
+
+  {%- if shop.privacy_policy != blank -%}
+    {%- assign consent_label = 'libro_reclamaciones.form.consent_html' | t: link: shop.privacy_policy.url -%}
+  {%- else -%}
+    {%- assign consent_label = 'libro_reclamaciones.form.consent' | t -%}
+  {%- endif -%}
+
   {%- form 'contact', class: 'form', id: 'libro-reclamaciones-form' -%}
     {%- if form.posted_successfully? -%}
       {%- assign posted_successfully = true -%}
@@ -67,70 +91,68 @@
         <legend class="text-subdued">{{ 'libro_reclamaciones.form.request_type_legend' | t }}</legend>
 
         <div class="h-stack gap-6" style="flex-wrap: wrap;">
-          {%- render 'checkbox', type: 'radio', name: 'contact[Tipo de solicitud]', value: 'libro_reclamaciones.form.request_type_reclamo' | t, label: 'libro_reclamaciones.form.request_type_reclamo' | t, required: true, id_prefix: 'reclamo' -%}
-          {%- render 'checkbox', type: 'radio', name: 'contact[Tipo de solicitud]', value: 'libro_reclamaciones.form.request_type_queja' | t, label: 'libro_reclamaciones.form.request_type_queja' | t, required: true, id_prefix: 'queja' -%}
+          {%- render 'checkbox', type: 'radio', name: 'contact[Tipo de solicitud]', value: request_type_reclamo_label, label: request_type_reclamo_label, required: true, id_prefix: 'reclamo' -%}
+          {%- render 'checkbox', type: 'radio', name: 'contact[Tipo de solicitud]', value: request_type_queja_label, label: request_type_queja_label, required: true, id_prefix: 'queja' -%}
         </div>
 
         <p class="text-xs text-subdued">
-          <strong>{{ 'libro_reclamaciones.form.request_type_reclamo' | t }}:</strong> {{ 'libro_reclamaciones.form.request_type_reclamo_info' | t }}<br>
-          <strong>{{ 'libro_reclamaciones.form.request_type_queja' | t }}:</strong> {{ 'libro_reclamaciones.form.request_type_queja_info' | t }}
+          <strong>{{ request_type_reclamo_label }}:</strong> {{ 'libro_reclamaciones.form.request_type_reclamo_info' | t }}<br>
+          <strong>{{ request_type_queja_label }}:</strong> {{ 'libro_reclamaciones.form.request_type_queja_info' | t }}
         </p>
       </fieldset>
 
       <div class="fieldset">
         <div class="fieldset-row">
-          {%- render 'input', type: 'text', name: 'contact[name]', label: 'libro_reclamaciones.form.name' | t, value: customer.name, required: true, autocomplete: 'name' -%}
-          {%- render 'input', type: 'email', name: 'contact[email]', label: 'libro_reclamaciones.form.email' | t, value: customer.email, required: true, autocomplete: 'email' -%}
+          {%- render 'input', type: 'text', name: 'contact[name]', label: name_label, value: customer.name, required: true, autocomplete: 'name' -%}
+          {%- render 'input', type: 'email', name: 'contact[email]', label: email_label, value: customer.email, required: true, autocomplete: 'email' -%}
         </div>
 
         <div class="fieldset-row">
           {%- capture document_type_values -%}{{ 'libro_reclamaciones.form.document_type_dni' | t }},{{ 'libro_reclamaciones.form.document_type_ce' | t }},{{ 'libro_reclamaciones.form.document_type_passport' | t }}{%- endcapture -%}
           {%- assign document_type_options = document_type_values | split: ',' -%}
-          {%- render 'select', option_values: document_type_options, show_empty_value: true, name: 'contact[Tipo de documento]', label: 'libro_reclamaciones.form.document_type' | t, required: true -%}
+          {%- render 'select', option_values: document_type_options, show_empty_value: true, name: 'contact[Tipo de documento]', label: document_type_label, required: true -%}
 
-          {%- render 'input', type: 'text', name: 'contact[Número de documento]', label: 'libro_reclamaciones.form.document_number' | t, required: true, pattern: '\d{8}|[A-Za-z0-9]{6,12}', minlength: 6, maxlength: 12 -%}
+          {%- render 'input', type: 'text', name: 'contact[Número de documento]', label: document_number_label, required: true, pattern: '\d{8}|[A-Za-z0-9]{6,12}', minlength: 6, maxlength: 12 -%}
         </div>
 
         <div class="fieldset-row">
-          {%- render 'input', type: 'text', name: 'contact[Domicilio]', label: 'libro_reclamaciones.form.address' | t, required: true, maxlength: 200 -%}
-          {%- render 'input', type: 'tel', name: 'contact[Teléfono]', label: 'libro_reclamaciones.form.phone' | t, required: true, pattern: '[0-9+()\-\s]{6,20}', autocomplete: 'tel' -%}
+          {%- render 'input', type: 'text', name: 'contact[Domicilio]', label: address_label, required: true, maxlength: 200 -%}
+          {%- render 'input', type: 'tel', name: 'contact[Teléfono]', label: phone_label, required: true, pattern: '[0-9+()\-\s]{6,20}', autocomplete: 'tel' -%}
         </div>
 
         <div class="fieldset-row">
-          {%- render 'input', type: 'text', name: 'contact[Descripción del bien o servicio]', label: 'libro_reclamaciones.form.product_service' | t, required: true, maxlength: 200 -%}
-          {%- render 'input', type: 'number', name: 'contact[Monto reclamado]', label: 'libro_reclamaciones.form.amount' | t -%}
+          {%- render 'input', type: 'text', name: 'contact[Descripción del bien o servicio]', label: product_service_label, required: true, maxlength: 200 -%}
+          {%- render 'input', type: 'number', name: 'contact[Monto reclamado]', label: amount_label -%}
         </div>
 
-        {%- render 'input', name: 'contact[Detalle del reclamo o queja]', label: 'libro_reclamaciones.form.detail' | t, multiline: 6, required: true, minlength: 20, maxlength: 2000, show_max_characters_count: true -%}
+        {%- render 'input', name: 'contact[Detalle del reclamo o queja]', label: detail_label, multiline: 6, required: true, minlength: 20, maxlength: 2000, show_max_characters_count: true -%}
 
-        {%- render 'input', name: 'contact[Pedido concreto del consumidor]', label: 'libro_reclamaciones.form.consumer_request' | t, multiline: 4, required: true, minlength: 10, maxlength: 500, show_max_characters_count: true -%}
+        {%- render 'input', name: 'contact[Pedido concreto del consumidor]', label: consumer_request_label, multiline: 4, required: true, minlength: 10, maxlength: 500, show_max_characters_count: true -%}
 
         <div class="v-stack gap-3">
-          {%- render 'checkbox', name: 'contact[Es menor de edad]', value: 'Sí', label: 'libro_reclamaciones.form.is_minor' | t, id_prefix: 'is-minor' -%}
+          {%- render 'checkbox', name: 'contact[Es menor de edad]', value: 'Sí', label: is_minor_label, id_prefix: 'is-minor' -%}
           <div id="rc-minor-fields" class="fieldset-row" hidden>
-            {%- render 'input', type: 'text', name: 'contact[Nombre del padre, madre o representante legal]', label: 'libro_reclamaciones.form.guardian_name' | t, disabled: true -%}
-            {%- render 'input', type: 'text', name: 'contact[Documento del representante legal]', label: 'libro_reclamaciones.form.guardian_document' | t, disabled: true -%}
+            {%- render 'input', type: 'text', name: 'contact[Nombre del padre, madre o representante legal]', label: guardian_name_label, disabled: true -%}
+            {%- render 'input', type: 'text', name: 'contact[Documento del representante legal]', label: guardian_document_label, disabled: true -%}
           </div>
         </div>
 
         <div class="checkbox-control">
-          {%- if shop.privacy_policy != blank -%}
-            {%- render 'checkbox', name: 'contact[Declaración de conformidad y consentimiento]', value: 'Acepto', label: 'libro_reclamaciones.form.consent_html' | t: link: shop.privacy_policy.url, required: true, id_prefix: 'consent' -%}
-          {%- else -%}
-            {%- render 'checkbox', name: 'contact[Declaración de conformidad y consentimiento]', value: 'Acepto', label: 'libro_reclamaciones.form.consent' | t, required: true, id_prefix: 'consent' -%}
-          {%- endif -%}
+          {%- render 'checkbox', name: 'contact[Declaración de conformidad y consentimiento]', value: 'Acepto', label: consent_label, required: true, id_prefix: 'consent' -%}
         </div>
       </div>
 
       <div>
-        {%- render 'button', content: 'libro_reclamaciones.form.submit' | t, type: 'submit' -%}
+        {%- render 'button', content: submit_label, type: 'submit' -%}
       </div>
     {%- endunless -%}
   {%- endform -%}
 
   {%- if posted_successfully -%}
+    {%- assign success_message = 'libro_reclamaciones.form.success_message' | t -%}
+
     <div id="rc-confirmation" class="rc-print-area v-stack gap-4">
-      {%- render 'banner', status: 'success', content: 'libro_reclamaciones.form.success_message' | t -%}
+      {%- render 'banner', status: 'success', content: success_message -%}
 
       <p data-rc-fallback hidden>{{ 'libro_reclamaciones.confirmation.fallback' | t }}</p>
 
