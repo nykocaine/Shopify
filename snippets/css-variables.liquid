@@ -116,25 +116,10 @@ note that this may have impact on different places.
 
     /* Drawers */
     --drawer-border-radius: {{ settings.drawer_border_radius }}px;
-    {%- if settings.drawer_mobile_overlay_color != blank -%}
-      --drawer-mobile-overlay-color: rgb({{ settings.drawer_mobile_overlay_color.rgb }});
-    {%- endif -%}
-    {%- if settings.drawer_mobile_box_color != blank -%}
-      --drawer-mobile-box-color: rgb({{ settings.drawer_mobile_box_color.rgb }});
-    {%- endif -%}
 
     /* Bars (progress bar, used by free shipping bar, featured product list, inventory, etc.) */
     --progress-bar-radius: {{ settings.progress_bar_radius }}px;
     --progress-bar-height: {{ settings.progress_bar_height }}px;
-    {%- if settings.progress_bar_background_color != blank -%}
-      --progress-bar-background-color: rgb({{ settings.progress_bar_background_color.rgb }});
-    {%- endif -%}
-    {%- if settings.progress_bar_border_color != blank -%}
-      --progress-bar-border-color: rgb({{ settings.progress_bar_border_color.rgb }});
-    {%- endif -%}
-    {%- if settings.progress_bar_fill_color != blank -%}
-      --progress-bar-fill-color: rgb({{ settings.progress_bar_fill_color.rgb }});
-    {%- endif -%}
 
     /* Controls (custom media control buttons, e.g. Media Blocks video carousel sound/play-pause buttons) */
     --control-button-border-width: {{ settings.control_button_border_width }}px;
@@ -419,6 +404,29 @@ note that this may have impact on different places.
       --input-background: {% if color_scheme.settings.input_background == 'rgba(0,0,0,0)' %}0 0 0 / 0{% else %}{{ color_scheme.settings.input_background.rgb }}{% endif %};
       --input-text-color: {{ color_scheme.settings.input_text_color.rgb }};
       --input-text-transform: {% if settings.input_uppercase %}uppercase{% else %}none{% endif %};
+
+      {%- if color_scheme.settings.input_border_color != blank and color_scheme.settings.input_border_color != 'rgba(0,0,0,0)' -%}
+        --input-border-color: rgb({{ color_scheme.settings.input_border_color.rgb }});
+      {%- endif -%}
+
+      /* Bars (progress bar) */
+      {%- if color_scheme.settings.progress_bar_background_color != blank -%}
+        --progress-bar-background-color: rgb({{ color_scheme.settings.progress_bar_background_color.rgb }});
+      {%- endif -%}
+      {%- if color_scheme.settings.progress_bar_border_color != blank -%}
+        --progress-bar-border-color: rgb({{ color_scheme.settings.progress_bar_border_color.rgb }});
+      {%- endif -%}
+      {%- if color_scheme.settings.progress_bar_fill_color != blank -%}
+        --progress-bar-fill-color: rgb({{ color_scheme.settings.progress_bar_fill_color.rgb }});
+      {%- endif -%}
+
+      /* Drawer (mobile centered) */
+      {%- if color_scheme.settings.drawer_mobile_overlay_color != blank -%}
+        --drawer-mobile-overlay-color: rgb({{ color_scheme.settings.drawer_mobile_overlay_color.rgb }});
+      {%- endif -%}
+      {%- if color_scheme.settings.drawer_mobile_box_color != blank -%}
+        --drawer-mobile-box-color: rgb({{ color_scheme.settings.drawer_mobile_box_color.rgb }});
+      {%- endif -%}
     }
 
     {%- comment -%}
