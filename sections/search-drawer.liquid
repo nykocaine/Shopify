@@ -1,12 +1,10 @@
-<x-drawer id="search-drawer" class="drawer drawer--search color-scheme color-scheme--{{ section.settings.color_scheme.id }}" handle-editor-events>
-  <div slot="header">
-    <form action="{{ routes.search_url }}" id="predictive-search-form" method="GET" aria-owns="predictive-search" class="h-stack gap-2.5" role="search">
-      {%- render 'icon' with 'search', width: 16 -%}
+<x-drawer id="search-drawer" class="drawer drawer--search drawer--no-bordered-header color-scheme color-scheme--{{ section.settings.color_scheme.id }}" handle-editor-events>
+  <h2 class="h7 search-drawer__title" slot="header">{{ 'search.general.title' | t }}</h2>
 
-      <label for="search-drawer-input" class="sr-only">{{ 'search.general.search_placeholder' | t }}</label>
-      <input id="search-drawer-input" type="search" class="search-drawer__input h7" name="q" placeholder="{{ 'search.general.search_placeholder' | t }}">
-    </form>
-  </div>
+  <form action="{{ routes.search_url }}" id="predictive-search-form" method="GET" aria-owns="predictive-search" class="search-drawer__form" role="search">
+    <label for="search-drawer-input" class="sr-only">{{ 'search.general.drawer_placeholder' | t }}</label>
+    <input id="search-drawer-input" type="search" class="search-drawer__input input" name="q" placeholder="{{ 'search.general.drawer_placeholder' | t }}">
+  </form>
 
   <predictive-search id="predictive-search">
     <div slot="placeholder">
@@ -70,6 +68,14 @@
     <div slot="results" class="contents"><!-- FILL IN JS --></div>
   </predictive-search>
 <style>
+  #search-drawer .search-drawer__title {
+    text-transform: lowercase;
+  }
+
+  #search-drawer .search-drawer__form {
+    margin-block-end: 1.5rem;
+  }
+
   #search-drawer .product-card {
     --product-card-border-radius: {{ section.settings.product_card_border_radius }}px;
   }
