@@ -43,6 +43,18 @@
     transform: scaleX(-1);
   }
 
+  /*
+   * .product-card has a global "scroll-snap-align: start" rule (assets/theme.css),
+   * which makes the carousel engine (ScrollCarousel.cellAlign) align the active
+   * card to the start edge instead of centering it. Overriding it here (scoped to
+   * this section only) makes the carousel's existing centering math run instead,
+   * so prev/next keep the active product centered in the viewport.
+   */
+  #shopify-section-{{ section.id }} product-list .product-card,
+  #shopify-section-{{ section.id }} product-list .product-list__promo {
+    scroll-snap-align: center;
+  }
+
   {%- unless section.settings.show_progress_bar_mobile -%}
     @media screen and (max-width: 999px) {
       #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
