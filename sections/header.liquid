@@ -66,6 +66,9 @@
         {%- when 'logo_left_navigation_center' -%}
           --header-grid: "logo primary-nav secondary-nav" / minmax(max-content, 1fr) auto minmax(max-content, 1fr);
 
+        {%- when 'logo_left_navigation_end' -%}
+          --header-grid: "logo primary-nav secondary-nav" / auto minmax(0, 1fr) auto;
+
         {%- else -%}
           --header-grid: "primary-nav logo secondary-nav" / minmax(0, 1fr) auto minmax(0, 1fr);
       {%- endcase -%}
@@ -163,6 +166,9 @@
         case section.settings.desktop_layout
           when 'logo_left_navigation_center'
             assign primary_nav_extra_classes = primary_nav_extra_classes | append: ' md:justify-center'
+
+          when 'logo_left_navigation_end'
+            assign primary_nav_extra_classes = primary_nav_extra_classes | append: ' md:justify-end'
         endcase
       -%}
 
@@ -523,6 +529,10 @@
         {
           "value": "logo_left_navigation_center",
           "label": "t:sections.header.desktop_layout_options.logo_left_navigation_center"
+        },
+        {
+          "value": "logo_left_navigation_end",
+          "label": "t:sections.header.desktop_layout_options.logo_left_navigation_end"
         },
         {
           "value": "logo_center_navigation_inline",
