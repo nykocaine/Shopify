@@ -5323,6 +5323,13 @@ product-rerender {
 .announcement-bar-wrapper {
   overflow: hidden;
   -webkit-mask-image: -webkit-radial-gradient(white, black);
+  height: var(--announcement-bar-height, auto);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .announcement-bar-wrapper {
+    transition: height .3s ease;
+  }
 }
 
 .announcement-bar {
