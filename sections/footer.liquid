@@ -220,22 +220,20 @@
     ------------------------------------------------------------------------------------------------------------------
     {%- endcomment -%}
 
-    <hr class="separator full-bleed">
+    {%- liquid
+      assign show_locale_selector = false
+      assign show_country_selector = false
 
-    <div class="footer__aside">
-      {%- liquid
-        assign show_locale_selector = false
-        assign show_country_selector = false
+      if section.settings.show_locale_selector and localization.available_languages.size > 1
+        assign show_locale_selector = true
+      endif
 
-        if section.settings.show_locale_selector and localization.available_languages.size > 1
-          assign show_locale_selector = true
-        endif
+      if section.settings.show_country_selector and localization.available_countries.size > 1
+        assign show_country_selector = true
+      endif
+    -%}
 
-        if section.settings.show_country_selector and localization.available_countries.size > 1
-          assign show_country_selector = true
-        endif
-      -%}
-
+    {%- capture footer_aside_content -%}
       {%- if show_locale_selector or show_country_selector -%}
         <div class="h-stack gap-5 md:justify-start">
           {%- liquid
@@ -254,17 +252,30 @@
         {%- render 'social-media' -%}
       {%- endif -%}
 
-      <div class="v-stack gap-3">
-        <p class="text-sm">© {{ 'now' | date: '%Y' }} - {{ shop.name }} {%- if section.settings.show_powered_by_shopify -%}{{ powered_by_link }}{%- endif -%}</p>
+      {%- if section.settings.show_copyright or section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+        <div class="v-stack gap-3">
+          {%- if section.settings.show_copyright -%}
+            <p class="text-sm">© {{ 'now' | date: '%Y' }} - {{ shop.name }} {%- if section.settings.show_powered_by_shopify -%}{{ powered_by_link }}{%- endif -%}</p>
+          {%- endif -%}
 
-        {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
-          <ul class="h-stack gap-4 wrap unstyled-list">
-            {%- for type in shop.enabled_payment_types -%}
-              <li>{{- type | payment_type_svg_tag -}}</li>
-            {%- endfor -%}
-          </ul>
-        {%- endif -%}
+          {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+            <ul class="h-stack gap-4 wrap unstyled-list">
+              {%- for type in shop.enabled_payment_types -%}
+                <li>{{- type | payment_type_svg_tag -}}</li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    {%- endcapture -%}
+
+    {%- if footer_aside_content != blank -%}
+      <hr class="separator full-bleed">
+
+      <div class="footer__aside">
+        {{- footer_aside_content -}}
       </div>
+    {%- endif -%}
     </div>
   </div>
 </div>
@@ -310,6 +321,13 @@
       "type": "checkbox",
       "id": "show_payment_icons",
       "label": "t:sections.footer.show_payment_icons",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_copyright",
+      "label": "Show copyright",
+      "info": "Also controls the divider line and bottom bar it sits in — when nothing in that row is enabled (copyright, payment icons, social media, country/language selector), the bar is hidden entirely.",
       "default": true
     },
     {
