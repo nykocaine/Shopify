@@ -37,14 +37,18 @@
     
           {%- assign input_label = 'general.newsletter.email' | t -%}
     
-          <div class="input-with-connected-submit">
-            {%- liquid 
+          <div class="newsletter-input-group">
+            {%- liquid
               render 'input', name: 'contact[email]', label: input_label, type: 'email', required: true, autocomplete: 'email', enterkeyhint: 'send'
-            
+            -%}
+
+            <hr>
+
+            {%- liquid
               assign button_default_content = 'general.newsletter.subscribe' | t
               assign button_content = section.settings.button_text | default: button_default_content
 
-              render 'button', type: 'submit', content: button_content, icon: 'arrow-right'
+              render 'button', type: 'submit', content: button_content, style: 'link'
             -%}
           </div>
         {%- endform -%}

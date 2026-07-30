@@ -6,41 +6,6 @@
   </style>
 {%- endif -%}
 
-<style>
-  /* Newsletter: merge the email input and the submit button into a single
-     rounded pill with a thin vertical divider, instead of two separate
-     controls side by side. */
-  #shopify-section-{{ section.id }} .footer__newsletter-input-group {
-    background: rgb(var(--input-background));
-    border-radius: var(--input-border-radius);
-    padding-inline-end: var(--input-padding-inline);
-    overflow: hidden;
-  }
-
-  #shopify-section-{{ section.id }} .footer__newsletter-input-group .form-control {
-    flex: 1;
-    min-width: 0;
-  }
-
-  #shopify-section-{{ section.id }} .footer__newsletter-input-group .input {
-    background: none;
-    border: none;
-  }
-
-  #shopify-section-{{ section.id }} .footer__newsletter-input-group .input:focus {
-    outline: none;
-  }
-
-  #shopify-section-{{ section.id }} .footer__newsletter-input-group hr {
-    align-self: stretch;
-    height: auto;
-  }
-
-  #shopify-section-{{ section.id }} .footer__newsletter-input-group .link {
-    background: none;
-  }
-</style>
-
 <div class="footer {% if section.settings.floating_footer %}footer--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.floating_footer %}style="border-radius: {{ section.settings.footer_border_radius }}px;"{% endif %}>
   <div class="container">
     {%- assign scrolling_logo_block = section.blocks | where: 'type', 'scrolling_logo' | first -%}
@@ -176,7 +141,7 @@
 
                             <input type="hidden" name="contact[tags]" value="newsletter">
 
-                            <div class="footer__newsletter-input-group vertically-separated-list">
+                            <div class="newsletter-input-group">
                               {%- assign input_label = 'general.newsletter.email' | t -%}
                               {%- render 'input', name: 'contact[email]', label: input_label, type: 'email', required: true, autocomplete: 'email', enterkeyhint: 'send' -%}
 
