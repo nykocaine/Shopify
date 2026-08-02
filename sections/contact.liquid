@@ -1,9 +1,5 @@
 {%- liquid
-  if section.settings.image == blank and section.settings.layout == 'stacked'
-    assign text_alignment = 'center'
-  else
-    assign text_alignment = 'start'
-  endif
+  assign text_alignment = 'start'
 -%}
 
   {%- capture section_header -%}
@@ -114,7 +110,7 @@
       <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_contact %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_contact %} style="border-end-start-radius: {{ section.settings.contact_border_radius }}px; border-end-end-radius: {{ section.settings.contact_border_radius }}px; overflow: hidden;"{% endif %}>
         <div class="section-spacing">
           <div class="container">
-            <div class="section-stack max-w-md mx-auto text-center">
+            <div class="section-stack max-w-md mx-auto">
               {{- section_header -}}
               {{- section_main_content -}}
             </div>
