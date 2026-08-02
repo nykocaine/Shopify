@@ -58,9 +58,12 @@ no need to manually pass the section as it is globally available)
         elsif block.type == 'description' and block.settings.collapse_content and product.description != blank and next_block.type == 'accordion'
           assign block_group_class = 'accordion-group'
           assign block_group_name = 'accordion-group'
-        elsif block.type == 'accordion' and next_block.type == 'description' and next_block.settings.collapse_content and product.description != blank 
+        elsif block.type == 'accordion' and next_block.type == 'description' and next_block.settings.collapse_content and product.description != blank
           assign block_group_class = 'accordion-group'
           assign block_group_name = 'accordion-group'
+        elsif block.type == 'title' and next_block.type == 'price'
+          assign block_group_class = 'product-info__title-price-group gap-3'
+          assign block_group_name = 'title-price-group'
         else
           assign allow_block_group = false
           assign block_group_class = ''
