@@ -1,4 +1,46 @@
+{%- liquid
+  # "auto" / "contain" are the CSS defaults for a natural, non-cropped image. They're assigned
+  # explicitly (not left blank) so the desktop media query below always overrides whatever the
+  # mobile rule set, instead of silently inheriting it when desktop is set back to "Natural".
+  assign gallery_image_ratio_mobile = 'auto'
+  assign gallery_image_fit_mobile = 'contain'
+  case section.settings.gallery_image_size_mobile
+    when 'short', 'short_crop'
+      assign gallery_image_ratio_mobile = '4 / 3'
+    when 'square', 'square_crop'
+      assign gallery_image_ratio_mobile = '1'
+    when 'portrait', 'portrait_crop'
+      assign gallery_image_ratio_mobile = '4 / 5'
+    when 'tall', 'tall_crop'
+      assign gallery_image_ratio_mobile = '2 / 3'
+  endcase
+  if section.settings.gallery_image_size_mobile contains 'crop'
+    assign gallery_image_fit_mobile = 'cover'
+  endif
+
+  assign gallery_image_ratio_desktop = 'auto'
+  assign gallery_image_fit_desktop = 'contain'
+  case section.settings.gallery_image_size_desktop
+    when 'short', 'short_crop'
+      assign gallery_image_ratio_desktop = '4 / 3'
+    when 'square', 'square_crop'
+      assign gallery_image_ratio_desktop = '1'
+    when 'portrait', 'portrait_crop'
+      assign gallery_image_ratio_desktop = '4 / 5'
+    when 'tall', 'tall_crop'
+      assign gallery_image_ratio_desktop = '2 / 3'
+  endcase
+  if section.settings.gallery_image_size_desktop contains 'crop'
+    assign gallery_image_fit_desktop = 'cover'
+  endif
+-%}
+
 <style>
+  #shopify-section-{{ section.id }} {
+    --product-gallery-image-ratio: {{ gallery_image_ratio_mobile }};
+    --product-gallery-image-fit: {{ gallery_image_fit_mobile }};
+  }
+
   {%- if section.settings.allow_transparent_header and section.settings.transparent_header_use_primary_colors -%}
     {%- comment -%}
     When this setting is enabled, we use the transparent header, but we force the header to use the primary colors and primary logo.
@@ -38,6 +80,8 @@
       {%- else -%}
         --product-grid: auto / minmax(0, {{ section.settings.product_media_size | divided_by: 100.0 }}fr) minmax(0, {{ 100.0 | minus: section.settings.product_media_size | divided_by: 100.0 }}fr);
       {%- endif -%}
+      --product-gallery-image-ratio: {{ gallery_image_ratio_desktop }};
+      --product-gallery-image-fit: {{ gallery_image_fit_desktop }};
     }
 
     {%- if section.settings.desktop_gallery_on_right -%}
@@ -271,6 +315,40 @@
         }
       ],
       "default": "carousel"
+    },
+    {
+      "type": "select",
+      "id": "gallery_image_size_mobile",
+      "label": "Tamaño de imagen (Mobile)",
+      "options": [
+        { "value": "natural", "label": "Natural" },
+        { "value": "short", "label": "Short" },
+        { "value": "square", "label": "Square" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "tall", "label": "Tall" },
+        { "value": "short_crop", "label": "Short (crop)" },
+        { "value": "square_crop", "label": "Square (crop)" },
+        { "value": "portrait_crop", "label": "Portrait (crop)" },
+        { "value": "tall_crop", "label": "Tall (crop)" }
+      ],
+      "default": "natural"
+    },
+    {
+      "type": "select",
+      "id": "gallery_image_size_desktop",
+      "label": "Tamaño de imagen (Desktop)",
+      "options": [
+        { "value": "natural", "label": "Natural" },
+        { "value": "short", "label": "Short" },
+        { "value": "square", "label": "Square" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "tall", "label": "Tall" },
+        { "value": "short_crop", "label": "Short (crop)" },
+        { "value": "square_crop", "label": "Square (crop)" },
+        { "value": "portrait_crop", "label": "Portrait (crop)" },
+        { "value": "tall_crop", "label": "Tall (crop)" }
+      ],
+      "default": "natural"
     },
     {
       "type": "select",
