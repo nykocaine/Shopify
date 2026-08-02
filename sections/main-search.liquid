@@ -54,13 +54,8 @@
           {%- endif -%}
 
           <form class="max-w-xs" action="{{ routes.search_url }}" method="get" role="search">
-            <div class="search-form">
-              {%- render 'icon' with 'search' -%}
-              <input type="search" name="q" class="search-form__input heading" placeholder="{{ 'search.general.search_placeholder' | t }}" autocomplete="off" autocorrect="off">
-            </div>
-
-            {%- assign button_content = 'search.general.title' | t -%}
-            {%- render 'button', type: 'submit', content: button_content -%}
+            <label for="search-page-input-empty" class="sr-only">{{ 'search.general.search_placeholder' | t }}</label>
+            <input id="search-page-input-empty" type="search" name="q" class="search-form__input input" placeholder="{{ 'search.general.search_placeholder' | t }}" autocomplete="off" autocorrect="off">
           </form>
         </div>
       </div>
@@ -78,10 +73,8 @@
         <p>{{ 'search.results_count' | t: count: search.results_count }}</p>
         
         <form class="max-w-xs" action="{{ routes.search_url }}" method="get" role="search">
-          <div class="search-form">
-            {%- render 'icon' with 'search' -%}
-            <input type="search" name="q" value="{{ search.terms }}" class="search-form__input heading" placeholder="{{ 'search.general.search_placeholder' | t }}" autocomplete="off" autocorrect="off">
-          </div>
+          <label for="search-page-input-results" class="sr-only">{{ 'search.general.search_placeholder' | t }}</label>
+          <input id="search-page-input-results" type="search" name="q" value="{{ search.terms }}" class="search-form__input input" placeholder="{{ 'search.general.search_placeholder' | t }}" autocomplete="off" autocorrect="off">
         </form>
       </div>
     </div>
