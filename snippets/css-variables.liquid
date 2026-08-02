@@ -122,21 +122,9 @@ note that this may have impact on different places.
     --progress-bar-height: {{ settings.progress_bar_height }}px;
 
     /* Controls (custom media control buttons, e.g. Media Blocks video carousel sound/play-pause buttons) */
-    --control-button-border-width: {{ settings.control_button_border_width }}px;
+    --control-button-border-width: {{ settings.control_button_border_width_mobile }}px;
     --control-button-border-radius: {{ settings.control_button_border_radius }}px;
     --control-button-size: {{ settings.control_button_size_mobile }}px;
-    {%- if settings.control_button_background_color != blank -%}
-      --control-button-background-color: rgb({{ settings.control_button_background_color.rgb }});
-    {%- endif -%}
-    {%- if settings.control_button_hover_background_color != blank -%}
-      --control-button-hover-background-color: rgb({{ settings.control_button_hover_background_color.rgb }});
-    {%- endif -%}
-    {%- if settings.control_button_icon_color != blank -%}
-      --control-button-icon-color: rgb({{ settings.control_button_icon_color.rgb }});
-    {%- endif -%}
-    {%- if settings.control_button_border_color != blank -%}
-      --control-button-border-color: rgb({{ settings.control_button_border_color.rgb }});
-    {%- endif -%}
 
     /* Badges */
     --badge-font-size: {{ settings.badge_font_size_mobile | divided_by: 16.0 }}rem;
@@ -268,6 +256,7 @@ note that this may have impact on different places.
 
       /* Controls */
       --control-button-size: {{ settings.control_button_size }}px;
+      --control-button-border-width: {{ settings.control_button_border_width }}px;
 
       /* Spacing */
       --container-gutter: {{ settings.container_gutter | times: 0.66667 | round: 3 }}rem;
@@ -426,6 +415,20 @@ note that this may have impact on different places.
       {%- endif -%}
       {%- if color_scheme.settings.drawer_mobile_box_color != blank -%}
         --drawer-mobile-box-color: rgb({{ color_scheme.settings.drawer_mobile_box_color.rgb }});
+      {%- endif -%}
+
+      /* Controls (custom media control buttons) */
+      {%- if color_scheme.settings.control_button_background_color != blank -%}
+        --control-button-background-color: rgb({{ color_scheme.settings.control_button_background_color.rgb }});
+      {%- endif -%}
+      {%- if color_scheme.settings.control_button_hover_background_color != blank -%}
+        --control-button-hover-background-color: rgb({{ color_scheme.settings.control_button_hover_background_color.rgb }});
+      {%- endif -%}
+      {%- if color_scheme.settings.control_button_icon_color != blank -%}
+        --control-button-icon-color: rgb({{ color_scheme.settings.control_button_icon_color.rgb }});
+      {%- endif -%}
+      {%- if color_scheme.settings.control_button_border_color != blank -%}
+        --control-button-border-color: rgb({{ color_scheme.settings.control_button_border_color.rgb }});
       {%- endif -%}
     }
 
