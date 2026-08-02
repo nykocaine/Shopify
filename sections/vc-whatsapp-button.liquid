@@ -65,6 +65,17 @@
 -%}
 
 {% if show_button %}
+  {% comment %}
+    Vive fuera de vc-whatsapp-button-wrapper: en modo Docked Tab el wrapper usa transform,
+    lo que crearía un containing block nuevo y rompería el position: fixed de este overlay.
+  {% endcomment %}
+  <div
+    class="vc-whatsapp-overlay"
+    data-section-id="{{ section.id }}"
+    style="--wa-z-index: {{ section.settings.z_index }};"
+    hidden
+  ></div>
+
   <div
     data-section-id="{{ section.id }}"
     class="vc-whatsapp-button-wrapper
@@ -375,6 +386,40 @@
       font-size: var(--wa-dock-text-size-desktop);
     }
   }
+
+  /* Docked Tab: el panel de agentes nace desde la pestaña en vez de abrirse hacia arriba */
+  .vc-whatsapp-button-wrapper--dock .vc-whatsapp-agents-list {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+  }
+
+  .vc-whatsapp-button-wrapper--dock-right .vc-whatsapp-agents-list {
+    left: auto;
+    right: calc(100% + var(--section-stack-row-gap));
+  }
+
+  .vc-whatsapp-button-wrapper--dock-left .vc-whatsapp-agents-list {
+    left: calc(100% + var(--section-stack-row-gap));
+    right: auto;
+  }
+
+  /* Blur overlay del tema, reutilizado detrás del popup de agentes solo en móvil */
+  .vc-whatsapp-overlay {
+    display: none;
+  }
+
+  @media (max-width: 749px) {
+    .vc-whatsapp-overlay:not([hidden]) {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: calc(var(--wa-z-index) - 1);
+      background: rgb(var(--page-overlay));
+      -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
+      backdrop-filter: blur(var(--dialog-backdrop-blur));
+    }
+  }
 {% endstylesheet %}
 
 {% javascript %}
@@ -410,6 +455,9 @@
 
       var hasAgents = button.dataset.hasAgents === 'true';
       var agentsList = wrapper.querySelector('.vc-whatsapp-agents-list');
+      var overlay = wrapper.parentElement
+        ? wrapper.parentElement.querySelector('.vc-whatsapp-overlay[data-section-id="' + sectionId + '"]')
+        : null;
 
       function openWhatsapp(phoneNumber, message) {
         if (!phoneNumber) {
@@ -426,6 +474,7 @@
         if (hasAgents && agentsList) {
           agentsList.hidden = !agentsList.hidden;
           button.setAttribute('aria-expanded', String(!agentsList.hidden));
+          if (overlay) overlay.hidden = agentsList.hidden;
           return;
         }
         openWhatsapp(button.dataset.phoneNumber, button.dataset.defaultMessage);
@@ -438,6 +487,7 @@
             openWhatsapp(item.dataset.phoneNumber, item.dataset.message);
             agentsList.hidden = true;
             button.setAttribute('aria-expanded', 'false');
+            if (overlay) overlay.hidden = true;
           });
         });
 
@@ -445,6 +495,7 @@
           if (!wrapper.contains(event.target)) {
             agentsList.hidden = true;
             button.setAttribute('aria-expanded', 'false');
+            if (overlay) overlay.hidden = true;
           }
         });
       }
