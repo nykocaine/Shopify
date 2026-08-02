@@ -427,7 +427,9 @@ note that this may have impact on different places.
       {%- if color_scheme.settings.control_button_icon_color != blank -%}
         --control-button-icon-color: rgb({{ color_scheme.settings.control_button_icon_color.rgb }});
       {%- endif -%}
-      {%- if color_scheme.settings.control_button_border_color != blank -%}
+      {%- if color_scheme.settings.control_button_border_color_mobile != blank -%}
+        --control-button-border-color: rgb({{ color_scheme.settings.control_button_border_color_mobile.rgb }});
+      {%- elsif color_scheme.settings.control_button_border_color != blank -%}
         --control-button-border-color: rgb({{ color_scheme.settings.control_button_border_color.rgb }});
       {%- endif -%}
     }
@@ -450,6 +452,16 @@ note that this may have impact on different places.
       {%- endif -%}
     {%- endfor -%}
   {%- endfor -%}
+
+  @media screen and (min-width: 700px) {
+    {%- for color_scheme in settings.color_schemes -%}
+      {%- if color_scheme.settings.control_button_border_color != blank -%}
+        .color-scheme--{{ color_scheme.id }} {
+          --control-button-border-color: rgb({{ color_scheme.settings.control_button_border_color.rgb }});
+        }
+      {%- endif -%}
+    {%- endfor -%}
+  }
 
   {%- if settings.product_card_info_horizontal_alignment == 'split' -%}
     /* Make the price match the product subtitle's size/weight, since in the
