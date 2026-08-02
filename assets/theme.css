@@ -680,7 +680,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   --button-size: 1.75rem;
   width: var(--button-size);
   height: var(--button-size);
-  color: currentColor;
+  color: var(--nav-control-icon-color, currentColor);
   cursor: pointer;
   z-index: 1;
   background: none;
@@ -698,7 +698,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 
 .circle-button:before {
   content: "";
-  background: rgb(var(--text-color) / .08);
+  background: var(--nav-control-background-color, rgb(var(--text-color) / .08));
   z-index: -1;
   border-radius: 100%;
   transition: transform .2s, background .2s;
@@ -708,7 +708,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 
 @supports (color: color-mix(in srgb, white, black)) {
   .circle-button:before {
-    background: color-mix(in srgb, rgb(var(--text-color)) 8%, rgb(var(--background)));
+    background: var(--nav-control-background-color, color-mix(in srgb, rgb(var(--text-color)) 8%, rgb(var(--background))));
   }
 }
 
@@ -718,7 +718,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   }
 
   :is(.circle-button:not([disabled]):hover, .circle-button .group\:circle-button:hover):before {
-    background: rgb(var(--text-color));
+    background: var(--nav-control-hover-background-color, rgb(var(--text-color)));
   }
 }
 
@@ -727,7 +727,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 }
 
 .circle-button--outline {
-  border: 1px solid rgb(var(--text-color) / .3);
+  border: 1px solid var(--nav-control-border-color, rgb(var(--text-color) / .3));
 }
 
 .circle-button--outline:before {
@@ -736,7 +736,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 
 @media screen and (pointer: fine) {
   .circle-button--outline:not([disabled]):hover {
-    background: rgb(var(--text-color) / .05);
+    background: var(--nav-control-hover-background-color, rgb(var(--text-color) / .05));
   }
 }
 
@@ -899,6 +899,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   justify-content: var(--scroll-marker-group-justify-content, safe center);
   gap: var(--scroll-marker-group-gap, .5rem);
   flex-wrap: wrap;
+  color: var(--nav-control-icon-color, currentColor);
   display: flex;
 }
 
@@ -982,7 +983,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 
 .scroll-marker-group--counter {
   --scroll-marker-group-gap: .75rem;
-  background-color: rgb(var(--text-color) / .1);
+  background-color: var(--nav-control-background-color, rgb(var(--text-color) / .1));
   -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
   border-radius: var(--rounded-full);
@@ -1012,7 +1013,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 
 .scroll-marker-group--thumbnails .scroll-marker:after {
   content: "";
-  background-color: rgb(var(--text-color));
+  background-color: var(--nav-control-icon-color, rgb(var(--text-color)));
   width: 0;
   height: 2px;
   transition: width .2s;
@@ -1101,29 +1102,24 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   z-index: inherit;
 }
 
-:where(.drawer, .drawer-popover, .modal, .popover)::part(close-button) {
-  color: currentColor;
+:where(.drawer, .drawer-popover, .modal, .popover)::part(close-button),
+:where(.drawer, .drawer-popover, .modal, .popover)::part(overlaid-close-button) {
+  color: var(--close-control-icon-color, rgb(var(--button-text-primary)));
   cursor: pointer;
-  background: none;
-  border: none;
+  background: var(--close-control-background-color, rgb(var(--button-background-primary)));
+  border: 1px solid var(--close-control-border-color, rgb(var(--border-color)));
+  border-radius: 100%;
   place-content: center;
   width: 1.75rem;
   height: 1.75rem;
   display: grid;
   position: absolute;
+  transition: background .2s;
 }
 
-:where(.drawer, .drawer-popover, .modal, .popover)::part(close-button):before {
-  content: "";
-  background: rgb(var(--text-color) / .08);
-  border-radius: 100%;
-  transition: transform .2s;
-  position: absolute;
-  inset: 0;
-}
-
-:where(.drawer, .drawer-popover, .modal, .popover)::part(close-button):hover:before {
-  background: rgb(var(--text-color));
+:where(.drawer, .drawer-popover, .modal, .popover)::part(close-button):hover,
+:where(.drawer, .drawer-popover, .modal, .popover)::part(overlaid-close-button):hover {
+  background: var(--close-control-hover-background-color, rgb(var(--button-hover-background)));
 }
 
 :where(.drawer, .drawer-popover, .modal, .popover)::part(overlay) {
@@ -1181,18 +1177,6 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   grid-area: 1 / 1;
   justify-self: start;
   position: relative;
-  background: rgb(var(--button-background-primary));
-  border: 1px solid rgb(var(--border-color));
-  border-radius: 100%;
-  color: rgb(var(--button-text-primary));
-}
-
-.drawer::part(close-button):before {
-  content: none;
-}
-
-.drawer::part(close-button):hover {
-  background: rgb(var(--button-hover-background));
 }
 
 .drawer::part(body) {
@@ -1305,18 +1289,6 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 .modal::part(close-button) {
   inset-block-start: 1rem;
   inset-inline-end: 1rem;
-  background: rgb(var(--button-background-primary));
-  border: 1px solid rgb(var(--border-color));
-  border-radius: 100%;
-  color: rgb(var(--button-text-primary));
-}
-
-.modal::part(close-button):before {
-  content: none;
-}
-
-.modal::part(close-button):hover {
-  background: rgb(var(--button-hover-background));
 }
 
 .modal [slot="image"] {
@@ -1331,12 +1303,6 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 
 .modal--no-overlay::part(overlay) {
   display: none;
-}
-
-@media screen and (max-width: 999px) {
-  .modal:has([slot="image"])::part(close-button):before {
-    background: rgb(var(--background));
-  }
 }
 
 @media screen and (min-width: 1000px) {
@@ -2495,12 +2461,13 @@ video-media::part(play-button), .play-button {
   backdrop-filter: blur(10px);
   z-index: 1;
   will-change: scale;
-  background: #fff3;
+  background: var(--control-button-background-color, #fff3);
+  color: var(--control-button-icon-color, currentColor);
   border-radius: 100%;
   place-content: center;
   width: 80px;
   height: 80px;
-  transition: scale .2s ease-in-out, opacity .2s ease-in-out;
+  transition: scale .2s ease-in-out, opacity .2s ease-in-out, background .2s ease-in-out;
   display: inline-grid;
 }
 
@@ -2510,6 +2477,10 @@ video-media::part(play-button), .play-button {
 
 video-media:hover::part(play-button), video-media:hover .play-button, .group:hover .group-hover\:scale {
   scale: 1.1;
+}
+
+video-media:hover::part(play-button), video-media:hover .play-button {
+  background: var(--control-button-hover-background-color, var(--control-button-background-color, #fff3));
 }
 
 model-media {
@@ -2974,6 +2945,7 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 .pagination__link {
   width: var(--pagination-part-size);
   height: var(--pagination-part-size);
+  color: var(--nav-control-icon-color, currentColor);
   border-radius: 100%;
   place-content: center;
   display: grid;
@@ -2981,8 +2953,8 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 }
 
 .pagination__link[aria-current="page"] {
-  background: rgb(var(--text-color));
-  color: rgb(var(--background));
+  background: var(--nav-control-hover-background-color, rgb(var(--text-color)));
+  color: var(--nav-control-background-color, rgb(var(--background)));
 }
 
 @media screen and (max-width: 699px) {
@@ -3124,6 +3096,27 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 .pswp__button--close-button {
   inset-block-start: 1.75rem;
   inset-inline-end: 1.75rem;
+  color: var(--close-control-icon-color, currentColor);
+}
+
+.pswp__button--close-button:before {
+  background: var(--close-control-background-color, rgb(var(--text-color) / .08));
+}
+
+@supports (color: color-mix(in srgb, white, black)) {
+  .pswp__button--close-button:before {
+    background: var(--close-control-background-color, color-mix(in srgb, rgb(var(--text-color)) 8%, rgb(var(--background))));
+  }
+}
+
+@media screen and (pointer: fine) {
+  .pswp__button--close-button:not([disabled]):hover {
+    color: var(--close-control-icon-color, color-mix(in srgb, rgb(var(--text-color)) 8%, rgb(var(--background))));
+  }
+
+  .pswp__button--close-button:not([disabled]):hover:before {
+    background: var(--close-control-hover-background-color, rgb(var(--text-color)));
+  }
 }
 
 .pswp__button--previous-button {
@@ -6992,10 +6985,10 @@ shopify-account::part(signed-out-avatar) {
   }
 
   .drawer-mobile-centered .menu-drawer__close-button button {
-    color: rgb(var(--button-text-primary));
+    color: var(--close-control-icon-color, rgb(var(--button-text-primary)));
     cursor: pointer;
-    background: rgb(var(--button-background-primary));
-    border: 1px solid rgb(var(--border-color));
+    background: var(--close-control-background-color, rgb(var(--button-background-primary)));
+    border: 1px solid var(--close-control-border-color, rgb(var(--border-color)));
     place-content: center;
     width: 1.75rem;
     height: 1.75rem;
@@ -7004,10 +6997,11 @@ shopify-account::part(signed-out-avatar) {
     inset-block-start: 1rem;
     inset-inline-start: 1rem;
     z-index: 1;
+    transition: background .2s;
   }
 
   .drawer-mobile-centered .menu-drawer__close-button button:hover {
-    background: rgb(var(--button-hover-background));
+    background: var(--close-control-hover-background-color, rgb(var(--button-hover-background)));
   }
 }
 
@@ -7110,8 +7104,8 @@ shopify-account::part(signed-out-avatar) {
 .hot-spot__dot {
   width: var(--hot-spot-dot-size);
   height: var(--hot-spot-dot-size);
-  background: rgb(var(--hot-spot-background));
-  color: rgb(var(--hot-spot-text-color));
+  background: var(--control-button-background-color, #ffffff);
+  color: var(--control-button-icon-color, #000000);
   border-radius: 100%;
   place-items: center;
   display: grid;
@@ -7122,7 +7116,7 @@ shopify-account::part(signed-out-avatar) {
   content: "";
   width: var(--hot-spot-dot-shadow-size);
   height: var(--hot-spot-dot-shadow-size);
-  background: radial-gradient(50% 50% at 50% 50%, rgb(var(--hot-spot-background) / 0) 0%, rgb(var(--hot-spot-background) / .3) 100%);
+  background: radial-gradient(50% 50% at 50% 50%, rgb(from var(--control-button-background-color, #ffffff) r g b / 0) 0%, rgb(from var(--control-button-background-color, #ffffff) r g b / .3) 100%);
   border-radius: inherit;
   grid-area: 1 / -1;
   animation: 2s ease-in-out infinite alternate hotSpotDotAnimation;
@@ -7572,6 +7566,11 @@ shopify-account::part(signed-out-avatar) {
   --scroll-marker-group-inset-block-end: 1rem;
 }
 
+.product-gallery__controls-floating carousel-prev-button.tap-area,
+.product-gallery__controls-floating carousel-next-button.tap-area {
+  color: var(--nav-control-icon-color, currentColor);
+}
+
 .product-gallery__thumbnail-list {
   --distance-to-bleed: var(--container-gutter);
   --container-gutter-context: var(--product-gallery-gap);
@@ -7885,6 +7884,7 @@ shopify-account::part(signed-out-avatar) {
 }
 
 .products-with-image__carousel-arrow {
+  color: var(--nav-control-icon-color, currentColor);
   transition: opacity .2s;
 }
 
@@ -8502,7 +8502,6 @@ shopify-account::part(signed-out-avatar) {
 
 .slideshow__controls {
   z-index: 1;
-  color: rgb(var(--slideshow-controls-color));
   grid-area: 1 / -1;
   place-self: end;
   align-items: center;
@@ -8513,6 +8512,7 @@ shopify-account::part(signed-out-avatar) {
 }
 
 .slideshow__autoplay-button {
+  color: var(--control-button-icon-color, #ffffff);
   place-content: center;
   width: 1.5rem;
   height: 1.5rem;

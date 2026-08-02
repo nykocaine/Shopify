@@ -202,15 +202,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgb(var(--background));
-    color: rgb(var(--text-color));
-    border: 1px solid rgb(var(--border-color));
+    background-color: var(--close-control-background-color, rgb(var(--background)));
+    color: var(--close-control-icon-color, rgb(var(--text-color)));
+    border: 1px solid var(--close-control-border-color, rgb(var(--border-color)));
     border-radius: 50%;
     font-size: 16px;
     line-height: 1;
     cursor: pointer;
     z-index: 1;
     padding: 0;
+    transition: background .2s;
+  }
+
+  .vc-whatsapp-close-button:hover {
+    background-color: var(--close-control-hover-background-color, rgb(var(--background)));
   }
 
   /* Caja de agentes: sin sombra, radio en px, tipografía heredada del body del tema */

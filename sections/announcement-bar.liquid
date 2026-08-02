@@ -26,6 +26,16 @@
           padding-inline: var(--container-gutter);
         }
       {%- endif -%}
+
+      /* Navigation Controls: these prev/next buttons are bare .tap-area (no
+         .circle-button), so they need their own explicit connection to the
+         per-scheme navigation icon color. */
+      #shopify-section-{{ section.id }} carousel-prev-button.tap-area,
+      #shopify-section-{{ section.id }} carousel-next-button.tap-area,
+      #shopify-section-{{ section.id }} carousel-prev-button .tap-area,
+      #shopify-section-{{ section.id }} carousel-next-button .tap-area {
+        color: var(--nav-control-icon-color, currentColor);
+      }
     </style>
 
     <height-observer variable="announcement-bar">
