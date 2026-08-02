@@ -108,6 +108,7 @@
       --wa-dock-radius-br: {{ dock_radius_br }}px;
       --wa-dock-text-size-mobile: {{ section.settings.dock_text_size_mobile }}px;
       --wa-dock-text-size-desktop: {{ section.settings.dock_text_size_desktop }}px;
+      --wa-dock-vertical-position: {{ section.settings.dock_vertical_position }}%;
     "
   >
     {% if section.settings.show_close_button %}
@@ -352,9 +353,9 @@
 
   /* Docked Tab: pestaña vertical pegada al borde de la pantalla */
   .vc-whatsapp-button-wrapper--dock {
-    top: 50%;
+    top: var(--wa-dock-vertical-position);
     bottom: auto;
-    transform: translateY(-50%);
+    transform: translateY(calc(var(--wa-dock-vertical-position) * -1));
     max-width: none;
   }
 
@@ -539,6 +540,7 @@
 
     { "type": "header", "content": "Docked Tab: posición y tamaño", "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
     { "type": "select", "id": "dock_position", "label": "Position", "options": [{ "value": "right", "label": "Right" }, { "value": "left", "label": "Left" }], "default": "right", "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+    { "type": "range", "id": "dock_vertical_position", "label": "Posición vertical", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 50, "info": "0% = arriba, 50% = centrado, 100% = abajo", "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
     { "type": "range", "id": "dock_width", "label": "Width", "min": 30, "max": 120, "step": 2, "unit": "px", "default": 44, "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
     { "type": "range", "id": "dock_height", "label": "Height", "min": 60, "max": 300, "step": 5, "unit": "px", "default": 140, "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
     { "type": "range", "id": "dock_padding", "label": "Padding", "min": 0, "max": 40, "step": 1, "unit": "px", "default": 10, "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
