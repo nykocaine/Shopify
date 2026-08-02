@@ -8,16 +8,6 @@
     assign show_button = true
   endif
 
-  assign shadow_class = ""
-  case section.settings.shadow_intensity
-    when 'sm'
-      assign shadow_class = "shadow-sm"
-    when 'md'
-      assign shadow_class = "shadow-md"
-    when 'lg'
-      assign shadow_class = "shadow-lg"
-  endcase
-
   assign agents = section.blocks
   assign has_agents = false
   if agents.size > 0
@@ -52,6 +42,26 @@
     assign dock_radius_tl = section.settings.dock_border_radius
     assign dock_radius_bl = section.settings.dock_border_radius
   endif
+
+  assign wa_shadow_value = 'none'
+  case section.settings.shadow_intensity
+    when 'sm'
+      assign wa_shadow_value = '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+    when 'md'
+      assign wa_shadow_value = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+    when 'lg'
+      assign wa_shadow_value = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+  endcase
+
+  assign dock_label = section.settings.dock_tab_label
+  if dock_label == blank
+    assign dock_label = 'WhatsApp'
+  endif
+
+  assign wa_aria_label = 'Chat on WhatsApp'
+  if is_docked
+    assign wa_aria_label = dock_label
+  endif
 -%}
 
 {% if show_button %}
@@ -75,7 +85,7 @@
       --wa-right: {% if is_docked %}{% if side == 'right' %}0{% else %}auto{% endif %}{% else %}{% if side == 'right' %}var(--wa-offset-side){% else %}auto{% endif %}{% endif %};
       --wa-anchor-left: {% if side == 'right' %}auto{% else %}0{% endif %};
       --wa-anchor-right: {% if side == 'right' %}0{% else %}auto{% endif %};
-      --wa-shadow: {% case section.settings.shadow_intensity when 'sm' %}0 1px 2px 0 rgba(0, 0, 0, 0.05){% when 'md' %}0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06){% when 'lg' %}0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05){% else %}none{% endcase %};
+      --wa-shadow: {{ wa_shadow_value }};
       --wa-dock-width: {{ section.settings.dock_width }}px;
       --wa-dock-height: {{ section.settings.dock_height }}px;
       --wa-dock-padding: {{ section.settings.dock_padding }}px;
@@ -85,6 +95,8 @@
       --wa-dock-radius-tr: {{ dock_radius_tr }}px;
       --wa-dock-radius-bl: {{ dock_radius_bl }}px;
       --wa-dock-radius-br: {{ dock_radius_br }}px;
+      --wa-dock-text-size-mobile: {{ section.settings.dock_text_size_mobile }}px;
+      --wa-dock-text-size-desktop: {{ section.settings.dock_text_size_desktop }}px;
     "
   >
     {% if section.settings.show_close_button %}
@@ -121,14 +133,15 @@
 
       <a
         href="#"
-        class="vc-whatsapp-button {{ shadow_class }}"
-        aria-label="Chat on WhatsApp"
+        class="vc-whatsapp-button"
+        aria-label="{{ wa_aria_label }}"
         data-phone-number="{{ section.settings.phone_number }}"
         data-default-message="{{ section.settings.default_message | escape }}"
         data-has-agents="{{ has_agents }}"
+        {% if has_agents %}aria-haspopup="true" aria-expanded="false"{% endif %}
       >
         {% if is_docked %}
-          <span class="vc-whatsapp-tab-label">{{ section.settings.dock_tab_label }}</span>
+          <span class="vc-whatsapp-tab-label">{{ dock_label }}</span>
         {% else %}
           {% if section.settings.show_badge %}
             <span class="vc-whatsapp-badge" aria-hidden="true"></span>
@@ -340,6 +353,7 @@
     padding: var(--wa-dock-padding);
     background-color: var(--wa-dock-bg);
     border-radius: var(--wa-dock-radius-tl) var(--wa-dock-radius-tr) var(--wa-dock-radius-br) var(--wa-dock-radius-bl);
+    overflow: hidden;
   }
 
   .vc-whatsapp-button-wrapper--dock .vc-whatsapp-button:hover {
@@ -351,7 +365,15 @@
     text-orientation: mixed;
     color: var(--wa-dock-text);
     white-space: nowrap;
-    font-weight: bold;
+    font-weight: var(--text-font-bold-weight, bold);
+    font-family: var(--text-font-family);
+    font-size: var(--wa-dock-text-size-mobile);
+  }
+
+  @media (min-width: 750px) {
+    .vc-whatsapp-tab-label {
+      font-size: var(--wa-dock-text-size-desktop);
+    }
   }
 {% endstylesheet %}
 
@@ -403,6 +425,7 @@
         event.preventDefault();
         if (hasAgents && agentsList) {
           agentsList.hidden = !agentsList.hidden;
+          button.setAttribute('aria-expanded', String(!agentsList.hidden));
           return;
         }
         openWhatsapp(button.dataset.phoneNumber, button.dataset.defaultMessage);
@@ -414,12 +437,14 @@
             event.preventDefault();
             openWhatsapp(item.dataset.phoneNumber, item.dataset.message);
             agentsList.hidden = true;
+            button.setAttribute('aria-expanded', 'false');
           });
         });
 
         document.addEventListener('click', function(event) {
           if (!wrapper.contains(event.target)) {
             agentsList.hidden = true;
+            button.setAttribute('aria-expanded', 'false');
           }
         });
       }
@@ -446,24 +471,44 @@
     { "type": "header", "content": "Contenido" },
     { "type": "text", "id": "phone_number", "label": "Número de teléfono principal", "info": "Incluye el código de país (ej. 51987654321 para Perú). Se usa si no agregas agentes." },
     { "type": "textarea", "id": "default_message", "label": "Mensaje predeterminado", "default": "Hola, estoy interesado en tus productos." },
-    { "type": "text", "id": "button_text", "label": "Texto del botón (opcional)", "info": "Si se deja en blanco, solo se mostrará el ícono." },
-    { "type": "header", "content": "Posición" },
-    { "type": "select", "id": "position", "label": "Posición", "options": [{ "value": "bottom-right", "label": "Abajo a la derecha" }, { "value": "bottom-left", "label": "Abajo a la izquierda" }], "default": "bottom-right" },
-    { "type": "range", "id": "offset_bottom", "label": "Margen inferior", "min": 0, "max": 100, "step": 5, "unit": "px", "default": 20 },
-    { "type": "range", "id": "offset_side", "label": "Margen lateral", "min": 0, "max": 100, "step": 5, "unit": "px", "default": 20 },
-    { "type": "header", "content": "Diseño" },
-    { "type": "range", "id": "button_size", "label": "Tamaño del botón", "min": 40, "max": 100, "step": 2, "unit": "px", "default": 60 },
-    { "type": "range", "id": "icon_size", "label": "Tamaño del ícono", "min": 20, "max": 60, "step": 2, "unit": "px", "default": 30 },
-    { "type": "range", "id": "border_radius", "label": "Radio del borde", "min": 0, "max": 50, "step": 5, "unit": "%", "default": 50 },
-    { "type": "color", "id": "background_color", "label": "Color de fondo", "default": "#25D366" },
-    { "type": "color", "id": "icon_color", "label": "Color del ícono y texto", "default": "#FFFFFF" },
-    { "type": "select", "id": "shadow_intensity", "label": "Intensidad de la sombra", "options": [{ "value": "none", "label": "Ninguna" }, { "value": "sm", "label": "Pequeña" }, { "value": "md", "label": "Mediana" }, { "value": "lg", "label": "Grande" }], "default": "md" },
+
+    { "type": "header", "content": "Floating: texto y posición", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "text", "id": "button_text", "label": "Texto del botón (opcional)", "info": "Si se deja en blanco, solo se mostrará el ícono.", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "select", "id": "position", "label": "Posición", "options": [{ "value": "bottom-right", "label": "Abajo a la derecha" }, { "value": "bottom-left", "label": "Abajo a la izquierda" }], "default": "bottom-right", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "range", "id": "offset_bottom", "label": "Margen inferior", "min": 0, "max": 100, "step": 5, "unit": "px", "default": 20, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "range", "id": "offset_side", "label": "Margen lateral", "min": 0, "max": 100, "step": 5, "unit": "px", "default": 20, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+
+    { "type": "header", "content": "Floating: diseño", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "range", "id": "button_size", "label": "Tamaño del botón", "min": 40, "max": 100, "step": 2, "unit": "px", "default": 60, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "range", "id": "icon_size", "label": "Tamaño del ícono", "min": 20, "max": 60, "step": 2, "unit": "px", "default": 30, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "range", "id": "border_radius", "label": "Radio del borde", "min": 0, "max": 50, "step": 5, "unit": "%", "default": 50, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "color", "id": "background_color", "label": "Color de fondo", "default": "#25D366", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "color", "id": "icon_color", "label": "Color del ícono y texto", "default": "#FFFFFF", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "select", "id": "shadow_intensity", "label": "Intensidad de la sombra", "options": [{ "value": "none", "label": "Ninguna" }, { "value": "sm", "label": "Pequeña" }, { "value": "md", "label": "Mediana" }, { "value": "lg", "label": "Grande" }], "default": "md", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+
+    { "type": "header", "content": "Docked Tab: posición y tamaño", "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+    { "type": "select", "id": "dock_position", "label": "Position", "options": [{ "value": "right", "label": "Right" }, { "value": "left", "label": "Left" }], "default": "right", "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+    { "type": "range", "id": "dock_width", "label": "Width", "min": 30, "max": 120, "step": 2, "unit": "px", "default": 44, "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+    { "type": "range", "id": "dock_height", "label": "Height", "min": 60, "max": 300, "step": 5, "unit": "px", "default": 140, "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+    { "type": "range", "id": "dock_padding", "label": "Padding", "min": 0, "max": 40, "step": 1, "unit": "px", "default": 10, "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+    { "type": "range", "id": "dock_border_radius", "label": "Border Radius", "min": 0, "max": 40, "step": 1, "unit": "px", "default": 8, "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+
+    { "type": "header", "content": "Docked Tab: colores", "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+    { "type": "color", "id": "dock_background_color", "label": "Background Color", "default": "#25D366", "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+    { "type": "color", "id": "dock_text_color", "label": "Text Color", "default": "#FFFFFF", "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+
+    { "type": "header", "content": "Docked Tab: texto", "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+    { "type": "text", "id": "dock_tab_label", "label": "Tab Label", "default": "WhatsApp", "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+    { "type": "range", "id": "dock_text_size_desktop", "label": "Tamaño de texto (Desktop)", "min": 10, "max": 28, "step": 1, "unit": "px", "default": 14, "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+    { "type": "range", "id": "dock_text_size_mobile", "label": "Tamaño de texto (Mobile)", "min": 10, "max": 24, "step": 1, "unit": "px", "default": 12, "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
+
+    { "type": "header", "content": "Colores del popup" },
     { "type": "color_scheme", "id": "popup_color_scheme", "label": "Esquema de color (tooltip y caja de agentes)", "default": "scheme-1" },
     { "type": "header", "content": "Mensaje flotante (tooltip)" },
     { "type": "checkbox", "id": "show_tooltip", "label": "Mostrar mensaje flotante", "default": false },
     { "type": "text", "id": "tooltip_text", "label": "Texto del mensaje flotante", "default": "¡Chatea con nosotros!" },
-    { "type": "header", "content": "Notificación" },
-    { "type": "checkbox", "id": "show_badge", "label": "Mostrar punto de notificación", "default": false },
+    { "type": "header", "content": "Notificación", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "checkbox", "id": "show_badge", "label": "Mostrar punto de notificación", "default": false, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "header", "content": "Cierre" },
     { "type": "checkbox", "id": "show_close_button", "label": "Permitir cerrar el botón", "info": "El visitante podrá ocultarlo; se recuerda su elección en este navegador.", "default": false },
     { "type": "header", "content": "Caja de agentes" },
@@ -471,19 +516,7 @@
     { "type": "header", "content": "Comportamiento" },
     { "type": "checkbox", "id": "show_on_mobile", "label": "Mostrar en móvil", "default": true },
     { "type": "checkbox", "id": "show_on_desktop", "label": "Mostrar en escritorio", "default": true },
-    { "type": "number", "id": "z_index", "label": "Z-index", "default": 100 },
-    { "type": "header", "content": "Docked Tab: posición y tamaño" },
-    { "type": "paragraph", "content": "Los siguientes ajustes solo aplican cuando el Display Style es Docked Tab." },
-    { "type": "select", "id": "dock_position", "label": "Position", "options": [{ "value": "right", "label": "Right" }, { "value": "left", "label": "Left" }], "default": "right" },
-    { "type": "range", "id": "dock_width", "label": "Width", "min": 30, "max": 120, "step": 2, "unit": "px", "default": 44 },
-    { "type": "range", "id": "dock_height", "label": "Height", "min": 60, "max": 300, "step": 5, "unit": "px", "default": 140 },
-    { "type": "range", "id": "dock_padding", "label": "Padding", "min": 0, "max": 40, "step": 1, "unit": "px", "default": 10 },
-    { "type": "range", "id": "dock_border_radius", "label": "Border Radius", "min": 0, "max": 40, "step": 1, "unit": "px", "default": 8 },
-    { "type": "header", "content": "Docked Tab: colores" },
-    { "type": "color", "id": "dock_background_color", "label": "Background Color", "default": "#25D366" },
-    { "type": "color", "id": "dock_text_color", "label": "Text Color", "default": "#FFFFFF" },
-    { "type": "header", "content": "Docked Tab: texto" },
-    { "type": "text", "id": "dock_tab_label", "label": "Tab Label", "default": "WhatsApp" }
+    { "type": "number", "id": "z_index", "label": "Z-index", "default": 100 }
   ],
   "blocks": [
     {
