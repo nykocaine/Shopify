@@ -225,6 +225,14 @@
         keep forcing the row taller regardless of the track change; min-block-size: 0 removes that floor. The
         gallery frame doesn't need the same treatment since its own overflow:hidden already resolves its
         automatic minimum size to 0 per spec.
+
+        product-info is a <safe-sticky> custom element: nothing in the theme ever gives it an explicit display,
+        so it defaults to the browser's generic "inline" for unknown elements. With a block-level child
+        (.product-info__block-list) inside an inline box, the browser generates anonymous block wrappers around
+        it (the "block-in-inline" quirk) — height/overflow-y on the inline element itself become no-ops, which
+        is why content kept escaping. display: flow-root makes it a real block container (and a new block
+        formatting context, so children's margins stay contained) without touching the global ".product-info"
+        rule used by the standard layout, featured-product.liquid or quick-buy.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .product {
           grid-template-rows: minmax(0, 1fr);
