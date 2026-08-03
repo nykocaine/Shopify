@@ -33,6 +33,14 @@
   if section.settings.gallery_image_size_desktop contains 'crop'
     assign gallery_image_fit_desktop = 'cover'
   endif
+
+  # When floating_product is on, the gallery frame itself owns the corner radius (all 4 corners, every
+  # breakpoint) — gallery_border_radius would just nest a second, conflicting radius/clip inside it, so it's
+  # neutralized here rather than kept in sync with product_border_radius.
+  assign gallery_border_radius = section.settings.gallery_border_radius
+  if section.settings.floating_product
+    assign gallery_border_radius = 0
+  endif
 -%}
 
 <style>
@@ -143,15 +151,28 @@
       padding: var(--section-vertical-spacing) var(--container-gutter);
     }
 
-    @media screen and (min-width: 1000px) {
-      {%- comment -%}
-      .container's own centering margin would otherwise inset both cards a second time on top of the
-      .section-floating margin, leaving them inset from the floating boundary instead of touching it.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .container {
-        margin-inline: 0;
-      }
+    {%- comment -%}
+    .container's own centering margin would otherwise inset both cards a second time on top of the
+    .section-floating margin, leaving them inset from the floating boundary instead of touching it — on every
+    viewport, not just desktop.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .container {
+      margin-inline: 0;
+    }
 
+    @media screen and (max-width: 999px) {
+      {%- comment -%}
+      The gallery frame is now the full-bleed boundary itself (rounded + overflow:hidden), so its children no
+      longer need to "escape" toward a farther-away edge — reusing the theme's own bleed/full-bleed/md:unbleed
+      system (--distance-to-bleed), just pointed at 0 here so it resolves to "fill the frame exactly" instead
+      of the ambient .container gutter distance.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery-frame {
+        --distance-to-bleed: 0;
+      }
+    }
+
+    @media screen and (min-width: 1000px) {
       #shopify-section-{{ section.id }} .product {
         gap: 0;
         align-items: stretch;
@@ -232,7 +253,7 @@
                 enable_video_looping: section.settings.enable_video_looping,
                 enable_image_zoom: section.settings.enable_image_zoom,
                 max_image_zoom_level: section.settings.max_image_zoom_level,
-                gallery_border_radius: section.settings.gallery_border_radius
+                gallery_border_radius: gallery_border_radius
             -%}
           </div>
         {%- endif -%}
