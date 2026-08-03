@@ -99,10 +99,24 @@
   {%- endif -%}
 
   /* Menu links, Menu/Account/Search/Cart labels all use ".subheading" (its own
-     typography, separate from headings). Override just the weight here so
-     these header texts pick up the heading font-weight, without touching the
-     global ".subheading" rule used elsewhere in the theme. */
+     typography, separate from headings). Override the typeface here (family,
+     style, weight, letter-spacing, text-transform) so these header texts fully
+     inherit the Heading typography instead, without touching the global
+     ".subheading" rule used elsewhere in the theme. Font-size/line-height are
+     intentionally left alone (kept from ".subheading"): there is no dedicated
+     nav-sized "--heading-font-size", only the h1-h7 scale, which would be far
+     too large here. */
   #shopify-section-{{ section.id }} .subheading {
+    font-family: var(--heading-font-family);
+    font-style: var(--heading-font-style);
+    font-weight: var(--heading-font-weight);
+    letter-spacing: var(--heading-letter-spacing);
+    text-transform: var(--heading-text-transform);
+  }
+
+  #shopify-section-{{ section.id }} .header__cart-count-text {
+    font-family: var(--heading-font-family);
+    font-style: var(--heading-font-style);
     font-weight: var(--heading-font-weight);
   }
 </style>
