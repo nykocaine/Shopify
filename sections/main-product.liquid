@@ -216,14 +216,28 @@
         rem, the merchant-controlled vh in between) instead of a hardcoded value. The gallery never scrolls —
         it reuses the overflow:hidden already set above (needed for the radius clip) to simply clip instead of
         overflowing if its content is taller than the fixed height, rather than adding a second mechanism.
+
+        height alone on .product isn't enough to cap it: --product-grid's row track is "auto" (content-sized),
+        so CSS Grid grows the row to fit whatever's tallest regardless of the container's own height. Overriding
+        just grid-template-rows (columns stay driven by --product-grid, untouched) to minmax(0, 1fr) turns that
+        row into an actual bounded track. On top of that, product-info-frame still has no overflow set (it
+        can't — position:sticky breaks under it), so its automatic minimum size stays content-based and would
+        keep forcing the row taller regardless of the track change; min-block-size: 0 removes that floor. The
+        gallery frame doesn't need the same treatment since its own overflow:hidden already resolves its
+        automatic minimum size to 0 per spec.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .product {
+          grid-template-rows: minmax(0, 1fr);
           height: clamp(28rem, {{ section.settings.product_height_desktop }}vh, 50rem);
         }
 
         #shopify-section-{{ section.id }} .product-gallery-frame,
         #shopify-section-{{ section.id }} .product-info-frame {
           height: 100%;
+        }
+
+        #shopify-section-{{ section.id }} .product-info-frame {
+          min-block-size: 0;
         }
 
         #shopify-section-{{ section.id }} .product-info {
