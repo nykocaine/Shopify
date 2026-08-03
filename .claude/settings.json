@@ -24,7 +24,11 @@
       "Bash(grep -n \"^\\\\.input\\\\b\\\\|^\\\\.input,\\\\|\\\\.input {\" assets/theme.css)",
       "Bash(awk '/{% schema %}/{flag=1; next} /{% endschema %}/{flag=0} flag' sections/main-product.liquid)",
       "Read(//tmp/**)",
-      "Bash(xargs -I{} sh -c 'grep -l \"shopify-account\" \"{}\" 2>/dev/null')"
+      "Bash(xargs -I{} sh -c 'grep -l \"shopify-account\" \"{}\" 2>/dev/null')",
+      "Bash(sort -t: -k1 -n)",
+      "Bash(awk 'NR==3810{print \"line 3810 context - searching enclosing @media\"} ' assets/theme.css)",
+      "Bash(awk -F: '$1<3810')",
+      "Bash(awk -F: '$1<3891')"
     ]
   }
 }
