@@ -105,8 +105,16 @@
      ".subheading" rule used elsewhere in the theme. Font-size/line-height are
      intentionally left alone (kept from ".subheading"): there is no dedicated
      nav-sized "--heading-font-size", only the h1-h7 scale, which would be far
-     too large here. */
-  #shopify-section-{{ section.id }} .subheading {
+     too large here.
+
+     The ".menu-drawer .subheading" selector (not scoped to this section's ID)
+     is needed on top of the section-scoped one: <header-menu-drawer append-to-body>
+     gets physically moved to be a direct child of <body> while open (see
+     "shouldAppendToBody" in theme.js), which takes it out of
+     "#shopify-section-{{ section.id }}" — so the Account link's text inside the
+     mobile drawer would otherwise fall back to the plain Subheading look. */
+  #shopify-section-{{ section.id }} .subheading,
+  .menu-drawer .subheading {
     font-family: var(--heading-font-family);
     font-style: var(--heading-font-style);
     font-weight: var(--heading-font-weight);

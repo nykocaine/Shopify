@@ -23,7 +23,8 @@
       "Bash(python3 -m json.tool config/settings_schema.json)",
       "Bash(grep -n \"^\\\\.input\\\\b\\\\|^\\\\.input,\\\\|\\\\.input {\" assets/theme.css)",
       "Bash(awk '/{% schema %}/{flag=1; next} /{% endschema %}/{flag=0} flag' sections/main-product.liquid)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(xargs -I{} sh -c 'grep -l \"shopify-account\" \"{}\" 2>/dev/null')"
     ]
   }
 }
