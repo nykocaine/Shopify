@@ -89,6 +89,16 @@
     }
 
     {%- comment -%}
+    .section-floating--block-end's own margin-block-end (shared by every floating section in the theme) uses
+    --container-gutter, a different token than the --section-vertical-spacing used above for the header gap.
+    Overriding it here, scoped to this section only, so the gap below the product page matches the one above
+    it, without touching the shared utility class used elsewhere.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .section-floating--block-end {
+      margin-block-end: var(--section-vertical-spacing);
+    }
+
+    {%- comment -%}
     Both cards are fully rounded and get their own padding at every breakpoint, not just desktop, since on
     mobile they're separate stacked cards and each needs all 4 corners. overflow:hidden only goes on the
     gallery frame: it doesn't wrap product-info, which uses position:sticky and breaks under any ancestor
