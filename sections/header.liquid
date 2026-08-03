@@ -122,6 +122,20 @@
     text-transform: var(--heading-text-transform);
   }
 
+  /* "Show text instead of icons" hides the icon on desktop entirely (it's md:hidden), so if the
+     merchant leaves Account/Search/Cart text blank, that .subheading span renders empty. Since
+     ".header__secondary-nav" is a flex row with a column-gap, an empty flex item still reserves
+     a gap on both sides of it, leaving a blank hole in the header. Hiding the whole <li> when its
+     text span is empty removes that reserved gap. Desktop-only (min-width: 1000px), since on
+     mobile the icon (not this text span) is what's shown regardless of the text setting. */
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} .header__account-link:has(.subheading:empty),
+    #shopify-section-{{ section.id }} .header__search-link:has(.subheading:empty),
+    #shopify-section-{{ section.id }} .header__cart-link:has(.subheading:empty) {
+      display: none;
+    }
+  }
+
   #shopify-section-{{ section.id }} .header__cart-count-text {
     font-family: var(--heading-font-family);
     font-style: var(--heading-font-style);
