@@ -454,14 +454,11 @@ no need to manually pass the section as it is globally available)
 
           {%- when 'accordion' -%}
             {%- liquid
-              assign accordion_title = block.settings.title | default: block.settings.page.title
-              assign accordion_content = block.settings.page.content | default: block.settings.content
-
-              if accordion_title != blank and accordion_content != blank
+              if block.settings.title != blank and block.settings.content != blank
                 if block.settings.custom_icon != blank
-                  render 'accordion', title: accordion_title, custom_icon: block.settings.custom_icon, content: accordion_content, uppercase_title: block.settings.uppercase_title, prose_content: true, block: block
+                  render 'accordion', title: block.settings.title, custom_icon: block.settings.custom_icon, content: block.settings.content, uppercase_title: block.settings.uppercase_title, prose_content: true, block: block
                 else
-                  render 'accordion', title: accordion_title, icon: block.settings.icon, content: accordion_content, uppercase_title: block.settings.uppercase_title, prose_content: true, block: block
+                  render 'accordion', title: block.settings.title, icon: block.settings.icon, content: block.settings.content, uppercase_title: block.settings.uppercase_title, prose_content: true, block: block
                 endif
               endif
             -%}
