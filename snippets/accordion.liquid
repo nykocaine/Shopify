@@ -16,6 +16,7 @@ tag so that it can also be used without any JavaScript.
 @param {boolean} [prose_content] - if set to true, the content is considered as prose and the associated class is added
 @param {boolean} [use_secondary_background] - if set to true, the background of the accordion is set to the secondary color
 @param {string} [class] - extra class to add on the parent
+@param {string} [toggle_icon] - the name of the icon used for the open/close toggle (defaults to "accordion-small-arrow")
 @param {object} [block] - an optional block to output theme editor attributes
 {%- enddoc -%}
 
@@ -42,7 +43,8 @@ tag so that it can also be used without any JavaScript.
       {%- endif -%}
 
       {%- liquid
-        render 'icon' with 'accordion-small-arrow'
+        assign toggle_icon_name = toggle_icon | default: 'accordion-small-arrow'
+        render 'icon' with toggle_icon_name
       -%}
     </summary>
 

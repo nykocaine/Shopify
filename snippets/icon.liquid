@@ -102,6 +102,13 @@ To render an icon made of an image, you need to explicitly pass the image, and t
         <path fill="none" stroke="currentColor" stroke-width="1.5" d="m13 6-6 6m0 0L1 6m6 6V0"/>
       </svg>
 
+    {%- when 'accordion-plus' -%}
+      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 20 }}" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" fill="none" viewBox="0 0 20 20">
+        <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.3"/>
+        <path stroke="currentColor" stroke-width="1.3" stroke-linecap="round" d="M6 10h8"/>
+        <path class="accordion-plus-bar" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" d="M10 6v8"/>
+      </svg>
+
     {%- when 'play-triangle' -%}
       <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 12 }}" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" fill="none" viewBox="0 0 12 17">
         <path fill="#ffffff" d="M1.783 15.889A1 1 0 0 1 .2 15.076V1.148A1 1 0 0 1 1.783.335l9.71 6.964a1 1 0 0 1 0 1.626l-9.71 6.964Z"/>

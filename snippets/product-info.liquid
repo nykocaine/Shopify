@@ -457,11 +457,16 @@ no need to manually pass the section as it is globally available)
               assign accordion_title = block.settings.title | default: block.settings.page.title
               assign accordion_content = block.settings.page.content | default: block.settings.content
 
+              assign accordion_toggle_icon = blank
+              if block.settings.plus_minus_icon
+                assign accordion_toggle_icon = 'accordion-plus'
+              endif
+
               if accordion_title != blank and accordion_content != blank
                 if block.settings.custom_icon != blank
-                  render 'accordion', title: accordion_title, custom_icon: block.settings.custom_icon, content: accordion_content, uppercase_title: block.settings.uppercase_title, prose_content: true, block: block
+                  render 'accordion', title: accordion_title, custom_icon: block.settings.custom_icon, content: accordion_content, uppercase_title: block.settings.uppercase_title, prose_content: true, toggle_icon: accordion_toggle_icon, block: block
                 else
-                  render 'accordion', title: accordion_title, icon: block.settings.icon, content: accordion_content, uppercase_title: block.settings.uppercase_title, prose_content: true, block: block
+                  render 'accordion', title: accordion_title, icon: block.settings.icon, content: accordion_content, uppercase_title: block.settings.uppercase_title, prose_content: true, toggle_icon: accordion_toggle_icon, block: block
                 endif
               endif
             -%}
