@@ -64,6 +64,9 @@ no need to manually pass the section as it is globally available)
         elsif block.type == 'title' and next_block.type == 'price' and context == 'main_product'
           assign block_group_class = 'product-info__title-price-group gap-3'
           assign block_group_name = 'title-price-group'
+        elsif block.type == 'buy_buttons' and next_block.type == 'whatsapp_button' and next_block.settings.layout != 'full_width'
+          assign block_group_class = 'product-info__buy-whatsapp-group gap-3'
+          assign block_group_name = 'buy-whatsapp-group'
         else
           assign allow_block_group = false
           assign block_group_class = ''
@@ -378,6 +381,19 @@ no need to manually pass the section as it is globally available)
                 atc_button_text_color: block.settings.atc_button_text_color,
                 payment_button_background: block.settings.payment_button_background,
                 payment_button_text_color: block.settings.payment_button_text_color
+            -%}
+
+          {%- when 'whatsapp_button' -%}
+            {%- render 'whatsapp-buy-button',
+                product: product,
+                phone_number: block.settings.phone_number,
+                message: block.settings.message,
+                button_text: block.settings.button_text,
+                layout: block.settings.layout,
+                button_style: block.settings.button_style,
+                background_color: block.settings.background_color,
+                text_color: block.settings.text_color,
+                block: block
             -%}
 
           {%- when 'volume_pricing' -%}

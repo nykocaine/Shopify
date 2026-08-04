@@ -7763,6 +7763,19 @@ shopify-account::part(signed-out-avatar) {
   display: flex;
 }
 
+.product-info__block-group.product-info__buy-whatsapp-group {
+  align-items: center;
+  flex-wrap: wrap;
+  display: flex;
+}
+
+/* Buy buttons grow to fill the row; the WhatsApp button (2nd item) keeps its own natural size next to them —
+   this naturally reads narrower in "compact" mode (smaller button) than in "inline" mode (regular size) without
+   needing separate CSS per layout, since that sizing already comes from whatsapp-buy-button.liquid itself. */
+.product-info__buy-whatsapp-group .product-info__block-item:first-child {
+  flex: 1 1 0%;
+}
+
 @media screen and (min-width: 1000px) {
   .product-info {
     max-width: calc(32rem + var(--product-block-item-margin) * 2);
