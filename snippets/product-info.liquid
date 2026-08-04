@@ -668,3 +668,35 @@ no need to manually pass the section as it is globally available)
     {%- endform -%}
   {%- endunless -%}
 </safe-sticky>
+
+{%- comment -%}
+  Plain script tag (the dedicated javascript Liquid tag isn't reliably supported inside snippets) with its own
+  idempotency guard: product-info.liquid can render more than once on the same page (eg. the main product plus
+  the quick-buy modal), so this ensures the listener is only ever attached once regardless of how many times
+  it renders.
+{%- endcomment -%}
+<script>
+  if (!window.__productInfoAccordionAutoCollapse) {
+    window.__productInfoAccordionAutoCollapse = true;
+
+    // Closing accordions is already just a click on their own summary (accordion-disclosure's own click handler
+    // toggles it), so "closing the others" reuses that exact same interaction instead of reaching into its
+    // private open/close internals. Scoped to .product-info__block-list so it never touches unrelated
+    // accordions elsewhere (FAQ, cart, filters, footer).
+    document.addEventListener('click', function (event) {
+      var summary = event.target.closest('.product-info__block-list .accordion__summary');
+      if (!summary) return;
+
+      var clickedDisclosure = summary.closest('accordion-disclosure');
+      var list = summary.closest('.product-info__block-list');
+      if (!list || !clickedDisclosure || !clickedDisclosure.classList.contains('is-open')) return;
+
+      list.querySelectorAll('accordion-disclosure.is-open').forEach(function (otherDisclosure) {
+        if (otherDisclosure === clickedDisclosure) return;
+
+        var otherSummary = otherDisclosure.querySelector('.accordion__summary');
+        if (otherSummary) otherSummary.click();
+      });
+    });
+  }
+</script>
