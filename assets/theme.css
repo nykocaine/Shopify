@@ -7756,6 +7756,19 @@ shopify-account::part(signed-out-avatar) {
   --product-block-item-margin: 1.25rem;
 }
 
+/* Collapsible text (accordion block) rows on the product page: --accordion-block-padding is global (also used
+   by FAQ, footer links, cart and filters), so it's overridden here scoped to this block only, instead of
+   touching the shared variable everywhere else it's used. */
+.product-info__block-item[data-block-type="accordion"] .accordion {
+  --accordion-block-padding: .625rem;
+}
+
+@media screen and (min-width: 700px) {
+  .product-info__block-item[data-block-type="accordion"] .accordion {
+    --accordion-block-padding: .875rem;
+  }
+}
+
 .product-info__block-group.product-info__title-price-group {
   align-items: baseline;
   justify-content: space-between;
