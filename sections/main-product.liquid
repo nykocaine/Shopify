@@ -203,6 +203,11 @@
         (non-floating) layout, so the gallery stays visually pinned in view while a taller info column scrolls
         past with the page, instead of scrolling internally.
 
+        max(28rem, Nvh) instead of clamp(28rem, Nvh, 50rem): a hard rem ceiling meant most of the slider's
+        range silently had zero effect, since real product content (title + price + variants + buttons +
+        description) is routinely already taller than 50rem even with every accordion collapsed — only a
+        genuine floor is needed here, not an upper limit.
+
         product-info is a <safe-sticky> custom element: nothing in the theme ever gives it an explicit display,
         so it defaults to the browser's generic "inline" for unknown elements. With a block-level child
         (.product-info__block-list) inside an inline box, the browser generates anonymous block wrappers around
@@ -212,7 +217,7 @@
         quick-buy.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .product {
-          grid-template-rows: minmax(clamp(28rem, {{ section.settings.product_height_desktop }}vh, 50rem), auto);
+          grid-template-rows: minmax(max(28rem, {{ section.settings.product_height_desktop }}vh), auto);
         }
 
         #shopify-section-{{ section.id }} .product-info {
