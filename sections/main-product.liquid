@@ -225,6 +225,19 @@
         #shopify-section-{{ section.id }} .product-info {
           display: flow-root;
         }
+
+        {%- comment -%}
+        .product-gallery-frame stretches to match the row's height (from align-items: stretch above), but its
+        content (.product-gallery, sized by the media's own aspect-ratio) doesn't grow to fill it — without this,
+        the extra space collapses to a blank gap below the image, stuck against the top of the frame. Centering
+        it vertically (flex-direction: column so justify-content acts on the block axis, default align-items:
+        stretch keeps it full-width) distributes that leftover space evenly instead.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} .product-gallery-frame {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
       {%- endif -%}
     }
   {%- endif -%}
