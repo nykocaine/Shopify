@@ -195,13 +195,9 @@
 
       {%- if section.settings.product_height_desktop > 0 -%}
         {%- comment -%}
-        Minimum height, not a cap: minmax(X, auto) makes the row at least X tall, but still grows normally with
-        --product-grid's content-sized "auto" beyond that if an accordion opens or more blocks get added — no
-        internal scroll, no clipping. align-items: stretch (set above) makes both frames match whatever height
-        the row resolves to. Because there's no forced cap anymore, product-info doesn't need height/overflow
-        overrides either — it falls back to the exact same position: sticky already used by the standard
-        (non-floating) layout, so the gallery stays visually pinned in view while a taller info column scrolls
-        past with the page, instead of scrolling internally.
+        The row is fixed at max(28rem, Nvh) by default, but still grows past that with --product-grid's
+        content-sized "auto" if an accordion opens or more blocks get added — no internal scroll, no clipping.
+        align-items: stretch (set above) makes both frames match whatever height the row resolves to.
 
         max(28rem, Nvh) instead of clamp(28rem, Nvh, 50rem): a hard rem ceiling meant most of the slider's
         range silently had zero effect, since real product content (title + price + variants + buttons +
@@ -227,16 +223,56 @@
         }
 
         {%- comment -%}
-        .product-gallery-frame stretches to match the row's height (from align-items: stretch above), but its
-        content (.product-gallery, sized by the media's own aspect-ratio) doesn't grow to fill it — without this,
-        the extra space collapses to a blank gap below the image, stuck against the top of the frame. align-content
-        centers the single (auto-sized) row within that leftover space; display: grid rather than flex so
-        .product-gallery's own "align-self: start" (theme.css, cross-axis only under flex) can't shrink it off
-        full width — align-content isn't overridable per-item the way align-items/align-self are.
+        Without this, the gallery's own intrinsic size (the media's natural aspect-ratio) would count toward
+        --product-grid's "auto" row-sizing above — a tall/portrait photo would inflate the row past Nvh on its
+        own, defeating the fixed height entirely. Taking .product-gallery out of normal flow (absolutely
+        positioned, filling .product-gallery-frame via inset: 0) removes it from that calculation altogether:
+        the row's "auto" portion now responds only to product-info's content, exactly like the comment above
+        describes. .product-gallery-frame (the actual grid item) still stretches to match the row via
+        align-items: stretch, and the inset: 0 child always fills that final size exactly — so when the row
+        does grow for product-info, the gallery grows with it too, per the requirement above.
+
+        With a guaranteed, definite pixel height now available all the way down (position: absolute; inset: 0
+        makes it definite, unlike the auto/max-content sizing the gallery normally relies on), each percentage
+        height below resolves against an actual number instead of being ignored as indefinite. object-fit: cover
+        on the media itself is what does the actual cropping: rather than showing the full photo (which may no
+        longer fit the row's aspect ratio), it fills the box and crops the overflow, centered by default.
+
+        .product-gallery__image-list's own grid-auto-rows is "max-content" (not "auto"), which per spec isn't
+        eligible for the container's default stretch-to-fill behavior — so its first row (the .relative wrapper
+        holding the actual carousel) needs an explicit 1fr to claim the leftover height instead of just sizing
+        to content. The trailing "auto" row is for optional content below it (eg. thumbnails_under controls);
+        if that row is unused (no thumbnails, or floating/overlay controls that are absolutely positioned and so
+        don't occupy a row at all), it simply stays empty.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-gallery-frame {
-          display: grid;
-          align-content: center;
+          position: relative;
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery-frame > .product-gallery {
+          position: absolute;
+          inset: 0;
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery__image-list {
+          height: 100%;
+          grid-template-rows: minmax(0, 1fr) auto;
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery__image-list > *:first-child {
+          height: 100%;
+          min-height: 0;
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery__carousel {
+          height: 100%;
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery__media img,
+        #shopify-section-{{ section.id }} .product-gallery__media video-media,
+        #shopify-section-{{ section.id }} .product-gallery__media model-media {
+          height: 100%;
+          object-fit: cover;
         }
       {%- endif -%}
     }
