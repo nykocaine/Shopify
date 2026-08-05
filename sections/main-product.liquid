@@ -195,46 +195,28 @@
 
       {%- if section.settings.product_height_desktop > 0 -%}
         {%- comment -%}
-        Fixed height + internal scroll only on the info card: clamp() keeps it responsive (a floor/ceiling in
-        rem, the merchant-controlled vh in between) instead of a hardcoded value. The gallery never scrolls —
-        it reuses the overflow:hidden already set above (needed for the radius clip) to simply clip instead of
-        overflowing if its content is taller than the fixed height, rather than adding a second mechanism.
-
-        height alone on .product isn't enough to cap it: --product-grid's row track is "auto" (content-sized),
-        so CSS Grid grows the row to fit whatever's tallest regardless of the container's own height. Overriding
-        just grid-template-rows (columns stay driven by --product-grid, untouched) to minmax(0, 1fr) turns that
-        row into an actual bounded track. On top of that, product-info-frame still has no overflow set (it
-        can't — position:sticky breaks under it), so its automatic minimum size stays content-based and would
-        keep forcing the row taller regardless of the track change; min-block-size: 0 removes that floor. The
-        gallery frame doesn't need the same treatment since its own overflow:hidden already resolves its
-        automatic minimum size to 0 per spec.
+        Minimum height, not a cap: minmax(X, auto) makes the row at least X tall, but still grows normally with
+        --product-grid's content-sized "auto" beyond that if an accordion opens or more blocks get added — no
+        internal scroll, no clipping. align-items: stretch (set above) makes both frames match whatever height
+        the row resolves to. Because there's no forced cap anymore, product-info doesn't need height/overflow
+        overrides either — it falls back to the exact same position: sticky already used by the standard
+        (non-floating) layout, so the gallery stays visually pinned in view while a taller info column scrolls
+        past with the page, instead of scrolling internally.
 
         product-info is a <safe-sticky> custom element: nothing in the theme ever gives it an explicit display,
         so it defaults to the browser's generic "inline" for unknown elements. With a block-level child
         (.product-info__block-list) inside an inline box, the browser generates anonymous block wrappers around
-        it (the "block-in-inline" quirk) — height/overflow-y on the inline element itself become no-ops, which
-        is why content kept escaping. display: flow-root makes it a real block container (and a new block
-        formatting context, so children's margins stay contained) without touching the global ".product-info"
-        rule used by the standard layout, featured-product.liquid or quick-buy.
+        it (the "block-in-inline" quirk), which can cause its own layout quirks — display: flow-root makes it a
+        real block container (and a new block formatting context, so children's margins stay contained) without
+        touching the global ".product-info" rule used by the standard layout, featured-product.liquid or
+        quick-buy.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .product {
-          grid-template-rows: minmax(0, 1fr);
-          height: clamp(28rem, {{ section.settings.product_height_desktop }}vh, 50rem);
-        }
-
-        #shopify-section-{{ section.id }} .product-gallery-frame,
-        #shopify-section-{{ section.id }} .product-info-frame {
-          height: 100%;
-        }
-
-        #shopify-section-{{ section.id }} .product-info-frame {
-          min-block-size: 0;
+          grid-template-rows: minmax(clamp(28rem, {{ section.settings.product_height_desktop }}vh, 50rem), auto);
         }
 
         #shopify-section-{{ section.id }} .product-info {
           display: flow-root;
-          height: 100%;
-          overflow-y: auto;
         }
       {%- endif -%}
     }
@@ -341,7 +323,7 @@
       "step": 5,
       "unit": "vh",
       "label": "Height (desktop)",
-      "info": "0 = natural height (default). Above 0, the gallery and info cards are capped to this height and the info card scrolls internally if its content doesn't fit.",
+      "info": "0 = natural height (default). Above 0, this is the minimum starting height for both cards — if the info card's content grows taller (eg. an accordion opens), the section grows with it instead of scrolling.",
       "default": 0,
       "visible_if": "{{ section.settings.floating_product }}"
     },
