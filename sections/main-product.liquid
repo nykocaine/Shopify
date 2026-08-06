@@ -297,7 +297,8 @@
                 enable_video_looping: section.settings.enable_video_looping,
                 enable_image_zoom: section.settings.enable_image_zoom,
                 max_image_zoom_level: section.settings.max_image_zoom_level,
-                gallery_border_radius: gallery_border_radius
+                gallery_border_radius: gallery_border_radius,
+                thumbnail_border_radius: section.settings.thumbnail_border_radius
             -%}
           </div>
         {%- endif -%}
@@ -393,6 +394,18 @@
       "label": "Gallery corner radius",
       "info": "Rounds the bottom corners of the images on mobile.",
       "default": 0
+    },
+    {
+      "type": "range",
+      "id": "thumbnail_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Thumbnail corner radius",
+      "info": "Rounds the corners of the gallery thumbnails.",
+      "default": 0,
+      "visible_if": "{{ section.settings.desktop_carousel_controls contains 'thumbnails' or section.settings.mobile_controls == 'thumbnails' }}"
     },
     {
       "type": "checkbox",
