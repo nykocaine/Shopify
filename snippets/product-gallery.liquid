@@ -4,7 +4,7 @@ This component is used to show the product gallery (used in product page and fea
 @param {object} [product] - the product to render (if empty, renders placeholder content)
 @param {string} [product_form_id] - the product form id
 @param {string} [desktop_layout] - the layout on desktop (can be "grid", "grid_half", "grid_half_highlight_first" or "carousel")
-@param {string} [desktop_carousel_controls] - when desktop layout is set to "carousel", the controls to show (can be "dots", "lines", "numbers", "thumbnails_bottom" or "thumbnails_left")
+@param {string} [desktop_carousel_controls] - when desktop layout is set to "carousel", the controls to show (can be "dots", "lines", "numbers", "thumbnails_under", "thumbnails_over" or "thumbnails_left")
 @param {string} [mobile_controls] - the controls to show on mobile (can be "lines", "numbers", "dots", "thumbnails" or "none")
 @param {boolean} [enable_media_autoplay] - if set to true videos are autoplayed when switched to
 @param {boolean} [enable_video_looping] - if set to true videos automatically loop when finished
@@ -78,6 +78,51 @@ This component is used to show the product gallery (used in product page and fea
     #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker {
       border-radius: {{ thumbnail_border_radius }}px;
       overflow: hidden;
+    }
+  {%- endif -%}
+
+  {%- if desktop_carousel_controls == 'thumbnails_left' -%}
+    @media screen and (min-width: 1000px) {
+      {%- comment -%}
+      .product-gallery__image-list normally stacks the carousel and its controls as rows (thumbnails_under
+      renders below the image, using grid-auto-rows: max-content from theme.css). For a left rail we need
+      them side by side instead. The thumbnail list keeps its normal DOM position, after the carousel — same
+      markup as thumbnails_under, so tab/SR order stays identical across every controls option — order: -1 is
+      what visually moves it into the first column without touching that order.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery__image-list {
+        grid-template-columns: max-content minmax(0, 1fr);
+      }
+
+      {%- comment -%}
+      max-width: 100% (theme.css) is meant for a full-width horizontal strip; here the column should hug the
+      thumbnail's own width instead. max-height caps how much this column can contribute to image-list's
+      max-content row sizing — without it, a product with many images would stretch the row (and the photo
+      with it) well past its natural size just to fit the whole thumbnail stack; capping it to roughly one
+      viewport's height instead makes it scroll internally past that point, same as thumbnails_under does
+      horizontally when there isn't room for every thumbnail.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery__thumbnail-list {
+        --distance-to-bleed: 0;
+        order: -1;
+        max-width: none;
+        max-height: calc(100vh - var(--header-height, 0px) - 2 * var(--container-gutter));
+        overflow: hidden;
+      }
+
+      {%- comment -%}
+      .scroll-area (theme.css, on the carousel-navigation below) hardcodes a horizontal scrollbar
+      (overflow: auto hidden) since every other controls layout scrolls sideways — flip it to vertical here.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails {
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden auto;
+      }
+
+      #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker {
+        flex-shrink: 0;
+      }
     }
   {%- endif -%}
 </style>
