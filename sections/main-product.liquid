@@ -1,10 +1,13 @@
 {%- liquid
-  # When floating_product is on, the gallery frame itself owns the corner radius (all 4 corners, every
-  # breakpoint) — gallery_border_radius would just nest a second, conflicting radius/clip inside it, so it's
-  # neutralized here rather than kept in sync with product_border_radius.
+  # When floating_product is on, .product-gallery-frame (main-product.liquid, below) already clips the card
+  # to product_border_radius on every breakpoint. On mobile though, .product-gallery__carousel-frame (the
+  # inner div directly wrapping the carousel, in product-gallery.liquid) sits flush against that same frame
+  # and clips its own content too — with a mismatched radius (0, from gallery_border_radius) that square inner
+  # clip visually wins at the corners, masking the outer rounding. Matching both to the same radius instead of
+  # trying to cancel the inner one keeps them clipping to the identical shape, so there's nothing to conflict.
   assign gallery_border_radius = section.settings.gallery_border_radius
   if section.settings.floating_product
-    assign gallery_border_radius = blank
+    assign gallery_border_radius = section.settings.product_border_radius
   endif
 -%}
 
