@@ -344,7 +344,7 @@ only way to do it on Shopify right now.
       {%- endcapture -%}
 
       {%- if desktop_layout == 'carousel' -%}
-        <div class="{% if desktop_carousel_controls != 'thumbnails_under' %}product-gallery__controls-floating{% endif %} hidden md:contents">
+        <div class="{% if desktop_carousel_controls != 'thumbnails_under' and desktop_carousel_controls != 'thumbnails_left' %}product-gallery__controls-floating{% endif %} hidden md:contents">
           {%- liquid
             case desktop_carousel_controls
               when 'dots'
@@ -353,7 +353,7 @@ only way to do it on Shopify right now.
               when 'lines'
                 echo lines_controls
 
-              when 'thumbnails_under' or 'thumbnails_over'
+              when 'thumbnails_under' or 'thumbnails_over' or 'thumbnails_left'
                 echo thumbnails_controls
 
               when 'numbers'
