@@ -829,23 +829,96 @@
                   {%- endif -%}
 
                   {%- comment -%}
-                  Unscoped (not #carousel-wrapper-{{ block.id }}): PhotoSwipe mounts its viewer as a sibling of
-                  <body>, not inside this block's own markup, so a scoped selector would never match. Sizes the
-                  moved-in <video-media> to fit the slide the same way PhotoSwipe fits images (centered,
-                  fully visible, no cropping) - its own aspect-ratio custom property (set inline per-instance
-                  by snippets/media.liquid) is what keeps it proportioned once width/height stop being 100%.
+                  #media-lightbox-{{ block.id }} is a plain fixed overlay (not a shadow-DOM .drawer/.modal), so
+                  it can't use their ::part() selectors - the close button below instead copies their exact
+                  size and color tokens (--close-control-*) by hand, for the same look without the shadow DOM.
                   {%- endcomment -%}
-                  .pswp-video-content {
-                    width: 100%;
-                    height: 100%;
-                    display: grid;
+                  #media-lightbox-{{ block.id }} {
+                    background: #000;
+                    z-index: 999;
                     place-items: center;
+                    display: grid;
+                    position: fixed;
+                    inset: 0;
                   }
 
-                  .pswp-video-content video-media {
+                  #media-lightbox-{{ block.id }}[hidden] {
+                    display: none;
+                  }
+
+                  #media-lightbox-{{ block.id }} .media-lightbox__stage {
+                    width: 100%;
+                    height: 100%;
+                    border-radius: var(--media-blocks-corner-radius);
+                    place-items: center;
+                    display: grid;
+                    overflow: hidden;
+                  }
+
+                  {%- comment -%}
+                  Video fills the screen edge to edge (object-fit: cover, matching a Reels/TikTok-style
+                  fullscreen viewer); photos stay fully visible instead (object-fit: contain) so nothing about
+                  the shot gets cropped off.
+                  {%- endcomment -%}
+                  #media-lightbox-{{ block.id }} .media-lightbox__stage[data-type="video"] video-media,
+                  #media-lightbox-{{ block.id }} .media-lightbox__stage[data-type="video"] video-media video {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                  }
+
+                  #media-lightbox-{{ block.id }} .media-lightbox__stage[data-type="image"] img {
                     width: auto;
+                    height: auto;
                     max-width: 100%;
                     max-height: 100%;
+                    object-fit: contain;
+                  }
+
+                  #media-lightbox-{{ block.id }} .media-lightbox__close {
+                    background: var(--close-control-background-color, rgb(var(--button-background-primary)));
+                    border: 1px solid var(--close-control-border-color, rgb(var(--border-color)));
+                    color: var(--close-control-icon-color, rgb(var(--button-text-primary)));
+                    width: 1.75rem;
+                    height: 1.75rem;
+                    border-radius: 100%;
+                    z-index: 1;
+                    place-content: center;
+                    display: grid;
+                    position: fixed;
+                    inset-block-start: 1rem;
+                    inset-inline-end: 1rem;
+                  }
+
+                  #media-lightbox-{{ block.id }} .media-lightbox__prev,
+                  #media-lightbox-{{ block.id }} .media-lightbox__next {
+                    z-index: 1;
+                    position: fixed;
+                    inset-block-start: 50%;
+                    translate: 0 -50%;
+                  }
+
+                  #media-lightbox-{{ block.id }} .media-lightbox__prev {
+                    inset-inline-start: 1rem;
+                  }
+
+                  #media-lightbox-{{ block.id }} .media-lightbox__next {
+                    inset-inline-end: 1rem;
+                  }
+
+                  {%- comment -%}
+                  The video's own sound/pause toggles (moved in alongside it, see script below) are meant to
+                  fade in/out over a background video on the carousel - inside a dedicated fullscreen viewer
+                  they should just stay put, so this cancels that positioning/transition without touching the
+                  shared .carousel-video-controls rules other slides still rely on.
+                  {%- endcomment -%}
+                  #media-lightbox-{{ block.id }} .carousel-video-controls {
+                    opacity: 1 !important;
+                    pointer-events: auto !important;
+                    position: absolute;
+                    inset-block-end: 1rem;
+                    inset-inline-end: 1rem;
+                    inset-block-start: auto;
                   }
                 </style>
 
@@ -952,6 +1025,24 @@
                         {%- endif -%}
                       {%- endfor -%}
                     </product-list>
+                    </div>
+
+                    <div class="media-lightbox" id="media-lightbox-{{ block.id }}" hidden>
+                      <button type="button" class="media-lightbox__close" aria-label="{{ 'general.accessibility.close' | t }}">
+                        {%- render 'icon' with 'close', width: 10 -%}
+                      </button>
+
+                      {%- if carousel_slide_count > 1 -%}
+                        <button type="button" class="media-lightbox__prev circle-button circle-button--xl" aria-label="{{ 'general.accessibility.previous' | t }}">
+                          {%- render 'icon' with 'arrow-left', width: 9, direction_aware: true -%}
+                        </button>
+
+                        <button type="button" class="media-lightbox__next circle-button circle-button--xl" aria-label="{{ 'general.accessibility.next' | t }}">
+                          {%- render 'icon' with 'arrow-right', width: 9, direction_aware: true -%}
+                        </button>
+                      {%- endif -%}
+
+                      <div class="media-lightbox__stage"></div>
                     </div>
 
                     {%- if carousel_slide_count > 1 -%}
@@ -1244,50 +1335,140 @@
                           scheduleAdvance();
 
                           // Each open-lightbox-button (rendered per slide, image-index matching this exact
-                          // build order) dispatches a bubbling 'lightbox:open' caught here - same event
-                          // <product-gallery> listens for, just without a matching custom element wrapping
-                          // this carousel, so it's handled directly. Video slides hand the actual, currently
-                          // playing <video-media> element itself into openMediaLightbox (see theme.js) so it
-                          // keeps playing uninterrupted inside the lightbox instead of restarting from a
-                          // freshly loaded copy.
-                          carousel.addEventListener('lightbox:open', function(event) {
-                            var dataSource = [];
+                          // build order) dispatches a bubbling 'lightbox:open', caught here directly (there's
+                          // no <product-gallery> wrapping this carousel to catch it instead). Opening moves
+                          // the slide's own real <video-media> (and its sound/pause toggle group, still wired
+                          // to the exact same listeners) into the lightbox rather than loading a copy, so
+                          // playback and mute state carry over with no restart and no risk of two videos
+                          // playing (and sounding) at once.
+                          var lightbox = document.getElementById('media-lightbox-{{ block.id }}');
+                          var lightboxStage = lightbox.querySelector('.media-lightbox__stage');
+                          var lightboxCloseButton = lightbox.querySelector('.media-lightbox__close');
+                          var lightboxPrevButton = lightbox.querySelector('.media-lightbox__prev');
+                          var lightboxNextButton = lightbox.querySelector('.media-lightbox__next');
+                          var lightboxState = null;
+                          // Whether the video that was just showing in the lightbox had sound on - carried
+                          // over to whichever video next/prev bring in next, since a freshly encountered slide
+                          // otherwise always starts muted (see the render 'media' call above).
+                          var lightboxSoundOn = false;
 
-                            carousel.cells.forEach(function(cell) {
-                              var videoMedia = cell.querySelector('video-media');
-                              var video = videoMedia ? videoMedia.querySelector('video') : null;
+                          function moveIntoLightbox(cell, inheritSound) {
+                            var home = cell.querySelector('.content-box__background-media');
+                            var videoMedia = home.querySelector('video-media');
+                            var controlsGroup = home.querySelector('.carousel-video-controls');
+                            var image = home.querySelector('img.image-cover');
 
-                              if (videoMedia && video) {
-                                dataSource.push({
-                                  type: 'video',
-                                  videoElement: videoMedia,
-                                  videoHome: videoMedia.parentElement,
-                                  width: video.videoWidth || parseInt(video.getAttribute('width')) || 1280,
-                                  height: video.videoHeight || parseInt(video.getAttribute('height')) || 720,
-                                  thumbnailElement: videoMedia
-                                });
-                                return;
+                            lightboxState = { cell: cell, home: home, videoMedia: videoMedia, controlsGroup: controlsGroup, image: image };
+                            lightboxStage.innerHTML = '';
+
+                            if (videoMedia) {
+                              lightboxStage.setAttribute('data-type', 'video');
+                              lightboxStage.appendChild(videoMedia);
+
+                              if (controlsGroup) {
+                                lightboxStage.appendChild(controlsGroup);
                               }
 
-                              var image = cell.querySelector('img.image-cover');
+                              var video = videoMedia.querySelector('video');
+                              var soundButton = controlsGroup ? controlsGroup.querySelector('.carousel-video-sound-toggle') : null;
 
-                              if (image) {
-                                dataSource.push({
-                                  src: image.currentSrc || image.src,
-                                  srcset: image.srcset,
-                                  msrc: image.currentSrc || image.src,
-                                  width: parseInt(image.getAttribute('width')),
-                                  height: parseInt(image.getAttribute('height')),
-                                  alt: image.alt,
-                                  thumbCropped: true,
-                                  thumbnailElement: image
-                                });
+                              // Going through the real button (instead of setting video.muted directly) is
+                              // what keeps its sound-on/sound-off icon and the "mute every other video"
+                              // behavior in sync - both live inside that button's own click handler.
+                              if (video && soundButton && inheritSound !== undefined && !video.muted !== inheritSound) {
+                                soundButton.click();
                               }
-                            });
 
-                            if (dataSource.length) {
-                              window.openMediaLightbox(dataSource, event.detail.index || 0, '{{ block.settings.color_scheme.id }}');
+                              if (video) {
+                                videoMedia.play();
+                              }
+                            } else if (image) {
+                              lightboxStage.setAttribute('data-type', 'image');
+                              lightboxStage.appendChild(image);
                             }
+                          }
+
+                          function moveOutOfLightbox() {
+                            if (!lightboxState) {
+                              return;
+                            }
+
+                            if (lightboxState.videoMedia) {
+                              var video = lightboxState.videoMedia.querySelector('video');
+
+                              if (video) {
+                                lightboxSoundOn = !video.muted;
+                              }
+
+                              lightboxState.videoMedia.pause();
+                              lightboxState.home.prepend(lightboxState.videoMedia);
+
+                              if (lightboxState.controlsGroup) {
+                                lightboxState.home.appendChild(lightboxState.controlsGroup);
+                              }
+                            } else if (lightboxState.image) {
+                              lightboxState.home.prepend(lightboxState.image);
+                            }
+
+                            lightboxState = null;
+                          }
+
+                          function openLightbox(index) {
+                            var cell = carousel.cells[index];
+
+                            if (!cell) {
+                              return;
+                            }
+
+                            document.documentElement.style.overflow = 'hidden';
+                            lightbox.hidden = false;
+                            moveIntoLightbox(cell);
+                          }
+
+                          function closeLightbox() {
+                            moveOutOfLightbox();
+                            lightbox.hidden = true;
+                            document.documentElement.style.overflow = '';
+                          }
+
+                          function showRelativeSlide(offset) {
+                            if (!lightboxState) {
+                              return;
+                            }
+
+                            var currentIndex = carousel.cells.indexOf(lightboxState.cell);
+                            var nextCell = carousel.cells[currentIndex + offset];
+
+                            if (!nextCell) {
+                              return;
+                            }
+
+                            moveOutOfLightbox();
+                            moveIntoLightbox(nextCell, lightboxSoundOn);
+                          }
+
+                          lightboxCloseButton.addEventListener('click', closeLightbox);
+
+                          if (lightboxPrevButton) {
+                            lightboxPrevButton.addEventListener('click', function() {
+                              showRelativeSlide(-1);
+                            });
+                          }
+
+                          if (lightboxNextButton) {
+                            lightboxNextButton.addEventListener('click', function() {
+                              showRelativeSlide(1);
+                            });
+                          }
+
+                          document.addEventListener('keydown', function(event) {
+                            if (event.key === 'Escape' && !lightbox.hidden) {
+                              closeLightbox();
+                            }
+                          });
+
+                          carousel.addEventListener('lightbox:open', function(event) {
+                            openLightbox(event.detail.index || 0);
                           });
                           });
                         })();
