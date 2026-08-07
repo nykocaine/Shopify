@@ -38,7 +38,7 @@ This component is used to show the product gallery (used in product page and fea
         --product-gallery-carousel-grid: auto-flow dense / repeat(2, minmax(0, 1fr));
         --product-gallery-carousel-scroll-snap-type: none;
       {%- elsif desktop_layout == 'carousel' -%}
-        --product-gallery-gap: {% if desktop_carousel_controls != 'thumbnails_under' %}0rem{% else %}0.5rem{% endif %};
+        --product-gallery-gap: {% if desktop_carousel_controls == 'thumbnails_under' or desktop_carousel_controls == 'thumbnails_left' %}0.5rem{% else %}0rem{% endif %};
       {%- endif -%}
     }
 
