@@ -827,12 +827,38 @@
                       order: 1;
                     }
                   {%- endif -%}
+
+                  {%- comment -%}
+                  Unscoped (not #carousel-wrapper-{{ block.id }}): PhotoSwipe mounts its viewer as a sibling of
+                  <body>, not inside this block's own markup, so a scoped selector would never match. Sizes the
+                  moved-in <video-media> to fit the slide the same way PhotoSwipe fits images (centered,
+                  fully visible, no cropping) - its own aspect-ratio custom property (set inline per-instance
+                  by snippets/media.liquid) is what keeps it proportioned once width/height stop being 100%.
+                  {%- endcomment -%}
+                  .pswp-video-content {
+                    width: 100%;
+                    height: 100%;
+                    display: grid;
+                    place-items: center;
+                  }
+
+                  .pswp-video-content video-media {
+                    width: auto;
+                    max-width: 100%;
+                    max-height: 100%;
+                  }
                 </style>
 
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
                   <div class="v-stack gap-4" id="carousel-wrapper-{{ block.id }}">
                     <div style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                     <product-list id="carousel-{{ block.id }}" cell-selector=".snap-start" class="scroll-area snap-x">
+                      {%- liquid
+                        # Matches the order cells actually render in below (only slides with content get one),
+                        # so it lines up with the dataSource array the lightbox script builds from
+                        # carousel.cells further down - both walk the same cells in the same order.
+                        assign lightbox_slide_index = 0
+                      -%}
                       {%- for i in (1..8) -%}
                         {%- capture image_key -%}image_{{ i }}{%- endcapture -%}
                         {%- capture video_key -%}video_{{ i }}{%- endcapture -%}
@@ -896,6 +922,15 @@
                                 {%- else -%}
                                   {{- 'hero-apparel-1' | placeholder_svg_tag: 'size-full' -}}
                                 {%- endif -%}
+
+                                {%- if slide_video != blank or slide_image != blank -%}
+                                  <open-lightbox-button class="block" aria-controls="carousel-{{ block.id }}" image-index="{{ lightbox_slide_index }}">
+                                    <button type="button" class="product-zoom-button">
+                                      {%- render 'icon' with 'zoom-plus', width: 16 -%}
+                                      <span class="product-zoom-button__label">{{ 'product.gallery.zoom' | t }}</span>
+                                    </button>
+                                  </open-lightbox-button>
+                                {%- endif -%}
                               </div>
 
                               {%- if slide_heading != blank or slide_text != blank -%}
@@ -913,6 +948,7 @@
                               {%- endif -%}
                             </div>
                           </div>
+                          {%- assign lightbox_slide_index = lightbox_slide_index | plus: 1 -%}
                         {%- endif -%}
                       {%- endfor -%}
                     </product-list>
@@ -1206,6 +1242,53 @@
                           // listeners at all.
                           carousel.addEventListener('carousel:change', scheduleAdvance);
                           scheduleAdvance();
+
+                          // Each open-lightbox-button (rendered per slide, image-index matching this exact
+                          // build order) dispatches a bubbling 'lightbox:open' caught here - same event
+                          // <product-gallery> listens for, just without a matching custom element wrapping
+                          // this carousel, so it's handled directly. Video slides hand the actual, currently
+                          // playing <video-media> element itself into openMediaLightbox (see theme.js) so it
+                          // keeps playing uninterrupted inside the lightbox instead of restarting from a
+                          // freshly loaded copy.
+                          carousel.addEventListener('lightbox:open', function(event) {
+                            var dataSource = [];
+
+                            carousel.cells.forEach(function(cell) {
+                              var videoMedia = cell.querySelector('video-media');
+                              var video = videoMedia ? videoMedia.querySelector('video') : null;
+
+                              if (videoMedia && video) {
+                                dataSource.push({
+                                  type: 'video',
+                                  videoElement: videoMedia,
+                                  videoHome: videoMedia.parentElement,
+                                  width: video.videoWidth || parseInt(video.getAttribute('width')) || 1280,
+                                  height: video.videoHeight || parseInt(video.getAttribute('height')) || 720,
+                                  thumbnailElement: videoMedia
+                                });
+                                return;
+                              }
+
+                              var image = cell.querySelector('img.image-cover');
+
+                              if (image) {
+                                dataSource.push({
+                                  src: image.currentSrc || image.src,
+                                  srcset: image.srcset,
+                                  msrc: image.currentSrc || image.src,
+                                  width: parseInt(image.getAttribute('width')),
+                                  height: parseInt(image.getAttribute('height')),
+                                  alt: image.alt,
+                                  thumbCropped: true,
+                                  thumbnailElement: image
+                                });
+                              }
+                            });
+
+                            if (dataSource.length) {
+                              window.openMediaLightbox(dataSource, event.detail.index || 0, '{{ block.settings.color_scheme.id }}');
+                            }
+                          });
                           });
                         })();
                       </script>
