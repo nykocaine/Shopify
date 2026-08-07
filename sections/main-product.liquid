@@ -43,35 +43,16 @@
 
   {%- if section.settings.allow_transparent_header == false and section.settings.floating_product == false -%}
     @media screen and (min-width: 1000px) {
-      {%- if section.settings.desktop_gallery_on_right -%}
-        #shopify-section-{{ section.id }} .product-gallery {
-          margin-inline-start: 0;
-          margin-inline-end: calc(-1 * var(--container-gutter));
-        }
-      {%- else -%}
-        #shopify-section-{{ section.id }} .product-gallery {
-          margin-inline-start: calc(-1 * var(--container-gutter));
-        }
-      {%- endif -%}
+      #shopify-section-{{ section.id }} .product-gallery {
+        margin-inline-start: calc(-1 * var(--container-gutter));
+      }
     }
   {%- endif -%}
 
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} {
-      {%- if section.settings.desktop_gallery_on_right -%}
-        --product-grid: auto / minmax(0, {{ 100.0 | minus: section.settings.product_media_size | divided_by: 100.0 }}fr) minmax(0, {{ section.settings.product_media_size | divided_by: 100.0 }}fr);
-      {%- else -%}
-        --product-grid: auto / minmax(0, {{ section.settings.product_media_size | divided_by: 100.0 }}fr) minmax(0, {{ 100.0 | minus: section.settings.product_media_size | divided_by: 100.0 }}fr);
-      {%- endif -%}
+      --product-grid: auto / minmax(0, {{ section.settings.product_media_size | divided_by: 100.0 }}fr) minmax(0, {{ 100.0 | minus: section.settings.product_media_size | divided_by: 100.0 }}fr);
     }
-
-    {%- if section.settings.desktop_gallery_on_right -%}
-      #shopify-section-{{ section.id }} .product-info {
-        order: -1;
-        padding-inline-start: 0;
-        padding-inline-end: 3rem;
-      }
-    {%- endif -%}
   }
 
   {%- if section.settings.floating_product -%}
@@ -171,30 +152,17 @@
       {%- comment -%}
       On desktop the two cards sit flush against each other (no gap) so they read as a single composition
       split in two — only the OUTER corners of each card stay rounded, the corners that touch each other are
-      squared off. Which side is "outer" flips with desktop_gallery_on_right, same as the padding/order logic
-      above.
+      squared off.
       {%- endcomment -%}
-      {%- if section.settings.desktop_gallery_on_right -%}
-        #shopify-section-{{ section.id }} .product-gallery-frame {
-          border-start-start-radius: 0;
-          border-end-start-radius: 0;
-        }
+      #shopify-section-{{ section.id }} .product-gallery-frame {
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
+      }
 
-        #shopify-section-{{ section.id }} .product-info-frame {
-          border-start-end-radius: 0;
-          border-end-end-radius: 0;
-        }
-      {%- else -%}
-        #shopify-section-{{ section.id }} .product-gallery-frame {
-          border-start-end-radius: 0;
-          border-end-end-radius: 0;
-        }
-
-        #shopify-section-{{ section.id }} .product-info-frame {
-          border-start-start-radius: 0;
-          border-end-start-radius: 0;
-        }
-      {%- endif -%}
+      #shopify-section-{{ section.id }} .product-info-frame {
+        border-start-start-radius: 0;
+        border-end-start-radius: 0;
+      }
 
       {%- if section.settings.product_height_desktop > 0 -%}
         {%- comment -%}
@@ -446,13 +414,6 @@
       "step": 1,
       "unit": "%",
       "default": 50
-    },
-    {
-      "type": "checkbox",
-      "id": "desktop_gallery_on_right",
-      "label": "t:sections.main_product.desktop_gallery_on_right",
-      "info": "t:sections.main_product.desktop_gallery_on_right_info",
-      "default": false
     },
     {
       "type": "text_alignment",
