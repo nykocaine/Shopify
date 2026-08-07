@@ -38,7 +38,7 @@ This component is used to show the product gallery (used in product page and fea
         --product-gallery-carousel-grid: auto-flow dense / repeat(2, minmax(0, 1fr));
         --product-gallery-carousel-scroll-snap-type: none;
       {%- elsif desktop_layout == 'carousel' -%}
-        --product-gallery-gap: {% if desktop_carousel_controls == 'thumbnails_under' or desktop_carousel_controls == 'thumbnails_left' %}0.5rem{% else %}0rem{% endif %};
+        --product-gallery-gap: {% if desktop_carousel_controls == 'thumbnails_under' %}0.5rem{% else %}0rem{% endif %};
       {%- endif -%}
     }
 
@@ -84,39 +84,39 @@ This component is used to show the product gallery (used in product page and fea
   {%- if desktop_carousel_controls == 'thumbnails_left' -%}
     @media screen and (min-width: 1000px) {
       {%- comment -%}
-      .product-gallery__image-list normally stacks the carousel and its controls as rows (thumbnails_under
-      renders below the image, using grid-auto-rows: max-content from theme.css). For a left rail we need
-      them side by side instead. The thumbnail list keeps its normal DOM position, after the carousel — same
-      markup as thumbnails_under, so tab/SR order stays identical across every controls option — order: -1 is
-      what visually moves it into the first column without touching that order.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .product-gallery__image-list {
-        grid-template-columns: max-content minmax(0, 1fr);
-      }
+      thumbnails_left is thumbnails_over rotated 90°: same floating mechanism (product-gallery__controls-floating
+      is display: contents, so .product-gallery__thumbnail-list and .scroll-marker-group--thumbnails inside it
+      are absolutely positioned against .product-gallery__image-list's position: relative, ie. against the
+      photo itself), just re-anchored to the left edge and centered vertically instead of centered horizontally
+      along the bottom edge.
 
-      {%- comment -%}
-      max-width: 100% (theme.css) is meant for a full-width horizontal strip; here the column should hug the
-      thumbnail's own width instead. max-height caps how much this column can contribute to image-list's
-      max-content row sizing — without it, a product with many images would stretch the row (and the photo
-      with it) well past its natural size just to fit the whole thumbnail stack; capping it to roughly one
-      viewport's height instead makes it scroll internally past that point, same as thumbnails_under does
-      horizontally when there isn't room for every thumbnail.
+      .product-gallery__thumbnail-list (theme.css, @media min-width: 700px) is normally pinned bottom
+      (inset-block-end: 0, width: 75%, height: 100%) so its flex align-items: flex-end can push the group down
+      within it — that alignment step is skipped here since the group positions itself directly (see below), so
+      inset-inline-start/inset-block are all this needs to turn it into a full-height strip along the left edge.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-gallery__thumbnail-list {
-        --distance-to-bleed: 0;
-        order: -1;
-        max-width: none;
-        max-height: calc(100vh - var(--header-height, 0px) - 2 * var(--container-gutter));
-        overflow: hidden;
+        inset-inline-start: 0;
+        inset-block: 0;
+        width: auto;
       }
 
       {%- comment -%}
-      .scroll-area (theme.css, on the carousel-navigation below) hardcodes a horizontal scrollbar
-      (overflow: auto hidden) since every other controls layout scrolls sideways — flip it to vertical here.
+      --scroll-marker-group-width overrides the 50%/100% used for the horizontal bar (same variable the
+      counter variant already uses for its own auto width). left/top/transform re-anchor it from
+      "centered along the bottom" to "centered along the left edge"; inset-block-end: auto clears the
+      bottom-edge offset the base rule sets, so it doesn't fight with top for the vertical position.
+      flex-direction/max-height/overflow turn the horizontal scrolling bar into a vertical one, scrolling
+      internally rather than growing past the photo's height when there are many images.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails {
+        --scroll-marker-group-width: auto;
+        left: 1.75rem;
+        top: 50%;
+        inset-block-end: auto;
+        transform: translateY(-50%);
         flex-direction: column;
-        height: 100%;
+        max-height: 100%;
         overflow: hidden auto;
       }
 
@@ -389,7 +389,7 @@ only way to do it on Shopify right now.
       {%- endcapture -%}
 
       {%- if desktop_layout == 'carousel' -%}
-        <div class="{% if desktop_carousel_controls != 'thumbnails_under' and desktop_carousel_controls != 'thumbnails_left' %}product-gallery__controls-floating{% endif %} hidden md:contents">
+        <div class="{% if desktop_carousel_controls != 'thumbnails_under' %}product-gallery__controls-floating{% endif %} hidden md:contents">
           {%- liquid
             case desktop_carousel_controls
               when 'dots'
