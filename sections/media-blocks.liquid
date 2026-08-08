@@ -790,33 +790,28 @@
                   a second time and colliding with the move. None of that exists if the element never changes
                   parent - only its own position/size, via CSS, when .is-lightbox-expanded is toggled.
 
-                  #media-lightbox-{{ block.id }} itself is now just a plain, unstyled wrapper used only to
-                  hide/show the backdrop and the close/prev/next buttons together via one [hidden] toggle -
-                  it deliberately has no position/z-index of its own. If it did (eg. position: fixed like the
-                  backdrop inside it), it would establish its own stacking context, and the close/prev/next
-                  buttons' z-index would then only be compared against their siblings INSIDE that context -
-                  never able to outrank .is-lightbox-expanded media, which lives outside it entirely, no
-                  matter how high a z-index the buttons themselves declare.
+                  #media-lightbox-{{ block.id }} itself is only used to hide/show the backdrop and the
+                  close/prev/next buttons together via one [hidden] toggle - it carries no styling of its own
+                  beyond the theme's own .contents utility (class="contents" below), which is exactly what
+                  keeps it that way: "zero-height grid item" only holds because every current child
+                  (backdrop, close, prev, next) is position: fixed and so never becomes a real grid item once
+                  hoisted - a future normally-flowing child added here (eg. a slide counter) would become one,
+                  inline underneath the carousel, and reintroduce the same row-gap bug this fixes. Without
+                  .contents at all, showing the wrapper turns IT into that zero-height grid item of
+                  #carousel-wrapper-{{ block.id }} (.v-stack.gap-4), picking up a full row-gap around it that
+                  grows the carousel's height on every open and shrinks it back on close.
+                  display: contents also means it can never gain a stacking context of its own the way
+                  position: fixed would - if it did, the close/prev/next buttons' z-index would only be
+                  compared against their siblings INSIDE that context, never able to outrank
+                  .is-lightbox-expanded media, which lives outside it entirely, no matter how high a z-index
+                  the buttons themselves declare. [hidden] doesn't need its own rule here: theme.css already
+                  sets it to `display: none !important`, which overrides .contents regardless of specificity.
                   {%- endcomment -%}
-                  {%- comment -%}
-                  display: contents takes the wrapper itself out of #carousel-wrapper-{{ block.id }}'s grid
-                  entirely (it's .v-stack.gap-4) - without it, showing the wrapper turns it into a real,
-                  zero-height grid item that still gets a full row-gap around it, growing the carousel's
-                  height by that gap every time the lightbox opens and shrinking it back on close.
-                  {%- endcomment -%}
-                  #media-lightbox-{{ block.id }} {
-                    display: contents;
-                  }
-
                   #media-lightbox-{{ block.id }} .media-lightbox__backdrop {
                     background: #000;
                     z-index: 998;
                     position: fixed;
                     inset: 0;
-                  }
-
-                  #media-lightbox-{{ block.id }}[hidden] {
-                    display: none;
                   }
 
                   {%- comment -%}
@@ -1015,7 +1010,7 @@
                     </product-list>
                     </div>
 
-                    <div id="media-lightbox-{{ block.id }}" hidden>
+                    <div id="media-lightbox-{{ block.id }}" class="contents" hidden>
                       <div class="media-lightbox__backdrop"></div>
 
                       <button type="button" class="media-lightbox__close" aria-label="{{ 'general.accessibility.close' | t }}">
