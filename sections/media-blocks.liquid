@@ -1009,8 +1009,10 @@
                   }
 
                   {%- comment -%}
-                  Mobile only: same corner-pinning as close/prev/next above, so this lands at the video's own
-                  bottom-right corner instead of the screen's.
+                  Mobile only: same corner-pinning as close/prev/next above, so this lands inside the video's
+                  own bottom-right corner instead of the screen's (0.75rem inward margin, same as close/prev/
+                  next - using the group's full own width/height to offset, not half, so it's flush inside
+                  the edge instead of straddling it).
                   {%- endcomment -%}
                   @media screen and (max-width: 999px) {
                     #shopify-section-{{ section.id }} .carousel-video-controls.is-lightbox-expanded {
@@ -1018,7 +1020,7 @@
                       inset-inline-end: auto;
                       inset-inline-start: 50%;
                       inset-block-start: 50%;
-                      translate: calc(var(--lightbox-media-w) / 2 - 100% + 0.5rem) calc(var(--lightbox-media-h) / 2 - 100% + 0.5rem);
+                      translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(var(--lightbox-media-h) / 2 - 100% - 0.75rem);
                     }
                   }
                 </style>
