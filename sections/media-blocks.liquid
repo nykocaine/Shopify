@@ -1447,15 +1447,37 @@
                               return;
                             }
 
+                            // The carousel's own autoplay-advance (this same timer/listener drives
+                            // goToNext() and, on every carousel:change, scheduleAdvance() - which pauses
+                            // every non-selected video AND relocates every slide's controls group, including
+                            // whichever one is currently sitting inside this lightbox) keeps running in the
+                            // background otherwise. Left alone, it fights with the lightbox: pausing/muting
+                            // videos on its own schedule and yanking the controls group back out mid-viewing.
+                            clearTimeout(advanceTimer);
+                            carousel.removeEventListener('carousel:change', scheduleAdvance);
+
                             document.documentElement.style.overflow = 'hidden';
                             lightbox.hidden = false;
                             moveIntoLightbox(cell);
                           }
 
                           function closeLightbox() {
+                            var finalCell = lightboxState ? lightboxState.cell : null;
+
                             moveOutOfLightbox();
                             lightbox.hidden = true;
                             document.documentElement.style.overflow = '';
+                            carousel.addEventListener('carousel:change', scheduleAdvance);
+
+                            // Catches up the carousel to wherever the visitor ended up navigating inside the
+                            // lightbox (next/prev never move the carousel itself while it's open, see above) -
+                            // scheduleAdvance() runs either way, since carousel:change only fires here if
+                            // select() actually needed to move it.
+                            if (finalCell && finalCell !== carousel.selectedCell) {
+                              carousel.select(carousel.cells.indexOf(finalCell), { instant: true });
+                            }
+
+                            scheduleAdvance();
                           }
 
                           function showRelativeSlide(offset) {
