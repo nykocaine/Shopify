@@ -1119,11 +1119,19 @@
                             var soundButton = mediaBox.querySelector('.carousel-video-sound-toggle');
                             var poster = mediaBox.querySelector('video-media > img');
 
+                            // Calls the native <video> methods directly instead of going through
+                            // video-media's own play()/pause() wrapper: BaseMedia.play() (theme.js) requires
+                            // this.offsetParent to be non-null, which is always null while is-lightbox-expanded
+                            // has it at position: fixed - resuming from pause inside the lightbox would
+                            // silently do nothing. video.paused/play()/pause() carry no such restriction, and
+                            // every icon/attribute sync elsewhere is already wired to the native video's own
+                            // 'playing'/'pause' events, so nothing downstream needs to know which one was
+                            // called.
                             function togglePlay() {
-                              if (videoMedia.playing) {
-                                videoMedia.pause();
+                              if (video.paused) {
+                                video.play();
                               } else {
-                                videoMedia.play();
+                                video.pause();
                               }
                             }
 
@@ -1234,8 +1242,8 @@
                             var media = getCellMedia(cell);
 
                             if (media.videoMedia) {
-                              var wasPlaying = media.videoMedia.playing;
                               var video = media.videoMedia.querySelector('video');
+                              var wasPlaying = video && !video.paused;
                               var soundButton = media.controlsGroup ? media.controlsGroup.querySelector('.carousel-video-sound-toggle') : null;
 
                               // Going through the real button (instead of setting video.muted directly) is
@@ -1245,14 +1253,12 @@
                                 soundButton.click();
                               }
 
-                              // Must happen before the is-lightbox-expanded class below: BaseMedia.play()
-                              // (theme.js) requires this.offsetParent to be non-null, but offsetParent is
-                              // always null for position: fixed elements - which is exactly what
-                              // is-lightbox-expanded switches this to. Calling play() first, while it's
-                              // still normally positioned in the carousel, avoids that guard silently
-                              // no-op'ing the call.
+                              // The native <video> method, not video-media's own play() wrapper: that one
+                              // requires this.offsetParent to be non-null (theme.js, BaseMedia.play()), which
+                              // is always null once is-lightbox-expanded puts it at position: fixed below -
+                              // see togglePlay() above for the same fix on the pause/play button.
                               if (video && (wasPlaying || continuePlayingWithSound !== undefined)) {
-                                media.videoMedia.play();
+                                video.play();
                               }
 
                               media.videoMedia.classList.add('is-lightbox-expanded');
