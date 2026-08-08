@@ -644,7 +644,7 @@
                     pointer-events: none;
                   }
 
-                  #carousel-{{ block.id }} .carousel-video-tap-to-unmute {
+                  #carousel-{{ block.id }} .carousel-video-tap-to-play {
                     cursor: pointer;
                   }
 
@@ -913,7 +913,7 @@
                         {%- if slide_image != blank or slide_video != blank or slide_heading != blank or slide_text != blank -%}
                           <div class="snap-start">
                             <div class="content-box h-full min-h-{{ block.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}" style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
-                              <div class="content-box__background-media {% if slide_video != blank %}carousel-video-tap-to-unmute{% endif %}">
+                              <div class="content-box__background-media {% if slide_video != blank %}carousel-video-tap-to-play{% endif %}">
                                 {%- if slide_video != blank -%}
                                   {%- render 'media', media: slide_video, autoplay: false, muted: true, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
 
@@ -1272,15 +1272,22 @@
                             }
                           }
 
+                          // Returns whether the slide being moved out was an actually-playing video - the
+                          // caller (showRelativeSlide) uses this to decide whether the NEXT slide should
+                          // resume playing too, so navigating away from a photo (or a video nobody pressed
+                          // play on) never starts the next video on its own.
                           function moveOutOfLightbox() {
                             if (!lightboxState) {
-                              return;
+                              return false;
                             }
+
+                            var wasPlaying = false;
 
                             if (lightboxState.videoMedia) {
                               var video = lightboxState.videoMedia.querySelector('video');
 
                               if (video) {
+                                wasPlaying = !video.paused;
                                 lightboxSoundOn = !video.muted;
                               }
 
@@ -1295,6 +1302,8 @@
                             }
 
                             lightboxState = null;
+
+                            return wasPlaying;
                           }
 
                           function openLightbox(index) {
@@ -1347,8 +1356,8 @@
                               return;
                             }
 
-                            moveOutOfLightbox();
-                            moveIntoLightbox(nextCell, lightboxSoundOn);
+                            var wasPlaying = moveOutOfLightbox();
+                            moveIntoLightbox(nextCell, wasPlaying ? lightboxSoundOn : undefined);
                           }
 
                           lightboxCloseButton.addEventListener('click', closeLightbox);
