@@ -846,8 +846,21 @@
                     border-radius: var(--media-blocks-corner-radius);
                   }
 
+                  {%- comment -%}
+                  Fixed box (not aspect-ratio-derived like the rule above) so a portrait video isn't limited
+                  to a narrow strip by its own ratio - object-fit: cover fills it, cropping instead of
+                  leaving empty space on the sides.
+                  {%- endcomment -%}
+                  #shopify-section-{{ section.id }} video-media.is-lightbox-expanded {
+                    width: min(96vw, 32rem);
+                    height: 90vh;
+                  }
+
                   #shopify-section-{{ section.id }} video-media.is-lightbox-expanded video {
                     border-radius: inherit;
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
                   }
 
                   #shopify-section-{{ section.id }} img.is-lightbox-expanded {
