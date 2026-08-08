@@ -910,11 +910,17 @@
                   The video's own sound/pause toggles (moved in alongside it, see script below) are meant to
                   fade in/out over a background video on the carousel - inside a dedicated fullscreen viewer
                   they should just stay put, so this cancels that positioning/transition without touching the
-                  shared .carousel-video-controls rules other slides still rely on.
+                  shared .carousel-video-controls rules other slides still rely on. display: flex is required
+                  here too: on touch devices with controls_position: progress_bar, an earlier rule
+                  (#carousel-wrapper-{{ block.id }} .carousel-video-controls) sets display: none because that
+                  layout normally relocates this group into #carousel-controls-slot-{{ block.id }} instead -
+                  the lightbox is still a descendant of #carousel-wrapper-{{ block.id }}, so without this it
+                  stays hidden even after being moved here.
                   {%- endcomment -%}
                   #media-lightbox-{{ block.id }} .carousel-video-controls {
                     opacity: 1 !important;
                     pointer-events: auto !important;
+                    display: flex !important;
                     position: absolute;
                     inset-block-end: 1rem;
                     inset-inline-end: 1rem;
