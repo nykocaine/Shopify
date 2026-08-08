@@ -854,6 +854,14 @@
                     object-fit: contain;
                   }
 
+                  @media screen and (max-width: 999px) {
+                    #shopify-section-{{ section.id }} video-media.is-lightbox-expanded,
+                    #shopify-section-{{ section.id }} img.is-lightbox-expanded {
+                      max-width: calc(100vw - 2 * var(--drawer-body-padding-inline, min(2rem, var(--container-gutter))));
+                      max-height: calc(100vh - 2 * var(--drawer-body-padding-block, min(2rem, var(--container-gutter))));
+                    }
+                  }
+
                   #media-lightbox-{{ block.id }} .media-lightbox__close {
                     background: var(--close-control-background-color, rgb(var(--button-background-primary)));
                     border: 1px solid var(--close-control-border-color, rgb(var(--border-color)));
