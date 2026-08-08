@@ -938,13 +938,18 @@
                   --lightbox-media-w/h it's sized with) instead of the screen's. Not applied on desktop,
                   where the media isn't a fixed-size box (aspect-ratio-derived instead, see the rule above)
                   so there's no fixed edge of its own to pin to.
+
+                  Uses the button's full own width/height (100%), not half (50%), to offset - that lands
+                  the button's edge flush with the anchor point instead of centering the button ON it, so
+                  the 0.75rem below reads as an inward margin that keeps the whole button inside the
+                  media box's rounded corners, instead of straddling the corner half on/half off it.
                   {%- endcomment -%}
                   @media screen and (max-width: 999px) {
                     #media-lightbox-{{ block.id }} .media-lightbox__close {
                       inset-inline-end: auto;
                       inset-inline-start: 50%;
                       inset-block-start: 50%;
-                      translate: calc(var(--lightbox-media-w) / 2 - 50% - 0.5rem) calc(var(--lightbox-media-h) / -2 - 50% + 0.5rem);
+                      translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(var(--lightbox-media-h) / -2 + 0.75rem);
                     }
 
                     #media-lightbox-{{ block.id }} .media-lightbox__prev,
@@ -954,11 +959,11 @@
                     }
 
                     #media-lightbox-{{ block.id }} .media-lightbox__prev {
-                      translate: calc(var(--lightbox-media-w) / -2 - 50% + 0.5rem) -50%;
+                      translate: calc(var(--lightbox-media-w) / -2 + 0.75rem) -50%;
                     }
 
                     #media-lightbox-{{ block.id }} .media-lightbox__next {
-                      translate: calc(var(--lightbox-media-w) / 2 - 50% - 0.5rem) -50%;
+                      translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) -50%;
                     }
                   }
 
