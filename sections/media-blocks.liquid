@@ -1119,19 +1119,36 @@
                             var soundButton = mediaBox.querySelector('.carousel-video-sound-toggle');
                             var poster = mediaBox.querySelector('video-media > img');
 
-                            // Calls the native <video> methods directly instead of going through
-                            // video-media's own play()/pause() wrapper: BaseMedia.play() (theme.js) requires
-                            // this.offsetParent to be non-null, which is always null while is-lightbox-expanded
-                            // has it at position: fixed - resuming from pause inside the lightbox would
-                            // silently do nothing. video.paused/play()/pause() carry no such restriction, and
-                            // every icon/attribute sync elsewhere is already wired to the native video's own
-                            // 'playing'/'pause' events, so nothing downstream needs to know which one was
-                            // called.
+                            // Still goes through video-media's own play()/pause(), not the native <video>
+                            // directly: the wrapper only sets up its internal "playing" tracking (theme.js,
+                            // BaseMedia/_playerTarget) the first time ITS OWN play()/pause() is called -
+                            // scheduleAdvance() and collapseCell() both call video-media.pause() elsewhere
+                            // and rely on that tracking to know whether there's anything to actually pause,
+                            // so bypassing the wrapper here would leave them silently unable to stop a video
+                            // that was only ever started from this button.
+                            //
+                            // BaseMedia.play() does require this.offsetParent to be non-null, though, which
+                            // is always null while is-lightbox-expanded has this at position: fixed -
+                            // dropping the class for just the synchronous duration of the play() call (then
+                            // immediately restoring it, before the browser gets a chance to repaint) gives it
+                            // a valid offsetParent for that check without any visible flicker or interrupting
+                            // the actual (async) playback that follows.
                             function togglePlay() {
-                              if (video.paused) {
-                                video.play();
-                              } else {
-                                video.pause();
+                              if (videoMedia.playing) {
+                                videoMedia.pause();
+                                return;
+                              }
+
+                              var wasExpanded = videoMedia.classList.contains('is-lightbox-expanded');
+
+                              if (wasExpanded) {
+                                videoMedia.classList.remove('is-lightbox-expanded');
+                              }
+
+                              videoMedia.play();
+
+                              if (wasExpanded) {
+                                videoMedia.classList.add('is-lightbox-expanded');
                               }
                             }
 
