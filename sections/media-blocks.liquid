@@ -858,8 +858,8 @@
                     background: var(--close-control-background-color, rgb(var(--button-background-primary)));
                     border: 1px solid var(--close-control-border-color, rgb(var(--border-color)));
                     color: var(--close-control-icon-color, rgb(var(--button-text-primary)));
-                    width: 1.75rem;
-                    height: 1.75rem;
+                    width: var(--control-button-size, 1.75rem);
+                    height: var(--control-button-size, 1.75rem);
                     border-radius: 100%;
                     z-index: 1000;
                     place-content: center;
@@ -869,8 +869,15 @@
                     inset-inline-end: 1rem;
                   }
 
+                  {%- comment -%}
+                  Overrides circle-button--xl's own --button-size (2.5rem/3rem) so close/prev/next all match
+                  the same --control-button-size (Theme settings > Global > Controls) the play/pause/sound
+                  buttons already use, instead of each button picking its size from a different scale.
+                  {%- endcomment -%}
                   #media-lightbox-{{ block.id }} .media-lightbox__prev,
                   #media-lightbox-{{ block.id }} .media-lightbox__next {
+                    width: var(--control-button-size, 1.75rem);
+                    height: var(--control-button-size, 1.75rem);
                     z-index: 1000;
                     position: fixed;
                     inset-block-start: 50%;
@@ -1018,11 +1025,11 @@
                       </button>
 
                       {%- if carousel_slide_count > 1 -%}
-                        <button type="button" class="media-lightbox__prev circle-button circle-button--xl" aria-label="{{ 'general.accessibility.previous' | t }}">
+                        <button type="button" class="media-lightbox__prev circle-button" aria-label="{{ 'general.accessibility.previous' | t }}">
                           {%- render 'icon' with 'arrow-left', width: 9, direction_aware: true -%}
                         </button>
 
-                        <button type="button" class="media-lightbox__next circle-button circle-button--xl" aria-label="{{ 'general.accessibility.next' | t }}">
+                        <button type="button" class="media-lightbox__next circle-button" aria-label="{{ 'general.accessibility.next' | t }}">
                           {%- render 'icon' with 'arrow-right', width: 9, direction_aware: true -%}
                         </button>
                       {%- endif -%}
