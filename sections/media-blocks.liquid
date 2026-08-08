@@ -846,32 +846,38 @@
                     display: none;
                   }
 
+                  {%- comment -%}
+                  Drawer-style framing: padding on every side (same tokens .drawer::part(body) uses) instead of
+                  edge-to-edge, with the media centered and rounded inside it rather than filling the screen.
+                  {%- endcomment -%}
                   #media-lightbox-{{ block.id }} .media-lightbox__stage {
                     width: 100%;
                     height: 100%;
-                    border-radius: var(--media-blocks-corner-radius);
+                    padding: var(--drawer-body-padding-block, min(2rem, var(--container-gutter))) var(--drawer-body-padding-inline, min(2rem, var(--container-gutter)));
                     place-items: center;
                     display: grid;
-                    overflow: hidden;
+                    box-sizing: border-box;
                   }
 
-                  {%- comment -%}
-                  Video fills the screen edge to edge (object-fit: cover, matching a Reels/TikTok-style
-                  fullscreen viewer); photos stay fully visible instead (object-fit: contain) so nothing about
-                  the shot gets cropped off.
-                  {%- endcomment -%}
-                  #media-lightbox-{{ block.id }} .media-lightbox__stage[data-type="video"] video-media,
-                  #media-lightbox-{{ block.id }} .media-lightbox__stage[data-type="video"] video-media video {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                  }
-
-                  #media-lightbox-{{ block.id }} .media-lightbox__stage[data-type="image"] img {
+                  #media-lightbox-{{ block.id }} .media-lightbox__stage video-media {
                     width: auto;
                     height: auto;
                     max-width: 100%;
                     max-height: 100%;
+                    border-radius: var(--media-blocks-corner-radius);
+                    overflow: hidden;
+                  }
+
+                  #media-lightbox-{{ block.id }} .media-lightbox__stage video-media video {
+                    border-radius: inherit;
+                  }
+
+                  #media-lightbox-{{ block.id }} .media-lightbox__stage img {
+                    width: auto;
+                    height: auto;
+                    max-width: 100%;
+                    max-height: 100%;
+                    border-radius: var(--media-blocks-corner-radius);
                     object-fit: contain;
                   }
 
@@ -1368,7 +1374,6 @@
                             lightboxStage.innerHTML = '';
 
                             if (videoMedia) {
-                              lightboxStage.setAttribute('data-type', 'video');
                               lightboxStage.appendChild(videoMedia);
 
                               if (controlsGroup) {
@@ -1392,15 +1397,20 @@
                                 // without this the re-buffering shows as a blank/solid-color video instead of
                                 // the poster. Removing it brings the poster back for that gap, and it's only
                                 // restored once the video is actually rendering frames again (its 'playing'
-                                // event), not just requested.
+                                // event), not just requested. video-media.play() itself is a no-op if its
+                                // [playing] attribute is already set (BaseMedia.play(): "if (!this.playing)
+                                // ..."), which it still is from before the move even though the browser may
+                                // have actually paused the <video> when it was reparented - without clearing
+                                // it first, play() silently does nothing and the poster (still visible, since
+                                // 'playing' never fires) just stays there forever.
                                 videoMedia.removeAttribute('loaded');
+                                videoMedia.removeAttribute('playing');
                                 videoMedia.play();
                                 video.addEventListener('playing', function() {
                                   videoMedia.setAttribute('loaded', '');
                                 }, { once: true });
                               }
                             } else if (image) {
-                              lightboxStage.setAttribute('data-type', 'image');
                               lightboxStage.appendChild(image);
                             }
                           }
