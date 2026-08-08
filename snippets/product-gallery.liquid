@@ -63,6 +63,17 @@ This component is used to show the product gallery (used in product page and fea
     inset-inline-end: 1rem;
   }
 
+  {%- comment -%}
+  product-zoom-button__label (theme.css) starts at width: 0, only revealed on
+  @media (pointer: fine):hover - on touch devices that hover never fires, so it stays hidden forever.
+  Showing it always on mobile instead of on hover here (same fix as media-blocks' carousel).
+  {%- endcomment -%}
+  @media screen and (pointer: coarse) {
+    #shopify-section-{{ section.id }} .product-zoom-button__label {
+      width: auto;
+    }
+  }
+
   {%- if gallery_border_radius -%}
     @media screen and (max-width: 999px) {
       #shopify-section-{{ section.id }} .product-gallery__carousel-frame {
