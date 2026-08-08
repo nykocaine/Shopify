@@ -901,6 +901,17 @@
                   }
 
                   {%- comment -%}
+                  product-zoom-button (theme.css) inherits currentColor and has a negative inset-inline-end
+                  meant to slightly overhang a card's edge - here it sits inside .content-box's own
+                  overflow: hidden, so that negative offset clips it off-center instead. Pinning both fixes
+                  it for this carousel without touching the shared rule product-gallery still uses as-is.
+                  {%- endcomment -%}
+                  #carousel-wrapper-{{ block.id }} .product-zoom-button {
+                    color: #fff;
+                    inset-inline-end: 1rem;
+                  }
+
+                  {%- comment -%}
                   The video's own sound/pause toggles stay exactly where they are in the DOM (same as the
                   video itself) - this just switches them from "absolute, relative to their own .content-box"
                   to "fixed, relative to the viewport" so they land near the bottom-right of the expanded
