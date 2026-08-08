@@ -1119,36 +1119,24 @@
                             var soundButton = mediaBox.querySelector('.carousel-video-sound-toggle');
                             var poster = mediaBox.querySelector('video-media > img');
 
-                            // Still goes through video-media's own play()/pause(), not the native <video>
-                            // directly: the wrapper only sets up its internal "playing" tracking (theme.js,
-                            // BaseMedia/_playerTarget) the first time ITS OWN play()/pause() is called -
-                            // scheduleAdvance() and collapseCell() both call video-media.pause() elsewhere
-                            // and rely on that tracking to know whether there's anything to actually pause,
-                            // so bypassing the wrapper here would leave them silently unable to stop a video
+                            // pause() goes through video-media's own wrapper (not the native <video>
+                            // directly): it only sets up its internal "playing" tracking (theme.js,
+                            // BaseMedia/_playerTarget) the first time ITS OWN play()/pause() is called, and
+                            // scheduleAdvance()/collapseCell() both call video-media.pause() elsewhere,
+                            // relying on that tracking to know whether there's anything to actually pause -
+                            // bypassing the wrapper here would leave them silently unable to stop a video
                             // that was only ever started from this button.
                             //
-                            // BaseMedia.play() does require this.offsetParent to be non-null, though, which
-                            // is always null while is-lightbox-expanded has this at position: fixed -
-                            // dropping the class for just the synchronous duration of the play() call (then
-                            // immediately restoring it, before the browser gets a chance to repaint) gives it
-                            // a valid offsetParent for that check without any visible flicker or interrupting
-                            // the actual (async) playback that follows.
+                            // Resuming goes one layer deeper, to .player.play() instead of .play(): the
+                            // public play() additionally requires this.offsetParent to be non-null, which is
+                            // always null while is-lightbox-expanded has this at position: fixed - the
+                            // player proxy underneath runs the exact same one-time setup and playback call
+                            // without that extra guard.
                             function togglePlay() {
                               if (videoMedia.playing) {
                                 videoMedia.pause();
-                                return;
-                              }
-
-                              var wasExpanded = videoMedia.classList.contains('is-lightbox-expanded');
-
-                              if (wasExpanded) {
-                                videoMedia.classList.remove('is-lightbox-expanded');
-                              }
-
-                              videoMedia.play();
-
-                              if (wasExpanded) {
-                                videoMedia.classList.add('is-lightbox-expanded');
+                              } else {
+                                videoMedia.player.play();
                               }
                             }
 
@@ -1270,12 +1258,11 @@
                                 soundButton.click();
                               }
 
-                              // The native <video> method, not video-media's own play() wrapper: that one
-                              // requires this.offsetParent to be non-null (theme.js, BaseMedia.play()), which
-                              // is always null once is-lightbox-expanded puts it at position: fixed below -
-                              // see togglePlay() above for the same fix on the pause/play button.
+                              // .player.play() rather than .play() - see togglePlay() above for why (same
+                              // "playing" tracking needed elsewhere, same this.offsetParent guard to skip
+                              // around once is-lightbox-expanded is added below).
                               if (video && (wasPlaying || continuePlayingWithSound !== undefined)) {
-                                video.play();
+                                media.videoMedia.player.play();
                               }
 
                               media.videoMedia.classList.add('is-lightbox-expanded');
