@@ -790,10 +790,15 @@
                   a second time and colliding with the move. None of that exists if the element never changes
                   parent - only its own position/size, via CSS, when .is-lightbox-expanded is toggled.
 
-                  #media-lightbox-{{ block.id }} itself is now just the dark backdrop + close/prev/next
-                  chrome, not a container things get appended into.
+                  #media-lightbox-{{ block.id }} itself is now just a plain, unstyled wrapper used only to
+                  hide/show the backdrop and the close/prev/next buttons together via one [hidden] toggle -
+                  it deliberately has no position/z-index of its own. If it did (eg. position: fixed like the
+                  backdrop inside it), it would establish its own stacking context, and the close/prev/next
+                  buttons' z-index would then only be compared against their siblings INSIDE that context -
+                  never able to outrank .is-lightbox-expanded media, which lives outside it entirely, no
+                  matter how high a z-index the buttons themselves declare.
                   {%- endcomment -%}
-                  #media-lightbox-{{ block.id }} {
+                  #media-lightbox-{{ block.id }} .media-lightbox__backdrop {
                     background: #000;
                     z-index: 998;
                     position: fixed;
@@ -1000,7 +1005,9 @@
                     </product-list>
                     </div>
 
-                    <div class="media-lightbox" id="media-lightbox-{{ block.id }}" hidden>
+                    <div id="media-lightbox-{{ block.id }}" hidden>
+                      <div class="media-lightbox__backdrop"></div>
+
                       <button type="button" class="media-lightbox__close" aria-label="{{ 'general.accessibility.close' | t }}">
                         {%- render 'icon' with 'close', width: 10 -%}
                       </button>
@@ -1223,13 +1230,6 @@
 
                             if (media.videoMedia) {
                               var wasPlaying = media.videoMedia.playing;
-
-                              media.videoMedia.classList.add('is-lightbox-expanded');
-
-                              if (media.controlsGroup) {
-                                media.controlsGroup.classList.add('is-lightbox-expanded');
-                              }
-
                               var video = media.videoMedia.querySelector('video');
                               var soundButton = media.controlsGroup ? media.controlsGroup.querySelector('.carousel-video-sound-toggle') : null;
 
@@ -1240,8 +1240,20 @@
                                 soundButton.click();
                               }
 
+                              // Must happen before the is-lightbox-expanded class below: BaseMedia.play()
+                              // (theme.js) requires this.offsetParent to be non-null, but offsetParent is
+                              // always null for position: fixed elements - which is exactly what
+                              // is-lightbox-expanded switches this to. Calling play() first, while it's
+                              // still normally positioned in the carousel, avoids that guard silently
+                              // no-op'ing the call.
                               if (video && (wasPlaying || continuePlayingWithSound !== undefined)) {
                                 media.videoMedia.play();
+                              }
+
+                              media.videoMedia.classList.add('is-lightbox-expanded');
+
+                              if (media.controlsGroup) {
+                                media.controlsGroup.classList.add('is-lightbox-expanded');
                               }
                             } else if (media.image) {
                               media.image.classList.add('is-lightbox-expanded');
