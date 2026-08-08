@@ -53,6 +53,16 @@ This component is used to show the product gallery (used in product page and fea
     transform: scaleX(-1);
   }
 
+  {%- comment -%}
+  .product-zoom-button (theme.css) inherits currentColor and has a negative inset-inline-end meant to
+  slightly overhang a card's edge - here it sits inside the gallery's own overflow: hidden, so that
+  negative offset clips it off-center instead. Pinning both (same fix as media-blocks' carousel).
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .product-zoom-button {
+    color: #fff;
+    inset-inline-end: 1rem;
+  }
+
   {%- if gallery_border_radius -%}
     @media screen and (max-width: 999px) {
       #shopify-section-{{ section.id }} .product-gallery__carousel-frame {
