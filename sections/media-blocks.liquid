@@ -690,70 +690,48 @@
                   }
 
                   {%- comment -%}
-                    Device and layout combine into exactly 4 cases, all driven by the same two facts
-                    (pointer type, controls_position) on both the CSS side here and the JS side below -
-                    they must never disagree, so both read the exact same two signals:
-                      - Desktop + Top:          always visible, overlaid top-right. Untouched.
-                      - Mobile  + Top:          hidden until unmuted, then fades, then auto-hides again
-                                                after inactivity. Untouched.
-                      - Desktop + Progress bar: overlaid on ITS OWN video (top-right or centered per
-                                                desktop_controls_position below), hidden until hovered,
-                                                fades in/out with the cursor. Never moves to the slot.
-                      - Mobile  + Progress bar: always visible, no fade, moved next to the progress bar
-                                                (never overlaid on the video).
+                  Always visible, no hover/tap-to-reveal, no auto-hide: nothing autoplays anymore, so there's
+                  no playing video to hide these behind - the visitor needs to see the play button right away
+                  to know how to start it.
                   {%- endcomment -%}
+                  #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
+                  #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
+                  #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
+                    opacity: 1;
+                    pointer-events: auto;
+                  }
+
                   {%- if section.settings.controls_position == 'progress_bar' -%}
                     {%- assign desktop_controls_position = section.settings.desktop_controls_position | default: 'top_right' -%}
 
-                    @media screen and (pointer: fine) {
-                      #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
-                      #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
-                      #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
-                        opacity: 0;
-                        pointer-events: none;
-                      }
-
-                      #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle.is-visible,
-                      #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle.is-visible,
-                      #carousel-wrapper-{{ block.id }} .carousel-video-product-link.is-visible {
-                        opacity: 1;
-                        pointer-events: auto;
-                      }
-
-                      {%- if desktop_controls_position == 'center' -%}
+                    {%- if desktop_controls_position == 'center' -%}
+                      @media screen and (pointer: fine) {
                         #carousel-wrapper-{{ block.id }} .carousel-video-controls {
                           inset-block-start: 50%;
                           inset-inline-end: auto;
                           inset-inline-start: 50%;
                           transform: translate(-50%, -50%);
                         }
-                      {%- endif -%}
+                      }
+                    {%- endif -%}
 
-                      {%- comment -%}
-                        Desktop never moves controls into the slot (see script below), so the slot is
-                        always empty here - hide it outright so it stops taking up gap/space and the
-                        progress bar's own flex-grow fills 100% of the row, exactly like before this
-                        layout existed.
-                      {%- endcomment -%}
+                    {%- comment -%}
+                    Desktop never moves controls into the slot (see script below), so the slot is always
+                    empty here - hide it outright so it stops taking up gap/space and the progress bar's own
+                    flex-grow fills 100% of the row, exactly like before this layout existed.
+                    {%- endcomment -%}
+                    @media screen and (pointer: fine) {
                       #carousel-controls-slot-{{ block.id }} {
                         display: none;
                       }
                     }
 
+                    {%- comment -%}
+                    Mobile is the only device that relocates the controls group into the slot (see script
+                    below), so it is the only one that needs to hide it at its original, overlaid-on-video
+                    position and only show it once it is an actual descendant of the slot.
+                    {%- endcomment -%}
                     @media screen and (pointer: coarse) {
-                      #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
-                      #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
-                      #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
-                        opacity: 1;
-                        pointer-events: auto;
-                      }
-
-                      {%- comment -%}
-                        Mobile is the only device that relocates the controls group into the slot (see
-                        script below), so it is the only one that needs to hide it at its original,
-                        overlaid-on-video position and only show it once it is an actual descendant of
-                        the slot.
-                      {%- endcomment -%}
                       #carousel-wrapper-{{ block.id }} .carousel-video-controls {
                         display: none;
                       }
@@ -762,31 +740,6 @@
                         display: flex;
                         position: static;
                         inset: auto;
-                      }
-                    }
-                  {%- else -%}
-                    @media screen and (pointer: fine) {
-                      #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
-                      #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
-                      #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
-                        opacity: 1;
-                        pointer-events: auto;
-                      }
-                    }
-
-                    @media screen and (pointer: coarse) {
-                      #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
-                      #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
-                      #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
-                        opacity: 0;
-                        pointer-events: none;
-                      }
-
-                      #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle.is-visible,
-                      #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle.is-visible,
-                      #carousel-wrapper-{{ block.id }} .carousel-video-product-link.is-visible {
-                        opacity: 1;
-                        pointer-events: auto;
                       }
                     }
                   {%- endif -%}
@@ -998,8 +951,8 @@
 
                                     <button type="button" class="carousel-video-pause-toggle circle-button" style="{{ control_button_style }}">
                                       <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
-                                      {%- render 'icon' with 'slideshow-pause', width: 14, class: 'carousel-video-pause-icon' -%}
-                                      {%- render 'icon' with 'slideshow-play', width: 14, class: 'carousel-video-play-icon hidden' -%}
+                                      {%- render 'icon' with 'slideshow-pause', width: 14, class: 'carousel-video-pause-icon hidden' -%}
+                                      {%- render 'icon' with 'slideshow-play', width: 14, class: 'carousel-video-play-icon' -%}
                                     </button>
                                   </div>
                                 {%- elsif slide_image != blank -%}
@@ -1078,29 +1031,14 @@
                           }
 
                           customElements.whenDefined('product-list').then(function() {
-                          var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                          // Touch devices still autoplay muted like desktop, but the pause/play button stays
-                          // hidden until the visitor unmutes (see isTouchDevice usage below) instead of
-                          // appearing as soon as playback starts.
                           var isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
-                          var advanceTimer;
                           var controlsAtProgressBar = {% if section.settings.controls_position == 'progress_bar' %}true{% else %}false{% endif %};
 
                           // Only mobile relocates the selected slide's controls group into the slot next to
                           // the progress bar (the exact same DOM node, never cloned; every other slide's
                           // group is moved back to its own slide - see scheduleAdvance below). Desktop never
-                          // does this: its controls stay overlaid on their own video at all times, same as
-                          // "top", just with a different reveal trigger (see revealOnDemand below).
+                          // does this: its controls stay overlaid on their own video at all times.
                           var controlsSlot = (controlsAtProgressBar && isTouchDevice) ? document.getElementById('carousel-controls-slot-{{ block.id }}') : null;
-
-                          // The 4 device/layout combinations collapse to a single boolean, matching the CSS
-                          // above exactly: controls start hidden AND auto-hide again after a few seconds,
-                          // whenever exactly one of (touch device, progress-bar layout) is true - "top" on
-                          // touch (existing mobile fade, revealed on unmute) and "progress bar" on desktop
-                          // (new hover fade below). The other two combinations ("top" on desktop, "progress
-                          // bar" on touch) are always visible, so there is nothing to reveal or auto-hide.
-                          var revealOnDemand = isTouchDevice !== controlsAtProgressBar;
-                          var desktopHoverReveal = controlsAtProgressBar && !isTouchDevice;
 
                           // Captured once, up front, while every controls group is still in its original
                           // slide - NOT re-queried via cell.querySelector() on every scheduleAdvance() call,
@@ -1115,17 +1053,10 @@
                             };
                           }) : [];
 
-                          function goToNext() {
-                            if (carousel.selectedIndex >= carousel.cells.length - 1) {
-                              carousel.select(0);
-                            } else {
-                              carousel.next();
-                            }
-                          }
-
+                          // Nothing autoplays anymore, so this only has two jobs left: pause whatever video
+                          // the visitor is swiping away from, and (on mobile, progress-bar layout) relocate
+                          // the newly selected slide's controls group into the slot next to the progress bar.
                           function scheduleAdvance() {
-                            clearTimeout(advanceTimer);
-
                             carousel.cells.forEach(function(cell) {
                               if (cell !== carousel.selectedCell) {
                                 // Go through the <video-media> wrapper's own pause(), not the raw <video>
@@ -1150,17 +1081,6 @@
                                 entry.home.appendChild(entry.group);
                               }
                             });
-
-                            var videoMedia = carousel.selectedCell ? carousel.selectedCell.querySelector('video-media') : null;
-
-                            if (videoMedia) {
-                              // The video plays through once (no loop attribute) and its own 'ended' handler
-                              // advances the carousel, so there is nothing to schedule here: moving on happens
-                              // exactly when the video finishes, on every device.
-                              videoMedia.play();
-                            } else if (!reduceMotion) {
-                              advanceTimer = setTimeout(goToNext, {{ block.settings.cycle_speed | times: 1000 }});
-                            }
                           }
 
                           // Tracks the mute-setter of every video in this carousel, so that unmuting one can
@@ -1180,77 +1100,22 @@
                             var playIcon = pauseButton.querySelector('.carousel-video-play-icon');
                             var soundButton = mediaBox.querySelector('.carousel-video-sound-toggle');
                             var productLink = mediaBox.querySelector('.carousel-video-product-link');
+                            var expandButton = mediaBox.querySelector('open-lightbox-button');
                             var poster = mediaBox.querySelector('video-media > img');
 
-                            // Comprar / Sonido / Play-Pausa fade in and out together, as a single group.
-                            // Whether they start hidden and auto-hide again after a few seconds depends on
-                            // device + layout (see revealOnDemand above) - the reveal/hide mechanics
-                            // themselves are the same regardless of what triggers them (unmute, click, hover).
-                            var groupControls = productLink ? [soundButton, pauseButton, productLink] : [soundButton, pauseButton];
-                            var INACTIVITY_HIDE_DELAY = 3000;
-                            var inactivityTimer;
-
-                            if (revealOnDemand) {
-                              groupControls.forEach(function(control) {
-                                control.tabIndex = -1;
-                              });
-                            }
-
-                            function hideControls() {
-                              groupControls.forEach(function(control) {
-                                control.classList.remove('is-visible');
-                                control.tabIndex = -1;
-                              });
-                            }
-
-                            function scheduleHide() {
-                              if (!revealOnDemand) {
-                                return;
+                            function togglePlay() {
+                              if (videoMedia.playing) {
+                                videoMedia.pause();
+                              } else {
+                                videoMedia.play();
                               }
-
-                              clearTimeout(inactivityTimer);
-                              inactivityTimer = setTimeout(hideControls, INACTIVITY_HIDE_DELAY);
-                            }
-
-                            function revealControls() {
-                              groupControls.forEach(function(control) {
-                                control.classList.add('is-visible');
-                                control.removeAttribute('tabindex');
-                              });
-
-                              scheduleHide();
-                            }
-
-                            // Desktop + "next to the progress bar": controls belong to whichever video is
-                            // being hovered - fade in on hover/movement, fade out on mouseleave (immediately,
-                            // not waiting for the inactivity timer) or after a few seconds of no movement.
-                            if (desktopHoverReveal) {
-                              mediaBox.addEventListener('mouseenter', revealControls);
-                              mediaBox.addEventListener('mousemove', revealControls);
-                              mediaBox.addEventListener('mouseleave', function() {
-                                clearTimeout(inactivityTimer);
-                                hideControls();
-                              });
                             }
 
                             video.addEventListener('playing', function() {
                               if (poster) {
                                 poster.classList.add('carousel-video-poster-hidden');
                               }
-                            });
 
-                            pauseButton.addEventListener('click', function(event) {
-                              event.stopPropagation();
-                              revealControls();
-
-                              if (videoMedia.playing) {
-                                videoMedia.pause();
-                              } else {
-                                videoMedia.play();
-                              }
-                            });
-
-                            video.addEventListener('playing', function() {
                               pauseIcon.classList.remove('hidden');
                               playIcon.classList.add('hidden');
                             });
@@ -1260,22 +1125,9 @@
                               playIcon.classList.remove('hidden');
                             });
 
-                            // The video has no loop attribute, so it fires 'ended' once per playthrough. On
-                            // touch devices this advances to the next slide (or wraps to the first) so the
-                            // carousel cycles through every video, always starting the next one muted; with a
-                            // single video slide, there is nowhere to advance to, so it just replays in place.
-                            // On desktop the carousel never auto-advances: the video simply ends, and the
-                            // visitor decides when to move on via the carousel's own navigation.
-                            video.addEventListener('ended', function() {
-                              if (!isTouchDevice) {
-                                return;
-                              }
-
-                              if (carousel.cells.length > 1) {
-                                goToNext();
-                              } else {
-                                videoMedia.play();
-                              }
+                            pauseButton.addEventListener('click', function(event) {
+                              event.stopPropagation();
+                              togglePlay();
                             });
 
                             var soundOffIcon = soundButton.querySelector('.carousel-video-sound-off-icon');
@@ -1285,13 +1137,6 @@
                               video.muted = muted;
                               soundOffIcon.classList.toggle('hidden', !muted);
                               soundOnIcon.classList.toggle('hidden', muted);
-
-                              // On touch devices, unmuting is what hands control over to the whole custom
-                              // control group (on desktop it is simply always visible, see CSS). Once
-                              // revealed it stays revealed, even if the visitor mutes again afterwards.
-                              if (!muted && isTouchDevice) {
-                                revealControls();
-                              }
                             }
 
                             function toggleSound() {
@@ -1312,26 +1157,28 @@
 
                             soundButton.addEventListener('click', function(event) {
                               event.stopPropagation();
-                              revealControls();
                               toggleSound();
                             });
 
-                            // The "go to product" link navigates on its own; it just needs to not also
-                            // trigger the tap-to-unmute handler below.
                             if (productLink) {
                               productLink.addEventListener('click', function(event) {
                                 event.stopPropagation();
-                                revealControls();
                               });
                             }
 
-                            // Tolstoy-style tap-to-unmute: tapping anywhere on the video (not just the small
-                            // sound button) toggles sound in place, matching how Tolstoy's thumbnail behaves.
-                            // Also counts as interaction for the mobile inactivity auto-hide timer.
-                            mediaBox.addEventListener('click', function() {
-                              revealControls();
-                              toggleSound();
-                            });
+                            // Its own click handler (theme.js) dispatches a separate 'lightbox:open' custom
+                            // event but never stops the original click from bubbling - without this, tapping
+                            // "expand" would also toggle play/pause on the video it's about to move.
+                            if (expandButton) {
+                              expandButton.addEventListener('click', function(event) {
+                                event.stopPropagation();
+                              });
+                            }
+
+                            // Tapping the video itself is the main "press play" affordance, like any normal
+                            // video player - the dedicated button is there for a clear, discoverable target,
+                            // not the only way to trigger it.
+                            mediaBox.addEventListener('click', togglePlay);
                           });
 
                           // Only now, after every mediaBox above has its buttons queried and listeners
@@ -1374,6 +1221,16 @@
                             lightboxStage.innerHTML = '';
 
                             if (videoMedia) {
+                              // Captured before anything below moves/mutates it: whether this video was
+                              // actually already playing (the visitor tapped play before tapping expand) is
+                              // what decides whether the lightbox resumes it or leaves it paused - nothing
+                              // autoplays now, so opening the lightbox on a never-played video shouldn't
+                              // start it either. inheritSound is only passed by next/prev (never on the
+                              // initial open), so navigating from an already-playing video into a fresh one
+                              // continues playing through, matching how a story/reel viewer behaves once
+                              // you're already watching.
+                              var wasPlaying = videoMedia.playing;
+
                               lightboxStage.appendChild(videoMedia);
 
                               if (controlsGroup) {
@@ -1390,7 +1247,7 @@
                                 soundButton.click();
                               }
 
-                              if (video) {
+                              if (video && (wasPlaying || inheritSound !== undefined)) {
                                 // Moving a playing <video> to a new parent can force the browser to
                                 // re-buffer it, but video-media already has its [loaded] attribute set from
                                 // before the move - its CSS hides the poster whenever [loaded] is present, so
@@ -1447,13 +1304,11 @@
                               return;
                             }
 
-                            // The carousel's own autoplay-advance (this same timer/listener drives
-                            // goToNext() and, on every carousel:change, scheduleAdvance() - which pauses
-                            // every non-selected video AND relocates every slide's controls group, including
-                            // whichever one is currently sitting inside this lightbox) keeps running in the
-                            // background otherwise. Left alone, it fights with the lightbox: pausing/muting
-                            // videos on its own schedule and yanking the controls group back out mid-viewing.
-                            clearTimeout(advanceTimer);
+                            // scheduleAdvance() runs on every carousel:change and relocates every slide's
+                            // controls group (including whichever one is currently sitting inside this
+                            // lightbox, on mobile's progress-bar layout) back to its own slide - detaching it
+                            // for as long as the lightbox is open keeps that from yanking the controls group
+                            // back out mid-viewing if a carousel:change ever fired while it's up.
                             carousel.removeEventListener('carousel:change', scheduleAdvance);
 
                             document.documentElement.style.overflow = 'hidden';
@@ -3480,16 +3335,6 @@
           "id": "color_scheme",
           "label": "t:global.colors.scheme",
           "default": "scheme-3"
-        },
-        {
-          "type": "range",
-          "id": "cycle_speed",
-          "min": 2,
-          "max": 20,
-          "step": 1,
-          "unit": "sec",
-          "label": "Seconds between slides",
-          "default": 5
         },
         {
           "type": "select",
