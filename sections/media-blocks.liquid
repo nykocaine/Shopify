@@ -798,6 +798,16 @@
                   never able to outrank .is-lightbox-expanded media, which lives outside it entirely, no
                   matter how high a z-index the buttons themselves declare.
                   {%- endcomment -%}
+                  {%- comment -%}
+                  display: contents takes the wrapper itself out of #carousel-wrapper-{{ block.id }}'s grid
+                  entirely (it's .v-stack.gap-4) - without it, showing the wrapper turns it into a real,
+                  zero-height grid item that still gets a full row-gap around it, growing the carousel's
+                  height by that gap every time the lightbox opens and shrinking it back on close.
+                  {%- endcomment -%}
+                  #media-lightbox-{{ block.id }} {
+                    display: contents;
+                  }
+
                   #media-lightbox-{{ block.id }} .media-lightbox__backdrop {
                     background: #000;
                     z-index: 998;
