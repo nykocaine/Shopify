@@ -1174,6 +1174,13 @@
                                 videoMedia.pause();
                               } else {
                                 videoMedia.player.play();
+
+                                // A tap on play is a real user gesture, so autoplay-with-sound isn't
+                                // blocked here - going through the real button (not video.muted directly)
+                                // keeps its icon and the "mute every other video" behavior in sync.
+                                if (video.muted) {
+                                  soundButton.click();
+                                }
                               }
                             }
 
