@@ -847,14 +847,31 @@
                   }
 
                   {%- comment -%}
-                  Fixed box (not aspect-ratio-derived like the rule above) so a portrait video isn't limited
-                  to a narrow strip by its own ratio - object-fit: cover fills it, cropping instead of
-                  leaving empty space on the sides. Mobile only, per request.
+                  --lightbox-media-w/h drive both the mobile media box AND the close/prev/next positions
+                  below, so those stay pinned to its actual corners instead of the screen's. Height falls
+                  back to vh, then upgrades to 100dvh where supported (same pattern as .modal--age-verifier
+                  in theme.css) so it's based on the real visible area, not the layout viewport Chrome/Safari
+                  report before their address bar has collapsed.
                   {%- endcomment -%}
                   @media screen and (max-width: 999px) {
+                    #shopify-section-{{ section.id }} {
+                      --lightbox-media-w: min(calc(100vw - 2 * var(--container-gutter)), 32rem);
+                      --lightbox-media-h: calc(90vh - 2 * var(--container-gutter));
+                    }
+                  }
+
+                  @supports (height: 100dvh) {
+                    @media screen and (max-width: 999px) {
+                      #shopify-section-{{ section.id }} {
+                        --lightbox-media-h: calc(90dvh - 2 * var(--container-gutter));
+                      }
+                    }
+                  }
+
+                  @media screen and (max-width: 999px) {
                     #shopify-section-{{ section.id }} video-media.is-lightbox-expanded {
-                      width: min(calc(100vw - 2 * var(--container-gutter)), 32rem);
-                      height: calc(90vh - 2 * var(--container-gutter));
+                      width: var(--lightbox-media-w);
+                      height: var(--lightbox-media-h);
                     }
 
                     #shopify-section-{{ section.id }} video-media.is-lightbox-expanded video {
@@ -862,6 +879,11 @@
                       width: 100%;
                       height: 100%;
                       object-fit: cover;
+                    }
+
+                    #shopify-section-{{ section.id }} img.is-lightbox-expanded {
+                      max-width: var(--lightbox-media-w);
+                      max-height: var(--lightbox-media-h);
                     }
                   }
 
@@ -871,14 +893,6 @@
 
                   #shopify-section-{{ section.id }} img.is-lightbox-expanded {
                     object-fit: contain;
-                  }
-
-                  @media screen and (max-width: 999px) {
-                    #shopify-section-{{ section.id }} video-media.is-lightbox-expanded,
-                    #shopify-section-{{ section.id }} img.is-lightbox-expanded {
-                      max-width: calc(100vw - 2 * var(--drawer-body-padding-inline, min(2rem, var(--container-gutter))));
-                      max-height: calc(100vh - 2 * var(--drawer-body-padding-block, min(2rem, var(--container-gutter))));
-                    }
                   }
 
                   #media-lightbox-{{ block.id }} .media-lightbox__close {
@@ -920,6 +934,34 @@
                   }
 
                   {%- comment -%}
+                  Mobile only: pins close/prev/next to the media box's own corners (using the same
+                  --lightbox-media-w/h it's sized with) instead of the screen's. Not applied on desktop,
+                  where the media isn't a fixed-size box (aspect-ratio-derived instead, see the rule above)
+                  so there's no fixed edge of its own to pin to.
+                  {%- endcomment -%}
+                  @media screen and (max-width: 999px) {
+                    #media-lightbox-{{ block.id }} .media-lightbox__close {
+                      inset-inline-end: auto;
+                      inset-inline-start: 50%;
+                      translate: calc(var(--lightbox-media-w) / 2 - 50% - 0.5rem) calc(var(--lightbox-media-h) / -2 - 50% + 0.5rem);
+                    }
+
+                    #media-lightbox-{{ block.id }} .media-lightbox__prev,
+                    #media-lightbox-{{ block.id }} .media-lightbox__next {
+                      inset-inline-start: 50%;
+                      inset-inline-end: auto;
+                    }
+
+                    #media-lightbox-{{ block.id }} .media-lightbox__prev {
+                      translate: calc(var(--lightbox-media-w) / -2 - 50% + 0.5rem) -50%;
+                    }
+
+                    #media-lightbox-{{ block.id }} .media-lightbox__next {
+                      translate: calc(var(--lightbox-media-w) / 2 - 50% - 0.5rem) -50%;
+                    }
+                  }
+
+                  {%- comment -%}
                   product-zoom-button (theme.css) inherits currentColor and has a negative inset-inline-end
                   meant to slightly overhang a card's edge - here it sits inside .content-box's own
                   overflow: hidden, so that negative offset clips it off-center instead. Pinning both fixes
@@ -958,6 +1000,20 @@
                     inset-block-end: var(--drawer-body-padding-block, min(2rem, var(--container-gutter)));
                     inset-inline-end: var(--drawer-body-padding-inline, min(2rem, var(--container-gutter)));
                     inset-block-start: auto;
+                  }
+
+                  {%- comment -%}
+                  Mobile only: same corner-pinning as close/prev/next above, so this lands at the video's own
+                  bottom-right corner instead of the screen's.
+                  {%- endcomment -%}
+                  @media screen and (max-width: 999px) {
+                    #shopify-section-{{ section.id }} .carousel-video-controls.is-lightbox-expanded {
+                      inset-block-end: auto;
+                      inset-inline-end: auto;
+                      inset-inline-start: 50%;
+                      inset-block-start: 50%;
+                      translate: calc(var(--lightbox-media-w) / 2 - 100% + 0.5rem) calc(var(--lightbox-media-h) / 2 - 100% + 0.5rem);
+                    }
                   }
                 </style>
 
