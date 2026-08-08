@@ -1380,7 +1380,18 @@
                               }
 
                               if (video) {
+                                // Moving a playing <video> to a new parent can force the browser to
+                                // re-buffer it, but video-media already has its [loaded] attribute set from
+                                // before the move - its CSS hides the poster whenever [loaded] is present, so
+                                // without this the re-buffering shows as a blank/solid-color video instead of
+                                // the poster. Removing it brings the poster back for that gap, and it's only
+                                // restored once the video is actually rendering frames again (its 'playing'
+                                // event), not just requested.
+                                videoMedia.removeAttribute('loaded');
                                 videoMedia.play();
+                                video.addEventListener('playing', function() {
+                                  videoMedia.setAttribute('loaded', '');
+                                }, { once: true });
                               }
                             } else if (image) {
                               lightboxStage.setAttribute('data-type', 'image');
