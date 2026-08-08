@@ -912,6 +912,17 @@
                   }
 
                   {%- comment -%}
+                  product-zoom-button__label (theme.css) starts at width: 0, only revealed on
+                  @media (pointer: fine):hover - on touch devices that hover never fires, so it stays hidden
+                  forever. Showing it always on mobile instead of on hover here.
+                  {%- endcomment -%}
+                  @media screen and (pointer: coarse) {
+                    #carousel-wrapper-{{ block.id }} .product-zoom-button__label {
+                      width: auto;
+                    }
+                  }
+
+                  {%- comment -%}
                   The video's own sound/pause toggles stay exactly where they are in the DOM (same as the
                   video itself) - this just switches them from "absolute, relative to their own .content-box"
                   to "fixed, relative to the viewport" so they land near the bottom-right of the expanded
