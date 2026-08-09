@@ -2486,9 +2486,9 @@ onActivatorClicked_fn = function(event, activator) {
 /**
  * This function is called whenever an activator with the attribute "data-open-on-hover" is hovered.
  */
-onActivatorPointerEnter_fn = function() {
+onActivatorPointerEnter_fn = function(event, activator) {
   if (!this.open) {
-    this.show();
+    this.show({ activator });
     __privateGet(this, _focusLeaveDelegate).off().on("pointerenter", (event) => {
       if (event.target.contains(this) || this.contains(event.target) || event.target.getAttribute("aria-controls") === this.id || event.target.closest("[aria-controls]")?.getAttribute("aria-controls") === this.id) {
         return;
@@ -5381,7 +5381,7 @@ detectScrollDirection_fn = function() {
 };
 setVisibility_fn = function(isVisible) {
   if (isVisible !== __privateGet(this, _isVisible2)) {
-    if (!isVisible && this.querySelectorAll("[open]").length > 0) {
+    if (!isVisible && this.querySelectorAll('[aria-expanded="true"]').length > 0) {
       return;
     }
     __privateSet(this, _isVisible2, isVisible);

@@ -270,7 +270,7 @@
                   endif
                 -%}
 
-                <a href="{{ link.url }}" class="block subheading link-reversed" {% if link.current %}aria-current="page"{% endif %} {% if open_dropdown_menu_in_sidebar and has_dropdown_menu %}aria-expanded="false" aria-controls="menu-dropdown-sidebar" data-link-position="{{ forloop.index }}"{% elsif has_dropdown_menu %}aria-expanded="false" aria-controls="{{ menu_id }}" {% if section.settings.menu_open_trigger == 'hover' %}data-open-on-hover{% endif %}{% endif %}>
+                <a href="{{ link.url }}" class="block subheading link-reversed" {% if link.current %}aria-current="page"{% endif %} {% if open_dropdown_menu_in_sidebar and has_dropdown_menu %}aria-expanded="false" aria-controls="menu-dropdown-sidebar" data-link-position="{{ forloop.index }}" {% if section.settings.menu_open_trigger == 'hover' %}data-open-on-hover{% endif %}{% elsif has_dropdown_menu %}aria-expanded="false" aria-controls="{{ menu_id }}" {% if section.settings.menu_open_trigger == 'hover' %}data-open-on-hover{% endif %}{% endif %}>
                   {{- link.title -}}
                 </a>
 
