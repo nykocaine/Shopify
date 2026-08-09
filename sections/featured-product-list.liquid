@@ -25,11 +25,19 @@
 
   #shopify-section-{{ section.id }} {
     --product-list-column-count: {{ section.settings.products_per_row_mobile | times: 1 }};
-    {%- comment -%}
-    Matches media-blocks' "Small" column spacing (--media-blocks-gap, sections/media-blocks.liquid)
-    instead of the theme-wide "Product listing spacing" setting, scoped to this section only.
-    {%- endcomment -%}
+  }
+
+  {%- comment -%}
+  Matches media-blocks' "Small" column spacing (--media-blocks-gap, sections/media-blocks.liquid)
+  instead of the theme-wide "Product listing spacing" setting, scoped to this section only.
+  Set directly on .product-list (not just the --product-list-column-gap variable it reads from)
+  and !important, since .product-list--carousel and its md/md-max/sm/sm-max variants (theme.css)
+  reassign the whole `grid` shorthand, which can silently drop a plain column-gap override.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .product-list {
     --product-list-column-gap: calc(var(--container-gutter) / 2);
+    column-gap: calc(var(--container-gutter) / 2) !important;
+    row-gap: calc(var(--container-gutter) / 2) !important;
   }
 
   #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
