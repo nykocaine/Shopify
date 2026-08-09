@@ -3461,7 +3461,7 @@ _ProductGallery_instances = new WeakSet();
  */
 registerLightboxUi_fn = function() {
   __privateGet(this, _photoSwipeInstance).pswp.ui.registerElement({
-    name: "close-button circle-button circle-button--xl",
+    name: "close-button circle-button",
     className: "",
     ariaLabel: window.themeVariables.strings.closeGallery,
     order: 2,
@@ -3477,7 +3477,7 @@ registerLightboxUi_fn = function() {
   });
   if (__privateGet(this, _photoSwipeInstance).pswp.options.dataSource.length > 1) {
     __privateGet(this, _photoSwipeInstance).pswp.ui.registerElement({
-      name: "previous-button circle-button circle-button--xl",
+      name: "previous-button circle-button",
       className: "",
       ariaLabel: window.themeVariables.strings.previous,
       order: 1,
@@ -3492,7 +3492,7 @@ registerLightboxUi_fn = function() {
       }
     });
     __privateGet(this, _photoSwipeInstance).pswp.ui.registerElement({
-      name: "next-button circle-button circle-button--xl",
+      name: "next-button circle-button",
       className: "",
       ariaLabel: window.themeVariables.strings.next,
       order: 3,
