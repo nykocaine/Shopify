@@ -18,6 +18,20 @@
     --product-list-column-count: {{ section.settings.products_per_row_mobile | times: 1 }};
   }
 
+  {%- comment -%}
+  Fixed (not viewport-scaled, not theme-wide "Product listing spacing") gap between cards, matching
+  sections/featured-product-list.liquid's gap so collection grids and featured product lists look
+  consistent. Set directly on .product-list (not just the --product-list-column-gap variable it reads
+  from) and !important, for the same reason as featured-product-list.liquid: any current or future
+  .product-list--carousel variant reassigns the whole `grid` shorthand, which can silently drop a
+  plain column-gap override.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .product-list {
+    --product-list-column-gap: 0.625rem;
+    column-gap: 0.625rem !important;
+    row-gap: 0.625rem !important;
+  }
+
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} {
       --product-list-column-count: {{ section.settings.products_per_row_desktop | at_most: 3 }};
