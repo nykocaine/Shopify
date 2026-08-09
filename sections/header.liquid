@@ -482,7 +482,16 @@
 </height-observer>
 
 <script>
-  document.documentElement.style.setProperty('--header-height', `${Math.round(document.getElementById('shopify-section-{{ section.id }}').clientHeight)}px`);
+  {%- comment -%}
+  Early synchronous fallback for --header-height, so sections that compensate for it (allow-transparent-header)
+  don't flash unpadded before <height-observer> upgrades (its own ResizeObserver only fires once theme.js loads
+  and connects it). Must measure the same element height-observer measures (<x-header> itself, via its wrapper's
+  clientHeight - height-observer is display: block with no padding/border of its own, so their heights match) -
+  not #shopify-section-{{ section.id }}, which is taller than <x-header> when "Floating header" is on (it alone
+  carries the extra padding-block-start for the header's white gutter). Measuring the wrong one here is what
+  desynced the transparent-header compensation padding from the header's actual height on floating headers.
+  {%- endcomment -%}
+  document.documentElement.style.setProperty('--header-height', `${Math.round(document.querySelector('#shopify-section-{{ section.id }} .header').clientHeight)}px`);
 </script>
 
 {% schema %}
