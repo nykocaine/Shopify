@@ -28,16 +28,18 @@
   }
 
   {%- comment -%}
-  Matches media-blocks' "Small" column spacing (--media-blocks-gap, sections/media-blocks.liquid)
-  instead of the theme-wide "Product listing spacing" setting, scoped to this section only.
+  Fixed (not viewport-scaled) gap, matching media-blocks' "Small" column spacing at its mobile
+  size specifically (--container-gutter is stepped per breakpoint - mobile/tablet/desktop each
+  get a different value - so calc(var(--container-gutter) / 2) still visibly changes size across
+  devices; a literal rem value is the only way to keep it truly identical everywhere).
   Set directly on .product-list (not just the --product-list-column-gap variable it reads from)
   and !important, since .product-list--carousel and its md/md-max/sm/sm-max variants (theme.css)
   reassign the whole `grid` shorthand, which can silently drop a plain column-gap override.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-list {
-    --product-list-column-gap: calc(var(--container-gutter) / 2);
-    column-gap: calc(var(--container-gutter) / 2) !important;
-    row-gap: calc(var(--container-gutter) / 2) !important;
+    --product-list-column-gap: 0.625rem;
+    column-gap: 0.625rem !important;
+    row-gap: 0.625rem !important;
   }
 
   #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
