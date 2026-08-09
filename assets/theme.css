@@ -6576,7 +6576,9 @@ product-rerender {
   column-gap: var(--header-column-gap);
   padding-block: var(--header-padding-block);
   padding-inline: var(--header-padding-inline);
-  transition: background .2s ease-in-out, color .2s ease-in-out;
+  transition: background .2s ease-in-out, color .2s ease-in-out, -webkit-backdrop-filter .3s ease-in-out, backdrop-filter .3s ease-in-out;
+  -webkit-backdrop-filter: blur(0px);
+  backdrop-filter: blur(0px);
   display: grid;
   position: relative;
 }
@@ -6608,6 +6610,8 @@ product-rerender {
   --background-gradient: initial;
   --border-color: 0 0 0 / 0;
   --text-color: var(--header-transparent-header-text-color, var(--header-non-transparent-text-color));
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 
 @media screen and (min-width: 1000px) {
