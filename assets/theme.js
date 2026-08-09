@@ -1021,7 +1021,7 @@ var ScrollCarousel = class extends HTMLElement {
     return this.cellSelector ? Array.from(this.querySelectorAll(this.cellSelector)) : Array.from(this.children);
   }
   get cells() {
-    return this.allCells.filter((cell) => !cell.hasAttribute("hidden"));
+    return this.allCells.filter((cell) => !cell.hasAttribute("hidden") && (cell.offsetWidth > 0 || cell.offsetHeight > 0));
   }
   get selectedCell() {
     return this.cells[this.selectedIndex];
@@ -1531,7 +1531,7 @@ var EffectCarousel = class extends HTMLElement {
     return this.cellSelector ? Array.from(this.querySelectorAll(this.cellSelector)) : Array.from(this.children);
   }
   get cells() {
-    return this.allCells.filter((cell) => !cell.hasAttribute("hidden"));
+    return this.allCells.filter((cell) => !cell.hasAttribute("hidden") && (cell.offsetWidth > 0 || cell.offsetHeight > 0));
   }
   get selectedCell() {
     return this.cells[this.selectedIndex];
@@ -3643,7 +3643,7 @@ var ProductList = class extends ScrollCarousel {
   connectedCallback() {
     super.connectedCallback();
 
-    if (matchesMediaQuery("motion-safe") && this.querySelectorAll("product-card[reveal-on-scroll=\"true\"]").length > 0) {
+    if (matchesMediaQuery("motion-safe") && this.querySelectorAll("product-card[reveal-on-scroll=\"true\"], .product-list__promo[reveal-on-scroll=\"true\"]").length > 0) {
       inView6(this, this.reveal.bind(this));
     }
   }
