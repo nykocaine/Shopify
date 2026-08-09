@@ -25,6 +25,11 @@
 
   #shopify-section-{{ section.id }} {
     --product-list-column-count: {{ section.settings.products_per_row_mobile | times: 1 }};
+    {%- comment -%}
+    Matches media-blocks' "Small" column spacing (--media-blocks-gap, sections/media-blocks.liquid)
+    instead of the theme-wide "Product listing spacing" setting, scoped to this section only.
+    {%- endcomment -%}
+    --product-list-column-gap: calc(var(--container-gutter) / 2);
   }
 
   #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
