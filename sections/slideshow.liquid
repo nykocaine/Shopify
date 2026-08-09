@@ -9,6 +9,16 @@
         --slideshow-background: {{ section.settings.background.rgb }};
       {%- endif -%}
     }
+
+    #shopify-section-{{ section.id }} .slideshow__slide .content-box {
+      min-height: {{ section.settings.mobile_height }}svh;
+    }
+
+    @media screen and (min-width: 700px) {
+      #shopify-section-{{ section.id }} .slideshow__slide .content-box {
+        min-height: {{ section.settings.desktop_height }}svh;
+      }
+    }
   </style>
 
   <div class="slideshow-wrapper {% unless section.settings.full_width %}container{% endunless %}">
@@ -57,33 +67,24 @@
       "default": 0
     },
     {
-      "type": "select",
-      "id": "image_size",
-      "label": "t:global.image.size",
-      "options": [
-        {
-          "value": "auto",
-          "label": "t:global.sizes.original_image_ratio"
-        },
-        {
-          "value": "sm",
-          "label": "t:global.sizes.small"
-        },
-        {
-          "value": "md",
-          "label": "t:global.sizes.medium"
-        },
-        {
-          "value": "lg",
-          "label": "t:global.sizes.large"
-        },
-        {
-          "value": "fill",
-          "label": "t:global.sizes.fit_screen"
-        }
-      ],
-      "info": "t:global.image.ratio_avoid_cropping_info",
-      "default": "auto"
+      "type": "range",
+      "id": "mobile_height",
+      "label": "Mobile height (% of window)",
+      "min": 30,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "desktop_height",
+      "label": "Desktop height (% of window)",
+      "min": 30,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
     },
     {
       "type": "select",
