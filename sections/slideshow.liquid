@@ -10,13 +10,28 @@
       {%- endif -%}
     }
 
+    {%- comment -%}
+    Matches the existing .min-h-fill convention (assets/theme.css): subtract the sticky header/
+    announcement bar area from the svh height, since that's real occupied space above the fold on
+    every page except when this section is both first AND allows a transparent header - there, the
+    header floats over the slideshow instead of pushing it down, so only the (non-transparent)
+    announcement bar/countdown still needs subtracting.
+    {%- endcomment -%}
     #shopify-section-{{ section.id }} .slideshow__slide .content-box {
-      min-height: {{ section.settings.mobile_height }}svh;
+      min-height: calc({{ section.settings.mobile_height }}svh - var(--sticky-area-height, 0px));
+    }
+
+    #shopify-section-{{ section.id }}:first-child [allow-transparent-header] .slideshow__slide .content-box {
+      min-height: calc({{ section.settings.mobile_height }}svh - var(--announcement-bar-height, 0px) - var(--countdown-condensed-height, 0px));
     }
 
     @media screen and (min-width: 700px) {
       #shopify-section-{{ section.id }} .slideshow__slide .content-box {
-        min-height: {{ section.settings.desktop_height }}svh;
+        min-height: calc({{ section.settings.desktop_height }}svh - var(--sticky-area-height, 0px));
+      }
+
+      #shopify-section-{{ section.id }}:first-child [allow-transparent-header] .slideshow__slide .content-box {
+        min-height: calc({{ section.settings.desktop_height }}svh - var(--announcement-bar-height, 0px) - var(--countdown-condensed-height, 0px));
       }
     }
   </style>
