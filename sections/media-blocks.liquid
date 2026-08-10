@@ -531,6 +531,38 @@
                 </media-block>
 
               {%- when 'info_panel' -%}
+                {%- liquid
+                  case block.settings.content_position
+                    when 'top_left'
+                      assign content_vertical_class = 'align-self-start'
+                      assign content_horizontal_class = 'prose-justify-start'
+                    when 'top_center'
+                      assign content_vertical_class = 'align-self-start'
+                      assign content_horizontal_class = 'prose-justify-center'
+                    when 'top_right'
+                      assign content_vertical_class = 'align-self-start'
+                      assign content_horizontal_class = 'prose-justify-end'
+                    when 'middle_left'
+                      assign content_vertical_class = 'align-self-center'
+                      assign content_horizontal_class = 'prose-justify-start'
+                    when 'middle_center'
+                      assign content_vertical_class = 'align-self-center'
+                      assign content_horizontal_class = 'prose-justify-center'
+                    when 'middle_right'
+                      assign content_vertical_class = 'align-self-center'
+                      assign content_horizontal_class = 'prose-justify-end'
+                    when 'bottom_left'
+                      assign content_vertical_class = 'align-self-end'
+                      assign content_horizontal_class = 'prose-justify-start'
+                    when 'bottom_center'
+                      assign content_vertical_class = 'align-self-end'
+                      assign content_horizontal_class = 'prose-justify-center'
+                    when 'bottom_right'
+                      assign content_vertical_class = 'align-self-end'
+                      assign content_horizontal_class = 'prose-justify-end'
+                  endcase
+                -%}
+
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {{ block.shopify_attributes }}>
                   {%- if block.settings.label != blank -%}
                     <div class="info-panel__label">
@@ -539,7 +571,7 @@
                   {%- endif -%}
 
                   {%- if block.settings.content != blank -%}
-                    <div class="info-panel__content prose prose-justify-{{ block.settings.text_alignment }}">
+                    <div class="info-panel__content prose {{ content_horizontal_class }} {{ content_vertical_class }}">
                       {{ block.settings.content }}
                     </div>
                   {%- endif -%}
@@ -3547,9 +3579,48 @@
           "default": "<p>Add an intro paragraph here.</p><h3>How it works</h3><p>Add a description here.</p><h3>Why we love it</h3><p>Add a description here.</p>"
         },
         {
-          "type": "text_alignment",
-          "id": "text_alignment",
-          "label": "t:global.text.alignment"
+          "type": "select",
+          "id": "content_position",
+          "label": "t:global.position.alignment",
+          "options": [
+            {
+              "value": "top_left",
+              "label": "t:global.position.top_left"
+            },
+            {
+              "value": "top_center",
+              "label": "t:global.position.top_center"
+            },
+            {
+              "value": "top_right",
+              "label": "t:global.position.top_right"
+            },
+            {
+              "value": "middle_left",
+              "label": "t:global.position.middle_left"
+            },
+            {
+              "value": "middle_center",
+              "label": "t:global.position.middle_center"
+            },
+            {
+              "value": "middle_right",
+              "label": "t:global.position.middle_right"
+            },
+            {
+              "value": "bottom_left",
+              "label": "t:global.position.bottom_left"
+            },
+            {
+              "value": "bottom_center",
+              "label": "t:global.position.bottom_center"
+            },
+            {
+              "value": "bottom_right",
+              "label": "t:global.position.bottom_right"
+            }
+          ],
+          "default": "top_left"
         },
         {
           "type": "color_scheme",
