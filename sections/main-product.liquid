@@ -24,9 +24,12 @@
     font-size: var(--text-sm);
   }
 
-  {%- if section.settings.allow_transparent_header and section.settings.transparent_header_use_primary_colors -%}
+  {%- if section.settings.allow_transparent_header and section.settings.transparent_header_use_primary_colors and product.media.size > 0 -%}
     {%- comment -%}
     When this setting is enabled, we use the transparent header, but we force the header to use the primary colors and primary logo.
+    Gated on product.media.size > 0 to match the same condition this section uses below to decide whether it
+    actually applies the allow-transparent-header attribute - otherwise this !important override could win
+    over another section's own legitimate transparent header even though this one never triggers it.
     {%- endcomment -%}
 
     .header {
@@ -49,11 +52,18 @@
     }
   {%- endif -%}
 
-  @media screen and (min-width: 1000px) {
-    #shopify-section-{{ section.id }} {
-      --product-grid: auto / minmax(0, {{ section.settings.product_media_size | divided_by: 100.0 }}fr) minmax(0, {{ 100.0 | minus: section.settings.product_media_size | divided_by: 100.0 }}fr);
+  {%- comment -%}
+  Only split into two columns when a gallery card actually exists (product.media.size > 0) - otherwise
+  .product's own single-column fallback (theme.css) applies and product-info fills the full width
+  instead of being squeezed into the gallery's column with an unexplained blank gap next to it.
+  {%- endcomment -%}
+  {%- if product.media.size > 0 -%}
+    @media screen and (min-width: 1000px) {
+      #shopify-section-{{ section.id }} {
+        --product-grid: auto / minmax(0, {{ section.settings.product_media_size | divided_by: 100.0 }}fr) minmax(0, {{ 100.0 | minus: section.settings.product_media_size | divided_by: 100.0 }}fr);
+      }
     }
-  }
+  {%- endif -%}
 
   {%- if section.settings.floating_product -%}
     {%- comment -%}
@@ -68,9 +78,20 @@
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .product {
       gap: var(--section-vertical-spacing);
-      padding-block-start: var(--section-vertical-spacing);
       padding-block-end: 0;
     }
+
+    {%- comment -%}
+    Skipped when the transparent header is actually going to overlay this section (same condition
+    used below for the allow-transparent-header attribute): the header's CSS assumes the gallery
+    sits flush at the very top (zero gap) to overlay correctly, so adding the usual top gutter here
+    would leave a solid gap between the transparent header and the gallery instead.
+    {%- endcomment -%}
+    {%- unless section.settings.allow_transparent_header and product.media.size > 0 -%}
+      #shopify-section-{{ section.id }} .product {
+        padding-block-start: var(--section-vertical-spacing);
+      }
+    {%- endunless -%}
 
     {%- comment -%}
     .section-floating--block-end's own margin-block-end (shared by every floating section in the theme) uses
@@ -152,17 +173,20 @@
       {%- comment -%}
       On desktop the two cards sit flush against each other (no gap) so they read as a single composition
       split in two — only the OUTER corners of each card stay rounded, the corners that touch each other are
-      squared off.
+      squared off. Only applies when the gallery card actually exists (product.media.size > 0): otherwise
+      product-info-frame is the only card in the row and should keep all 4 corners rounded.
       {%- endcomment -%}
-      #shopify-section-{{ section.id }} .product-gallery-frame {
-        border-start-end-radius: 0;
-        border-end-end-radius: 0;
-      }
+      {%- if product.media.size > 0 -%}
+        #shopify-section-{{ section.id }} .product-gallery-frame {
+          border-start-end-radius: 0;
+          border-end-end-radius: 0;
+        }
 
-      #shopify-section-{{ section.id }} .product-info-frame {
-        border-start-start-radius: 0;
-        border-end-start-radius: 0;
-      }
+        #shopify-section-{{ section.id }} .product-info-frame {
+          border-start-start-radius: 0;
+          border-end-start-radius: 0;
+        }
+      {%- endif -%}
 
       {%- if section.settings.product_height_desktop > 0 -%}
         {%- comment -%}
@@ -292,12 +316,24 @@
 
 <script>
   // We save the product ID in local storage to be eventually used for recently viewed section
+  let recentlyViewedProducts;
+
   try {
-    let recentlyViewedProducts = JSON.parse(localStorage.getItem('theme:recently-viewed-products') || '[]');
+    recentlyViewedProducts = JSON.parse(localStorage.getItem('theme:recently-viewed-products') || '[]');
 
-    recentlyViewedProducts = recentlyViewedProducts.filter(item => item !== {{ product.id }}); // Delete product to remove to the start
-    recentlyViewedProducts.unshift({{ product.id }}); // Add at the start
+    if (!Array.isArray(recentlyViewedProducts)) {
+      throw new Error('Not an array');
+    }
+  } catch (e) {
+    // Corrupted value (invalid JSON, or not an array): reset instead of silently failing on every
+    // future product view too
+    recentlyViewedProducts = [];
+  }
 
+  recentlyViewedProducts = recentlyViewedProducts.filter(item => item !== {{ product.id }}); // Delete product to remove to the start
+  recentlyViewedProducts.unshift({{ product.id }}); // Add at the start
+
+  try {
     localStorage.setItem('theme:recently-viewed-products', JSON.stringify(recentlyViewedProducts));
   } catch (e) {
     // Safari in private mode does not allow setting item, we silently fail
@@ -364,7 +400,8 @@
       "unit": "px",
       "label": "Gallery corner radius",
       "info": "Rounds the corners of the main image on mobile.",
-      "default": 0
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_product == false }}"
     },
     {
       "type": "range",
