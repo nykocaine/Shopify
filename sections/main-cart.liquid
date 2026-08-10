@@ -68,29 +68,14 @@
     <div class="container">
       <div class="max-w-2xl mx-auto">
       {%- if cart.empty? -%}
-          <div class="v-stack gap-8 sm:gap-12">
-            <div class="empty-state">
-              <div class="prose prose-justify-center">
-                <h1 class="h3">{{ 'cart.general.title' | t }}</h1>
-                <p>{{ 'cart.general.empty' | t }}</p>
+          <div class="empty-state">
+            <div class="prose prose-justify-center">
+              <h1 class="h3">{{ 'cart.general.title' | t }}</h1>
+              <p>{{ 'cart.general.empty' | t }}</p>
 
-                {%- assign button_content = 'cart.general.continue_shopping' | t -%}
-                {%- render 'button', content: button_content, href: settings.cart_empty_cart_link -%}
-              </div>
+              {%- assign button_content = 'cart.general.continue_shopping' | t -%}
+              {%- render 'button', content: button_content, href: settings.cart_empty_cart_link -%}
             </div>
-
-            {%- if section.settings.empty_cart_collection != blank and section.settings.empty_cart_collection.products.size > 0 -%}
-              <div class="v-stack gap-4">
-                {%- if section.settings.empty_cart_heading != blank -%}
-                  <div class="prose prose-justify-center">
-                    {%- render 'heading', content: section.settings.empty_cart_heading, style: 'h4', html_tag: 'h2' -%}
-                  </div>
-                {%- endif -%}
-
-                {%- assign empty_cart_products = section.settings.empty_cart_collection.products | slice: 0, 4 -%}
-                {%- render 'product-list', products: empty_cart_products -%}
-              </div>
-            {%- endif -%}
           </div>
         {%- else -%}
           <div class="v-stack gap-6 sm:gap-12">
@@ -328,22 +313,6 @@
       "unit": "px",
       "label": "Order summary corner radius",
       "default": 16
-    },
-    {
-      "type": "header",
-      "content": "Empty cart"
-    },
-    {
-      "type": "text",
-      "id": "empty_cart_heading",
-      "label": "Recommendations heading",
-      "default": "You might like"
-    },
-    {
-      "type": "collection",
-      "id": "empty_cart_collection",
-      "label": "Recommendations collection",
-      "info": "Shown below the empty cart message when the cart has no items."
     }
   ],
   "blocks": [

@@ -7,6 +7,15 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
     border-radius: var(--drawer-border-radius);
     overflow: hidden;
   }
+
+  {%- comment -%}
+  product-list's column count normally follows viewport width (theme.css media queries), which
+  doesn't account for the drawer's own narrow, fixed width - forcing 2 columns here keeps the
+  empty-cart recommendations readable instead of squeezing 4+ cards into the drawer on desktop.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .product-list {
+    --product-list-column-count: 2;
+  }
 </style>
 
 {%- if request.page_type != 'cart' -%}
@@ -92,13 +101,28 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
 
     {%- capture cart_content -%}
       {%- if cart.empty? -%}
-        <div class="empty-state">
-          <div class="prose prose-justify-center">
-            <p class="h5">{{ 'cart.general.empty' | t }}</p>
+        <div class="v-stack gap-8">
+          <div class="empty-state">
+            <div class="prose prose-justify-center">
+              <p class="h5">{{ 'cart.general.empty' | t }}</p>
 
-            {%- assign button_label = 'cart.general.continue_shopping' | t -%}
-            {%- render 'button', content: button_label, href: settings.cart_empty_cart_link -%}
+              {%- assign button_label = 'cart.general.continue_shopping' | t -%}
+              {%- render 'button', content: button_label, href: settings.cart_empty_cart_link -%}
+            </div>
           </div>
+
+          {%- if section.settings.empty_cart_collection != blank and section.settings.empty_cart_collection.products.size > 0 -%}
+            <div class="v-stack gap-4">
+              {%- if section.settings.empty_cart_heading != blank -%}
+                <div class="prose prose-justify-center">
+                  {%- render 'heading', content: section.settings.empty_cart_heading, style: 'h4', html_tag: 'h2' -%}
+                </div>
+              {%- endif -%}
+
+              {%- assign empty_cart_products = section.settings.empty_cart_collection.products | slice: 0, 4 -%}
+              {%- render 'product-list', products: empty_cart_products -%}
+            </div>
+          {%- endif -%}
         </div>
       {%- else -%}
         <div class="v-stack gap-5">
@@ -468,6 +492,22 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
       "label": "t:global.text.title",
       "default": "You may also like",
       "visible_if": "{{ section.settings.enable_cross_sell }}"
+    },
+    {
+      "type": "header",
+      "content": "Empty cart"
+    },
+    {
+      "type": "text",
+      "id": "empty_cart_heading",
+      "label": "Recommendations heading",
+      "default": "You might like"
+    },
+    {
+      "type": "collection",
+      "id": "empty_cart_collection",
+      "label": "Recommendations collection",
+      "info": "Shown below the empty cart message when the cart has no items."
     }
   ],
   "blocks": [
