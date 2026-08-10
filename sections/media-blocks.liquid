@@ -586,6 +586,16 @@
                 -%}
 
                 <style>
+                  {%- comment -%}
+                  Overrides the .gap-4 utility's fixed 1rem row-gap (which is a generic spacing-scale
+                  value shared by every .gap-4 usage in the theme, not section spacing) so the gap above
+                  the progress bar/controls row follows the same global "Section spacing" setting as the
+                  rest of the theme's section rhythm, instead of a value independent from it.
+                  {%- endcomment -%}
+                  #carousel-wrapper-{{ block.id }} {
+                    row-gap: var(--section-vertical-spacing);
+                  }
+
                   #carousel-{{ block.id }} {
                     grid: auto / auto-flow {% if carousel_video_mobile_box_height %}calc({{ carousel_video_mobile_box_height }} * {{ carousel_video_width_ratio }}){% else %}85%{% endif %};
                     gap: .75rem;
