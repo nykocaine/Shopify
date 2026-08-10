@@ -84,7 +84,10 @@
       "Bash(grep -o \"footer__newsletter-input-group[^{]*{[^}]*}\" /tmp/home.html | head -10)",
       "Bash(curl -s -A \"Mozilla/5.0\" \"https://rythoskin.myshopify.com/pages/faq\" -o /tmp/faq.html)",
       "Bash(grep -n \"html,\\\\|html {\" assets/theme.css)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(sort -t'\"' -k4)",
+      "Bash(awk -F'\"' '{print $4, FILENAME\": \"$0}')",
+      "Bash(echo \"exit code: $?\")"
     ]
   }
 }
