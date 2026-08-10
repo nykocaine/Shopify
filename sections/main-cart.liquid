@@ -12,6 +12,27 @@
       padding-block: 4.8rem;
     }
   }
+
+  {%- comment -%}
+  cart__right is now a solid color-scheme box (order summary card) instead of a bordered outline,
+  so the 1px border theme.css gives it is no longer needed here.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .cart__right {
+    border-width: 0;
+  }
+
+  {%- comment -%}
+  Line items no longer sit in a table with their own quantity/total columns, so restore the
+  line-item component's own built-in quantity selector and price (theme.css hides these on
+  desktop specifically because the old table layout duplicated them in separate columns).
+  {%- endcomment -%}
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .cart .line-item__quantity-selector,
+    #shopify-section-{{ section.id }} .cart .line-item__line-price,
+    #shopify-section-{{ section.id }} .cart .line-item__unit-line-price {
+      display: revert;
+    }
+  }
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_cart %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_cart %} style="border-end-start-radius: {{ section.settings.cart_border_radius }}px; border-end-end-radius: {{ section.settings.cart_border_radius }}px; overflow: hidden;"{% endif %}>
@@ -30,73 +51,24 @@
           </div>
         {%- else -%}
           <div class="v-stack gap-6 sm:gap-12">
-            <header class="cart-header">
-              <h1 class="h3">{{ 'cart.general.title' | t }}</h1>
-
-              {%- if settings.cart_show_free_shipping_bar -%}
-                {%- render 'free-shipping-bar' -%}
-              {%- endif -%}
-            </header>
-
             <div class="cart">
               <div class="cart__left">
-                {%- comment -%}
-                ----------------------------------------------------------------------------------------------------------------
-                ORDER SUMMARY
-                ----------------------------------------------------------------------------------------------------------------
-                {%- endcomment -%}
-                {%- form 'cart', cart, id: 'cart-main-form', class: 'cart-form' -%}
-                  <table class="order-summary table table--remove-trailing-space">
-                    <thead class="order-summary__header">
-                      <tr>
-                        <th class="subheading">{{ 'cart.order.product' | t }}</th>
-                        <th class="subheading text-center">{{ 'cart.order.quantity' | t }}</th>
-                        <th class="subheading text-end">{{ 'cart.order.total' | t }}</th>
-                      </tr>
-                    </thead>
+                <div class="v-stack gap-6 sm:gap-8">
+                  <h1 class="h3">{{ 'cart.general.title' | t }}</h1>
 
-                    <tbody class="order-summary__body">
+                  {%- comment -%}
+                  ----------------------------------------------------------------------------------------------------------------
+                  ORDER SUMMARY
+                  ----------------------------------------------------------------------------------------------------------------
+                  {%- endcomment -%}
+                  {%- form 'cart', cart, id: 'cart-main-form', class: 'cart-form' -%}
+                    <div class="v-stack gap-6">
                       {%- for line_item in cart.items -%}
-                        <tr>
-                          <td>{%- render 'line-item', line_item: line_item, show_line_price: true, hide_unit_price: true, show_quantity_selector: true -%}</td>
-
-                          <td class="text-center">
-                            <line-item>
-                              <div class="h-stack gap-5">
-                                {%- render 'quantity-selector', line_item: line_item -%}
-
-                                <a href="{{ line_item.url_to_remove }}">
-                                  <span class="sr-only">{{ 'cart.general.remove_item' | t: title: line_item.title }}</span>
-                                  {%- render 'icon' with 'remove-bin' -%}
-                                </a>
-                              </div>
-
-                              <div class="line-item__error-container empty:hidden"></div>
-                            </line-item>
-                          </td>
-
-                          <td class="text-end">
-                            <div class="v-stack gap-0 5 justify-items-end">
-                              <span>
-                                {%- if settings.currency_code_enabled -%}
-                                  {{- line_item.final_line_price | money_with_currency -}}
-                                {%- else -%}
-                                  {{- line_item.final_line_price | money -}}
-                                {%- endif -%}
-                              </span>
-
-                              {%- if line_item.unit_price -%}
-                                <unit-price class="subheading text-subdued">
-                                  ({{- line_item.unit_price | unit_price_with_measurement: line_item.unit_price_measurement -}})
-                                </unit-price>
-                              {%- endif -%}
-                            </div>
-                          </td>
-                        </tr>
+                        {%- render 'line-item', line_item: line_item, show_line_price: true, hide_unit_price: true, show_quantity_selector: true -%}
                       {%- endfor -%}
-                    </tbody>
-                  </table>
-                {%- endform -%}
+                    </div>
+                  {%- endform -%}
+                </div>
 
                 {%- comment -%}
                 ----------------------------------------------------------------------------------------------------------------
@@ -112,8 +84,16 @@
                 {%- endif -%}
               </div>
 
-              <div class="cart__right">
+              <div class="cart__right color-scheme color-scheme--{{ section.settings.cart_summary_color_scheme.id }}" style="border-radius: {{ section.settings.cart_summary_border_radius }}px;">
                 <div class="v-stack gap-4 sm:gap-5">
+                  <div class="v-stack gap-2">
+                    <span class="subheading">{{ 'cart.general.item_count' | t: count: cart.item_count }}</span>
+
+                    {%- if settings.cart_show_free_shipping_bar -%}
+                      {%- render 'free-shipping-bar' -%}
+                    {%- endif -%}
+                  </div>
+
                   {%- for block in section.blocks -%}
                     {%- case block.type -%}
                       {%- when '@app' -%}
@@ -287,6 +267,22 @@
       "id": "show_shipping_estimator",
       "label": "t:sections.main_cart.show_shipping_estimator",
       "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "cart_summary_color_scheme",
+      "label": "Order summary color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "cart_summary_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Order summary corner radius",
+      "default": 16
     }
   ],
   "blocks": [
