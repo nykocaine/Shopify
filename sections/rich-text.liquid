@@ -13,6 +13,20 @@
     assign second_column = ''
   -%}
 
+  {%- if section.settings.floating_rich_text -%}
+    <style>
+      {%- comment -%}
+      Overrides section-floating--block-end's fixed margin-block-end: when the next section shares
+      this section's own background, shrink it to 0 instead - otherwise floating adds a visible gap
+      on top of a pairing padding-collapsing already treats as "the same box", making it look like
+      extra space that wasn't there for two same-background sections without floating.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} > div {
+        margin-block-end: calc((1 - var(--section-has-same-background-as-next-section, 0)) * var(--container-gutter));
+      }
+    </style>
+  {%- endif -%}
+
   <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_rich_text %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_rich_text %} style="border-radius: {{ section.settings.rich_text_border_radius }}px; overflow: hidden;"{% endif %}>
     <div class="container section-spacing">
       <div class="rich-text justify-items-{{ section.settings.text_alignment | replace: 'left', 'start' | replace: 'right', 'end' }}">
