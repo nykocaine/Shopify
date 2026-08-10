@@ -185,7 +185,7 @@
               {%- assign tab_image = section.settings[tab_image_key] -%}
 
               {%- if tab_image != blank -%}
-                <div class="feature-tabs__media-item" data-tab-panel="{{ i }}" {% unless i == feature_tab_first_index %}hidden{% endunless %}>
+                <div class="feature-tabs__media-item {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-panel="{{ i }}">
                   {{- tab_image | image_url: width: tab_image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 100vw, 50vw', widths: '400,600,800,1000,1200,1400,1600,1800', class: 'image-cover' -}}
                 </div>
               {%- endif -%}
@@ -218,7 +218,7 @@
                 {%- assign tab_text = section.settings[tab_text_key] -%}
 
                 {%- if tab_image != blank -%}
-                  <div class="feature-tabs__panel v-stack gap-4" data-tab-panel="{{ i }}" {% unless i == feature_tab_first_index %}hidden{% endunless %}>
+                  <div class="feature-tabs__panel v-stack gap-4 {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-panel="{{ i }}">
                     {%- if tab_label != blank or tab_icon != blank -%}
                       <div class="feature-tabs__panel-heading">
                         {%- if tab_label != blank -%}
