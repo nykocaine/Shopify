@@ -217,6 +217,36 @@
       padding-block-end: 0;
       margin-block-start: calc(var(--section-disable-padding-collapsing) * var(--section-vertical-spacing-block-start, var(--section-vertical-spacing)));
     }
+
+    {%- comment -%}
+    Info panel: vertical label column + flowing richtext content column. The divider line before each
+    heading is generated automatically from spacing/border on the heading itself, so the merchant just
+    writes normal paragraphs and Heading 3s in the content editor instead of managing separate fields
+    per section (avoids the "offer_1/offer_2/offer_3" fixed-count pattern used elsewhere in the theme).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .info-panel {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 2rem;
+      padding: min(2.5rem, var(--container-gutter));
+      align-items: start;
+      display: grid;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__label {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      white-space: nowrap;
+    }
+
+    {%- comment -%}
+    .prose already spaces every child apart (--prose-default-spacing / --prose-heading-spacing) -
+    only the divider itself is added here, reusing that same existing gap as the padding above it
+    instead of a second, independent spacing value.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .info-panel__content :is(h1, h2, h3, h4, h5, h6) {
+      border-block-start: 1px solid rgb(var(--border-color));
+      padding-block-start: var(--prose-heading-spacing);
+    }
   </style>
 
   {%- assign allow_transparent_header = false -%}
@@ -499,6 +529,21 @@
                     </div>
                   {%- endif -%}
                 </media-block>
+
+              {%- when 'info_panel' -%}
+                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {{ block.shopify_attributes }}>
+                  {%- if block.settings.label != blank -%}
+                    <div class="info-panel__label">
+                      <span class="h6">{{ block.settings.label }}</span>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if block.settings.content != blank -%}
+                    <div class="info-panel__content prose">
+                      {{ block.settings.content }}
+                    </div>
+                  {%- endif -%}
+                </div>
 
               {%- when 'empty_item' -%}
                 <div class="media-blocks__item color-scheme color-scheme--{{ block.settings.color_scheme.id }} md-max:hidden" {{ block.shopify_attributes }}>
@@ -3478,6 +3523,34 @@
             }
           ],
           "default": "middle_center"
+        }
+      ]
+    },
+    {
+      "type": "info_panel",
+      "name": "Info panel",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "A solid-color panel with a vertical label on the side and stacked heading/text sections. Use Heading 3 in the content editor to start a new section - a divider line is added automatically above each one."
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Vertical label",
+          "default": "What's inside"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content",
+          "default": "<p>Add an intro paragraph here.</p><h3>How it works</h3><p>Add a description here.</p><h3>Why we love it</h3><p>Add a description here.</p>"
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-2"
         }
       ]
     },
