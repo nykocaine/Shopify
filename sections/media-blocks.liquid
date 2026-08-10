@@ -539,7 +539,7 @@
                   {%- endif -%}
 
                   {%- if block.settings.content != blank -%}
-                    <div class="info-panel__content prose">
+                    <div class="info-panel__content prose prose-justify-{{ block.settings.text_alignment }}">
                       {{ block.settings.content }}
                     </div>
                   {%- endif -%}
@@ -3545,6 +3545,11 @@
           "id": "content",
           "label": "Content",
           "default": "<p>Add an intro paragraph here.</p><h3>How it works</h3><p>Add a description here.</p><h3>Why we love it</h3><p>Add a description here.</p>"
+        },
+        {
+          "type": "text_alignment",
+          "id": "text_alignment",
+          "label": "t:global.text.alignment"
         },
         {
           "type": "color_scheme",
