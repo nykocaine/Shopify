@@ -201,8 +201,21 @@
       }
     {%- endif -%}
 
+    {%- comment -%}
+      Top section spacing as margin instead of padding, so it reads the same way as the other
+      converted sections. display: flow-root on the outer wrapper contains that margin (stops it
+      collapsing through the wrapper's own top edge), so the color-scheme background still starts
+      at exactly the same point as before - same value (including the padding-collapsing formula,
+      still driven by --section-disable-padding-collapsing), just as margin.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} > div {
+      display: flow-root;
+    }
+
     #shopify-section-{{ section.id }} .section-spacing {
+      padding-block-start: 0;
       padding-block-end: 0;
+      margin-block-start: calc(var(--section-disable-padding-collapsing) * var(--section-vertical-spacing-block-start, var(--section-vertical-spacing)));
     }
   </style>
 
