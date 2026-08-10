@@ -66,7 +66,17 @@
       "Bash(python3 -c \"import json; json.load\\(open\\('config/settings_schema.json'\\)\\)\")",
       "Bash(grep -n \"^\\\\.link\\\\b\\\\|^\\\\.link,\\\\|^\\\\.link {\" assets/theme.css)",
       "Bash(grep -n \"^button\\\\b\\\\|^button,\\\\|button {\" assets/theme.css)",
-      "Bash(grep -n \"^hr\\\\b\\\\|^hr,\\\\|hr {\" assets/theme.css)"
+      "Bash(grep -n \"^hr\\\\b\\\\|^hr,\\\\|hr {\" assets/theme.css)",
+      "Bash(awk '/^\\\\{% schema %\\\\}/{flag=1; next} /^\\\\{% endschema %\\\\}/{flag=0} flag' sections/main-product.liquid)",
+      "Bash(sed -n '300,312p' /tmp/main-product-schema.json | cat -A | sed -n '1,20p' | head -20)",
+      "Read(//private/tmp/**)",
+      "Bash(sed -n '300,312p' /tmp/main-product-schema.json)",
+      "Bash(sed -n '1255,1270p' /tmp/main-product-schema.json)",
+      "Bash(sed -i '' '1573s/^\\\\\\( *\\\\\\)},$/\\\\1}/' sections/main-product.liquid)",
+      "Bash(sed -i '' '2219s/^\\\\\\( *\\\\\\)},$/\\\\1}/' sections/main-product.liquid)",
+      "Bash(sed -i '' '2630s/^\\\\\\( *\\\\\\)},$/\\\\1}/' sections/main-product.liquid)",
+      "Bash(sed -i '' '3041s/^\\\\\\( *\\\\\\)},$/\\\\1}/' sections/main-product.liquid)",
+      "Bash(sed -i '' '3452s/^\\\\\\( *\\\\\\)},$/\\\\1}/' sections/main-product.liquid)"
     ]
   }
 }
