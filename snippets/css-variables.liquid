@@ -479,22 +479,6 @@ note that this may have impact on different places.
         }
       {%- endif -%}
     {%- endfor -%}
-
-    {%- comment -%}
-    Mirror of the comparison above, but looking forward instead of back: sets a variable on the
-    EARLIER of two adjacent same-background sections, for cases (like a floating section's own
-    bottom margin) that need to shrink based on what follows them, not on what padding-collapsing
-    already does to the following section's own top spacing.
-    {%- endcomment -%}
-    {%- for compare_to_color_scheme in settings.color_schemes -%}
-      {%- assign compare_to_color_scheme_hash = compare_to_color_scheme.settings.background_gradient | default: compare_to_color_scheme.settings.background | md5 -%}
-
-      {%- if current_color_scheme_hash == compare_to_color_scheme_hash -%}
-        .shopify-section:has(> .color-scheme--{{ color_scheme.id }}):has(+ .shopify-section > .color-scheme--{{ compare_to_color_scheme.id }}) {
-          --section-has-same-background-as-next-section: 1;
-        }
-      {%- endif -%}
-    {%- endfor -%}
   {%- endfor -%}
 
   @media screen and (min-width: 700px) {
