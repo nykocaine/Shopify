@@ -97,6 +97,21 @@
       --product-list-column-count: {{ section.settings.products_per_row_desktop }};
     }
   }
+
+  {%- comment -%}
+  Bottom section spacing as margin instead of padding, so the color-scheme background
+  doesn't extend into it. display: flow-root on the outer wrapper contains that margin
+  (stops it collapsing through .container and the wrapper's own bottom edge), so the
+  background still fills up to exactly the same point as before - same value, same look.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} > div {
+    display: flow-root;
+  }
+
+  #shopify-section-{{ section.id }} .section-spacing {
+    padding-block-end: 0;
+    margin-block-end: min(3rem, var(--section-vertical-spacing-block-end, var(--section-vertical-spacing)));
+  }
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product_list %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_product_list %} style="border-radius: {{ section.settings.product_list_border_radius }}px; overflow: hidden;"{% endif %}>
