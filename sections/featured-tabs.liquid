@@ -284,7 +284,7 @@
       if (!root) return;
 
       var tabs = root.querySelectorAll('[data-tab-index]');
-      var panels = root.querySelectorAll('.feature-tabs__media-item[data-tab-panel], .feature-tabs__panel[data-tab-panel], .feature-tabs__tab-label[data-tab-panel]');
+      var panels = root.querySelectorAll('.feature-tabs__media-item[data-tab-panel], .feature-tabs__panel[data-tab-panel], .feature-tabs__tab-label [data-tab-panel]');
 
       function activate(index) {
         tabs.forEach(function(tab) {
@@ -294,7 +294,7 @@
         });
 
         panels.forEach(function(panel) {
-          panel.classList.toggle('is-active', panel.getAttribute('data-tab-panel') === index);
+          panel.hidden = panel.getAttribute('data-tab-panel') !== index;
         });
       }
 
