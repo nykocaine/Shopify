@@ -88,8 +88,18 @@
     would leave a solid gap between the transparent header and the gallery instead.
     {%- endcomment -%}
     {%- unless section.settings.allow_transparent_header and product.media.size > 0 -%}
+      {%- comment -%}
+      Margin instead of padding, at half the section spacing. display: flow-root on the outer
+      color-scheme wrapper (below) contains this margin so it doesn't collapse through and escape
+      the wrapper - the color-scheme background still fills up to .product's new position instead
+      of stopping short and showing whatever's behind the section in that gap.
+      {%- endcomment -%}
       #shopify-section-{{ section.id }} .product {
-        padding-block-start: var(--section-vertical-spacing);
+        margin-block-start: calc(var(--section-vertical-spacing) / 2);
+      }
+
+      #shopify-section-{{ section.id }} > div {
+        display: flow-root;
       }
     {%- endunless -%}
 
