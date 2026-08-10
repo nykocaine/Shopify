@@ -22,6 +22,25 @@
   }
 
   {%- comment -%}
+  The solid color-scheme card is a desktop-only treatment (matches .cart's own 1000px breakpoint,
+  where it sits beside the items as a distinct column). Below that, cart__right stacks under the
+  items in normal flow, so it reverts to a plain block with a divider line instead of a floating
+  sticky card - background/radius/padding/sticky positioning are neutralized here, not removed
+  from the markup, since they're still needed at 1000px and up.
+  {%- endcomment -%}
+  @media screen and (max-width: 999px) {
+    #shopify-section-{{ section.id }} .cart__right {
+      background: none;
+      color: inherit;
+      border-radius: 0;
+      padding: 0;
+      position: static;
+      border-block-start: 1px solid rgb(var(--border-color));
+      padding-block-start: 1.5rem;
+    }
+  }
+
+  {%- comment -%}
   Line items no longer sit in a table with their own quantity/total columns, so restore the
   line-item component's own built-in quantity selector and price (theme.css hides these on
   desktop specifically because the old table layout duplicated them in separate columns).
