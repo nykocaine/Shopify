@@ -72,15 +72,15 @@
     on top of each other (absolute for media, grid-area 1/1 for panels) for the whole transition,
     so nothing jumps or pops - only opacity animates.
     {%- endcomment -%}
+    {%- comment -%}
+    Opacity itself is controlled via inline style (set below in the markup, and updated by JS on
+    tab switch) instead of a class + CSS rule, so there's no stylesheet cascade/specificity for it
+    to lose against - only the transition lives here.
+    {%- endcomment -%}
     #shopify-section-{{ section.id }} .feature-tabs__media-item {
       inset: 0;
-      opacity: 0;
       position: absolute;
       transition: opacity .5s ease;
-    }
-
-    #shopify-section-{{ section.id }} .feature-tabs__media-item.is-active {
-      opacity: 1 !important;
     }
 
     #shopify-section-{{ section.id }} .feature-tabs__content {
@@ -185,7 +185,7 @@
               {%- assign tab_image = section.settings[tab_image_key] -%}
 
               {%- if tab_image != blank -%}
-                <div class="feature-tabs__media-item {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-panel="{{ i }}">
+                <div class="feature-tabs__media-item {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-panel="{{ i }}" style="opacity: {% if i == feature_tab_first_index %}1{% else %}0{% endif %};">
                   {{- tab_image | image_url: width: tab_image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 100vw, 50vw', widths: '400,600,800,1000,1200,1400,1600,1800', class: 'image-cover' -}}
                 </div>
               {%- endif -%}
