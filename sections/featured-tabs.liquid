@@ -241,33 +241,36 @@
               {%- endfor -%}
             </div>
 
-            <div class="feature-tabs__tabs v-stack gap-3 justify-items-start">
-              <div class="feature-tabs__tablist" role="tablist">
-                {%- for i in (1..5) -%}
-                  {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
-                  {%- assign tab_image = section.settings[tab_image_key] -%}
+            <div class="feature-tabs__tabs" role="tablist">
+              {%- assign feature_tab_column = 0 -%}
+              {%- for i in (1..5) -%}
+                {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
+                {%- assign tab_image = section.settings[tab_image_key] -%}
 
-                  {%- if tab_image != blank -%}
-                    <button type="button" class="feature-tabs__tab {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-index="{{ i }}" role="tab" aria-selected="{% if i == feature_tab_first_index %}true{% else %}false{% endif %}">
-                      <span class="subheading">0{{ i }}</span>
-                    </button>
+                {%- if tab_image != blank -%}
+                  {%- assign feature_tab_column = feature_tab_column | plus: 1 -%}
+                  <button type="button" class="feature-tabs__tab {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-index="{{ i }}" style="grid-column: {{ feature_tab_column }};" role="tab" aria-selected="{% if i == feature_tab_first_index %}true{% else %}false{% endif %}">
+                    <span class="subheading">0{{ i }}</span>
+                  </button>
+                {%- endif -%}
+              {%- endfor -%}
+
+              {%- assign feature_tab_column = 0 -%}
+              {%- for i in (1..5) -%}
+                {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
+                {%- capture tab_number_label_key -%}tab_{{ i }}_number_label{%- endcapture -%}
+
+                {%- assign tab_image = section.settings[tab_image_key] -%}
+                {%- assign tab_number_label = section.settings[tab_number_label_key] -%}
+
+                {%- if tab_image != blank -%}
+                  {%- assign feature_tab_column = feature_tab_column | plus: 1 -%}
+
+                  {%- if tab_number_label != blank -%}
+                    <span class="feature-tabs__tab-label subheading text-subdued {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-panel="{{ i }}" style="grid-column: {{ feature_tab_column }};">{{ tab_number_label }}</span>
                   {%- endif -%}
-                {%- endfor -%}
-              </div>
-
-              <div class="feature-tabs__tab-label">
-                {%- for i in (1..5) -%}
-                  {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
-                  {%- capture tab_number_label_key -%}tab_{{ i }}_number_label{%- endcapture -%}
-
-                  {%- assign tab_image = section.settings[tab_image_key] -%}
-                  {%- assign tab_number_label = section.settings[tab_number_label_key] -%}
-
-                  {%- if tab_image != blank and tab_number_label != blank -%}
-                    <span class="subheading text-subdued" data-tab-panel="{{ i }}" {% unless i == feature_tab_first_index %}hidden{% endunless %}>{{ tab_number_label }}</span>
-                  {%- endif -%}
-                {%- endfor -%}
-              </div>
+                {%- endif -%}
+              {%- endfor -%}
             </div>
           </div>
         </div>
