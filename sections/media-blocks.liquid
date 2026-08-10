@@ -577,6 +577,242 @@
                   {%- endif -%}
                 </div>
 
+              {%- when 'feature_tabs' -%}
+                {%- liquid
+                  assign feature_tab_count = 0
+                  assign feature_tab_first_index = 0
+
+                  for i in (1..5)
+                    capture tab_image_key
+                      echo 'tab_'
+                      echo i
+                      echo '_image'
+                    endcapture
+
+                    assign tab_image = block.settings[tab_image_key]
+
+                    if tab_image != blank
+                      assign feature_tab_count = feature_tab_count | plus: 1
+
+                      if feature_tab_first_index == 0
+                        assign feature_tab_first_index = i
+                      endif
+                    endif
+                  endfor
+                -%}
+
+                {%- if feature_tab_count > 0 -%}
+                  <style>
+                    #feature-tabs-{{ block.id }} {
+                      grid-template-columns: minmax(0, 1fr);
+                      display: grid;
+                    }
+
+                    #feature-tabs-{{ block.id }} .feature-tabs__media {
+                      aspect-ratio: 4 / 5;
+                      position: relative;
+                    }
+
+                    #feature-tabs-{{ block.id }} .feature-tabs__media-item {
+                      inset: 0;
+                      position: absolute;
+                    }
+
+                    #feature-tabs-{{ block.id }} .feature-tabs__media-item[hidden] {
+                      display: none;
+                    }
+
+                    #feature-tabs-{{ block.id }} .feature-tabs__content {
+                      padding: min(2.5rem, var(--container-gutter));
+                      display: grid;
+                      align-content: space-between;
+                      gap: 2rem;
+                    }
+
+                    #feature-tabs-{{ block.id }} .feature-tabs__panel[hidden] {
+                      display: none;
+                    }
+
+                    #feature-tabs-{{ block.id }} .feature-tabs__panel-heading {
+                      align-items: center;
+                      gap: 1rem;
+                      display: flex;
+                    }
+
+                    #feature-tabs-{{ block.id }} .feature-tabs__panel-heading hr {
+                      flex: 1;
+                    }
+
+                    #feature-tabs-{{ block.id }} .feature-tabs__panel-icon {
+                      flex: none;
+                      width: 3rem;
+                    }
+
+                    #feature-tabs-{{ block.id }} .feature-tabs__tablist {
+                      align-items: start;
+                      gap: 1.25rem;
+                      display: flex;
+                    }
+
+                    #feature-tabs-{{ block.id }} .feature-tabs__tab {
+                      flex: none;
+                      width: 3.5rem;
+                      aspect-ratio: 1;
+                      border: 1px solid rgb(var(--border-color));
+                      border-radius: 100%;
+                      place-items: center;
+                      display: grid;
+                      cursor: pointer;
+                    }
+
+                    #feature-tabs-{{ block.id }} .feature-tabs__tab.is-active {
+                      background: rgb(var(--accent));
+                      border-color: rgb(var(--accent));
+                      color: rgb(var(--background));
+                    }
+
+                    @media screen and (min-width: 700px) {
+                      #feature-tabs-{{ block.id }} {
+                        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                      }
+
+                      #feature-tabs-{{ block.id }} .feature-tabs__media {
+                        aspect-ratio: auto;
+                      }
+                    }
+                  </style>
+
+                  <div id="feature-tabs-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} feature-tabs" {{ block.shopify_attributes }}>
+                    <div class="feature-tabs__media">
+                      {%- for i in (1..5) -%}
+                        {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
+                        {%- assign tab_image = block.settings[tab_image_key] -%}
+
+                        {%- if tab_image != blank -%}
+                          <div class="feature-tabs__media-item" data-tab-panel="{{ i }}" {% unless i == feature_tab_first_index %}hidden{% endunless %}>
+                            {{- tab_image | image_url: width: tab_image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 100vw, 50vw', widths: '400,600,800,1000,1200,1400,1600,1800', class: 'image-cover' -}}
+                          </div>
+                        {%- endif -%}
+                      {%- endfor -%}
+                    </div>
+
+                    <div class="feature-tabs__content color-scheme color-scheme--{{ block.settings.color_scheme.id }}">
+                      {%- if block.settings.title != blank or block.settings.subtitle != blank -%}
+                        <div class="prose">
+                          {%- if block.settings.title != blank -%}
+                            {%- render 'heading', content: block.settings.title, style: 'h3', html_tag: 'h2' -%}
+                          {%- endif -%}
+
+                          {%- if block.settings.subtitle != blank -%}
+                            <p class="text-subdued">{{ block.settings.subtitle }}</p>
+                          {%- endif -%}
+                        </div>
+                      {%- endif -%}
+
+                      <div class="feature-tabs__panels">
+                        {%- for i in (1..5) -%}
+                          {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
+                          {%- capture tab_label_key -%}tab_{{ i }}_label{%- endcapture -%}
+                          {%- capture tab_icon_key -%}tab_{{ i }}_icon{%- endcapture -%}
+                          {%- capture tab_text_key -%}tab_{{ i }}_text{%- endcapture -%}
+
+                          {%- assign tab_image = block.settings[tab_image_key] -%}
+                          {%- assign tab_label = block.settings[tab_label_key] -%}
+                          {%- assign tab_icon = block.settings[tab_icon_key] -%}
+                          {%- assign tab_text = block.settings[tab_text_key] -%}
+
+                          {%- if tab_image != blank -%}
+                            <div class="feature-tabs__panel v-stack gap-4" data-tab-panel="{{ i }}" {% unless i == feature_tab_first_index %}hidden{% endunless %}>
+                              {%- if tab_label != blank or tab_icon != blank -%}
+                                <div class="feature-tabs__panel-heading">
+                                  {%- if tab_label != blank -%}
+                                    <span class="medium">{{ tab_label }}</span>
+                                  {%- endif -%}
+
+                                  <hr>
+
+                                  {%- if tab_icon != blank -%}
+                                    {{- tab_icon | image_url: width: tab_icon.width | image_tag: loading: 'lazy', sizes: '48px', class: 'feature-tabs__panel-icon' -}}
+                                  {%- endif -%}
+                                </div>
+                              {%- endif -%}
+
+                              {%- if tab_text != blank -%}
+                                <p>{{ tab_text }}</p>
+                              {%- endif -%}
+                            </div>
+                          {%- endif -%}
+                        {%- endfor -%}
+                      </div>
+
+                      <div class="feature-tabs__tabs v-stack gap-3 justify-items-start">
+                        <div class="feature-tabs__tablist" role="tablist">
+                          {%- for i in (1..5) -%}
+                            {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
+                            {%- assign tab_image = block.settings[tab_image_key] -%}
+
+                            {%- if tab_image != blank -%}
+                              <button type="button" class="feature-tabs__tab {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-index="{{ i }}" role="tab" aria-selected="{% if i == feature_tab_first_index %}true{% else %}false{% endif %}">
+                                <span class="subheading">0{{ i }}</span>
+                              </button>
+                            {%- endif -%}
+                          {%- endfor -%}
+                        </div>
+
+                        <div class="feature-tabs__tab-label">
+                          {%- for i in (1..5) -%}
+                            {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
+                            {%- capture tab_number_label_key -%}tab_{{ i }}_number_label{%- endcapture -%}
+
+                            {%- assign tab_image = block.settings[tab_image_key] -%}
+                            {%- assign tab_number_label = block.settings[tab_number_label_key] -%}
+
+                            {%- if tab_image != blank and tab_number_label != blank -%}
+                              <span class="subheading text-subdued" data-tab-panel="{{ i }}" {% unless i == feature_tab_first_index %}hidden{% endunless %}>{{ tab_number_label }}</span>
+                            {%- endif -%}
+                          {%- endfor -%}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <script>
+                    (function() {
+                      var root = document.getElementById('feature-tabs-{{ block.id }}');
+                      if (!root) return;
+
+                      var tabs = root.querySelectorAll('[data-tab-index]');
+                      var panels = root.querySelectorAll('.feature-tabs__media-item[data-tab-panel], .feature-tabs__panel[data-tab-panel], .feature-tabs__tab-label [data-tab-panel]');
+
+                      function activate(index) {
+                        tabs.forEach(function(tab) {
+                          var isActive = tab.getAttribute('data-tab-index') === index;
+                          tab.classList.toggle('is-active', isActive);
+                          tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                        });
+
+                        panels.forEach(function(panel) {
+                          panel.hidden = panel.getAttribute('data-tab-panel') !== index;
+                        });
+                      }
+
+                      tabs.forEach(function(tab) {
+                        tab.addEventListener('click', function() {
+                          activate(tab.getAttribute('data-tab-index'));
+                        });
+                      });
+
+                      if (window.matchMedia('(pointer: fine)').matches) {
+                        tabs.forEach(function(tab) {
+                          tab.addEventListener('mouseenter', function() {
+                            activate(tab.getAttribute('data-tab-index'));
+                          });
+                        });
+                      }
+                    })();
+                  </script>
+                {%- endif -%}
+
               {%- when 'empty_item' -%}
                 <div class="media-blocks__item color-scheme color-scheme--{{ block.settings.color_scheme.id }} md-max:hidden" {{ block.shopify_attributes }}>
                   <!-- Empty item -->
@@ -3627,6 +3863,182 @@
           "id": "color_scheme",
           "label": "t:global.colors.scheme",
           "default": "scheme-2"
+        }
+      ]
+    },
+    {
+      "type": "feature_tabs",
+      "name": "Feature tabs",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "An interactive block: image on one side, numbered tabs on the other. Hovering or clicking a tab number swaps the image, the label/description, and the highlighted tab. Only tabs with an image assigned are shown - leave any of the 5 slots blank to use fewer."
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Take your rhode ON THE GO."
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "label": "Subtitle",
+          "default": "Essentials to throw in your purse or pocket."
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-2"
+        },
+        {
+          "type": "header",
+          "content": "Tab 1"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_1_image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "tab_1_label",
+          "label": "Label",
+          "default": "spotwear"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_1_icon",
+          "label": "Decorative icon"
+        },
+        {
+          "type": "text",
+          "id": "tab_1_text",
+          "label": "Text",
+          "default": "Create a comfy, protective bubble to leave spots looking smaller, flatter, and less red"
+        },
+        {
+          "type": "text",
+          "id": "tab_1_number_label",
+          "label": "Tab label",
+          "default": "SPOT"
+        },
+        {
+          "type": "header",
+          "content": "Tab 2"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_2_image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "tab_2_label",
+          "label": "Label"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_2_icon",
+          "label": "Decorative icon"
+        },
+        {
+          "type": "text",
+          "id": "tab_2_text",
+          "label": "Text"
+        },
+        {
+          "type": "text",
+          "id": "tab_2_number_label",
+          "label": "Tab label"
+        },
+        {
+          "type": "header",
+          "content": "Tab 3"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_3_image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "tab_3_label",
+          "label": "Label"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_3_icon",
+          "label": "Decorative icon"
+        },
+        {
+          "type": "text",
+          "id": "tab_3_text",
+          "label": "Text"
+        },
+        {
+          "type": "text",
+          "id": "tab_3_number_label",
+          "label": "Tab label"
+        },
+        {
+          "type": "header",
+          "content": "Tab 4"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_4_image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "tab_4_label",
+          "label": "Label"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_4_icon",
+          "label": "Decorative icon"
+        },
+        {
+          "type": "text",
+          "id": "tab_4_text",
+          "label": "Text"
+        },
+        {
+          "type": "text",
+          "id": "tab_4_number_label",
+          "label": "Tab label"
+        },
+        {
+          "type": "header",
+          "content": "Tab 5"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_5_image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "tab_5_label",
+          "label": "Label"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_5_icon",
+          "label": "Decorative icon"
+        },
+        {
+          "type": "text",
+          "id": "tab_5_text",
+          "label": "Text"
+        },
+        {
+          "type": "text",
+          "id": "tab_5_number_label",
+          "label": "Tab label"
         }
       ]
     },
