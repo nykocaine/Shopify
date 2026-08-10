@@ -40,10 +40,27 @@
 
     #shopify-section-{{ section.id }} .featured-tabs {
       grid-template-columns: minmax(0, 1fr);
-      border-radius: {{ section.settings.corner_radius }}px;
-      overflow: hidden;
+      gap: {% if section.settings.column_spacing == 'none' %}0px{% elsif section.settings.column_spacing == 'sm' %}calc(var(--container-gutter) / 2){% elsif section.settings.column_spacing == 'md' %}var(--container-gutter){% else %}calc(var(--container-gutter) * 1.5){% endif %};
       display: grid;
     }
+
+    {%- comment -%}
+    No gap between the two halves: they form a single continuous card, radius on the outer
+    wrapper only (matches media-blocks' own column_spacing == 'none' behavior). Any gap: each half
+    reads as its own independent card and gets the radius itself instead.
+    {%- endcomment -%}
+    {%- if section.settings.column_spacing == 'none' -%}
+      #shopify-section-{{ section.id }} .featured-tabs {
+        border-radius: {{ section.settings.corner_radius }}px;
+        overflow: hidden;
+      }
+    {%- else -%}
+      #shopify-section-{{ section.id }} .feature-tabs__media,
+      #shopify-section-{{ section.id }} .feature-tabs__content {
+        border-radius: {{ section.settings.corner_radius }}px;
+        overflow: hidden;
+      }
+    {%- endif -%}
 
     #shopify-section-{{ section.id }} .feature-tabs__media {
       aspect-ratio: 4 / 5;
@@ -119,9 +136,9 @@
     }
   </style>
 
-  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_featured_tabs %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_featured_tabs %} style="overflow: hidden;"{% endif %}>
-    <div class="section-spacing">
-      <div class="container">
+  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_featured_tabs %} section-floating section-floating--block-end{% endif %}">
+    <div class="{% unless section.settings.floating_featured_tabs %}section-spacing{% endunless %}">
+      <div class="{% unless section.settings.floating_featured_tabs %}container{% endunless %}">
         <div id="feature-tabs-{{ section.id }}" class="featured-tabs">
           <div class="feature-tabs__media">
             {%- for i in (1..5) -%}
