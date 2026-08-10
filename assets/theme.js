@@ -6405,6 +6405,12 @@ onSlideChange_fn = function(event) {
   if (event.detail.cell.getAttribute("data-slide-type") === "video") {
     event.detail.cell.querySelectorAll("video-media").forEach((video) => video.play({ restart: true }));
   }
+  const controls = this.querySelector(".slideshow__controls");
+  const slideColorSchemeClass = Array.from(event.detail.cell.classList).find((className) => className.indexOf("color-scheme--") === 0);
+  if (controls && slideColorSchemeClass) {
+    Array.from(controls.classList).filter((className) => className.indexOf("color-scheme--") === 0).forEach((className) => controls.classList.remove(className));
+    controls.classList.add(slideColorSchemeClass);
+  }
 };
 onPlayerStart_fn2 = function(event) {
   __privateGet(this, _navigationButtonAnimationControls)?.complete();
