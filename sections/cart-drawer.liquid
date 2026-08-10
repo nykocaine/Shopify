@@ -157,9 +157,11 @@
 
             {%- comment -%}LINE ITEMS{%- endcomment -%}
 
-            {%- for line_item in cart.items -%}
-              {%- render 'line-item', line_item: line_item, show_line_price: true, hide_unit_price: true, show_quantity_selector: true -%}
-            {%- endfor -%}
+            <div class="v-stack gap-4" style="background: #ffffff; border-radius: var(--drawer-border-radius); padding: 1rem;">
+              {%- for line_item in cart.items -%}
+                {%- render 'line-item', line_item: line_item, show_line_price: true, hide_unit_price: true, show_quantity_selector: true -%}
+              {%- endfor -%}
+            </div>
 
             {%- comment -%}CROSS-SELL{%- endcomment -%}
 
