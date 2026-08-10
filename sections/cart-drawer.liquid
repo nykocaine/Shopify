@@ -1,3 +1,14 @@
+{%- comment -%}
+Product images inherit the drawer's own corner radius (--drawer-border-radius, Theme settings >
+Drawers), instead of a new independent value, so they stay in sync with the drawer shell.
+{%- endcomment -%}
+<style>
+  #shopify-section-{{ section.id }} .line-item__media {
+    border-radius: var(--drawer-border-radius);
+    overflow: hidden;
+  }
+</style>
+
 {%- if request.page_type != 'cart' -%}
   <cart-drawer id="cart-drawer" class="drawer drawer--cart drawer--no-bordered-header color-scheme color-scheme--{{ section.settings.color_scheme.id }}" aria-label="{{ 'cart.general.title' | t | escape }}" handle-editor-events>
     {%- comment -%}HEADER PART{%- endcomment -%}
@@ -157,11 +168,9 @@
 
             {%- comment -%}LINE ITEMS{%- endcomment -%}
 
-            <div class="v-stack gap-4" style="background: #ffffff; border-radius: var(--drawer-border-radius); padding: 1rem;">
-              {%- for line_item in cart.items -%}
-                {%- render 'line-item', line_item: line_item, show_line_price: true, hide_unit_price: true, show_quantity_selector: true -%}
-              {%- endfor -%}
-            </div>
+            {%- for line_item in cart.items -%}
+              {%- render 'line-item', line_item: line_item, show_line_price: true, hide_unit_price: true, show_quantity_selector: true -%}
+            {%- endfor -%}
 
             {%- comment -%}CROSS-SELL{%- endcomment -%}
 
