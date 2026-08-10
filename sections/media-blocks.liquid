@@ -204,15 +204,15 @@
 
   {%- assign allow_transparent_header = false -%}
 
-  {%- if section.settings.allow_transparent_header and section.settings.subheading == blank and section.settings.title == blank and section.settings.content == blank and section.settings.add_horizontal_spacing == false and section.settings.column_spacing == 'none' -%}
+  {%- if section.settings.allow_transparent_header and section.settings.subheading == blank and section.settings.title == blank and section.settings.content == blank and section.settings.floating_media_blocks == false and section.settings.column_spacing == 'none' -%}
     {%- assign allow_transparent_header = true -%}
   {%- endif -%}
 
-  <div {% if allow_transparent_header %}allow-transparent-header{% endif %} class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
-    <div class="{% if section.settings.add_horizontal_spacing %}container{% endif %} {% unless allow_transparent_header %}section-spacing{% endunless %}">
+  <div {% if allow_transparent_header %}allow-transparent-header{% endif %} class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_media_blocks %} section-floating section-floating--block-end{% endif %}">
+    <div class="{% unless allow_transparent_header %}section-spacing{% endunless %}">
       <div class="section-stack">
         {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank -%}
-          <div class="{% unless section.settings.add_horizontal_spacing %}container{% endunless %}">
+          <div class="{% unless section.settings.floating_media_blocks %}container{% endunless %}">
             <div class="prose prose-justify-{{ section.settings.text_alignment }}">
               {%- if section.settings.subheading != blank -%}
                 {%- render 'subheading', content: section.settings.subheading -%}
@@ -1668,8 +1668,9 @@
     },
     {
       "type": "checkbox",
-      "id": "add_horizontal_spacing",
-      "label": "t:global.spacing.add_horizontal_spacing",
+      "id": "floating_media_blocks",
+      "label": "Floating",
+      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
       "default": true
     },
     {
