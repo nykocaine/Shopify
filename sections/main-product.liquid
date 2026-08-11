@@ -33,12 +33,19 @@
     underline-indicator thumbnail strip (theme.css .scroll-marker-group--thumbnails) to the left
     edge - it doesn't change its shape. This restyles it into circular, cover-cropped, borderless
     avatars faded to 50% opacity except the active one, scoped to this section only (other places
-    reusing thumbnails_left, eg. quick-buy, keep the default rectangular style). Vertical centering
-    of the whole strip already comes from that same "thumbnails_left" rule (top: 50% +
-    translateY(-50%) on .scroll-marker-group--thumbnails), unaffected by this restyle.
+    reusing thumbnails_left, eg. quick-buy, keep the default rectangular style).
+
+    Vertical centering: .product-gallery__controls-floating .scroll-marker-group--thumbnails
+    (theme.css, @media min-width: 700px) sets position: sticky on this element, and never gets
+    overridden back to absolute by product-gallery.liquid's own thumbnails_left rule - so its
+    top: 50%/translateY(-50%) (meant for absolute positioning, to center the strip) has no
+    centering effect under sticky (top there only sets the scroll offset it "sticks" at), leaving
+    it at its normal-flow position near the top instead. Forcing position: absolute back here is
+    what makes that existing top/translateY actually center it.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails {
       --scroll-marker-group-gap: .75rem;
+      position: absolute;
     }
 
     #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker {
