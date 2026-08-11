@@ -192,15 +192,7 @@
     }
   </style>
 
-  {%- comment -%}
-  color-scheme--{{ content_color_scheme.id }} on the section root (not just .feature-tabs__content
-  below, which is nested and not a direct child of .shopify-section) so this section is visible to
-  the theme's background-matching system (css-variables.liquid), which only compares
-  ":has(> .color-scheme--X)" direct children when deciding whether to collapse the vertical spacing
-  between this section and its neighbors - without it here, that comparison silently never matches
-  for featured-tabs on either side, and neighboring same-color sections never collapse against it.
-  {%- endcomment -%}
-  <div class="color-scheme color-scheme--{{ section.settings.content_color_scheme.id }} {% if section.settings.floating_featured_tabs %}section-floating section-floating--block-end{% endif %}">
+  <div class="{% if section.settings.floating_featured_tabs %}section-floating section-floating--block-end{% endif %}">
     <div class="{% unless section.settings.floating_featured_tabs %}section-spacing{% endunless %}">
       <div class="{% unless section.settings.floating_featured_tabs %}container{% endunless %}">
         <div id="feature-tabs-{{ section.id }}" class="featured-tabs">
