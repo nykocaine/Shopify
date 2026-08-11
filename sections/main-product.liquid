@@ -275,8 +275,18 @@
           min-height: 0;
         }
 
+        {%- comment -%}
+        <scroll-carousel adaptive-height> (product-gallery.liquid) sets its own inline max-height in
+        JS (theme.js adaptHeight_fn), sized to the currently selected slide's natural/intrinsic
+        height - meant for galleries without a fixed row height. It only recalculates on connect and
+        on window resize, never when an accordion in product-info changes the row's height, so it's
+        stuck at the old (shorter) value whenever that happens - which is exactly what leaves the gap
+        under the image. An inline style can only be beaten by !important from an external
+        stylesheet, so that's required here to force it back to filling the row.
+        {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-gallery__carousel {
           height: 100%;
+          max-height: none !important;
         }
 
         #shopify-section-{{ section.id }} .product-gallery__media img,
