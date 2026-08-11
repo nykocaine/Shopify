@@ -62,26 +62,28 @@
       }
     {%- endif -%}
 
+    {%- comment -%}
+    Real horizontal track (like a physical filmstrip), not overlapping items each animating on
+    their own: every slide sits side by side in one wide track, and switching tabs only ever moves
+    that track's own translateX - the same technique the reference site's Swiper carousel uses.
+    Both the media track and the content track move together, using the exact same offset.
+    {%- endcomment -%}
     #shopify-section-{{ section.id }} .feature-tabs__media {
       aspect-ratio: 4 / 5;
       position: relative;
+      overflow: hidden;
     }
 
-    {%- comment -%}
-    Crossfade instead of an instant swap: both the outgoing and incoming media/panel stay stacked
-    on top of each other (absolute for media, grid-area 1/1 for panels) for the whole transition,
-    so nothing jumps or pops - only opacity animates.
-    {%- endcomment -%}
-    {%- comment -%}
-    Carousel-style push, no fade: position (transform, inline style set below and updated by JS on
-    tab switch) is the only thing that animates. The incoming panel always slides in from the right,
-    the outgoing one slides out to the left, everything else parks off-screen right - never a
-    crossfade/flicker between two overlapping opacities.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .feature-tabs__media-item {
-      inset: 0;
-      position: absolute;
+    #shopify-section-{{ section.id }} .feature-tabs__media-track {
+      height: 100%;
+      display: flex;
       transition: transform .5s ease;
+    }
+
+    #shopify-section-{{ section.id }} .feature-tabs__media-item {
+      height: 100%;
+      flex: none;
+      position: relative;
     }
 
     #shopify-section-{{ section.id }} .feature-tabs__content {
@@ -92,18 +94,17 @@
     }
 
     #shopify-section-{{ section.id }} .feature-tabs__panels {
-      display: grid;
       overflow: hidden;
     }
 
-    #shopify-section-{{ section.id }} .feature-tabs__panel {
-      grid-area: 1 / 1;
-      pointer-events: none;
+    #shopify-section-{{ section.id }} .feature-tabs__panels-track {
+      align-items: start;
+      display: flex;
       transition: transform .5s ease;
     }
 
-    #shopify-section-{{ section.id }} .feature-tabs__panel.is-active {
-      pointer-events: auto;
+    #shopify-section-{{ section.id }} .feature-tabs__panel {
+      flex: none;
     }
 
     #shopify-section-{{ section.id }} .feature-tabs__panel-heading {
@@ -178,16 +179,18 @@
       <div class="{% unless section.settings.floating_featured_tabs %}container{% endunless %}">
         <div id="feature-tabs-{{ section.id }}" class="featured-tabs">
           <div class="feature-tabs__media">
-            {%- for i in (1..5) -%}
-              {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
-              {%- assign tab_image = section.settings[tab_image_key] -%}
+            <div id="feature-tabs-media-track-{{ section.id }}" class="feature-tabs__media-track" style="width: {{ feature_tab_count | times: 100 }}%;">
+              {%- for i in (1..5) -%}
+                {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
+                {%- assign tab_image = section.settings[tab_image_key] -%}
 
-              {%- if tab_image != blank -%}
-                <div class="feature-tabs__media-item {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-panel="{{ i }}" style="transform: translateX({% if i == feature_tab_first_index %}0{% else %}100{% endif %}%);">
-                  {{- tab_image | image_url: width: tab_image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 100vw, 50vw', widths: '400,600,800,1000,1200,1400,1600,1800', class: 'image-cover' -}}
-                </div>
-              {%- endif -%}
-            {%- endfor -%}
+                {%- if tab_image != blank -%}
+                  <div class="feature-tabs__media-item" style="width: {{ 100.0 | divided_by: feature_tab_count }}%;">
+                    {{- tab_image | image_url: width: tab_image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 100vw, 50vw', widths: '400,600,800,1000,1200,1400,1600,1800', class: 'image-cover' -}}
+                  </div>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
           </div>
 
           <div class="feature-tabs__content color-scheme color-scheme--{{ section.settings.content_color_scheme.id }}">
@@ -204,39 +207,41 @@
             {%- endif -%}
 
             <div class="feature-tabs__panels">
-              {%- for i in (1..5) -%}
-                {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
-                {%- capture tab_label_key -%}tab_{{ i }}_label{%- endcapture -%}
-                {%- capture tab_icon_key -%}tab_{{ i }}_icon{%- endcapture -%}
-                {%- capture tab_text_key -%}tab_{{ i }}_text{%- endcapture -%}
+              <div id="feature-tabs-panels-track-{{ section.id }}" class="feature-tabs__panels-track" style="width: {{ feature_tab_count | times: 100 }}%;">
+                {%- for i in (1..5) -%}
+                  {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
+                  {%- capture tab_label_key -%}tab_{{ i }}_label{%- endcapture -%}
+                  {%- capture tab_icon_key -%}tab_{{ i }}_icon{%- endcapture -%}
+                  {%- capture tab_text_key -%}tab_{{ i }}_text{%- endcapture -%}
 
-                {%- assign tab_image = section.settings[tab_image_key] -%}
-                {%- assign tab_label = section.settings[tab_label_key] -%}
-                {%- assign tab_icon = section.settings[tab_icon_key] -%}
-                {%- assign tab_text = section.settings[tab_text_key] -%}
+                  {%- assign tab_image = section.settings[tab_image_key] -%}
+                  {%- assign tab_label = section.settings[tab_label_key] -%}
+                  {%- assign tab_icon = section.settings[tab_icon_key] -%}
+                  {%- assign tab_text = section.settings[tab_text_key] -%}
 
-                {%- if tab_image != blank -%}
-                  <div class="feature-tabs__panel v-stack gap-4 {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-panel="{{ i }}" style="transform: translateX({% if i == feature_tab_first_index %}0{% else %}100{% endif %}%);">
-                    {%- if tab_label != blank or tab_icon != blank -%}
-                      <div class="feature-tabs__panel-heading">
-                        {%- if tab_label != blank -%}
-                          <span class="medium">{{ tab_label }}</span>
-                        {%- endif -%}
+                  {%- if tab_image != blank -%}
+                    <div class="feature-tabs__panel v-stack gap-4" style="width: {{ 100.0 | divided_by: feature_tab_count }}%;">
+                      {%- if tab_label != blank or tab_icon != blank -%}
+                        <div class="feature-tabs__panel-heading">
+                          {%- if tab_label != blank -%}
+                            <span class="medium">{{ tab_label }}</span>
+                          {%- endif -%}
 
-                        <hr>
+                          <hr>
 
-                        {%- if tab_icon != blank -%}
-                          {{- tab_icon | image_url: width: tab_icon.width | image_tag: loading: 'lazy', sizes: '48px', class: 'feature-tabs__panel-icon' -}}
-                        {%- endif -%}
-                      </div>
-                    {%- endif -%}
+                          {%- if tab_icon != blank -%}
+                            {{- tab_icon | image_url: width: tab_icon.width | image_tag: loading: 'lazy', sizes: '48px', class: 'feature-tabs__panel-icon' -}}
+                          {%- endif -%}
+                        </div>
+                      {%- endif -%}
 
-                    {%- if tab_text != blank -%}
-                      <p>{{ tab_text }}</p>
-                    {%- endif -%}
-                  </div>
-                {%- endif -%}
-              {%- endfor -%}
+                      {%- if tab_text != blank -%}
+                        <p>{{ tab_text }}</p>
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
             </div>
 
             <div class="feature-tabs__tabs" role="tablist">
@@ -247,7 +252,7 @@
 
                 {%- if tab_image != blank -%}
                   {%- assign feature_tab_column = feature_tab_column | plus: 1 -%}
-                  <button type="button" class="feature-tabs__tab {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-index="{{ i }}" style="grid-column: {{ feature_tab_column }};" role="tab" aria-selected="{% if i == feature_tab_first_index %}true{% else %}false{% endif %}">
+                  <button type="button" class="feature-tabs__tab {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-index="{{ i }}" data-tab-position="{{ feature_tab_column }}" style="grid-column: {{ feature_tab_column }};" role="tab" aria-selected="{% if i == feature_tab_first_index %}true{% else %}false{% endif %}">
                     <span class="subheading">0{{ i }}</span>
                   </button>
                 {%- endif -%}
@@ -282,41 +287,27 @@
       if (!root) return;
 
       var tabs = root.querySelectorAll('[data-tab-index]');
-      var mediaItems = root.querySelectorAll('.feature-tabs__media-item[data-tab-panel]');
-      var contentPanels = root.querySelectorAll('.feature-tabs__panel[data-tab-panel]');
       var tabLabels = root.querySelectorAll('.feature-tabs__tab-label[data-tab-panel]');
-      var currentIndex = '{{ feature_tab_first_index }}';
+      var mediaTrack = document.getElementById('feature-tabs-media-track-{{ section.id }}');
+      var panelsTrack = document.getElementById('feature-tabs-panels-track-{{ section.id }}');
+      var slideCount = {{ feature_tab_count }};
 
       {%- comment -%}
-      Carousel push, no fade: position (inline transform, not a class) is the only thing that
-      animates, so switching tabs can't lose to any stylesheet rule. The incoming item always
-      slides in from the right (translateX 100% -> 0), the one that was active slides out to the
-      left (-100%), and everything else parks off-screen right, ready for its own turn.
+      Real track, like a physical filmstrip: both tracks are slideCount * 100% wide, each slide is
+      1/slideCount of that. Moving to slide N only ever sets one translateX on the track itself
+      (position-1 slide-widths to the left) - the same technique the reference site's carousel uses,
+      instead of animating every individual slide's own position/opacity.
       {%- endcomment -%}
-      function slide(items, index) {
-        items.forEach(function(item) {
-          var itemPanel = item.getAttribute('data-tab-panel');
-
-          if (itemPanel === index) {
-            item.style.transform = 'translateX(0)';
-          } else if (itemPanel === currentIndex) {
-            item.style.transform = 'translateX(-100%)';
-          } else {
-            item.style.transform = 'translateX(100%)';
-          }
-        });
-      }
-
-      function activate(index) {
+      function activate(index, position) {
         tabs.forEach(function(tab) {
           var isActive = tab.getAttribute('data-tab-index') === index;
           tab.classList.toggle('is-active', isActive);
           tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
         });
 
-        slide(mediaItems, index);
-        slide(contentPanels, index);
-        currentIndex = index;
+        var offset = 'translateX(calc(-1 * ' + (position - 1) + ' * ' + (100 / slideCount) + '%))';
+        if (mediaTrack) mediaTrack.style.transform = offset;
+        if (panelsTrack) panelsTrack.style.transform = offset;
 
         tabLabels.forEach(function(label) {
           label.classList.toggle('is-active', label.getAttribute('data-tab-panel') === index);
@@ -325,14 +316,14 @@
 
       tabs.forEach(function(tab) {
         tab.addEventListener('click', function() {
-          activate(tab.getAttribute('data-tab-index'));
+          activate(tab.getAttribute('data-tab-index'), Number(tab.getAttribute('data-tab-position')));
         });
       });
 
       if (window.matchMedia('(pointer: fine)').matches) {
         tabs.forEach(function(tab) {
           tab.addEventListener('mouseenter', function() {
-            activate(tab.getAttribute('data-tab-index'));
+            activate(tab.getAttribute('data-tab-index'), Number(tab.getAttribute('data-tab-position')));
           });
         });
       }
