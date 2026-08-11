@@ -175,7 +175,7 @@
     }
   </style>
 
-  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_featured_tabs %} section-floating section-floating--block-end{% endif %}">
+  <div class="{% if section.settings.floating_featured_tabs %}section-floating section-floating--block-end{% endif %}">
     <div class="{% unless section.settings.floating_featured_tabs %}section-spacing{% endunless %}">
       <div class="{% unless section.settings.floating_featured_tabs %}container{% endunless %}">
         <div id="feature-tabs-{{ section.id }}" class="featured-tabs">
@@ -333,12 +333,6 @@
     {
       "type": "paragraph",
       "content": "An interactive block: image on one side, numbered tabs on the other. Hovering or clicking a tab number swaps the image, the label/description, and the highlighted tab. Only tabs with an image assigned are shown - leave any of the 5 slots blank to use fewer."
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "t:global.colors.scheme",
-      "default": "scheme-1"
     },
     {
       "type": "checkbox",
