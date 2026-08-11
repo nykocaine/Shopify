@@ -15,12 +15,13 @@
   {%- comment -%}
   Collapsible text (accordion blocks) inside main-product: product-info.liquid already wraps
   consecutive accordion blocks in a shared ".accordion-group" div (its own block-grouping
-  mechanism) - this just gives that existing wrapper a white card treatment, radius-matched to
-  gallery_border_radius (computed above), the same effective radius the gallery/info frames
-  already use in this section, instead of an independent hardcoded value.
+  mechanism) - this just gives that existing wrapper a bordered card treatment, both the border
+  color and the radius matched to what the rest of the section already uses (rgb(--border-color)
+  and gallery_border_radius, computed above - the same effective radius the gallery/info frames
+  use), instead of independent hardcoded values.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .accordion-group {
-    background: #fff;
+    border: 1px solid rgb(var(--border-color));
     border-radius: {{ gallery_border_radius }}px;
     padding-inline: var(--container-gutter);
     overflow: hidden;
