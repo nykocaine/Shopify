@@ -101,12 +101,12 @@
 
     {%- comment -%}
     .section-floating--block-end's own margin-block-end (shared by every floating section in the theme) uses
-    --container-gutter, a different token than the --section-vertical-spacing used above for the header gap.
-    Overriding it here, scoped to this section only, so the gap below the product page matches the one above
-    it, without touching the shared utility class used elsewhere.
+    --container-gutter, a different token than --section-vertical-spacing. Overriding it here, scoped to this
+    section only, to twice the section spacing value instead, without touching the shared utility class used
+    elsewhere.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .section-floating--block-end {
-      margin-block-end: var(--section-vertical-spacing);
+      margin-block-end: calc(var(--section-vertical-spacing) * 2);
     }
 
     {%- comment -%}
