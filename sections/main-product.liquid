@@ -61,6 +61,23 @@
     @media screen and (min-width: 1000px) {
       #shopify-section-{{ section.id }} {
         --product-grid: auto / minmax(0, {{ section.settings.product_media_size | divided_by: 100.0 }}fr) minmax(0, {{ 100.0 | minus: section.settings.product_media_size | divided_by: 100.0 }}fr);
+        --product-column-gap: {% case section.settings.column_spacing %}{%- when 'none' -%}0px{%- when 'sm' -%}calc(var(--container-gutter) / 2){%- when 'md' -%}var(--container-gutter){%- else -%}calc(var(--container-gutter) * 1.5){%- endcase -%};
+      }
+
+      {%- comment -%}
+      Editable equivalent of featured-tabs.liquid's own column_spacing: replaces the base theme.css
+      rule (.product { gap: 0 } + .product-info { padding-inline-start: 3rem }, a fixed, non-editable
+      gap) with an actual grid gap driven by the setting above. Scoped by section ID so it wins over
+      that base rule regardless of specificity ties. The floating_product branch below still needs
+      its own matching override, since its later, more specific rules would otherwise win back to a
+      hardcoded 0.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product {
+        gap: var(--product-column-gap);
+      }
+
+      #shopify-section-{{ section.id }} .product-info {
+        padding-inline-start: 0;
       }
     }
   {%- endif -%}
@@ -168,7 +185,7 @@
 
     @media screen and (min-width: 1000px) {
       #shopify-section-{{ section.id }} .product {
-        gap: 0;
+        gap: var(--product-column-gap, 0px);
         align-items: stretch;
       }
 
@@ -177,12 +194,15 @@
       }
 
       {%- comment -%}
-      On desktop the two cards sit flush against each other (no gap) so they read as a single composition
-      split in two — only the OUTER corners of each card stay rounded, the corners that touch each other are
-      squared off. Only applies when the gallery card actually exists (product.media.size > 0): otherwise
-      product-info-frame is the only card in the row and should keep all 4 corners rounded.
+      When column_spacing is "none" the two cards sit flush against each other (no gap), so they read
+      as a single composition split in two — only the OUTER corners of each card stay rounded, the
+      corners that touch each other are squared off. Any other spacing leaves a visible gap between
+      them, so each card reads as its own independent piece and keeps all 4 corners rounded (same
+      "none vs any spacing" logic media-blocks.liquid uses for its own column_spacing). Only applies
+      when the gallery card actually exists (product.media.size > 0): otherwise product-info-frame is
+      the only card in the row and should keep all 4 corners rounded regardless.
       {%- endcomment -%}
-      {%- if product.media.size > 0 -%}
+      {%- if product.media.size > 0 and section.settings.column_spacing == 'none' -%}
         #shopify-section-{{ section.id }} .product-gallery-frame {
           border-start-end-radius: 0;
           border-end-end-radius: 0;
@@ -482,6 +502,30 @@
       "step": 1,
       "unit": "%",
       "default": 50
+    },
+    {
+      "type": "select",
+      "id": "column_spacing",
+      "label": "t:global.spacing.spacing",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:global.spacing.spacing_options.none"
+        },
+        {
+          "value": "sm",
+          "label": "t:global.spacing.spacing_options.small"
+        },
+        {
+          "value": "md",
+          "label": "t:global.spacing.spacing_options.medium"
+        },
+        {
+          "value": "lg",
+          "label": "t:global.spacing.spacing_options.large"
+        }
+      ],
+      "default": "sm"
     },
     {
       "type": "text_alignment",
