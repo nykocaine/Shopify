@@ -2307,22 +2307,12 @@ label:focus-within:has(:focus-visible) {
   row-gap: min(2rem, var(--section-stack-row-gap));
 }
 
-:where(.shopify-section:has(.section-split, .section-spacing) + .shopify-section:has(.section-spacing)) {
+:where(.shopify-section:has(.section-split, .section-spacing) + .shopify-section:has(.section-split, .section-spacing)) {
   --section-enable-padding-collapsing: var(--section-has-same-background-as-previous-section, 0);
 }
 
 :where(.shopify-section:has(.section-split__column--image):not(:has(.section-split__column--flushed)) + .shopify-section) {
   --section-vertical-spacing-block-start: calc(var(--section-vertical-spacing) - var(--container-gutter) * var(--section-has-same-background-as-previous-section, 0));
-}
-
-@media screen and (max-width: 699px) {
-  :where(.shopify-section:has(.section-spacing) + .shopify-section:has(.section-spacing)) {
-    --section-enable-padding-collapsing: var(--section-has-same-background-as-previous-section, 0);
-  }
-
-  .shopify-section:has(.section-split) + .shopify-section:has(.section-split) {
-    --section-enable-padding-collapsing: var(--section-has-same-background-as-previous-section, 0);
-  }
 }
 
 @media screen and (min-width: 700px) {
