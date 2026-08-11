@@ -150,8 +150,8 @@
     }
 
     #shopify-section-{{ section.id }} .feature-tabs__tab.is-active {
-      background: rgb(var(--accent));
-      border-color: rgb(var(--accent));
+      background: {% if section.settings.tabs_active_color != blank %}{{ section.settings.tabs_active_color }}{% else %}rgb(var(--accent)){% endif %};
+      border-color: {% if section.settings.tabs_active_color != blank %}{{ section.settings.tabs_active_color }}{% else %}rgb(var(--accent)){% endif %};
       color: rgb(var(--background));
     }
 
@@ -247,7 +247,7 @@
               </div>
             </div>
 
-            <div class="feature-tabs__tabs color-scheme color-scheme--{{ section.settings.tabs_color_scheme.id }}" role="tablist">
+            <div class="feature-tabs__tabs" role="tablist">
               {%- assign feature_tab_column = 0 -%}
               {%- for i in (1..5) -%}
                 {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
@@ -404,11 +404,10 @@
       "default": "scheme-2"
     },
     {
-      "type": "color_scheme",
-      "id": "tabs_color_scheme",
-      "label": "Tabs color scheme",
-      "info": "Controls the numbered tab circles - the filled one uses the scheme's accent color, the outlined ones use its border color.",
-      "default": "scheme-2"
+      "type": "color",
+      "id": "tabs_active_color",
+      "label": "Active tab color",
+      "info": "Leave blank to use the content color scheme's accent color instead."
     },
     {
       "type": "header",
