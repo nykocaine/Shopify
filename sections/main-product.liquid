@@ -27,6 +27,41 @@
     overflow: hidden;
   }
 
+  {%- if section.settings.desktop_carousel_controls == 'thumbnails_left' -%}
+    {%- comment -%}
+    product-gallery.liquid's "thumbnails_left" option only repositions the existing rectangular,
+    underline-indicator thumbnail strip (theme.css .scroll-marker-group--thumbnails) to the left
+    edge - it doesn't change its shape. This restyles it into circular, cover-cropped avatars with
+    a ring on the active one instead, scoped to this section only (other places reusing
+    thumbnails_left, eg. quick-buy, keep the default rectangular style).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails {
+      --scroll-marker-group-gap: .75rem;
+    }
+
+    #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker {
+      --scroll-marker-width: 3rem;
+      --scroll-marker-height: 3rem;
+      border: 2px solid rgb(var(--background) / .8);
+      border-radius: 50%;
+      overflow: hidden;
+    }
+
+    #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker:after {
+      content: none;
+    }
+
+    #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker[aria-current="true"] {
+      border-color: rgb(var(--text-color));
+    }
+  {%- endif -%}
+
   /* Price: inherit the Body/Text size instead of the Heading scale (.h6/.h7) that
      price-list.liquid applies by default for context: 'product'. Scoped to this section's ID
      (not ".product-info", which is also shared by featured-product.liquid and the quick-buy
