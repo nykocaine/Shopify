@@ -29,6 +29,21 @@ This component is used to show the buy buttons
       margin-block-end: 1rem;
     }
 
+    {%- comment -%}
+    When the badge wrapper sits next to the quantity selector (inside .h-stack), its own
+    margin-block-end inflates that row's height - and `.buy-buttons .quantity-selector` syncs to
+    its row via `min-height: 100%` (theme.css), so the selector ends up taller than the button
+    itself. Moving the spacing to the row (outside the flex children whose height it drives) keeps
+    the same breathing room below without feeding into that height sync.
+    {%- endcomment -%}
+    #{{ form_id }} .h-stack:has(.buy-buttons__new-badge-wrapper) {
+      margin-block-end: 1rem;
+    }
+
+    #{{ form_id }} .h-stack:has(.buy-buttons__new-badge-wrapper) .buy-buttons__new-badge-wrapper {
+      margin-block-end: 0;
+    }
+
     #{{ form_id }} .buy-buttons__new-badge {
       position: absolute;
       inset-inline-start: 50%;
