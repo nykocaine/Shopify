@@ -80,7 +80,7 @@
     #shopify-section-{{ section.id }} .feature-tabs__media-item {
       inset: 0;
       position: absolute;
-      transition: opacity .5s ease;
+      transition: opacity .5s ease, transform .5s ease;
     }
 
     #shopify-section-{{ section.id }} .feature-tabs__content {
@@ -185,7 +185,7 @@
               {%- assign tab_image = section.settings[tab_image_key] -%}
 
               {%- if tab_image != blank -%}
-                <div class="feature-tabs__media-item {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-panel="{{ i }}" style="opacity: {% if i == feature_tab_first_index %}1{% else %}0{% endif %};">
+                <div class="feature-tabs__media-item {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-panel="{{ i }}" style="opacity: {% if i == feature_tab_first_index %}1{% else %}0{% endif %}; transform: translateX({% if i == feature_tab_first_index %}0{% else %}60px{% endif %});">
                   {{- tab_image | image_url: width: tab_image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 100vw, 50vw', widths: '400,600,800,1000,1200,1400,1600,1800', class: 'image-cover' -}}
                 </div>
               {%- endif -%}
@@ -295,11 +295,15 @@
         });
 
         {%- comment -%}
-        Opacity set directly via inline style (not a class), so switching tabs can't lose to any
-        stylesheet rule - matches the initial inline opacity set in the markup below.
+        Opacity/transform set directly via inline style (not a class), so switching tabs can't lose
+        to any stylesheet rule - matches the initial inline values set in the markup below. Inactive
+        items sit shifted to the right and fully transparent, so becoming active always animates in
+        as a slide-from-the-right + fade.
         {%- endcomment -%}
         mediaItems.forEach(function(item) {
-          item.style.opacity = item.getAttribute('data-tab-panel') === index ? '1' : '0';
+          var isActive = item.getAttribute('data-tab-panel') === index;
+          item.style.opacity = isActive ? '1' : '0';
+          item.style.transform = isActive ? 'translateX(0)' : 'translateX(60px)';
         });
 
         otherPanels.forEach(function(panel) {
