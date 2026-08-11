@@ -219,33 +219,41 @@
     }
 
     {%- comment -%}
-    Info panel: vertical label column + flowing richtext content column. The divider line before each
-    heading is generated automatically from spacing/border on the heading itself, so the merchant just
-    writes normal paragraphs and Heading 3s in the content editor instead of managing separate fields
-    per section (avoids the "offer_1/offer_2/offer_3" fixed-count pattern used elsewhere in the theme).
+    Info panel: heading on top, then a list of label/content rows below it, each row edited as its
+    own pair of fields (label + content) so the merchant can change one row without touching the
+    others - a divider is added between rows automatically, not on the first or last one.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel {
-      grid-template-columns: auto minmax(0, 1fr);
-      gap: 4rem;
       padding: min(2.5rem, var(--container-gutter));
-      align-items: start;
+      gap: 2rem;
       display: grid;
     }
 
-    #shopify-section-{{ section.id }} .info-panel__label {
-      writing-mode: vertical-rl;
-      transform: rotate(180deg);
-      white-space: nowrap;
+    #shopify-section-{{ section.id }} .info-panel__list-item {
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: baseline;
+      gap: 1.5rem;
+      padding-block: 1.25rem;
+      border-block-end: 1px solid rgb(var(--border-color));
+      display: grid;
     }
 
-    {%- comment -%}
-    .prose already spaces every child apart (--prose-default-spacing / --prose-heading-spacing) -
-    only the divider itself is added here, reusing that same existing gap as the padding above it
-    instead of a second, independent spacing value.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .info-panel__content :is(h1, h2, h3, h4, h5, h6) {
-      border-block-start: 1px solid rgb(var(--border-color));
-      padding-block-start: var(--prose-heading-spacing);
+    #shopify-section-{{ section.id }} .info-panel__list-item:first-child {
+      padding-block-start: 0;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__list-item:last-child {
+      padding-block-end: 0;
+      border-block-end: none;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__list-item-label {
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__list-item-content {
+      text-align: end;
     }
   </style>
 
@@ -531,48 +539,65 @@
                 </media-block>
 
               {%- when 'info_panel' -%}
-                {%- liquid
-                  case block.settings.content_position
-                    when 'top_left'
-                      assign content_vertical_class = 'align-self-start'
-                      assign content_horizontal_class = 'prose-justify-start'
-                    when 'top_center'
-                      assign content_vertical_class = 'align-self-start'
-                      assign content_horizontal_class = 'prose-justify-center'
-                    when 'top_right'
-                      assign content_vertical_class = 'align-self-start'
-                      assign content_horizontal_class = 'prose-justify-end'
-                    when 'middle_left'
-                      assign content_vertical_class = 'align-self-center'
-                      assign content_horizontal_class = 'prose-justify-start'
-                    when 'middle_center'
-                      assign content_vertical_class = 'align-self-center'
-                      assign content_horizontal_class = 'prose-justify-center'
-                    when 'middle_right'
-                      assign content_vertical_class = 'align-self-center'
-                      assign content_horizontal_class = 'prose-justify-end'
-                    when 'bottom_left'
-                      assign content_vertical_class = 'align-self-end'
-                      assign content_horizontal_class = 'prose-justify-start'
-                    when 'bottom_center'
-                      assign content_vertical_class = 'align-self-end'
-                      assign content_horizontal_class = 'prose-justify-center'
-                    when 'bottom_right'
-                      assign content_vertical_class = 'align-self-end'
-                      assign content_horizontal_class = 'prose-justify-end'
-                  endcase
-                -%}
-
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {{ block.shopify_attributes }}>
-                  {%- if block.settings.label != blank -%}
-                    <div class="info-panel__label">
-                      <span class="h6">{{ block.settings.label }}</span>
-                    </div>
+                  {%- if block.settings.title != blank -%}
+                    {%- render 'heading', content: block.settings.title, style: block.settings.heading_tag, html_tag: 'h3', balance_text: true -%}
                   {%- endif -%}
 
-                  {%- if block.settings.content != blank -%}
-                    <div class="info-panel__content prose {{ content_horizontal_class }} {{ content_vertical_class }}">
-                      {{ block.settings.content }}
+                  {%- liquid
+                    assign info_panel_has_items = false
+
+                    for i in (1..6)
+                      capture item_label_key
+                        echo 'item_'
+                        echo i
+                        echo '_label'
+                      endcapture
+
+                      capture item_content_key
+                        echo 'item_'
+                        echo i
+                        echo '_content'
+                      endcapture
+
+                      if block.settings[item_label_key] != blank or block.settings[item_content_key] != blank
+                        assign info_panel_has_items = true
+                      endif
+                    endfor
+                  -%}
+
+                  {%- if info_panel_has_items -%}
+                    <div class="info-panel__list">
+                      {%- for i in (1..6) -%}
+                        {%- liquid
+                          capture item_label_key
+                            echo 'item_'
+                            echo i
+                            echo '_label'
+                          endcapture
+
+                          capture item_content_key
+                            echo 'item_'
+                            echo i
+                            echo '_content'
+                          endcapture
+
+                          assign item_label = block.settings[item_label_key]
+                          assign item_content = block.settings[item_content_key]
+                        -%}
+
+                        {%- if item_label != blank or item_content != blank -%}
+                          <div class="info-panel__list-item">
+                            {%- if item_label != blank -%}
+                              <div class="info-panel__list-item-label">{{ item_label }}</div>
+                            {%- endif -%}
+
+                            {%- if item_content != blank -%}
+                              <div class="info-panel__list-item-content">{{ item_content }}</div>
+                            {%- endif -%}
+                          </div>
+                        {%- endif -%}
+                      {%- endfor -%}
                     </div>
                   {%- endif -%}
                 </div>
@@ -3564,63 +3589,113 @@
       "settings": [
         {
           "type": "paragraph",
-          "content": "A solid-color panel with a vertical label on the side and stacked heading/text sections. Use Heading 3 in the content editor to start a new section - a divider line is added automatically above each one."
+          "content": "A solid-color panel with a heading and a list of label/content rows below it, each edited as its own pair of fields. Add up to 6 rows - leave a row's fields blank to skip it."
         },
         {
-          "type": "text",
-          "id": "label",
-          "label": "Vertical label",
-          "default": "What's inside"
-        },
-        {
-          "type": "richtext",
-          "id": "content",
-          "label": "Content",
-          "default": "<p>Add an intro paragraph here.</p><h3>How it works</h3><p>Add a description here.</p><h3>Why we love it</h3><p>Add a description here.</p>"
+          "type": "inline_richtext",
+          "id": "title",
+          "label": "t:global.text.heading",
+          "default": "Add a heading here."
         },
         {
           "type": "select",
-          "id": "content_position",
-          "label": "t:global.position.alignment",
+          "id": "heading_tag",
+          "label": "t:global.text.heading_size",
           "options": [
             {
-              "value": "top_left",
-              "label": "t:global.position.top_left"
+              "value": "h1",
+              "label": "XX-Large"
             },
             {
-              "value": "top_center",
-              "label": "t:global.position.top_center"
+              "value": "h2",
+              "label": "X-Large"
             },
             {
-              "value": "top_right",
-              "label": "t:global.position.top_right"
+              "value": "h3",
+              "label": "Large"
             },
             {
-              "value": "middle_left",
-              "label": "t:global.position.middle_left"
+              "value": "h4",
+              "label": "Medium"
             },
             {
-              "value": "middle_center",
-              "label": "t:global.position.middle_center"
+              "value": "h5",
+              "label": "Small"
             },
             {
-              "value": "middle_right",
-              "label": "t:global.position.middle_right"
-            },
-            {
-              "value": "bottom_left",
-              "label": "t:global.position.bottom_left"
-            },
-            {
-              "value": "bottom_center",
-              "label": "t:global.position.bottom_center"
-            },
-            {
-              "value": "bottom_right",
-              "label": "t:global.position.bottom_right"
+              "value": "h6",
+              "label": "XX-Small"
             }
           ],
-          "default": "top_left"
+          "default": "h3"
+        },
+        {
+          "type": "header",
+          "content": "List"
+        },
+        {
+          "type": "text",
+          "id": "item_1_label",
+          "label": "Row 1 label",
+          "default": "Good for:"
+        },
+        {
+          "type": "richtext",
+          "id": "item_1_content",
+          "label": "Row 1 content",
+          "default": "<p>Add content here.</p>"
+        },
+        {
+          "type": "text",
+          "id": "item_2_label",
+          "label": "Row 2 label",
+          "default": "Feels like:"
+        },
+        {
+          "type": "richtext",
+          "id": "item_2_content",
+          "label": "Row 2 content",
+          "default": "<p>Add content here.</p>"
+        },
+        {
+          "type": "text",
+          "id": "item_3_label",
+          "label": "Row 3 label"
+        },
+        {
+          "type": "richtext",
+          "id": "item_3_content",
+          "label": "Row 3 content"
+        },
+        {
+          "type": "text",
+          "id": "item_4_label",
+          "label": "Row 4 label"
+        },
+        {
+          "type": "richtext",
+          "id": "item_4_content",
+          "label": "Row 4 content"
+        },
+        {
+          "type": "text",
+          "id": "item_5_label",
+          "label": "Row 5 label"
+        },
+        {
+          "type": "richtext",
+          "id": "item_5_content",
+          "label": "Row 5 content"
+        },
+        {
+          "type": "text",
+          "id": "item_6_label",
+          "label": "Row 6 label"
+        },
+        {
+          "type": "richtext",
+          "id": "item_6_content",
+          "label": "Row 6 content"
         },
         {
           "type": "color_scheme",
