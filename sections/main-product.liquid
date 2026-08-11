@@ -15,18 +15,11 @@
   {%- comment -%}
   Collapsible text (accordion blocks) inside main-product: product-info.liquid already wraps
   consecutive accordion blocks in a shared ".accordion-group" div (its own block-grouping
-  mechanism) - this just gives that existing wrapper a bordered card treatment, radius matched to
-  the rest of the section (gallery_border_radius, computed above). The border itself uses
-  --button-scheme-border-color (css-variables.liquid), which is the color scheme's own literal
-  "Border" setting output at full opacity - not --border-color, a separate, derived/computed
-  variable that color_mix()-blends text into the background (or, for gradient/transparent
-  backgrounds, reduces text_color's own alpha to .1/.6) and so isn't reliably the schema's actual
-  Border color at full strength. Falls back to --border-color only if the scheme leaves Border
-  blank.
+  mechanism) - this just gives that existing wrapper a white card treatment, radius matched to
+  the rest of the section (gallery_border_radius, computed above).
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .accordion-group {
     background: #fff;
-    border: 1px solid rgb(var(--button-scheme-border-color, var(--border-color)));
     border-radius: {{ gallery_border_radius }}px;
     padding-inline: var(--container-gutter);
     overflow: hidden;
