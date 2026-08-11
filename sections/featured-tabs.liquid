@@ -69,7 +69,6 @@
     Both the media track and the content track move together, using the exact same offset.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .feature-tabs__media {
-      aspect-ratio: 4 / 5;
       position: relative;
       overflow: hidden;
     }
@@ -176,10 +175,6 @@
       #shopify-section-{{ section.id }} .featured-tabs {
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       }
-
-      #shopify-section-{{ section.id }} .feature-tabs__media {
-        aspect-ratio: auto;
-      }
     }
   </style>
 
@@ -187,7 +182,7 @@
     <div class="{% unless section.settings.floating_featured_tabs %}section-spacing{% endunless %}">
       <div class="{% unless section.settings.floating_featured_tabs %}container{% endunless %}">
         <div id="feature-tabs-{{ section.id }}" class="featured-tabs">
-          <div class="feature-tabs__media">
+          <div class="feature-tabs__media min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
             <div id="feature-tabs-media-track-{{ section.id }}" class="feature-tabs__media-track" style="width: {{ feature_tab_count | times: 100 }}%;">
               {%- for i in (1..5) -%}
                 {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
@@ -390,6 +385,54 @@
         }
       ],
       "default": "sm"
+    },
+    {
+      "type": "select",
+      "id": "block_size",
+      "label": "t:sections.media_blocks.block_size",
+      "options": [
+        {
+          "value": "sm",
+          "label": "t:global.sizes.small"
+        },
+        {
+          "value": "md",
+          "label": "t:global.sizes.medium"
+        },
+        {
+          "value": "lg",
+          "label": "t:global.sizes.large"
+        },
+        {
+          "value": "fill",
+          "label": "t:global.sizes.fit_screen"
+        }
+      ],
+      "default": "md"
+    },
+    {
+      "type": "select",
+      "id": "mobile_block_size",
+      "label": "Mobile block size",
+      "options": [
+        {
+          "value": "sm",
+          "label": "t:global.sizes.small"
+        },
+        {
+          "value": "md",
+          "label": "t:global.sizes.medium"
+        },
+        {
+          "value": "lg",
+          "label": "t:global.sizes.large"
+        },
+        {
+          "value": "fill",
+          "label": "t:global.sizes.fit_screen"
+        }
+      ],
+      "default": "md"
     },
     {
       "type": "text",
