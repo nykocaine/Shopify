@@ -12,6 +12,20 @@
 -%}
 
 <style>
+  {%- comment -%}
+  Collapsible text (accordion blocks) inside main-product: product-info.liquid already wraps
+  consecutive accordion blocks in a shared ".accordion-group" div (its own block-grouping
+  mechanism) - this just gives that existing wrapper a white card treatment, radius-matched to
+  gallery_border_radius (computed above), the same effective radius the gallery/info frames
+  already use in this section, instead of an independent hardcoded value.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .accordion-group {
+    background: #fff;
+    border-radius: {{ gallery_border_radius }}px;
+    padding-inline: var(--container-gutter);
+    overflow: hidden;
+  }
+
   /* Price: inherit the Body/Text size instead of the Heading scale (.h6/.h7) that
      price-list.liquid applies by default for context: 'product'. Scoped to this section's ID
      (not ".product-info", which is also shared by featured-product.liquid and the quick-buy
