@@ -602,6 +602,302 @@
                   {%- endif -%}
                 </div>
 
+              {%- when 'results_tabs' -%}
+                {%- liquid
+                  assign results_tabs_period_count = 0
+                  assign results_tabs_first_period = 0
+
+                  for i in (1..3)
+                    capture period_label_key
+                      echo 'period_'
+                      echo i
+                      echo '_label'
+                    endcapture
+
+                    if block.settings[period_label_key] != blank
+                      assign results_tabs_period_count = results_tabs_period_count | plus: 1
+
+                      if results_tabs_first_period == 0
+                        assign results_tabs_first_period = i
+                      endif
+                    endif
+                  endfor
+
+                  assign results_tabs_has_clinical = false
+
+                  for m in (1..5)
+                    capture clinical_percentage_key
+                      echo 'clinical_stat_'
+                      echo m
+                      echo '_percentage'
+                    endcapture
+
+                    capture clinical_claim_key
+                      echo 'clinical_stat_'
+                      echo m
+                      echo '_claim'
+                    endcapture
+
+                    if block.settings[clinical_percentage_key] != blank or block.settings[clinical_claim_key] != blank
+                      assign results_tabs_has_clinical = true
+                    endif
+                  endfor
+
+                  if block.settings.clinical_disclaimer != blank
+                    assign results_tabs_has_clinical = true
+                  endif
+                -%}
+
+                {%- if results_tabs_period_count > 0 -%}
+                  <style>
+                    {%- comment -%}
+                    Two independent toggle levels: an outer "period" tab row (own sliding underline
+                    indicator, positioned in JS via offsetLeft/offsetWidth like feature-tabs.liquid's
+                    own translateX track) and, inside whichever period panel is active, an inner
+                    consumer/clinical toggle. Clinical results content is the SAME regardless of which
+                    period is active, so it is rendered once and simply shown/hidden - not duplicated
+                    per period.
+                    {%- endcomment -%}
+                    #results-tabs-{{ block.id }} .results-tabs__toggles {
+                      position: relative;
+                      flex-wrap: wrap;
+                      align-items: center;
+                      gap: 1.5rem;
+                      margin-block-end: 2rem;
+                      display: flex;
+                    }
+
+                    #results-tabs-{{ block.id }} .results-tabs__toggle {
+                      color: rgb(var(--text-color) / 0.4);
+                      font-weight: 600;
+                      text-transform: uppercase;
+                      padding-block-end: .5rem;
+                      background: none;
+                      cursor: pointer;
+                    }
+
+                    #results-tabs-{{ block.id }} .results-tabs__toggle.is-active {
+                      color: rgb(var(--text-color));
+                    }
+
+                    #results-tabs-{{ block.id }} .results-tabs__indicator {
+                      position: absolute;
+                      inset-inline-start: 0;
+                      inset-block-end: 0;
+                      width: 0;
+                      height: 2px;
+                      background: rgb(var(--text-color));
+                      transition: left .3s ease, width .3s ease;
+                    }
+
+                    #results-tabs-{{ block.id }} .results-tabs__stat {
+                      margin-block-end: 1.5rem;
+                    }
+
+                    #results-tabs-{{ block.id }} .results-tabs__stat-percentage {
+                      color: rgb(var(--accent));
+                      font-size: 2.5rem;
+                      font-weight: 700;
+                      line-height: 1.1;
+                    }
+
+                    #results-tabs-{{ block.id }} .results-tabs__stat-claim {
+                      font-weight: 600;
+                      text-transform: uppercase;
+                    }
+
+                    #results-tabs-{{ block.id }} .results-tabs__disclaimer {
+                      color: rgb(var(--text-color) / 0.6);
+                      margin-block-start: 1.5rem;
+                    }
+
+                    #results-tabs-{{ block.id }} .results-tabs__inner-toggles {
+                      border-block-start: 1px solid rgb(var(--border-color));
+                      margin-block-start: 2rem;
+                    }
+
+                    #results-tabs-{{ block.id }} .results-tabs__inner-toggle {
+                      width: 100%;
+                      font-size: var(--text-h5);
+                      font-weight: 600;
+                      text-align: start;
+                      padding-block: 1.25rem;
+                      border-block-end: 1px solid rgb(var(--border-color));
+                      background: none;
+                      cursor: pointer;
+                      display: block;
+                    }
+
+                    #results-tabs-{{ block.id }} .results-tabs__inner-toggle:last-child {
+                      border-block-end: none;
+                    }
+
+                    #results-tabs-{{ block.id }} .results-tabs__inner-toggle:not(.is-active) {
+                      color: rgb(var(--text-color) / 0.4);
+                    }
+                  </style>
+
+                  <div id="results-tabs-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {{ block.shopify_attributes }}>
+                    <div style="padding: min(2.5rem, var(--container-gutter));">
+                      <div class="results-tabs__toggles" role="tablist">
+                        {%- for i in (1..3) -%}
+                          {%- capture period_label_key -%}period_{{ i }}_label{%- endcapture -%}
+                          {%- assign period_label = block.settings[period_label_key] -%}
+
+                          {%- if period_label != blank -%}
+                            <button type="button" class="results-tabs__toggle {% if i == results_tabs_first_period %}is-active{% endif %}" data-period-toggle="{{ i }}" role="tab" aria-selected="{% if i == results_tabs_first_period %}true{% else %}false{% endif %}">{{ period_label }}</button>
+                          {%- endif -%}
+                        {%- endfor -%}
+
+                        <span class="results-tabs__indicator" data-results-tabs-indicator></span>
+                      </div>
+
+                      {%- for i in (1..3) -%}
+                        {%- capture period_label_key -%}period_{{ i }}_label{%- endcapture -%}
+                        {%- capture period_disclaimer_key -%}period_{{ i }}_disclaimer{%- endcapture -%}
+
+                        {%- assign period_label = block.settings[period_label_key] -%}
+                        {%- assign period_disclaimer = block.settings[period_disclaimer_key] -%}
+
+                        {%- if period_label != blank -%}
+                          <div data-period-panel="{{ i }}" {% unless i == results_tabs_first_period %}hidden{% endunless %}>
+                            <div data-consumer-panel>
+                              <ul class="unstyled-list">
+                                {%- for m in (1..5) -%}
+                                  {%- capture stat_percentage_key -%}period_{{ i }}_stat_{{ m }}_percentage{%- endcapture -%}
+                                  {%- capture stat_claim_key -%}period_{{ i }}_stat_{{ m }}_claim{%- endcapture -%}
+
+                                  {%- assign stat_percentage = block.settings[stat_percentage_key] -%}
+                                  {%- assign stat_claim = block.settings[stat_claim_key] -%}
+
+                                  {%- if stat_percentage != blank or stat_claim != blank -%}
+                                    <li class="results-tabs__stat">
+                                      {%- if stat_percentage != blank -%}
+                                        <div class="results-tabs__stat-percentage">{{ stat_percentage }}</div>
+                                      {%- endif -%}
+
+                                      {%- if stat_claim != blank -%}
+                                        <div class="results-tabs__stat-claim">{{ stat_claim }}</div>
+                                      {%- endif -%}
+                                    </li>
+                                  {%- endif -%}
+                                {%- endfor -%}
+                              </ul>
+
+                              {%- if period_disclaimer != blank -%}
+                                <div class="results-tabs__disclaimer">{{ period_disclaimer }}</div>
+                              {%- endif -%}
+                            </div>
+
+                            {%- if results_tabs_has_clinical -%}
+                              <div class="results-tabs__inner-toggles" role="tablist">
+                                <button type="button" class="results-tabs__inner-toggle is-active" data-inner-toggle="consumer" role="tab" aria-selected="true">{{ block.settings.consumer_tab_label | default: "Consumer study results" }}</button>
+                                <button type="button" class="results-tabs__inner-toggle" data-inner-toggle="clinical" role="tab" aria-selected="false">{{ block.settings.clinical_tab_label | default: "Clinical results" }}</button>
+                              </div>
+                            {%- endif -%}
+                          </div>
+                        {%- endif -%}
+                      {%- endfor -%}
+
+                      {%- if results_tabs_has_clinical -%}
+                        <div data-clinical-panel hidden>
+                          <ul class="unstyled-list">
+                            {%- for m in (1..5) -%}
+                              {%- capture clinical_percentage_key -%}clinical_stat_{{ m }}_percentage{%- endcapture -%}
+                              {%- capture clinical_claim_key -%}clinical_stat_{{ m }}_claim{%- endcapture -%}
+
+                              {%- assign clinical_percentage = block.settings[clinical_percentage_key] -%}
+                              {%- assign clinical_claim = block.settings[clinical_claim_key] -%}
+
+                              {%- if clinical_percentage != blank or clinical_claim != blank -%}
+                                <li class="results-tabs__stat">
+                                  {%- if clinical_percentage != blank -%}
+                                    <div class="results-tabs__stat-percentage">{{ clinical_percentage }}</div>
+                                  {%- endif -%}
+
+                                  {%- if clinical_claim != blank -%}
+                                    <div class="results-tabs__stat-claim">{{ clinical_claim }}</div>
+                                  {%- endif -%}
+                                </li>
+                              {%- endif -%}
+                            {%- endfor -%}
+                          </ul>
+
+                          {%- if block.settings.clinical_disclaimer != blank -%}
+                            <div class="results-tabs__disclaimer">{{ block.settings.clinical_disclaimer }}</div>
+                          {%- endif -%}
+                        </div>
+                      {%- endif -%}
+                    </div>
+                  </div>
+
+                  <script>
+                    (function() {
+                      var root = document.getElementById('results-tabs-{{ block.id }}');
+                      if (!root) return;
+
+                      var periodToggles = root.querySelectorAll('[data-period-toggle]');
+                      var periodPanels = root.querySelectorAll('[data-period-panel]');
+                      var indicator = root.querySelector('[data-results-tabs-indicator]');
+                      var clinicalPanel = root.querySelector('[data-clinical-panel]');
+
+                      function moveIndicator(button) {
+                        if (!indicator || !button) return;
+                        indicator.style.left = button.offsetLeft + 'px';
+                        indicator.style.width = button.offsetWidth + 'px';
+                      }
+
+                      function setInnerActive(panel, type) {
+                        var consumer = panel.querySelector('[data-consumer-panel]');
+                        if (consumer) consumer.hidden = type === 'clinical';
+                        if (clinicalPanel) clinicalPanel.hidden = type !== 'clinical';
+
+                        panel.querySelectorAll('[data-inner-toggle]').forEach(function(toggle) {
+                          var isActive = toggle.getAttribute('data-inner-toggle') === type;
+                          toggle.classList.toggle('is-active', isActive);
+                          toggle.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                        });
+                      }
+
+                      function activatePeriod(index) {
+                        periodToggles.forEach(function(toggle) {
+                          var isActive = toggle.getAttribute('data-period-toggle') === index;
+                          toggle.classList.toggle('is-active', isActive);
+                          toggle.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                          if (isActive) moveIndicator(toggle);
+                        });
+
+                        periodPanels.forEach(function(panel) {
+                          var isActive = panel.getAttribute('data-period-panel') === index;
+                          panel.hidden = !isActive;
+                          if (isActive) setInnerActive(panel, 'consumer');
+                        });
+                      }
+
+                      periodToggles.forEach(function(toggle) {
+                        toggle.addEventListener('click', function() {
+                          activatePeriod(toggle.getAttribute('data-period-toggle'));
+                        });
+                      });
+
+                      root.querySelectorAll('[data-inner-toggle]').forEach(function(toggle) {
+                        toggle.addEventListener('click', function() {
+                          var panel = toggle.closest('[data-period-panel]');
+                          if (panel) setInnerActive(panel, toggle.getAttribute('data-inner-toggle'));
+                        });
+                      });
+
+                      var activeToggle = root.querySelector('.results-tabs__toggle.is-active');
+                      if (activeToggle) moveIndicator(activeToggle);
+
+                      window.addEventListener('resize', function() {
+                        var current = root.querySelector('.results-tabs__toggle.is-active');
+                        if (current) moveIndicator(current);
+                      });
+                    })();
+                  </script>
+                {%- endif -%}
+
               {%- when 'empty_item' -%}
                 <div class="media-blocks__item color-scheme color-scheme--{{ block.settings.color_scheme.id }} md-max:hidden" {{ block.shopify_attributes }}>
                   <!-- Empty item -->
@@ -3696,6 +3992,291 @@
           "type": "richtext",
           "id": "item_6_content",
           "label": "Row 6 content"
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-2"
+        }
+      ]
+    },
+    {
+      "type": "results_tabs",
+      "name": "Results tabs",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "An interactive stats card. Up to 3 periods (only ones with a label show up as a tab) each list up to 5 percentage/claim rows. Inside each period, an optional shared 'Clinical results' panel can be toggled - fill in the clinical fields below to enable it; its content is the same no matter which period is active."
+        },
+        {
+          "type": "header",
+          "content": "Period 1"
+        },
+        {
+          "type": "text",
+          "id": "period_1_label",
+          "label": "Tab label",
+          "default": "Immediate results"
+        },
+        {
+          "type": "text",
+          "id": "period_1_stat_1_percentage",
+          "label": "Stat 1 percentage",
+          "default": "96%"
+        },
+        {
+          "type": "text",
+          "id": "period_1_stat_1_claim",
+          "label": "Stat 1 claim",
+          "default": "Agreed skin feels instantly refreshed and nourished*"
+        },
+        {
+          "type": "text",
+          "id": "period_1_stat_2_percentage",
+          "label": "Stat 2 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_1_stat_2_claim",
+          "label": "Stat 2 claim"
+        },
+        {
+          "type": "text",
+          "id": "period_1_stat_3_percentage",
+          "label": "Stat 3 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_1_stat_3_claim",
+          "label": "Stat 3 claim"
+        },
+        {
+          "type": "text",
+          "id": "period_1_stat_4_percentage",
+          "label": "Stat 4 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_1_stat_4_claim",
+          "label": "Stat 4 claim"
+        },
+        {
+          "type": "text",
+          "id": "period_1_stat_5_percentage",
+          "label": "Stat 5 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_1_stat_5_claim",
+          "label": "Stat 5 claim"
+        },
+        {
+          "type": "richtext",
+          "id": "period_1_disclaimer",
+          "label": "Disclaimer",
+          "default": "<p>*Based on a 33-subject consumer perception study immediately after use.</p>"
+        },
+        {
+          "type": "header",
+          "content": "Period 2"
+        },
+        {
+          "type": "text",
+          "id": "period_2_label",
+          "label": "Tab label",
+          "default": "After 4 weeks"
+        },
+        {
+          "type": "text",
+          "id": "period_2_stat_1_percentage",
+          "label": "Stat 1 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_2_stat_1_claim",
+          "label": "Stat 1 claim"
+        },
+        {
+          "type": "text",
+          "id": "period_2_stat_2_percentage",
+          "label": "Stat 2 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_2_stat_2_claim",
+          "label": "Stat 2 claim"
+        },
+        {
+          "type": "text",
+          "id": "period_2_stat_3_percentage",
+          "label": "Stat 3 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_2_stat_3_claim",
+          "label": "Stat 3 claim"
+        },
+        {
+          "type": "text",
+          "id": "period_2_stat_4_percentage",
+          "label": "Stat 4 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_2_stat_4_claim",
+          "label": "Stat 4 claim"
+        },
+        {
+          "type": "text",
+          "id": "period_2_stat_5_percentage",
+          "label": "Stat 5 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_2_stat_5_claim",
+          "label": "Stat 5 claim"
+        },
+        {
+          "type": "richtext",
+          "id": "period_2_disclaimer",
+          "label": "Disclaimer",
+          "default": "<p>*Based on a 33-subject consumer perception study after 4 weeks of use.</p>"
+        },
+        {
+          "type": "header",
+          "content": "Period 3"
+        },
+        {
+          "type": "text",
+          "id": "period_3_label",
+          "label": "Tab label"
+        },
+        {
+          "type": "text",
+          "id": "period_3_stat_1_percentage",
+          "label": "Stat 1 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_3_stat_1_claim",
+          "label": "Stat 1 claim"
+        },
+        {
+          "type": "text",
+          "id": "period_3_stat_2_percentage",
+          "label": "Stat 2 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_3_stat_2_claim",
+          "label": "Stat 2 claim"
+        },
+        {
+          "type": "text",
+          "id": "period_3_stat_3_percentage",
+          "label": "Stat 3 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_3_stat_3_claim",
+          "label": "Stat 3 claim"
+        },
+        {
+          "type": "text",
+          "id": "period_3_stat_4_percentage",
+          "label": "Stat 4 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_3_stat_4_claim",
+          "label": "Stat 4 claim"
+        },
+        {
+          "type": "text",
+          "id": "period_3_stat_5_percentage",
+          "label": "Stat 5 percentage"
+        },
+        {
+          "type": "text",
+          "id": "period_3_stat_5_claim",
+          "label": "Stat 5 claim"
+        },
+        {
+          "type": "richtext",
+          "id": "period_3_disclaimer",
+          "label": "Disclaimer"
+        },
+        {
+          "type": "header",
+          "content": "Clinical results (shared, optional)"
+        },
+        {
+          "type": "text",
+          "id": "consumer_tab_label",
+          "label": "Consumer results toggle label",
+          "default": "Consumer study results"
+        },
+        {
+          "type": "text",
+          "id": "clinical_tab_label",
+          "label": "Clinical results toggle label",
+          "default": "Clinical results"
+        },
+        {
+          "type": "text",
+          "id": "clinical_stat_1_percentage",
+          "label": "Stat 1 percentage"
+        },
+        {
+          "type": "text",
+          "id": "clinical_stat_1_claim",
+          "label": "Stat 1 claim"
+        },
+        {
+          "type": "text",
+          "id": "clinical_stat_2_percentage",
+          "label": "Stat 2 percentage"
+        },
+        {
+          "type": "text",
+          "id": "clinical_stat_2_claim",
+          "label": "Stat 2 claim"
+        },
+        {
+          "type": "text",
+          "id": "clinical_stat_3_percentage",
+          "label": "Stat 3 percentage"
+        },
+        {
+          "type": "text",
+          "id": "clinical_stat_3_claim",
+          "label": "Stat 3 claim"
+        },
+        {
+          "type": "text",
+          "id": "clinical_stat_4_percentage",
+          "label": "Stat 4 percentage"
+        },
+        {
+          "type": "text",
+          "id": "clinical_stat_4_claim",
+          "label": "Stat 4 claim"
+        },
+        {
+          "type": "text",
+          "id": "clinical_stat_5_percentage",
+          "label": "Stat 5 percentage"
+        },
+        {
+          "type": "text",
+          "id": "clinical_stat_5_claim",
+          "label": "Stat 5 claim"
+        },
+        {
+          "type": "richtext",
+          "id": "clinical_disclaimer",
+          "label": "Disclaimer"
         },
         {
           "type": "color_scheme",
