@@ -73,8 +73,16 @@
       overflow: hidden;
     }
 
+    {%- comment -%}
+    position: absolute + inset (not height: 100%) to fill .feature-tabs__media: that parent only
+    has a min-height (from the block-size utility class below), and percentage heights don't
+    reliably resolve against an ancestor whose height comes from min-height rather than an explicit
+    height - inset resolves against the actual laid-out box either way, so the track (and the
+    images inside it) correctly fill/crop to whatever height min-height ends up producing.
+    {%- endcomment -%}
     #shopify-section-{{ section.id }} .feature-tabs__media-track {
-      height: 100%;
+      position: absolute;
+      inset-block: 0;
       display: flex;
       transition: transform .5s ease;
     }
