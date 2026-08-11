@@ -17,6 +17,53 @@ This component is used to show the buy buttons
 @param {string} [new_badge_color] - the background color of the new badge
 {%- enddoc -%}
 
+{%- if show_quantity_selector and form_id != blank -%}
+  {%- comment -%}
+  Mirrors button.liquid's own background/text/border logic branch for branch, so the quantity
+  selector always reads as "the same control" as the add to cart button next to it, whichever
+  style (solid or outline) and custom colors the merchant picked for that button.
+  {%- endcomment -%}
+  {%- liquid
+    assign quantity_selector_background = null
+    assign quantity_selector_text_color = 'var(--button-text-primary)'
+    assign quantity_selector_border_color = null
+
+    if atc_button_style == 'outline'
+      if atc_button_text_color != blank and atc_button_text_color != 'rgba(0,0,0,0)'
+        assign quantity_selector_text_color = atc_button_text_color.rgb
+      else
+        assign quantity_selector_text_color = 'var(--button-background-primary)'
+      endif
+
+      assign quantity_selector_border_color = quantity_selector_text_color
+    else
+      assign quantity_selector_background = 'var(--button-background-primary)'
+
+      if atc_button_background != blank and atc_button_background != 'rgba(0,0,0,0)'
+        assign quantity_selector_background = atc_button_background.rgb
+      endif
+
+      if atc_button_text_color != blank and atc_button_text_color != 'rgba(0,0,0,0)'
+        assign quantity_selector_text_color = atc_button_text_color.rgb
+      endif
+    endif
+  -%}
+
+  <style>
+    #{{ form_id }} .quantity-selector {
+      {%- if quantity_selector_background -%}
+        background: rgb({{ quantity_selector_background }});
+      {%- else -%}
+        background: none;
+      {%- endif -%}
+      color: rgb({{ quantity_selector_text_color }});
+      {%- if quantity_selector_border_color -%}
+        border-color: rgb({{ quantity_selector_border_color }});
+      {%- endif -%}
+    }
+  </style>
+{%- endif -%}
+
 {%- if show_new_badge -%}
   <style>
     {%- comment -%}
