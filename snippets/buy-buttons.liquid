@@ -19,8 +19,14 @@ This component is used to show the buy buttons
 
 {%- if show_new_badge -%}
   <style>
+    {%- comment -%}
+    The badge overlaps the button's own bottom edge (translateY 50%), so without this the next
+    block/edge below sits flush against the badge with no breathing room - this reserves real
+    space for it instead of just letting it overlap into whatever padding already existed there.
+    {%- endcomment -%}
     #{{ form_id }} .buy-buttons__new-badge-wrapper {
       position: relative;
+      margin-block-end: 1rem;
     }
 
     #{{ form_id }} .buy-buttons__new-badge {
@@ -37,7 +43,6 @@ This component is used to show the buy buttons
       white-space: nowrap;
       padding: .25em .85em;
       border-radius: 100vw;
-      font-size: .7rem;
       line-height: 1.6;
     }
   </style>
