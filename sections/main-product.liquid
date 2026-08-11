@@ -25,6 +25,16 @@
     overflow: hidden;
   }
 
+  {%- comment -%}
+  .accordion's own top/bottom hairline dividers (theme.css: box-shadow: 0 1px 0 border-color,
+  0 1px 0 border-color inset) are what draw the horizontal separator lines between each accordion
+  in the group - removing them here since the white card itself is enough visual separation from
+  the rest of the page.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .accordion-group .accordion {
+    box-shadow: none;
+  }
+
   {%- if section.settings.desktop_carousel_controls == 'thumbnails_left' -%}
     {%- comment -%}
     product-gallery.liquid's "thumbnails_left" option only repositions the existing rectangular,
