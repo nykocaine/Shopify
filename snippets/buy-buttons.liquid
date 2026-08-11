@@ -12,7 +12,35 @@ This component is used to show the buy buttons
 @param {string} [payment_button_background] - the background of the dynamic payment button
 @param {string} [payment_button_text_color] - the color of the dynamic payment button
 @param {string} [form_id] - if specified, define the form ID linked to this input
+@param {boolean} [show_new_badge] - if true, shows a small pill badge overlapping the bottom edge of the add to cart button
+@param {string} [new_badge_text] - the text shown inside the new badge
+@param {string} [new_badge_color] - the background color of the new badge
 {%- enddoc -%}
+
+{%- if show_new_badge -%}
+  <style>
+    #{{ form_id }} .buy-buttons__new-badge-wrapper {
+      position: relative;
+    }
+
+    #{{ form_id }} .buy-buttons__new-badge {
+      position: absolute;
+      inset-inline-start: 50%;
+      inset-block-end: 0;
+      transform: translate(-50%, 50%);
+      background: {% if new_badge_color != blank %}{{ new_badge_color }}{% else %}#000{% endif %};
+      color: #fff;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+      white-space: nowrap;
+      padding: .25em .85em;
+      border-radius: 100vw;
+      font-size: .7rem;
+      line-height: 1.6;
+    }
+  </style>
+{%- endif -%}
 
 {%- if product != blank -%}
   {%- liquid
