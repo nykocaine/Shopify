@@ -216,7 +216,7 @@
                 {%- assign tab_text = section.settings[tab_text_key] -%}
 
                 {%- if tab_image != blank -%}
-                  <div class="feature-tabs__panel v-stack gap-4 {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-panel="{{ i }}">
+                  <div class="feature-tabs__panel v-stack gap-4 {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-panel="{{ i }}" style="transform: translateX({% if i == feature_tab_first_index %}0{% else %}100{% endif %}%);">
                     {%- if tab_label != blank or tab_icon != blank -%}
                       <div class="feature-tabs__panel-heading">
                         {%- if tab_label != blank -%}
