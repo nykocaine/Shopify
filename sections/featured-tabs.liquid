@@ -73,14 +73,15 @@
     so nothing jumps or pops - only opacity animates.
     {%- endcomment -%}
     {%- comment -%}
-    Opacity itself is controlled via inline style (set below in the markup, and updated by JS on
-    tab switch) instead of a class + CSS rule, so there's no stylesheet cascade/specificity for it
-    to lose against - only the transition lives here.
+    Carousel-style push, no fade: position (transform, inline style set below and updated by JS on
+    tab switch) is the only thing that animates. The incoming panel always slides in from the right,
+    the outgoing one slides out to the left, everything else parks off-screen right - never a
+    crossfade/flicker between two overlapping opacities.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .feature-tabs__media-item {
       inset: 0;
       position: absolute;
-      transition: opacity .5s ease, transform .5s ease;
+      transition: transform .5s ease;
     }
 
     #shopify-section-{{ section.id }} .feature-tabs__content {
@@ -92,22 +93,17 @@
 
     #shopify-section-{{ section.id }} .feature-tabs__panels {
       display: grid;
+      overflow: hidden;
     }
 
     #shopify-section-{{ section.id }} .feature-tabs__panel {
       grid-area: 1 / 1;
-      opacity: 0;
-      visibility: hidden;
       pointer-events: none;
-      transform: translateX(60px);
-      transition: opacity .5s ease, transform .5s ease, visibility .5s ease;
+      transition: transform .5s ease;
     }
 
     #shopify-section-{{ section.id }} .feature-tabs__panel.is-active {
-      opacity: 1;
-      visibility: visible;
       pointer-events: auto;
-      transform: translateX(0);
     }
 
     #shopify-section-{{ section.id }} .feature-tabs__panel-heading {
@@ -187,7 +183,7 @@
               {%- assign tab_image = section.settings[tab_image_key] -%}
 
               {%- if tab_image != blank -%}
-                <div class="feature-tabs__media-item {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-panel="{{ i }}" style="opacity: {% if i == feature_tab_first_index %}1{% else %}0{% endif %}; transform: translateX({% if i == feature_tab_first_index %}0{% else %}60px{% endif %});">
+                <div class="feature-tabs__media-item {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-panel="{{ i }}" style="transform: translateX({% if i == feature_tab_first_index %}0{% else %}100{% endif %}%);">
                   {{- tab_image | image_url: width: tab_image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 100vw, 50vw', widths: '400,600,800,1000,1200,1400,1600,1800', class: 'image-cover' -}}
                 </div>
               {%- endif -%}
