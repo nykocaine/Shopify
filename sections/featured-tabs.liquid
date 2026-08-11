@@ -135,12 +135,19 @@
     without needing JS to measure/position it. Carries its own color-scheme (for --accent/
     --border-color, used below) but with no background of its own - only the tab circles
     themselves should read as colored, not a panel behind them.
+
+    justify-content: space-between (instead of a fixed column-gap + center) spreads the tabs across
+    the box's full available width - stretches automatically to fill .feature-tabs__content's own
+    width (its own padding never changes, this just fills what's inside it) so there's no leftover
+    space at the sides and the row never overflows on narrow screens. column-gap stays only as a
+    safety minimum, in case space-between alone would ever push tabs closer than that.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .feature-tabs__tabs {
       background: none;
-      column-gap: 1.75rem;
+      width: 100%;
+      column-gap: .75rem;
       row-gap: .75rem;
-      justify-content: center;
+      justify-content: space-between;
       display: grid;
     }
 
