@@ -283,7 +283,29 @@
 
       var tabs = root.querySelectorAll('[data-tab-index]');
       var mediaItems = root.querySelectorAll('.feature-tabs__media-item[data-tab-panel]');
-      var otherPanels = root.querySelectorAll('.feature-tabs__panel[data-tab-panel], .feature-tabs__tab-label[data-tab-panel]');
+      var contentPanels = root.querySelectorAll('.feature-tabs__panel[data-tab-panel]');
+      var tabLabels = root.querySelectorAll('.feature-tabs__tab-label[data-tab-panel]');
+      var currentIndex = '{{ feature_tab_first_index }}';
+
+      {%- comment -%}
+      Carousel push, no fade: position (inline transform, not a class) is the only thing that
+      animates, so switching tabs can't lose to any stylesheet rule. The incoming item always
+      slides in from the right (translateX 100% -> 0), the one that was active slides out to the
+      left (-100%), and everything else parks off-screen right, ready for its own turn.
+      {%- endcomment -%}
+      function slide(items, index) {
+        items.forEach(function(item) {
+          var itemPanel = item.getAttribute('data-tab-panel');
+
+          if (itemPanel === index) {
+            item.style.transform = 'translateX(0)';
+          } else if (itemPanel === currentIndex) {
+            item.style.transform = 'translateX(-100%)';
+          } else {
+            item.style.transform = 'translateX(100%)';
+          }
+        });
+      }
 
       function activate(index) {
         tabs.forEach(function(tab) {
@@ -292,20 +314,12 @@
           tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
         });
 
-        {%- comment -%}
-        Opacity/transform set directly via inline style (not a class), so switching tabs can't lose
-        to any stylesheet rule - matches the initial inline values set in the markup below. Inactive
-        items sit shifted to the right and fully transparent, so becoming active always animates in
-        as a slide-from-the-right + fade.
-        {%- endcomment -%}
-        mediaItems.forEach(function(item) {
-          var isActive = item.getAttribute('data-tab-panel') === index;
-          item.style.opacity = isActive ? '1' : '0';
-          item.style.transform = isActive ? 'translateX(0)' : 'translateX(60px)';
-        });
+        slide(mediaItems, index);
+        slide(contentPanels, index);
+        currentIndex = index;
 
-        otherPanels.forEach(function(panel) {
-          panel.classList.toggle('is-active', panel.getAttribute('data-tab-panel') === index);
+        tabLabels.forEach(function(label) {
+          label.classList.toggle('is-active', label.getAttribute('data-tab-panel') === index);
         });
       }
 
