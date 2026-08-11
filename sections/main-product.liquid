@@ -31,9 +31,11 @@
     {%- comment -%}
     product-gallery.liquid's "thumbnails_left" option only repositions the existing rectangular,
     underline-indicator thumbnail strip (theme.css .scroll-marker-group--thumbnails) to the left
-    edge - it doesn't change its shape. This restyles it into circular, cover-cropped avatars with
-    a ring on the active one instead, scoped to this section only (other places reusing
-    thumbnails_left, eg. quick-buy, keep the default rectangular style).
+    edge - it doesn't change its shape. This restyles it into circular, cover-cropped, borderless
+    avatars faded to 50% opacity except the active one, scoped to this section only (other places
+    reusing thumbnails_left, eg. quick-buy, keep the default rectangular style). Vertical centering
+    of the whole strip already comes from that same "thumbnails_left" rule (top: 50% +
+    translateY(-50%) on .scroll-marker-group--thumbnails), unaffected by this restyle.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails {
       --scroll-marker-group-gap: .75rem;
@@ -42,9 +44,10 @@
     #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker {
       --scroll-marker-width: 3rem;
       --scroll-marker-height: 3rem;
-      border: 2px solid rgb(var(--background) / .8);
       border-radius: 50%;
+      opacity: .5;
       overflow: hidden;
+      transition: opacity .2s;
     }
 
     #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker img {
@@ -58,7 +61,7 @@
     }
 
     #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker[aria-current="true"] {
-      border-color: rgb(var(--text-color));
+      opacity: 1;
     }
   {%- endif -%}
 
