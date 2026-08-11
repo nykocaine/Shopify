@@ -250,9 +250,19 @@
           position: relative;
         }
 
+        {%- comment -%}
+        .product-gallery is itself a grid container (theme.css) but never declares its own
+        grid-template-rows, so its one implicit row auto-sizes to .product-gallery__image-list's
+        natural content height instead of the definite box height inset: 0 just gave it - which
+        means that child's height: 100% below has nothing definite to resolve against and falls
+        back to its own content size, leaving a gap under a shorter-than-the-row gallery whenever
+        the row grows past its min-height (eg. an accordion opens). Explicitly sizing the row to
+        100% is what lets that height: 100% actually resolve.
+        {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-gallery-frame > .product-gallery {
           position: absolute;
           inset: 0;
+          grid-template-rows: 100%;
         }
 
         #shopify-section-{{ section.id }} .product-gallery__image-list {
