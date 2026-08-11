@@ -246,61 +246,59 @@
         if that row is unused (no thumbnails, or floating/overlay controls that are absolutely positioned and so
         don't occupy a row at all), it simply stays empty.
         {%- endcomment -%}
+        {%- comment -%}
+        Every level between the frame and the actual media has to actively pass a definite height
+        down to the next (position: absolute; inset: 0 only makes it definite for .product-gallery
+        itself - every descendant below it still needs its own explicit height: 100% or the chain
+        breaks and that child falls back to its natural/content height, leaving a gap under a
+        shorter-than-the-row gallery whenever the row grows past its min-height (eg. an accordion
+        opens). !important on every step here removes any doubt about some other rule (inline style
+        from JS, a later theme.css rule, a different specificity) winning instead at any one link.
+        {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-gallery-frame {
-          position: relative;
+          position: relative !important;
         }
 
-        {%- comment -%}
-        .product-gallery is itself a grid container (theme.css) but never declares its own
-        grid-template-rows, so its one implicit row auto-sizes to .product-gallery__image-list's
-        natural content height instead of the definite box height inset: 0 just gave it - which
-        means that child's height: 100% below has nothing definite to resolve against and falls
-        back to its own content size, leaving a gap under a shorter-than-the-row gallery whenever
-        the row grows past its min-height (eg. an accordion opens). Explicitly sizing the row to
-        100% is what lets that height: 100% actually resolve.
-        {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-gallery-frame > .product-gallery {
-          position: absolute;
-          inset: 0;
-          grid-template-rows: 100%;
+          position: absolute !important;
+          inset: 0 !important;
+          height: 100% !important;
+          grid-template-rows: 100% !important;
         }
 
         #shopify-section-{{ section.id }} .product-gallery__image-list {
-          height: 100%;
-          grid-template-rows: minmax(0, 1fr) auto;
+          height: 100% !important;
+          grid-template-rows: minmax(0, 1fr) auto !important;
         }
 
         #shopify-section-{{ section.id }} .product-gallery__image-list > *:first-child {
-          height: 100%;
-          min-height: 0;
+          height: 100% !important;
+          min-height: 0 !important;
         }
 
         {%- comment -%}
-        <scroll-carousel adaptive-height> (product-gallery.liquid) sets its own inline max-height in
-        JS (theme.js adaptHeight_fn), sized to the currently selected slide's natural/intrinsic
-        height - meant for galleries without a fixed row height. It only recalculates on connect and
-        on window resize, never when an accordion in product-info changes the row's height, so it's
-        stuck at the old (shorter) value whenever that happens. An inline style can only be beaten
-        by !important from an external stylesheet, so that's required here to force it back to
-        filling the row. align-items: stretch overrides the carousel's own base rule (align-items:
-        start, theme.css), which would otherwise leave each slide at its own natural/intrinsic
-        height, aligned to the top - the same "gap under the image" symptom one level down.
+        <scroll-carousel adaptive-height> (product-gallery.liquid) also sets its own inline
+        max-height in JS (theme.js adaptHeight_fn), sized to the currently selected slide's
+        natural/intrinsic height - meant for galleries without a fixed row height. It only
+        recalculates on connect and on window resize, never when an accordion in product-info
+        changes the row's height, so it's stuck at the old (shorter) value whenever that happens.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-gallery__carousel {
-          height: 100%;
+          height: 100% !important;
           max-height: none !important;
-          align-items: stretch;
+          align-items: stretch !important;
         }
 
         #shopify-section-{{ section.id }} .product-gallery__media {
-          height: 100%;
+          height: 100% !important;
         }
 
         #shopify-section-{{ section.id }} .product-gallery__media img,
         #shopify-section-{{ section.id }} .product-gallery__media video-media,
         #shopify-section-{{ section.id }} .product-gallery__media model-media {
-          height: 100%;
-          object-fit: cover;
+          height: 100% !important;
+          width: 100% !important;
+          object-fit: cover !important;
         }
       {%- endif -%}
     }
