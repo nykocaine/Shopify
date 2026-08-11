@@ -143,7 +143,14 @@ This component is used to show the buy buttons
                   {%- render 'quantity-selector', variant: product.selected_or_first_available_variant, form: form_id -%}
                 {%- endif -%}
 
-                {%- render 'button', content: button_content, type: 'submit', disabled: button_disabled, secondary: show_payment_button, style: atc_button_style, background: atc_button_background, text_color: atc_button_text_color, stretch: true -%}
+                {%- if show_new_badge -%}
+                  <div class="buy-buttons__new-badge-wrapper grow">
+                    {%- render 'button', content: button_content, type: 'submit', disabled: button_disabled, secondary: show_payment_button, style: atc_button_style, background: atc_button_background, text_color: atc_button_text_color, stretch: true -%}
+                    <span class="buy-buttons__new-badge">{{ new_badge_text | default: 'New' }}</span>
+                  </div>
+                {%- else -%}
+                  {%- render 'button', content: button_content, type: 'submit', disabled: button_disabled, secondary: show_payment_button, style: atc_button_style, background: atc_button_background, text_color: atc_button_text_color, stretch: true -%}
+                {%- endif -%}
               </div>
 
               {%- if show_payment_button -%}
