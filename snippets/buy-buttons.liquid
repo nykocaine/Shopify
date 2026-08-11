@@ -181,6 +181,13 @@ This component is used to show the buy buttons
 {%- else -%}
   <buy-buttons class="buy-buttons" template="{{ product.template_suffix | escape }}" form="{{ form_id }}">
     {%- assign button_content = 'product.general.add_to_cart_button' | t -%}
-    {%- render 'button', content: button_content, type: 'submit', background: atc_button_background, text_color: atc_button_text_color, stretch: true -%}
+    {%- if show_new_badge -%}
+      <div class="buy-buttons__new-badge-wrapper">
+        {%- render 'button', content: button_content, type: 'submit', background: atc_button_background, text_color: atc_button_text_color, stretch: true -%}
+        <span class="buy-buttons__new-badge">{{ new_badge_text | default: 'New' }}</span>
+      </div>
+    {%- else -%}
+      {%- render 'button', content: button_content, type: 'submit', background: atc_button_background, text_color: atc_button_text_color, stretch: true -%}
+    {%- endif -%}
   </buy-buttons>
 {%- endif -%}
