@@ -131,7 +131,7 @@
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .feature-tabs__tabs {
       background: none;
-      column-gap: 1.25rem;
+      column-gap: 1.75rem;
       row-gap: .75rem;
       justify-content: start;
       display: grid;
@@ -139,7 +139,7 @@
 
     #shopify-section-{{ section.id }} .feature-tabs__tab {
       grid-row: 1;
-      width: 3.5rem;
+      width: {{ section.settings.tabs_size_mobile }}px;
       aspect-ratio: 1;
       border: 1px solid rgb(var(--border-color));
       border-radius: 100%;
@@ -147,6 +147,12 @@
       display: grid;
       cursor: pointer;
       transition: background-color .3s ease, border-color .3s ease, color .3s ease;
+    }
+
+    @media screen and (min-width: 700px) {
+      #shopify-section-{{ section.id }} .feature-tabs__tab {
+        width: {{ section.settings.tabs_size_desktop }}px;
+      }
     }
 
     #shopify-section-{{ section.id }} .feature-tabs__tab.is-active {
@@ -408,6 +414,26 @@
       "id": "tabs_active_color",
       "label": "Active tab color",
       "info": "Leave blank to use the content color scheme's accent color instead."
+    },
+    {
+      "type": "range",
+      "id": "tabs_size_mobile",
+      "min": 24,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "label": "Tab size (mobile)",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "tabs_size_desktop",
+      "min": 24,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "label": "Tab size (desktop)",
+      "default": 56
     },
     {
       "type": "header",
