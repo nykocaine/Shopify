@@ -160,6 +160,74 @@
 
   {%- if section.settings.floating_product -%}
     {%- comment -%}
+    Shared by both the mobile (product_height_mobile) and desktop (product_height_desktop) branches below:
+    once .product-gallery-frame itself has a definite height (set differently by each branch - an explicit
+    height on mobile, a stretched grid row on desktop), this is the one chain that passes that height down
+    to the actual media and forces it to crop-and-center instead of showing its own natural aspect ratio.
+    Kept in one place instead of duplicated per breakpoint so there's a single spot to fix if the gallery's
+    internal markup ever changes.
+
+    Every step needs its own explicit height: 100% - position: absolute; inset: 0 only makes the immediate
+    .product-gallery definite, not everything below it, and a percentage height is meaningless against an
+    ancestor that never resolved its own height explicitly. Two different engines fight back if not pinned
+    with !important at every link:
+
+    - <scroll-carousel adaptive-height> (product-gallery.liquid) sets its own inline max-height in JS
+      (theme.js adaptHeight_fn), sized to the currently selected slide's natural height - meant for
+      galleries without a fixed row height. max-height: none overrides that inline style.
+    - <video-media>/<model-media> (media.liquid) set their own aspect-ratio custom property inline, matching
+      that specific video/model's own intrinsic ratio - aspect-ratio only fills in a dimension left "auto",
+      so an explicit height: 100% (a real, non-auto value) is what stops it from deriving its own height
+      from that ratio instead of from the row.
+
+    object-fit/object-position are deliberately only set on the actual img, not on video-media/model-media
+    themselves: object-fit has no effect on a custom element, only on a real replaced element (img, video,
+    iframe) - theme.css's own "video-media > :is(video, img)" rule already applies cover/center there
+    unconditionally, it only needed video-media itself to have a real height to crop against, which the
+    height: 100% override above provides.
+    {%- endcomment -%}
+    {%- capture product_gallery_fill_css -%}
+      #shopify-section-{{ section.id }} .product-gallery-frame > .product-gallery {
+        position: absolute !important;
+        inset: 0 !important;
+        height: 100% !important;
+        grid-template-rows: 100% !important;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__image-list {
+        height: 100% !important;
+        grid-template-rows: minmax(0, 1fr) auto !important;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__image-list > *:first-child {
+        height: 100% !important;
+        min-height: 0 !important;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__carousel {
+        height: 100% !important;
+        max-height: none !important;
+        align-items: stretch !important;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__media {
+        height: 100% !important;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__media video-media,
+      #shopify-section-{{ section.id }} .product-gallery__media model-media {
+        height: 100% !important;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__media img {
+        height: 100% !important;
+        width: 100% !important;
+        object-fit: cover !important;
+        object-position: center !important;
+      }
+    {%- endcapture -%}
+
+    {%- comment -%}
     Floating Product always reserves a gutter-sized gap on every side, on every viewport, and always splits
     into two independently rounded cards (gallery + info) at every breakpoint: separate stacked cards on
     mobile (spaced by the gap below), flush edge-to-edge cards on desktop (--product-grid only splits them
@@ -270,46 +338,7 @@
           position: relative;
         }
 
-        #shopify-section-{{ section.id }} .product-gallery-frame > .product-gallery {
-          position: absolute !important;
-          inset: 0 !important;
-          height: 100% !important;
-          grid-template-rows: 100% !important;
-        }
-
-        #shopify-section-{{ section.id }} .product-gallery__image-list {
-          height: 100% !important;
-          grid-template-rows: minmax(0, 1fr) auto !important;
-        }
-
-        #shopify-section-{{ section.id }} .product-gallery__image-list > *:first-child {
-          height: 100% !important;
-          min-height: 0 !important;
-        }
-
-        {%- comment -%}
-        Same override as the desktop branch below: <scroll-carousel adaptive-height> sets its own inline
-        max-height in JS, sized to the currently selected slide - !important is what makes it lose to this
-        fixed height instead.
-        {%- endcomment -%}
-        #shopify-section-{{ section.id }} .product-gallery__carousel {
-          height: 100% !important;
-          max-height: none !important;
-          align-items: stretch !important;
-        }
-
-        #shopify-section-{{ section.id }} .product-gallery__media {
-          height: 100% !important;
-        }
-
-        #shopify-section-{{ section.id }} .product-gallery__media img,
-        #shopify-section-{{ section.id }} .product-gallery__media video-media,
-        #shopify-section-{{ section.id }} .product-gallery__media model-media {
-          height: 100% !important;
-          width: 100% !important;
-          object-fit: cover !important;
-          object-position: center !important;
-        }
+        {{ product_gallery_fill_css }}
       {%- endif -%}
     }
 
@@ -390,85 +419,20 @@
         Without this, the gallery's own intrinsic size (the media's natural aspect-ratio) would count toward
         --product-grid's row-sizing above — a tall/portrait photo would inflate the row past Nvh on its own,
         defeating the fixed height entirely. Taking .product-gallery out of normal flow (absolutely
-        positioned, filling .product-gallery-frame via inset: 0) removes it from that calculation altogether.
-        .product-gallery-frame (the actual grid item) still stretches to match the row via align-items:
-        stretch, and the inset: 0 child always fills that final, now-constant size exactly.
-
-        With a guaranteed, definite pixel height now available all the way down (position: absolute; inset: 0
-        makes it definite, unlike the auto/max-content sizing the gallery normally relies on), each percentage
-        height below resolves against an actual number instead of being ignored as indefinite. object-fit: cover
-        on the media itself is what does the actual cropping: rather than showing the full photo (which may no
-        longer fit the row's aspect ratio), it fills the box and crops the overflow, centered by default.
-
-        .product-gallery__image-list's own grid-auto-rows is "max-content" (not "auto"), which per spec isn't
-        eligible for the container's default stretch-to-fill behavior — so its first row (the .relative wrapper
-        holding the actual carousel) needs an explicit 1fr to claim the leftover height instead of just sizing
-        to content. The trailing "auto" row is for optional content below it (eg. thumbnails_under controls);
-        if that row is unused (no thumbnails, or floating/overlay controls that are absolutely positioned and so
-        don't occupy a row at all), it simply stays empty.
-        {%- endcomment -%}
-        {%- comment -%}
-        Every level between the frame and the actual media has to actively pass a definite height
-        down to the next (position: absolute; inset: 0 only makes it definite for .product-gallery
-        itself - every descendant below it still needs its own explicit height: 100% or the chain
-        breaks and that child falls back to its natural/content height, leaving a gap under a
-        shorter-than-the-row gallery. !important on every step here removes any doubt about some
-        other rule (inline style from JS, a later theme.css rule, a different specificity) winning
-        instead at any one link.
+        positioned, filling .product-gallery-frame via inset: 0, done below as part of the shared chain)
+        removes it from that calculation altogether. .product-gallery-frame (the actual grid item) still
+        stretches to match the row via align-items: stretch (set above), and the inset: 0 child always fills
+        that final, now-constant size exactly - position: relative here is what makes that inset: 0 resolve
+        against this frame instead of the next positioned ancestor up the tree.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-gallery-frame {
           position: relative !important;
         }
 
-        #shopify-section-{{ section.id }} .product-gallery-frame > .product-gallery {
-          position: absolute !important;
-          inset: 0 !important;
-          height: 100% !important;
-          grid-template-rows: 100% !important;
-        }
-
-        #shopify-section-{{ section.id }} .product-gallery__image-list {
-          height: 100% !important;
-          grid-template-rows: minmax(0, 1fr) auto !important;
-        }
-
-        #shopify-section-{{ section.id }} .product-gallery__image-list > *:first-child {
-          height: 100% !important;
-          min-height: 0 !important;
-        }
-
-        {%- comment -%}
-        <scroll-carousel adaptive-height> (product-gallery.liquid) also sets its own inline
-        max-height in JS (theme.js adaptHeight_fn), sized to the currently selected slide's
-        natural/intrinsic height - meant for galleries without a fixed row height. height: 100% /
-        max-height: none here override that inline style so the carousel always matches the row's
-        fixed height instead.
-        {%- endcomment -%}
-        #shopify-section-{{ section.id }} .product-gallery__carousel {
-          height: 100% !important;
-          max-height: none !important;
-          align-items: stretch !important;
-        }
-
-        #shopify-section-{{ section.id }} .product-gallery__media {
-          height: 100% !important;
-        }
-
-        #shopify-section-{{ section.id }} .product-gallery__media img,
-        #shopify-section-{{ section.id }} .product-gallery__media video-media,
-        #shopify-section-{{ section.id }} .product-gallery__media model-media {
-          height: 100% !important;
-          width: 100% !important;
-          object-fit: cover !important;
-          object-position: center !important;
-        }
+        {{ product_gallery_fill_css }}
       {%- endif -%}
     }
   {%- endif -%}
-
-  #shopify-section-{{ section.id }} .product-gallery__media img {
-    object-position: center;
-  }
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}>
