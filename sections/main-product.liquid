@@ -179,6 +179,11 @@
       that specific video/model's own intrinsic ratio - aspect-ratio only fills in a dimension left "auto",
       so an explicit height: 100% (a real, non-auto value) is what stops it from deriving its own height
       from that ratio instead of from the row.
+    - .product-gallery__carousel's own grid row (grid-template-rows, from --product-gallery-carousel-grid)
+      is "auto" by default - an unusually tall/portrait slide could still inflate that auto row via its own
+      content-based sizing before align-items: stretch ever gets a say, since percentages resolve as auto
+      during that computation. grid-template-rows: 100% makes the row a definite, content-independent size
+      from the start, same trick as .product-gallery > .product-gallery-frame below.
 
     object-fit/object-position are deliberately only set on the actual img, not on video-media/model-media
     themselves: object-fit has no effect on a custom element, only on a real replaced element (img, video,
@@ -207,6 +212,7 @@
       #shopify-section-{{ section.id }} .product-gallery__carousel {
         height: 100% !important;
         max-height: none !important;
+        grid-template-rows: 100% !important;
         align-items: stretch !important;
       }
 
