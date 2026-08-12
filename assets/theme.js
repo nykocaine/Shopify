@@ -3213,6 +3213,7 @@ onSwatchChanged_fn = async function(event, target) {
   }
   if (primaryMediaElement.src !== newPrimaryMediaElement.src) {
     if (secondaryMediaElement && newSecondaryMediaElement) {
+      await new Promise((resolve) => newSecondaryMediaElement.complete ? resolve() : newSecondaryMediaElement.onload = () => resolve());
       secondaryMediaElement.replaceWith(newSecondaryMediaElement);
     }
     const shouldTransition = target.closest(".product-card__info") !== null;
