@@ -35,6 +35,25 @@
     box-shadow: none;
   }
 
+  {%- comment -%}
+  .product-info-frame (the info/details card next to the gallery) is plain display: block by default -
+  nothing in theme.css or this file ever sets align-items/justify-content: center on it, .product,
+  .product-info or .product-info__block-list (checked all four). The only thing that can make its child
+  look off-the-top is .product-info itself: a <safe-sticky> element (position: sticky at min-width: 1000px,
+  theme.css), which stays in normal flow until scrolled - but once product_height_desktop/mobile (below)
+  stretches this frame taller than its own content, a sticky child is exactly the kind of element whose
+  resting position is easy to second-guess. display: flex + justify-content: flex-start makes the top
+  position explicit and unconditional instead of relying on that flow behavior - it only affects how the
+  child is placed on the block axis, not the frame's own padding (still set further down) or width
+  (align-items: stretch keeps the child at its current full width).
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .product-info-frame {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    display: flex;
+  }
+
   {%- if section.settings.desktop_carousel_controls == 'thumbnails_left' -%}
     {%- comment -%}
     product-gallery.liquid's "thumbnails_left" option only repositions the existing rectangular,
@@ -419,6 +438,42 @@
         #shopify-section-{{ section.id }} .product-info-frame {
           overflow: hidden auto !important;
           min-height: 0 !important;
+          --product-info-fade-size: 2.5rem;
+        }
+
+        {%- comment -%}
+        Fade mask for .product-info-frame's own internal scroll (set right above) - the script at the bottom
+        of this file is what actually measures scroll position and toggles these three data-attributes, this
+        only maps that state to the mask. mask-image (not a ::before/::after gradient overlay) is what makes
+        this work regardless of what color-scheme/background the merchant picked for the info card - a
+        gradient overlay would need to fade to that exact background color (or image/gradient, if the scheme
+        uses one) to look seamless, while mask-image fades the frame's own fully-rendered content directly, so
+        it's correct no matter what's underneath. -webkit-mask-image is required for Safari, which doesn't
+        support the unprefixed property yet.
+
+        [data-product-info-scrollable] alone (both edges reachable, ie. currently mid-scroll) fades both ends.
+        Adding [data-product-info-at-top] removes the top fade (nothing above to hint at), and
+        [data-product-info-at-bottom] removes the bottom one - both present at once (content fits without
+        scrolling, or a momentary state right after a resize) means no fade at all.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} .product-info-frame[data-product-info-scrollable] {
+          -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--product-info-fade-size), #000 calc(100% - var(--product-info-fade-size)), transparent);
+          mask-image: linear-gradient(to bottom, transparent, #000 var(--product-info-fade-size), #000 calc(100% - var(--product-info-fade-size)), transparent);
+        }
+
+        #shopify-section-{{ section.id }} .product-info-frame[data-product-info-scrollable][data-product-info-at-top] {
+          -webkit-mask-image: linear-gradient(to bottom, #000, #000 calc(100% - var(--product-info-fade-size)), transparent);
+          mask-image: linear-gradient(to bottom, #000, #000 calc(100% - var(--product-info-fade-size)), transparent);
+        }
+
+        #shopify-section-{{ section.id }} .product-info-frame[data-product-info-scrollable][data-product-info-at-bottom] {
+          -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--product-info-fade-size), #000);
+          mask-image: linear-gradient(to bottom, transparent, #000 var(--product-info-fade-size), #000);
+        }
+
+        #shopify-section-{{ section.id }} .product-info-frame[data-product-info-scrollable][data-product-info-at-top][data-product-info-at-bottom] {
+          -webkit-mask-image: none;
+          mask-image: none;
         }
 
         {%- comment -%}
@@ -480,6 +535,44 @@
 
 {%- render 'product-sticky-add-to-cart', product: product, product_form_id: product_form_id -%}
 {%- render 'product-quick-buy', product: product -%}
+
+{%- if section.settings.product_height_desktop > 0 -%}
+  {%- comment -%}
+  Measures .product-info-frame's own scroll state and toggles the data-attributes the fade mask CSS above
+  reads - CSS alone can't tell "is this box currently scrolled to its top/bottom edge", so this is the one
+  part of the fade that has to be JS. Re-runs on scroll (the user scrolling), window resize (the row's own
+  vh-based height changing), and via ResizeObserver on both the frame itself and its first child (catches
+  content height changes that don't come from a window resize, eg. an accordion opening/closing, or a
+  variant swap re-rendering product-info with a different amount of content).
+  {%- endcomment -%}
+  <script>
+    (() => {
+      const frame = document.querySelector('#shopify-section-{{ section.id }} .product-info-frame');
+
+      if (!frame) return;
+
+      const updateFade = () => {
+        const scrollable = frame.scrollHeight > frame.clientHeight + 1;
+
+        frame.toggleAttribute('data-product-info-scrollable', scrollable);
+        frame.toggleAttribute('data-product-info-at-top', frame.scrollTop <= 0);
+        frame.toggleAttribute('data-product-info-at-bottom', frame.scrollTop + frame.clientHeight >= frame.scrollHeight - 1);
+      };
+
+      frame.addEventListener('scroll', updateFade, { passive: true });
+      window.addEventListener('resize', updateFade);
+
+      const resizeObserver = new ResizeObserver(updateFade);
+      resizeObserver.observe(frame);
+
+      if (frame.firstElementChild) {
+        resizeObserver.observe(frame.firstElementChild);
+      }
+
+      updateFade();
+    })();
+  </script>
+{%- endif -%}
 
 <script>
   // We save the product ID in local storage to be eventually used for recently viewed section
