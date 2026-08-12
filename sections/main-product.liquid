@@ -292,9 +292,9 @@
 
       {%- if section.settings.product_height_desktop > 0 -%}
         {%- comment -%}
-        The row is fixed at max(28rem, Nvh) by default, but still grows past that with --product-grid's
-        content-sized "auto" if an accordion opens or more blocks get added — no internal scroll, no clipping.
-        align-items: stretch (set above) makes both frames match whatever height the row resolves to.
+        The row is now a hard max(28rem, Nvh), not a minmax(..., auto) floor — it no longer grows past that
+        when an accordion opens or more blocks get added. align-items: stretch (set above) makes both frames
+        match that fixed height exactly, on every state.
 
         max(28rem, Nvh) instead of clamp(28rem, Nvh, 50rem): a hard rem ceiling meant most of the slider's
         range silently had zero effect, since real product content (title + price + variants + buttons +
@@ -310,7 +310,7 @@
         quick-buy.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .product {
-          grid-template-rows: minmax(max(28rem, {{ section.settings.product_height_desktop }}vh), auto);
+          grid-template-rows: max(28rem, {{ section.settings.product_height_desktop }}vh);
           align-content: stretch;
           min-height: max(28rem, {{ section.settings.product_height_desktop }}vh);
         }
@@ -320,14 +320,25 @@
         }
 
         {%- comment -%}
+        A grid item's automatic minimum size otherwise defaults to its content's min-content height, which
+        would force this row past its fixed size the moment product-info's content (eg. an open accordion)
+        no longer fits - overflow: hidden auto is what makes the browser drop that automatic minimum to 0
+        instead, so the frame actually stays pinned at the row's height and scrolls its own content internally
+        rather than growing. min-height: 0 backs that up for engines that need the min-size reset spelled out
+        explicitly rather than inferred from overflow alone.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} .product-info-frame {
+          overflow: hidden auto !important;
+          min-height: 0 !important;
+        }
+
+        {%- comment -%}
         Without this, the gallery's own intrinsic size (the media's natural aspect-ratio) would count toward
-        --product-grid's "auto" row-sizing above — a tall/portrait photo would inflate the row past Nvh on its
-        own, defeating the fixed height entirely. Taking .product-gallery out of normal flow (absolutely
-        positioned, filling .product-gallery-frame via inset: 0) removes it from that calculation altogether:
-        the row's "auto" portion now responds only to product-info's content, exactly like the comment above
-        describes. .product-gallery-frame (the actual grid item) still stretches to match the row via
-        align-items: stretch, and the inset: 0 child always fills that final size exactly — so when the row
-        does grow for product-info, the gallery grows with it too, per the requirement above.
+        --product-grid's row-sizing above — a tall/portrait photo would inflate the row past Nvh on its own,
+        defeating the fixed height entirely. Taking .product-gallery out of normal flow (absolutely
+        positioned, filling .product-gallery-frame via inset: 0) removes it from that calculation altogether.
+        .product-gallery-frame (the actual grid item) still stretches to match the row via align-items:
+        stretch, and the inset: 0 child always fills that final, now-constant size exactly.
 
         With a guaranteed, definite pixel height now available all the way down (position: absolute; inset: 0
         makes it definite, unlike the auto/max-content sizing the gallery normally relies on), each percentage
@@ -347,9 +358,9 @@
         down to the next (position: absolute; inset: 0 only makes it definite for .product-gallery
         itself - every descendant below it still needs its own explicit height: 100% or the chain
         breaks and that child falls back to its natural/content height, leaving a gap under a
-        shorter-than-the-row gallery whenever the row grows past its min-height (eg. an accordion
-        opens). !important on every step here removes any doubt about some other rule (inline style
-        from JS, a later theme.css rule, a different specificity) winning instead at any one link.
+        shorter-than-the-row gallery. !important on every step here removes any doubt about some
+        other rule (inline style from JS, a later theme.css rule, a different specificity) winning
+        instead at any one link.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-gallery-frame {
           position: relative !important;
@@ -375,9 +386,9 @@
         {%- comment -%}
         <scroll-carousel adaptive-height> (product-gallery.liquid) also sets its own inline
         max-height in JS (theme.js adaptHeight_fn), sized to the currently selected slide's
-        natural/intrinsic height - meant for galleries without a fixed row height. It only
-        recalculates on connect and on window resize, never when an accordion in product-info
-        changes the row's height, so it's stuck at the old (shorter) value whenever that happens.
+        natural/intrinsic height - meant for galleries without a fixed row height. height: 100% /
+        max-height: none here override that inline style so the carousel always matches the row's
+        fixed height instead.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-gallery__carousel {
           height: 100% !important;
@@ -519,7 +530,7 @@
       "step": 5,
       "unit": "vh",
       "label": "Height (desktop)",
-      "info": "0 = natural height (default). Above 0, this is the minimum starting height for both cards — if the info card's content grows taller (eg. an accordion opens), the section grows with it instead of scrolling.",
+      "info": "0 = natural height (default). Above 0, this is the fixed height for both cards — if the info card's content grows taller (eg. an accordion opens), it scrolls internally instead of growing the section.",
       "default": 0,
       "visible_if": "{{ section.settings.floating_product }}"
     },
