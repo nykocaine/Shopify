@@ -36,26 +36,13 @@
   }
 
   {%- comment -%}
-  .product-info-frame (the info/details card next to the gallery) is plain display: block by default -
-  nothing in theme.css or this file ever sets align-items/justify-content: center on it, .product,
-  .product-info or .product-info__block-list (checked all four). The only thing that can make its child
-  look off-the-top is .product-info itself: a <safe-sticky> element (position: sticky at min-width: 1000px,
-  theme.css), which stays in normal flow until scrolled - but once product_height_desktop/mobile (below)
-  stretches this frame taller than its own content, a sticky child is exactly the kind of element whose
-  resting position is easy to second-guess. display: flex + justify-content: flex-start makes the top
-  position explicit and unconditional instead of relying on that flow behavior - it only affects how the
-  child is placed on the block axis (vertical), not the frame's own padding (still set further down) or
-  horizontal alignment: align-items: stretch here means "give the child the full width it already had",
-  the same result .product-info's own pre-existing width: 100% + margin-inline: auto (theme.css) produces
-  under normal block layout - not "center it", and nothing in this rule sets align-items/justify-content/
-  place-items/text-align to center anywhere.
+  .product-info-frame (the info/details card next to the gallery) is plain display: block, with no rule
+  anywhere (checked .product, .product-info-frame, .product-info, .product-info__block-list, in this file
+  and theme.css) setting align-items/justify-content/place-items/text-align: center on it or its child.
+  Block layout has no vertical-centering mechanism to begin with - a single child always starts at the top
+  of its container's content box - so no override is needed here at all; adding display: flex only invited
+  doubt about whether some flex property might secretly centre it. Left deliberately empty/absent.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .product-info-frame {
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: stretch;
-    display: flex;
-  }
 
   {%- if section.settings.desktop_carousel_controls == 'thumbnails_left' -%}
     {%- comment -%}
