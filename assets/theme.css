@@ -1440,13 +1440,14 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
     bottom: auto;
   }
 
-  /* Radius/blur inherited from the dialog tokens theme.css already exposes (--drawer-border-radius,
+  /* Radius/color/intensity/blur all inherited from the dialog tokens theme.css already exposes
+     (--drawer-border-radius, --page-overlay - built from Backdrop color + Backdrop intensity,
      --dialog-backdrop-blur - see css-variables.liquid), instead of independent hardcoded values.
      Border removed in favor of the frosted-glass look the blur + translucent background produce. */
   .popover--w-full::part(content) {
     border: none;
     border-radius: var(--drawer-border-radius);
-    background: rgb(var(--background) / .8);
+    background: rgb(var(--page-overlay));
     -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
     backdrop-filter: blur(var(--dialog-backdrop-blur));
   }
