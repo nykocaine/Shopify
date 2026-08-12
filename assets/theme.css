@@ -7846,6 +7846,17 @@ shopify-account::part(signed-out-avatar) {
   display: flex;
 }
 
+/* Plain underlined text trigger (name + selected value + chevron) instead of the boxed
+   .input/.select look - background/border/padding reset since it's no longer sharing those
+   classes, .link (theme.css) provides the underline itself. */
+.variant-picker__select-trigger {
+  background: none;
+  border: none;
+  padding: 0;
+  align-items: center;
+  cursor: pointer;
+}
+
 @media (scripting: none) {
   .variant-picker__option {
     display: none;

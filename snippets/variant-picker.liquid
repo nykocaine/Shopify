@@ -61,34 +61,54 @@ Render the variant picker option selectors.
       %}
 
       <fieldset class="variant-picker__option justify-{{ alignment }}">
-        <div class="variant-picker__option-info {% if alignment == 'start' %}justify-between{% else %}justify-{{ alignment }}{% endif %}">
-          <div class="h-stack gap-2">
-            <legend class="text-subdued">{{ option.name }}:</legend>
-            <span>{{ option.selected_value }}</span>
-          </div>
+        {%- liquid
+          assign show_size_chart_button = false
 
-          {%- if size_chart_page != blank and size_label_list contains option_downcase -%}
-            {%- capture id -%}size-chart-{{ section.id }}-{{ block.id }}{%- endcapture -%}
+          if size_chart_page != blank and size_label_list contains option_downcase
+            assign show_size_chart_button = true
+          endif
+        -%}
 
-            <button type="button" class="link subheading" aria-controls="{{ id | escape }}" aria-expanded="false">
-              {{- 'product.general.size_chart' | t -}}
-            </button>
-
-            <x-drawer id="{{ id | escape }}" class="drawer color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
-              <span class="h5" slot="header">{{ size_chart_page.title }}</span>
-
-              <div class="prose">
-                {{- size_chart_page.content -}}
+        {%- comment -%}
+        The name + value pair is skipped for "dropdown": that trigger button below already shows
+        "{{ option.name }}: {{ option.selected_value }}" itself (matching the underlined
+        "Shade: sweet pea..." look), so repeating it here would just duplicate the same text a
+        second time - and the whole row is skipped outright in that case unless a size chart
+        button still needs to render, so it doesn't leave an empty spacing gap above the button.
+        {%- endcomment -%}
+        {%- if resolved_option_selector_style != 'dropdown' or show_size_chart_button -%}
+          <div class="variant-picker__option-info {% if alignment == 'start' %}justify-between{% else %}justify-{{ alignment }}{% endif %}">
+            {%- unless resolved_option_selector_style == 'dropdown' -%}
+              <div class="h-stack gap-2">
+                <legend class="text-subdued">{{ option.name }}:</legend>
+                <span>{{ option.selected_value }}</span>
               </div>
-            </x-drawer>
-          {%- endif -%}
-        </div>
+            {%- endunless -%}
+
+            {%- if show_size_chart_button -%}
+              {%- capture id -%}size-chart-{{ section.id }}-{{ block.id }}{%- endcapture -%}
+
+              <button type="button" class="link subheading" aria-controls="{{ id | escape }}" aria-expanded="false">
+                {{- 'product.general.size_chart' | t -}}
+              </button>
+
+              <x-drawer id="{{ id | escape }}" class="drawer color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
+                <span class="h5" slot="header">{{ size_chart_page.title }}</span>
+
+                <div class="prose">
+                  {{- size_chart_page.content -}}
+                </div>
+              </x-drawer>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
 
         {%- if resolved_option_selector_style == 'dropdown' -%}
           <div class="relative">
             {%- capture popover_id -%}popover-variant-dropdown-{{ section.id }}-{{ product.id }}-{{ option.position }}{%- endcapture -%}
 
-            <button type="button" class="select {% if settings.input_uppercase %}subheading{% endif %}" aria-controls="{{ popover_id }}" aria-expanded="false">
+            <button type="button" class="variant-picker__select-trigger link h-stack gap-2 {% if settings.input_uppercase %}subheading{% endif %}" aria-controls="{{ popover_id }}" aria-expanded="false">
+              <span class="text-subdued">{{ option.name }}:</span>
               <span id="{{ popover_id }}-selected-value">{{- option.selected_value -}}</span>
               {%- render 'icon' with 'chevron-down' -%}
             </button>
