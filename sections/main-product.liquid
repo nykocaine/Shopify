@@ -257,6 +257,60 @@
       #shopify-section-{{ section.id }} .product-gallery-frame {
         --distance-to-bleed: 0;
       }
+
+      {%- if section.settings.product_height_mobile > 0 -%}
+        {%- comment -%}
+        Mobile stacks gallery and info as two independent blocks (no shared row to stretch across, unlike the
+        two-column desktop layout above) - so this only needs to pin .product-gallery-frame itself to a fixed
+        height and let its content fill it, without any of the "row keeps growing" concerns product_height_desktop
+        has to work around on desktop.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} .product-gallery-frame {
+          height: max(20rem, {{ section.settings.product_height_mobile }}vh);
+          position: relative;
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery-frame > .product-gallery {
+          position: absolute !important;
+          inset: 0 !important;
+          height: 100% !important;
+          grid-template-rows: 100% !important;
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery__image-list {
+          height: 100% !important;
+          grid-template-rows: minmax(0, 1fr) auto !important;
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery__image-list > *:first-child {
+          height: 100% !important;
+          min-height: 0 !important;
+        }
+
+        {%- comment -%}
+        Same override as the desktop branch below: <scroll-carousel adaptive-height> sets its own inline
+        max-height in JS, sized to the currently selected slide - !important is what makes it lose to this
+        fixed height instead.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} .product-gallery__carousel {
+          height: 100% !important;
+          max-height: none !important;
+          align-items: stretch !important;
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery__media {
+          height: 100% !important;
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery__media img,
+        #shopify-section-{{ section.id }} .product-gallery__media video-media,
+        #shopify-section-{{ section.id }} .product-gallery__media model-media {
+          height: 100% !important;
+          width: 100% !important;
+          object-fit: cover !important;
+          object-position: center !important;
+        }
+      {%- endif -%}
     }
 
     @media screen and (min-width: 1000px) {
@@ -531,6 +585,18 @@
       "unit": "vh",
       "label": "Height (desktop)",
       "info": "0 = natural height (default). Above 0, this is the fixed height for both cards — if the info card's content grows taller (eg. an accordion opens), it scrolls internally instead of growing the section.",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_product }}"
+    },
+    {
+      "type": "range",
+      "id": "product_height_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "vh",
+      "label": "Height (mobile)",
+      "info": "0 = natural height (default, images keep their own aspect ratio). Above 0, the gallery is cropped to this fixed height and every image is centered within it.",
       "default": 0,
       "visible_if": "{{ section.settings.floating_product }}"
     },
