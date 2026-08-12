@@ -41,6 +41,26 @@
     row-gap: var(--product-list-column-gap) !important;
   }
 
+  {%- comment -%}
+  Editable "Block size" (desktop height), same options and clamp() values as media-blocks.liquid's
+  own block_size (and its shared .md:min-h-* utility classes, theme.css) - min-height as a floor on
+  top of product-card__figure's own aspect-ratio-driven height (product-card.liquid, driven by the
+  global "Product card image ratio" setting), not a replacement for it, same as media-blocks' cards.
+  "auto" (default) applies no floor, leaving the card at its normal aspect-ratio height.
+  {%- endcomment -%}
+  {%- if section.settings.block_size != 'auto' -%}
+    @media screen and (min-width: 1000px) {
+      #shopify-section-{{ section.id }} .product-card__figure {
+        min-height: {% case section.settings.block_size %}
+          {%- when 'sm' -%}clamp(15rem, 40vmax, 25rem)
+          {%- when 'md' -%}clamp(20rem, 50vmax, 35rem)
+          {%- when 'lg' -%}clamp(25rem, 60vmax, 45rem)
+          {%- when 'fill' -%}calc(100svh - var(--sticky-area-height, 0px))
+        {%- endcase -%};
+      }
+    }
+  {%- endif -%}
+
   #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
     margin-top: var(--section-vertical-spacing);
   }
