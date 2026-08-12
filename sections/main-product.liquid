@@ -395,10 +395,15 @@
           height: 100% !important;
           width: 100% !important;
           object-fit: cover !important;
+          object-position: center !important;
         }
       {%- endif -%}
     }
   {%- endif -%}
+
+  #shopify-section-{{ section.id }} .product-gallery__media img {
+    object-position: center;
+  }
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}>
