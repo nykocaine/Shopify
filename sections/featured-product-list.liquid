@@ -28,18 +28,17 @@
   }
 
   {%- comment -%}
-  Fixed (not viewport-scaled) gap, matching media-blocks' "Small" column spacing at its mobile
-  size specifically (--container-gutter is stepped per breakpoint - mobile/tablet/desktop each
-  get a different value - so calc(var(--container-gutter) / 2) still visibly changes size across
-  devices; a literal rem value is the only way to keep it truly identical everywhere).
-  Set directly on .product-list (not just the --product-list-column-gap variable it reads from)
-  and !important, since .product-list--carousel and its md/md-max/sm/sm-max variants (theme.css)
-  reassign the whole `grid` shorthand, which can silently drop a plain column-gap override.
+  Editable "Spacing" setting (None/Small/Medium/Large), same options and calc() formula as
+  media-blocks.liquid's own column_spacing - previously this was a fixed, non-editable 0.625rem
+  gap that ignored the setting entirely. Set directly on .product-list (not just the
+  --product-list-column-gap variable it reads from) and !important, since .product-list--carousel
+  and its md/md-max/sm/sm-max variants (theme.css) reassign the whole `grid` shorthand, which can
+  silently drop a plain column-gap override.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-list {
-    --product-list-column-gap: 0.625rem;
-    column-gap: 0.625rem !important;
-    row-gap: 0.625rem !important;
+    --product-list-column-gap: {% if section.settings.column_spacing == 'none' %}0px{% elsif section.settings.column_spacing == 'sm' %}calc(var(--container-gutter) / 2){% elsif section.settings.column_spacing == 'md' %}var(--container-gutter){% else %}calc(var(--container-gutter) * 1.5){% endif %};
+    column-gap: var(--product-list-column-gap) !important;
+    row-gap: var(--product-list-column-gap) !important;
   }
 
   #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
@@ -288,6 +287,30 @@
       "unit": "px",
       "label": "Radio del borde de la tarjeta de producto",
       "default": 0
+    },
+    {
+      "type": "select",
+      "id": "column_spacing",
+      "label": "t:global.spacing.spacing",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:global.spacing.spacing_options.none"
+        },
+        {
+          "value": "sm",
+          "label": "t:global.spacing.spacing_options.small"
+        },
+        {
+          "value": "md",
+          "label": "t:global.spacing.spacing_options.medium"
+        },
+        {
+          "value": "lg",
+          "label": "t:global.spacing.spacing_options.large"
+        }
+      ],
+      "default": "sm"
     }
   ],
   "blocks": [
