@@ -3735,32 +3735,6 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   padding-block-start: 1rem;
 }
 
-/* Overlays the custom subtitle on top of the image (top-left corner) instead of leaving it in
-   the info block below - .product-subtitle's containing block resolves to .product-card
-   (position: relative), the nearest positioned ancestor, skipping over .product-card__info (which
-   stays in normal flow, not itself positioned) - so this doesn't require moving it in the DOM.
-   Removing it from .product-card__info's normal flow also means the rest of that block (title,
-   price, etc.) naturally shifts up to fill the gap left behind, instead of leaving an empty gap
-   there. The title itself stays in normal flow, back where it was before.
-
-   Top and left use the same inset value on purpose (matching .product-card__info's own
-   padding-inline, which gains an extra 0.5rem from 700px up) so it sits as a symmetric corner tag
-   - matching .product-card__info's own (asymmetric) padding-block-start instead would leave the
-   top noticeably tighter than the sides. */
-.product-card--info-outside .product-subtitle {
-  position: absolute;
-  inset-block-start: var(--product-card-inner-padding);
-  inset-inline-start: var(--product-card-inner-padding);
-  z-index: 1;
-}
-
-@media screen and (min-width: 700px) {
-  .product-card--info-outside .product-subtitle {
-    inset-block-start: calc(var(--product-card-inner-padding) + 0.5rem);
-    inset-inline-start: calc(var(--product-card-inner-padding) + 0.5rem);
-  }
-}
-
 .product-card--info-inside .product-card__info {
   z-index: 1;
   pointer-events: none;
