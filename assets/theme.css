@@ -3740,12 +3740,23 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
    the nearest positioned ancestor, skipping over .product-card__info (which stays in normal flow,
    not itself positioned) - so this doesn't require moving it in the DOM. Removing it from
    .product-card__info's normal flow also means the rest of that block (subtitle, price, etc.)
-   naturally shifts up to fill the gap left behind, instead of leaving an empty gap there. */
+   naturally shifts up to fill the gap left behind, instead of leaving an empty gap there.
+
+   Inset values mirror .product-card__info's own actual padding exactly (not just
+   --product-card-inner-padding alone): its padding-block-start is a flat 1rem at every breakpoint
+   (the .product-card--info-outside override above), and its padding-inline gains an extra 0.5rem
+   from 700px up (below), so the title matches its real inset instead of an approximation. */
 .product-card--info-outside .product-title {
   position: absolute;
-  inset-block-start: var(--product-card-inner-padding);
+  inset-block-start: 1rem;
   inset-inline-start: var(--product-card-inner-padding);
   z-index: 1;
+}
+
+@media screen and (min-width: 700px) {
+  .product-card--info-outside .product-title {
+    inset-inline-start: calc(var(--product-card-inner-padding) + 0.5rem);
+  }
 }
 
 .product-card--info-inside .product-card__info {
