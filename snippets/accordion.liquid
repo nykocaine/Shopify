@@ -18,14 +18,12 @@ tag so that it can also be used without any JavaScript.
 @param {string} [class] - extra class to add on the parent
 @param {string} [toggle_icon] - the name of the icon used for the open/close toggle (defaults to "accordion-small-arrow")
 @param {string} [toggle_icon_background_color] - an optional fill color override for the toggle icon's circle (only visible on the "accordion-plus" icon)
-@param {string} [toggle_icon_border_color] - an optional stroke color override for the toggle icon's circle (only visible on the "accordion-plus" icon)
 @param {string} [toggle_icon_color] - an optional color override for the toggle icon's +/- symbol (or the arrow itself, on other toggle icons)
 @param {object} [block] - an optional block to output theme editor attributes
 {%- enddoc -%}
 
 {%- capture accordion_style -%}
   {%- if toggle_icon_background_color != blank -%}--accordion-toggle-icon-background-color: {{ toggle_icon_background_color }};{%- endif -%}
-  {%- if toggle_icon_border_color != blank -%}--accordion-toggle-icon-border-color: {{ toggle_icon_border_color }};{%- endif -%}
   {%- if toggle_icon_color != blank -%}--accordion-toggle-icon-color: {{ toggle_icon_color }};{%- endif -%}
 {%- endcapture -%}
 
