@@ -98,19 +98,11 @@
   }
 
   {%- comment -%}
-  Bottom section spacing as margin instead of padding, so the color-scheme background
-  doesn't extend into it. display: flow-root on the outer wrapper contains that margin
-  (stops it collapsing through .container and the wrapper's own bottom edge), so the
-  background still fills up to exactly the same point as before - same value, same look.
+  Bottom spacing now comes purely from .section-spacing--tight's own padding-block-end (theme.css,
+  capped at the same min(3rem, ...) this used to hardcode as a margin) - letting it stay padding
+  means it automatically collapses against the next section like every other regular section does,
+  instead of a fixed margin that always added its own gap regardless of what follows.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} > div {
-    display: flow-root;
-  }
-
-  #shopify-section-{{ section.id }} .section-spacing {
-    padding-block-end: 0;
-    margin-block-end: min(3rem, var(--section-vertical-spacing-block-end, var(--section-vertical-spacing)));
-  }
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product_list %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_product_list %} style="border-radius: {{ section.settings.product_list_border_radius }}px; overflow: hidden;"{% endif %}>
