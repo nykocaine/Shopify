@@ -413,8 +413,22 @@
           min-height: max(28rem, {{ section.settings.product_height_desktop }}vh);
         }
 
+        {%- comment -%}
+        .product-info's position: sticky (theme.css, min-width: 1000px) plus its <safe-sticky> JS
+        (theme.js SafeSticky) are both built around sticking to the PAGE's scroll (window.scrollY) - that's
+        the right behavior everywhere else product-info is used (standard layout, featured-product, quick-buy),
+        where nothing between it and the viewport ever scrolls on its own. Once .product-info-frame gets
+        overflow: hidden auto below, it becomes the actual nearest scrolling ancestor for that sticky child -
+        but the JS still measures window.scrollY, not this frame's own scrollTop, so it computes a "top" that
+        has nothing to do with this frame's real scroll position and shoves the content down from a wrong
+        offset instead of leaving it at the frame's own top. position: static cancels sticky outright (and
+        SafeSticky's own checkPosition_fn removes its stale inline top the moment it sees a non-sticky computed
+        position), so product-info just sits in normal block flow at the top of the frame, like any other
+        block child.
+        {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-info {
           display: flow-root;
+          position: static !important;
         }
 
         {%- comment -%}
