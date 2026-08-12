@@ -292,110 +292,88 @@
 
       {%- if section.settings.product_height_desktop > 0 -%}
         {%- comment -%}
-        The row is fixed at max(28rem, Nvh) by default, but still grows past that with --product-grid's
-        content-sized "auto" if an accordion opens or more blocks get added — no internal scroll, no clipping.
-        align-items: stretch (set above) makes both frames match whatever height the row resolves to.
+        The gallery gets a FIXED height (never grows/shrinks) and sticks in place while product-info
+        scrolls past it, instead of the row growing to match product-info's content (eg. an
+        accordion opening) and stretching the gallery along with it - which used to change how much
+        of each photo got cropped every time something below it grew. product-info is left in normal,
+        un-stretched flow, free to grow taller than the gallery on its own; align-items: stretch
+        (set above) still applies when product-info's natural height is SHORTER than the gallery, so
+        the two frames still read as a matching pair of cards in that case.
 
-        max(28rem, Nvh) instead of clamp(28rem, Nvh, 50rem): a hard rem ceiling meant most of the slider's
-        range silently had zero effect, since real product content (title + price + variants + buttons +
-        description) is routinely already taller than 50rem even with every accordion collapsed — only a
-        genuine floor is needed here, not an upper limit.
-
-        product-info is a <safe-sticky> custom element: nothing in the theme ever gives it an explicit display,
-        so it defaults to the browser's generic "inline" for unknown elements. With a block-level child
-        (.product-info__block-list) inside an inline box, the browser generates anonymous block wrappers around
-        it (the "block-in-inline" quirk), which can cause its own layout quirks — display: flow-root makes it a
-        real block container (and a new block formatting context, so children's margins stay contained) without
-        touching the global ".product-info" rule used by the standard layout, featured-product.liquid or
-        quick-buy.
+        max(28rem, Nvh): a hard rem ceiling (eg. clamp(28rem, Nvh, 50rem)) meant most of the
+        slider's range would silently have zero effect once the gallery is this section's tallest
+        element on any normal viewport - only a genuine floor is needed here, not an upper limit.
         {%- endcomment -%}
-        #shopify-section-{{ section.id }} .product {
-          grid-template-rows: minmax(max(28rem, {{ section.settings.product_height_desktop }}vh), auto);
-          align-content: stretch;
-          min-height: max(28rem, {{ section.settings.product_height_desktop }}vh);
+        #shopify-section-{{ section.id }} .product-gallery-frame {
+          height: max(28rem, {{ section.settings.product_height_desktop }}vh);
+          position: sticky;
+          inset-block-start: calc(var(--sticky-area-height) + 20px);
         }
 
+        {%- comment -%}
+        product-info is a <safe-sticky> custom element: nothing in the theme ever gives it an
+        explicit display, so it defaults to the browser's generic "inline" for unknown elements.
+        With a block-level child (.product-info__block-list) inside an inline box, the browser
+        generates anonymous block wrappers around it (the "block-in-inline" quirk) - display:
+        flow-root makes it a real block container (and a new block formatting context, so
+        children's margins stay contained) without touching the global ".product-info" rule used by
+        the standard layout, featured-product.liquid or quick-buy.
+        {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-info {
           display: flow-root;
         }
 
         {%- comment -%}
-        Without this, the gallery's own intrinsic size (the media's natural aspect-ratio) would count toward
-        --product-grid's "auto" row-sizing above — a tall/portrait photo would inflate the row past Nvh on its
-        own, defeating the fixed height entirely. Taking .product-gallery out of normal flow (absolutely
-        positioned, filling .product-gallery-frame via inset: 0) removes it from that calculation altogether:
-        the row's "auto" portion now responds only to product-info's content, exactly like the comment above
-        describes. .product-gallery-frame (the actual grid item) still stretches to match the row via
-        align-items: stretch, and the inset: 0 child always fills that final size exactly — so when the row
-        does grow for product-info, the gallery grows with it too, per the requirement above.
+        Every level between the frame and the actual media has to actively pass the frame's now
+        definite height down to the next, or the chain breaks and that child falls back to its
+        natural/content height. object-fit: cover on the media itself is what does the actual
+        cropping: rather than showing the full photo, it fills the box and crops the overflow,
+        centered - always the same crop now, since the frame's own height never changes.
 
-        With a guaranteed, definite pixel height now available all the way down (position: absolute; inset: 0
-        makes it definite, unlike the auto/max-content sizing the gallery normally relies on), each percentage
-        height below resolves against an actual number instead of being ignored as indefinite. object-fit: cover
-        on the media itself is what does the actual cropping: rather than showing the full photo (which may no
-        longer fit the row's aspect ratio), it fills the box and crops the overflow, centered by default.
-
-        .product-gallery__image-list's own grid-auto-rows is "max-content" (not "auto"), which per spec isn't
-        eligible for the container's default stretch-to-fill behavior — so its first row (the .relative wrapper
-        holding the actual carousel) needs an explicit 1fr to claim the leftover height instead of just sizing
-        to content. The trailing "auto" row is for optional content below it (eg. thumbnails_under controls);
-        if that row is unused (no thumbnails, or floating/overlay controls that are absolutely positioned and so
-        don't occupy a row at all), it simply stays empty.
+        .product-gallery__image-list's own grid-auto-rows is "max-content" (not "auto"), which per
+        spec isn't eligible for the container's default stretch-to-fill behavior — so its first row
+        (the .relative wrapper holding the actual carousel) needs an explicit 1fr to claim the
+        leftover height instead of just sizing to content. The trailing "auto" row is for optional
+        content below it (eg. thumbnails_under controls); if that row is unused, it simply stays
+        empty.
         {%- endcomment -%}
-        {%- comment -%}
-        Every level between the frame and the actual media has to actively pass a definite height
-        down to the next (position: absolute; inset: 0 only makes it definite for .product-gallery
-        itself - every descendant below it still needs its own explicit height: 100% or the chain
-        breaks and that child falls back to its natural/content height, leaving a gap under a
-        shorter-than-the-row gallery whenever the row grows past its min-height (eg. an accordion
-        opens). !important on every step here removes any doubt about some other rule (inline style
-        from JS, a later theme.css rule, a different specificity) winning instead at any one link.
-        {%- endcomment -%}
-        #shopify-section-{{ section.id }} .product-gallery-frame {
-          position: relative !important;
-        }
-
-        #shopify-section-{{ section.id }} .product-gallery-frame > .product-gallery {
-          position: absolute !important;
-          inset: 0 !important;
-          height: 100% !important;
-          grid-template-rows: 100% !important;
+        #shopify-section-{{ section.id }} .product-gallery {
+          height: 100%;
         }
 
         #shopify-section-{{ section.id }} .product-gallery__image-list {
-          height: 100% !important;
-          grid-template-rows: minmax(0, 1fr) auto !important;
+          height: 100%;
+          grid-template-rows: minmax(0, 1fr) auto;
         }
 
         #shopify-section-{{ section.id }} .product-gallery__image-list > *:first-child {
-          height: 100% !important;
-          min-height: 0 !important;
+          height: 100%;
+          min-height: 0;
         }
 
         {%- comment -%}
         <scroll-carousel adaptive-height> (product-gallery.liquid) also sets its own inline
         max-height in JS (theme.js adaptHeight_fn), sized to the currently selected slide's
-        natural/intrinsic height - meant for galleries without a fixed row height. It only
-        recalculates on connect and on window resize, never when an accordion in product-info
-        changes the row's height, so it's stuck at the old (shorter) value whenever that happens.
+        natural/intrinsic height - meant for galleries without a fixed height. Cancelled here since
+        the frame's height is fixed and never changes for any reason this would need to react to.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-gallery__carousel {
-          height: 100% !important;
+          height: 100%;
           max-height: none !important;
-          align-items: stretch !important;
+          align-items: stretch;
         }
 
         #shopify-section-{{ section.id }} .product-gallery__media {
-          height: 100% !important;
+          height: 100%;
         }
 
         #shopify-section-{{ section.id }} .product-gallery__media img,
         #shopify-section-{{ section.id }} .product-gallery__media video-media,
         #shopify-section-{{ section.id }} .product-gallery__media model-media {
-          height: 100% !important;
-          width: 100% !important;
-          object-fit: cover !important;
-          object-position: center !important;
+          height: 100%;
+          width: 100%;
+          object-fit: cover;
+          object-position: center;
         }
       {%- endif -%}
     }
