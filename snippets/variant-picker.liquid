@@ -100,8 +100,48 @@ Render the variant picker option selectors.
                 {%- assign param_name = form_id | append: '-option' | append: option.position -%}
                 
                 {%- for option_value in option.values -%}
+                  {%- liquid
+                    assign swatch = option_value.swatch
+                    assign downcase_option_value = option_value.name | downcase | strip
+                    assign swatch_style = blank
+
+                    if swatch.image != blank
+                      assign swatch_image = swatch.image | image_url: width: 72
+                      assign swatch_style = 'background-image: url(' | append: swatch_image | append: ');'
+                    elsif swatch.color != blank
+                      assign swatch_style = 'background-color: ' | append: swatch.color | append: ';'
+                    else
+                      assign swatch_config = settings.color_swatch_config | newline_to_br | split: '<br />'
+
+                      for swatch_item in swatch_config
+                        assign swatch_parts = swatch_item | split: ':'
+                        assign swatch_name = swatch_parts.first | downcase | strip
+
+                        if downcase_option_value == swatch_name
+                          assign swatch_value = swatch_parts.last | strip
+
+                          if swatch_value contains 'linear-gradient(' or swatch_value contains 'conic-gradient('
+                            assign swatch_style = 'background-image: ' | append: swatch_value | append: ';'
+                          elsif swatch_value contains '#'
+                            assign swatch_style = 'background-color: ' | append: swatch_value | append: ';'
+                          elsif images[swatch_value] != blank
+                            assign swatch_image = images[swatch_value] | image_url: width: 72
+                            assign swatch_style = 'background-image: url(' | append: swatch_image | append: ');'
+                          endif
+
+                          break
+                        endif
+                      endfor
+                    endif
+                  -%}
+
                   {%- capture option_markup -%}
-                    <span {% if option_value.available == false %}class="line-through"{% endif %}>{{- option_value -}}</span>
+                    <span class="h-stack gap-2">
+                      {%- if swatch_style != blank -%}
+                        <span class="popover__value-swatch" style="{{ swatch_style }}" aria-hidden="true"></span>
+                      {%- endif -%}
+                      <span {% if option_value.available == false %}class="line-through"{% endif %}>{{- option_value -}}</span>
+                    </span>
                   {%- endcapture -%}
 
                   {%- if hide_sold_out_variants == false or option_value.available or option_value.selected -%}

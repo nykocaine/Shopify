@@ -1439,6 +1439,17 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
     top: var(--popover-anchor-block-offset, -3rem);
     bottom: auto;
   }
+
+  /* Radius/blur inherited from the dialog tokens theme.css already exposes (--drawer-border-radius,
+     --dialog-backdrop-blur - see css-variables.liquid), instead of independent hardcoded values.
+     Border removed in favor of the frosted-glass look the blur + translucent background produce. */
+  .popover--w-full::part(content) {
+    border: none;
+    border-radius: var(--drawer-border-radius);
+    background: rgb(var(--background) / .8);
+    -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
+    backdrop-filter: blur(var(--dialog-backdrop-blur));
+  }
 }
 
 .popover::part(overlaid-close-button) {
@@ -1460,6 +1471,15 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 .popover__value-list {
   grid-template-columns: minmax(0, 1fr);
   display: grid;
+}
+
+.popover__value-swatch {
+  background-size: cover;
+  background-position: center;
+  border-radius: 100%;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
 }
 
 .popover__value-option {
