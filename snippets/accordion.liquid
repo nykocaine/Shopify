@@ -17,15 +17,15 @@ tag so that it can also be used without any JavaScript.
 @param {boolean} [use_secondary_background] - if set to true, the background of the accordion is set to the secondary color
 @param {string} [class] - extra class to add on the parent
 @param {string} [toggle_icon] - the name of the icon used for the open/close toggle (defaults to "accordion-small-arrow")
-@param {string} [background_color] - an optional background color override
-@param {string} [border_color] - an optional border color override (the accordion's top/bottom divider lines)
-@param {string} [toggle_icon_color] - an optional color override for the open/close toggle icon (+/- or arrow)
+@param {string} [toggle_icon_background_color] - an optional fill color override for the toggle icon's circle (only visible on the "accordion-plus" icon)
+@param {string} [toggle_icon_border_color] - an optional stroke color override for the toggle icon's circle (only visible on the "accordion-plus" icon)
+@param {string} [toggle_icon_color] - an optional color override for the toggle icon's +/- symbol (or the arrow itself, on other toggle icons)
 @param {object} [block] - an optional block to output theme editor attributes
 {%- enddoc -%}
 
 {%- capture accordion_style -%}
-  {%- if background_color != blank -%}--accordion-background-color: {{ background_color }};{%- endif -%}
-  {%- if border_color != blank -%}--accordion-border-color: {{ border_color }};{%- endif -%}
+  {%- if toggle_icon_background_color != blank -%}--accordion-toggle-icon-background-color: {{ toggle_icon_background_color }};{%- endif -%}
+  {%- if toggle_icon_border_color != blank -%}--accordion-toggle-icon-border-color: {{ toggle_icon_border_color }};{%- endif -%}
   {%- if toggle_icon_color != blank -%}--accordion-toggle-icon-color: {{ toggle_icon_color }};{%- endif -%}
 {%- endcapture -%}
 
@@ -53,7 +53,7 @@ tag so that it can also be used without any JavaScript.
 
       {%- liquid
         assign toggle_icon_name = toggle_icon | default: 'accordion-small-arrow'
-        render 'icon' with toggle_icon_name, class: 'accordion__toggle-icon'
+        render 'icon' with toggle_icon_name
       -%}
     </summary>
 

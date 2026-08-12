@@ -218,16 +218,11 @@ height-observer {
   --accordion-block-padding: .875rem;
   --accordion-inline-padding: 0;
   box-sizing: content-box;
-  box-shadow: 0 1px 0 var(--accordion-border-color, rgb(var(--border-color))), 0 1px 0 var(--accordion-border-color, rgb(var(--border-color))) inset;
-  background-color: var(--accordion-background-color, transparent);
+  box-shadow: 0 1px 0 rgb(var(--border-color)), 0 1px 0 rgb(var(--border-color)) inset;
   text-align: start;
   justify-self: stretch;
   transition: color .2s;
   display: block;
-}
-
-.accordion__toggle-icon {
-  color: var(--accordion-toggle-icon-color, currentColor);
 }
 
 .accordion__summary {
@@ -263,6 +258,15 @@ height-observer {
 
 .accordion.is-open .accordion__summary .icon-accordion-plus .accordion-plus-bar {
   transform: scaleY(0);
+}
+
+.icon-accordion-plus .accordion-plus-circle {
+  fill: var(--accordion-toggle-icon-background-color, none);
+  stroke: var(--accordion-toggle-icon-border-color, currentColor);
+}
+
+.icon-accordion-plus .accordion-plus-line {
+  stroke: var(--accordion-toggle-icon-color, currentColor);
 }
 
 .accordion__content {
