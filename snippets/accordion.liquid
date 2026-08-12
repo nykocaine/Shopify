@@ -17,10 +17,19 @@ tag so that it can also be used without any JavaScript.
 @param {boolean} [use_secondary_background] - if set to true, the background of the accordion is set to the secondary color
 @param {string} [class] - extra class to add on the parent
 @param {string} [toggle_icon] - the name of the icon used for the open/close toggle (defaults to "accordion-small-arrow")
+@param {string} [background_color] - an optional background color override
+@param {string} [border_color] - an optional border color override (the accordion's top/bottom divider lines)
+@param {string} [toggle_icon_color] - an optional color override for the open/close toggle icon (+/- or arrow)
 @param {object} [block] - an optional block to output theme editor attributes
 {%- enddoc -%}
 
-<accordion-disclosure class="accordion {% if large %}accordion--large{% endif %} {% if use_secondary_background %}bg-secondary{% endif %} {{ class }}" {{ block.shopify_attributes }}>
+{%- capture accordion_style -%}
+  {%- if background_color != blank -%}--accordion-background-color: {{ background_color }};{%- endif -%}
+  {%- if border_color != blank -%}--accordion-border-color: {{ border_color }};{%- endif -%}
+  {%- if toggle_icon_color != blank -%}--accordion-toggle-icon-color: {{ toggle_icon_color }};{%- endif -%}
+{%- endcapture -%}
+
+<accordion-disclosure class="accordion {% if large %}accordion--large{% endif %} {% if use_secondary_background %}bg-secondary{% endif %} {{ class }}" {% if accordion_style != blank %}style="{{ accordion_style }}"{% endif %} {{ block.shopify_attributes }}>
   <details class="accordion__disclosure" {% if open %}open{% endif %} >
     <summary class="accordion__summary {% if title_size == 'lg' %}text-lg{% endif %} {% if uppercase_title %}uppercase{% endif %} {% if subheading_title %}subheading{% endif %}">
       {%- if icon != blank or custom_icon != blank -%}
@@ -44,7 +53,7 @@ tag so that it can also be used without any JavaScript.
 
       {%- liquid
         assign toggle_icon_name = toggle_icon | default: 'accordion-small-arrow'
-        render 'icon' with toggle_icon_name
+        render 'icon' with toggle_icon_name, class: 'accordion__toggle-icon'
       -%}
     </summary>
 
