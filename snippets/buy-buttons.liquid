@@ -146,6 +146,19 @@ This component is used to show the buy buttons
             assign button_price = product.selected_or_first_available_variant.price | money
           endif
 
+          # content is rendered as raw HTML by button.liquid (no | escape there), so the <s> tag
+          # below is safe to embed directly - shows the crossed-out compare-at price next to the
+          # current price when the variant is actually on sale.
+          if product.selected_or_first_available_variant.compare_at_price > product.selected_or_first_available_variant.price
+            if settings.currency_code_enabled
+              assign button_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money_with_currency
+            else
+              assign button_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money
+            endif
+
+            assign button_price = button_price | append: ' <s>' | append: button_compare_at_price | append: '</s>'
+          endif
+
           assign button_content = button_content | append: ' - ' | append: button_price
         endif
       %}
