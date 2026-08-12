@@ -43,6 +43,12 @@
     avatars faded to 50% opacity except the active one, scoped to this section only (other places
     reusing thumbnails_left, eg. quick-buy, keep the default rectangular style).
 
+    Scoped to min-width: 1000px, matching where "desktop_carousel_controls" (and product-gallery
+    .liquid's own thumbnails_left repositioning) actually applies - .scroll-marker-group--thumbnails
+    is the SAME shared class mobile_controls: "thumbnails" renders with on mobile, so leaving this
+    unscoped would leak this desktop-only look onto mobile too if that setting were ever also set
+    to "thumbnails".
+
     Vertical centering: .product-gallery__controls-floating .scroll-marker-group--thumbnails
     (theme.css, @media min-width: 700px) sets position: sticky on this element, and never gets
     overridden back to absolute by product-gallery.liquid's own thumbnails_left rule - so its
@@ -51,32 +57,34 @@
     it at its normal-flow position near the top instead. Forcing position: absolute back here is
     what makes that existing top/translateY actually center it.
     {%- endcomment -%}
-    #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails {
-      --scroll-marker-group-gap: .75rem;
-      position: absolute;
-    }
+    @media screen and (min-width: 1000px) {
+      #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails {
+        --scroll-marker-group-gap: .75rem;
+        position: absolute;
+      }
 
-    #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker {
-      --scroll-marker-width: 3rem;
-      --scroll-marker-height: 3rem;
-      border-radius: 50%;
-      opacity: .5;
-      overflow: hidden;
-      transition: opacity .2s;
-    }
+      #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker {
+        --scroll-marker-width: 3rem;
+        --scroll-marker-height: 3rem;
+        border-radius: 50%;
+        opacity: .5;
+        overflow: hidden;
+        transition: opacity .2s;
+      }
 
-    #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+      #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
 
-    #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker:after {
-      content: none;
-    }
+      #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker:after {
+        content: none;
+      }
 
-    #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker[aria-current="true"] {
-      opacity: 1;
+      #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker[aria-current="true"] {
+        opacity: 1;
+      }
     }
   {%- endif -%}
 
