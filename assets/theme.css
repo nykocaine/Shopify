@@ -3735,6 +3735,19 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   padding-block-start: 1rem;
 }
 
+/* Overlays the title on top of the image (top-left corner) instead of leaving it in the info
+   block below - .product-title's containing block resolves to .product-card (position: relative),
+   the nearest positioned ancestor, skipping over .product-card__info (which stays in normal flow,
+   not itself positioned) - so this doesn't require moving it in the DOM. Removing it from
+   .product-card__info's normal flow also means the rest of that block (subtitle, price, etc.)
+   naturally shifts up to fill the gap left behind, instead of leaving an empty gap there. */
+.product-card--info-outside .product-title {
+  position: absolute;
+  inset-block-start: var(--product-card-inner-padding);
+  inset-inline-start: var(--product-card-inner-padding);
+  z-index: 1;
+}
+
 .product-card--info-inside .product-card__info {
   z-index: 1;
   pointer-events: none;
