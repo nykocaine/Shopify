@@ -28,18 +28,16 @@
   }
 
   {%- comment -%}
-  Editable "Spacing" setting (None/Small/Medium/Large), same options and calc() formula as
-  media-blocks.liquid's own column_spacing - previously this was a fixed, non-editable 0.625rem
-  gap that ignored the setting entirely. Set directly on .product-list (not just the
-  --product-list-column-gap variable it reads from) and !important, since .product-list--carousel
-  and its md/md-max/sm/sm-max variants (theme.css) reassign the whole `grid` shorthand, which can
-  silently drop a plain column-gap override.
+  Spacing between cards is intentionally NOT a per-section setting here - .product-list (theme.css)
+  already reads column-gap/row-gap from --product-list-column-gap/--product-list-row-gap, which are
+  computed globally from the theme's own "Product listing" > Spacing setting (css-variables.liquid),
+  same as every other product list in the theme (collections, search, etc.). The real bug was in
+  theme.css itself: .product-list--carousel (and its sm/md/sm-max/md-max variants) sets `grid` as a
+  shorthand, which resets column-gap/row-gap to their initial value per spec - silently dropping the
+  theme setting's value whenever this section runs in carousel mode. Fixed at the source (theme.css)
+  instead of re-declaring the gap here, so the fix also applies to every other section that uses
+  .product-list--carousel.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .product-list {
-    --product-list-column-gap: {% if section.settings.column_spacing == 'none' %}0px{% elsif section.settings.column_spacing == 'sm' %}calc(var(--container-gutter) / 2){% elsif section.settings.column_spacing == 'md' %}var(--container-gutter){% else %}calc(var(--container-gutter) * 1.5){% endif %};
-    column-gap: var(--product-list-column-gap) !important;
-    row-gap: var(--product-list-column-gap) !important;
-  }
 
   #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
     margin-top: var(--section-vertical-spacing);
@@ -279,30 +277,6 @@
       "unit": "px",
       "label": "Radio del borde de la tarjeta de producto",
       "default": 0
-    },
-    {
-      "type": "select",
-      "id": "column_spacing",
-      "label": "t:global.spacing.spacing",
-      "options": [
-        {
-          "value": "none",
-          "label": "t:global.spacing.spacing_options.none"
-        },
-        {
-          "value": "sm",
-          "label": "t:global.spacing.spacing_options.small"
-        },
-        {
-          "value": "md",
-          "label": "t:global.spacing.spacing_options.medium"
-        },
-        {
-          "value": "lg",
-          "label": "t:global.spacing.spacing_options.large"
-        }
-      ],
-      "default": "sm"
     }
   ],
   "blocks": [
