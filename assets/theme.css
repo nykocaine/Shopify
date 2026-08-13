@@ -4902,9 +4902,11 @@ table caption {
 }
 
 .quantity-selector__button {
-  background: rgb(var(--background-secondary));
+  background: var(--quantity-control-background-color, rgb(var(--background-secondary)));
+  color: var(--quantity-control-icon-color, currentColor);
   place-content: center;
   min-height: 100%;
+  transition: opacity .1s;
   display: grid;
   position: relative;
 }
@@ -4923,8 +4925,8 @@ table caption {
   transition: opacity .1s;
 }
 
-.quantity-selector__button[disabled] svg {
-  opacity: .4;
+.quantity-selector__button[disabled] {
+  opacity: .5;
 }
 
 .quantity-selector__input {
