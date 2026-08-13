@@ -260,13 +260,13 @@ height-observer {
   transform: scaleY(0);
 }
 
-.icon-accordion-plus .accordion-plus-circle {
-  fill: var(--accordion-toggle-icon-background-color, none);
-  stroke: none;
+:is(.icon-accordion-plus, .icon-quantity-plus, .icon-quantity-minus) {
+  background: var(--step-control-background-color, none);
+  border-radius: var(--rounded-full);
 }
 
-.icon-accordion-plus .accordion-plus-line {
-  stroke: var(--accordion-toggle-icon-color, currentColor);
+.step-control-line {
+  stroke: var(--step-control-icon-color, currentColor);
 }
 
 .accordion__content {
@@ -4902,23 +4902,11 @@ table caption {
 }
 
 .quantity-selector__button {
-  background: var(--quantity-control-background-color, rgb(var(--background-secondary)));
-  color: var(--quantity-control-icon-color, currentColor);
   place-content: center;
   min-height: 100%;
   transition: opacity .1s;
   display: grid;
   position: relative;
-}
-
-.quantity-selector__button:first-child {
-  border-start-start-radius: inherit;
-  border-end-start-radius: inherit;
-}
-
-.quantity-selector__button:last-child {
-  border-start-end-radius: inherit;
-  border-end-end-radius: inherit;
 }
 
 .quantity-selector__button svg {
