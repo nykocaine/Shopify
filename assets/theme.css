@@ -4885,13 +4885,13 @@ table caption {
 
 .quantity-selector {
   --quantity-selector-input-width: 3ch;
-  --tooltip-offset: calc(-1 * var(--quantity-selector-height) / 2 + 1rem);
+  --tooltip-offset: calc(-1 * var(--button-min-height) / 2 + 1rem);
   border-radius: var(--button-border-radius);
-  border: 1px solid;
+  border: 1px solid rgb(var(--border-color));
   grid-template-columns: 3rem auto 3rem;
   grid-auto-columns: minmax(0, 1fr);
   justify-self: start;
-  min-height: 2rem;
+  min-height: var(--button-min-height);
   transition: border .2s;
   display: inline-grid;
 }
@@ -4902,10 +4902,21 @@ table caption {
 }
 
 .quantity-selector__button {
+  background: rgb(var(--background-secondary));
   place-content: center;
   min-height: 100%;
   display: grid;
   position: relative;
+}
+
+.quantity-selector__button:first-child {
+  border-start-start-radius: inherit;
+  border-end-start-radius: inherit;
+}
+
+.quantity-selector__button:last-child {
+  border-start-end-radius: inherit;
+  border-end-end-radius: inherit;
 }
 
 .quantity-selector__button svg {
@@ -4940,7 +4951,6 @@ table caption {
 }
 
 .quantity-selector--line-item {
-  border-color: rgb(var(--border-color));
   grid-template-columns: 2.5rem auto 2.5rem;
 }
 
@@ -8178,10 +8188,6 @@ shopify-account::part(signed-out-avatar) {
   .popover--quantity-breaks::part(body) {
     padding: 0;
   }
-}
-
-.quick-order-list .quantity-selector {
-  border-color: rgb(var(--border-color));
 }
 
 @media screen and (min-width: 700px) {
