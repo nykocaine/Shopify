@@ -1,5 +1,5 @@
 {%- liquid
-  assign total_steps = 3
+  assign total_steps = 6
   assign result_keys = 'salicylic,tca,duo-peel,set-peel-reserve' | split: ','
   assign text_alignment = section.settings.text_alignment | default: 'center'
   assign text_alignment_class = text_alignment | replace: 'left', 'start' | replace: 'right', 'end'
@@ -16,7 +16,7 @@
         </button>
 
         <p class="the-method__progress" data-the-method-progress hidden aria-hidden="true">
-          <span data-the-method-progress-current>01</span> / <span data-the-method-progress-total>0{{ total_steps }}</span>
+          <span data-the-method-progress-current>01</span> — <span data-the-method-progress-total>0{{ total_steps }}</span>
         </p>
 
         <button type="button" class="link subheading the-method__restart" data-the-method-restart hidden>
@@ -42,71 +42,222 @@
           {%- endif -%}
         </div>
 
+        {%- comment -%} STEP 1 — Necesidad (cards + icons) {%- endcomment -%}
         <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-1" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-1" hidden>
           <h3 id="the-method-q-{{ section.id }}-1" class="the-method__question">{{ section.settings.step_1_question }}</h3>
 
-          <div class="the-method__options" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-1">
+          <div class="the-method__options the-method__options--cards" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-1">
             <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="1" data-key="brotes_acne">
-              <span class="the-method__option-label">{{ section.settings.step_1_option_1 }}</span>
+              <span class="the-method__option-main">
+                <span class="the-method__option-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <circle cx="7" cy="7" r="1.3"/>
+                    <circle cx="15" cy="6" r="1.6"/>
+                    <circle cx="17" cy="14" r="1.1"/>
+                    <circle cx="8" cy="15" r="1.8"/>
+                    <circle cx="14" cy="18" r="1"/>
+                  </svg>
+                </span>
+                <span class="the-method__option-label">{{ section.settings.step_1_option_1 }}</span>
+              </span>
               <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
             </button>
+
             <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="1" data-key="grasa_congestion">
-              <span class="the-method__option-label">{{ section.settings.step_1_option_2 }}</span>
+              <span class="the-method__option-main">
+                <span class="the-method__option-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path d="M12 3.5c3 3.8 5.5 7.4 5.5 10.3a5.5 5.5 0 1 1-11 0c0-2.9 2.5-6.5 5.5-10.3Z" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                <span class="the-method__option-label">{{ section.settings.step_1_option_2 }}</span>
+              </span>
               <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
             </button>
+
             <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="1" data-key="manchas_tono">
-              <span class="the-method__option-label">{{ section.settings.step_1_option_3 }}</span>
+              <span class="the-method__option-main">
+                <span class="the-method__option-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <circle cx="12" cy="12" r="7.5"/>
+                    <path d="M12 4.5a7.5 7.5 0 0 1 0 15" fill="currentColor" fill-opacity="0.22" stroke="none"/>
+                  </svg>
+                </span>
+                <span class="the-method__option-label">{{ section.settings.step_1_option_3 }}</span>
+              </span>
               <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
             </button>
+
             <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="1" data-key="textura_secuelas">
-              <span class="the-method__option-label">{{ section.settings.step_1_option_4 }}</span>
+              <span class="the-method__option-main">
+                <span class="the-method__option-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                    <path d="M4 8c2-1.2 4-1.2 6 0s4 1.2 6 0"/>
+                    <path d="M4 13.5c2-1.2 4-1.2 6 0s4 1.2 6 0"/>
+                    <path d="M4 19c2-1.2 4-1.2 6 0s4 1.2 6 0"/>
+                  </svg>
+                </span>
+                <span class="the-method__option-label">{{ section.settings.step_1_option_4 }}</span>
+              </span>
               <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
             </button>
+
             <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="1" data-key="no_seguro_1">
-              <span class="the-method__option-label">{{ section.settings.step_1_option_5 }}</span>
+              <span class="the-method__option-main">
+                <span class="the-method__option-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <circle cx="6" cy="12" r="1.5"/>
+                    <circle cx="12" cy="12" r="1.5"/>
+                    <circle cx="18" cy="12" r="1.5"/>
+                  </svg>
+                </span>
+                <span class="the-method__option-label">{{ section.settings.step_1_option_5 }}</span>
+              </span>
               <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
             </button>
           </div>
         </div>
 
+        {%- comment -%} STEP 2 — Tipo de piel (pills) {%- endcomment -%}
         <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-2" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-2" hidden>
           <h3 id="the-method-q-{{ section.id }}-2" class="the-method__question">{{ section.settings.step_2_question }}</h3>
 
-          <div class="the-method__options" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-2">
-            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="2" data-key="refinar">
+          <div class="the-method__options the-method__options--pills" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-2">
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="2" data-key="piel_grasa">
               <span class="the-method__option-label">{{ section.settings.step_2_option_1 }}</span>
-              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 14 -%}</span>
             </button>
-            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="2" data-key="renovar">
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="2" data-key="piel_mixta">
               <span class="the-method__option-label">{{ section.settings.step_2_option_2 }}</span>
-              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 14 -%}</span>
+            </button>
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="2" data-key="piel_normal">
+              <span class="the-method__option-label">{{ section.settings.step_2_option_3 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 14 -%}</span>
+            </button>
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="2" data-key="piel_seca">
+              <span class="the-method__option-label">{{ section.settings.step_2_option_4 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 14 -%}</span>
             </button>
             <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="2" data-key="no_seguro_2">
-              <span class="the-method__option-label">{{ section.settings.step_2_option_3 }}</span>
-              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+              <span class="the-method__option-label">{{ section.settings.step_2_option_5 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 14 -%}</span>
             </button>
           </div>
         </div>
 
+        {%- comment -%} STEP 3 — Sensibilidad (typographic list) {%- endcomment -%}
         <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-3" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-3" hidden>
           <h3 id="the-method-q-{{ section.id }}-3" class="the-method__question">{{ section.settings.step_3_question }}</h3>
 
-          <div class="the-method__options" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-3">
-            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="un_metodo">
+          <div class="the-method__options the-method__options--list" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-3">
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="tolera">
               <span class="the-method__option-label">{{ section.settings.step_3_option_1 }}</span>
-              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
             </button>
-            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="mismo_metodo">
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="irrita_ocasional">
               <span class="the-method__option-label">{{ section.settings.step_3_option_2 }}</span>
-              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
             </button>
-            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="combinar">
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="sensible">
               <span class="the-method__option-label">{{ section.settings.step_3_option_3 }}</span>
-              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
             </button>
             <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="no_seguro_3">
               <span class="the-method__option-label">{{ section.settings.step_3_option_4 }}</span>
-              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+            </button>
+          </div>
+        </div>
+
+        {%- comment -%} STEP 4 — Tono de piel (visual scale, no labels) {%- endcomment -%}
+        <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-4" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-4" hidden>
+          <h3 id="the-method-q-{{ section.id }}-4" class="the-method__question">{{ section.settings.step_4_question }}</h3>
+
+          <div class="the-method__tone-scale" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-4">
+            <button type="button" class="the-method__tone-swatch" role="radio" aria-checked="false" data-the-method-option data-step="4" data-key="tono_1" style="--tone-opacity: 14%;" aria-label="Tono 1 de 6"></button>
+            <button type="button" class="the-method__tone-swatch" role="radio" aria-checked="false" data-the-method-option data-step="4" data-key="tono_2" style="--tone-opacity: 28%;" aria-label="Tono 2 de 6"></button>
+            <button type="button" class="the-method__tone-swatch" role="radio" aria-checked="false" data-the-method-option data-step="4" data-key="tono_3" style="--tone-opacity: 42%;" aria-label="Tono 3 de 6"></button>
+            <button type="button" class="the-method__tone-swatch" role="radio" aria-checked="false" data-the-method-option data-step="4" data-key="tono_4" style="--tone-opacity: 56%;" aria-label="Tono 4 de 6"></button>
+            <button type="button" class="the-method__tone-swatch" role="radio" aria-checked="false" data-the-method-option data-step="4" data-key="tono_5" style="--tone-opacity: 72%;" aria-label="Tono 5 de 6"></button>
+            <button type="button" class="the-method__tone-swatch" role="radio" aria-checked="false" data-the-method-option data-step="4" data-key="tono_6" style="--tone-opacity: 88%;" aria-label="Tono 6 de 6"></button>
+          </div>
+        </div>
+
+        {%- comment -%} STEP 5 — Intensidad (2-card scale) {%- endcomment -%}
+        <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-5" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-5" hidden>
+          <h3 id="the-method-q-{{ section.id }}-5" class="the-method__question">{{ section.settings.step_5_question }}</h3>
+
+          <div class="the-method__options the-method__options--scale" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-5">
+            <div class="the-method__scale">
+              <button type="button" class="the-method__option the-method__option--scale-end" role="radio" aria-checked="false" data-the-method-option data-step="5" data-key="refinar">
+                <span class="the-method__option-label">{{ section.settings.step_5_option_1 }}</span>
+                <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+              </button>
+              <span class="the-method__scale-line" aria-hidden="true"></span>
+              <button type="button" class="the-method__option the-method__option--scale-end" role="radio" aria-checked="false" data-the-method-option data-step="5" data-key="renovar">
+                <span class="the-method__option-label">{{ section.settings.step_5_option_2 }}</span>
+                <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+              </button>
+            </div>
+
+            <button type="button" class="the-method__scale-unsure link subheading" role="radio" aria-checked="false" data-the-method-option data-step="5" data-key="no_seguro_5">
+              {{ section.settings.step_5_option_3 }}
+            </button>
+          </div>
+        </div>
+
+        {%- comment -%} STEP 6 — Formato (bigger editorial cards + icons) {%- endcomment -%}
+        <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-6" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-6" hidden>
+          <h3 id="the-method-q-{{ section.id }}-6" class="the-method__question">{{ section.settings.step_6_question }}</h3>
+
+          <div class="the-method__options the-method__options--editorial" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-6">
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="6" data-key="un_metodo">
+              <span class="the-method__option-main">
+                <span class="the-method__option-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <circle cx="12" cy="12" r="7"/>
+                  </svg>
+                </span>
+                <span class="the-method__option-label">{{ section.settings.step_6_option_1 }}</span>
+              </span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 18 -%}</span>
+            </button>
+
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="6" data-key="mismo_metodo">
+              <span class="the-method__option-main">
+                <span class="the-method__option-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <circle cx="7.5" cy="12" r="4.5"/>
+                    <circle cx="16.5" cy="12" r="4.5"/>
+                  </svg>
+                </span>
+                <span class="the-method__option-label">{{ section.settings.step_6_option_2 }}</span>
+              </span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 18 -%}</span>
+            </button>
+
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="6" data-key="combinar">
+              <span class="the-method__option-main">
+                <span class="the-method__option-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <circle cx="9.5" cy="12" r="6"/>
+                    <circle cx="14.5" cy="12" r="6"/>
+                  </svg>
+                </span>
+                <span class="the-method__option-label">{{ section.settings.step_6_option_3 }}</span>
+              </span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 18 -%}</span>
+            </button>
+
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="6" data-key="no_seguro_6">
+              <span class="the-method__option-main">
+                <span class="the-method__option-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <circle cx="6" cy="12" r="1.5"/>
+                    <circle cx="12" cy="12" r="1.5"/>
+                    <circle cx="18" cy="12" r="1.5"/>
+                  </svg>
+                </span>
+                <span class="the-method__option-label">{{ section.settings.step_6_option_4 }}</span>
+              </span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 18 -%}</span>
             </button>
           </div>
         </div>
@@ -152,6 +303,8 @@
                   {%- if result_rationale != blank -%}
                     <p class="the-method__rationale">{{ result_rationale }}</p>
                   {%- endif -%}
+
+                  <p class="the-method__context-note" data-the-method-context-note aria-live="off"></p>
 
                   {%- render 'price-list', product: result_product, context: 'product' -%}
 
@@ -271,6 +424,7 @@
     margin: 0;
   }
 
+  /* Base option grid (steps 1 and 6 override with --editorial for a bigger scale) */
   .the-method__options {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -293,11 +447,15 @@
     border-radius: var(--input-border-radius);
     padding: var(--input-padding-block) var(--input-padding-inline);
     font: inherit;
-    transition: border-color 0.2s ease, background-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
   }
 
   .the-method__option:hover {
     border-color: rgb(var(--text-color));
+  }
+
+  .the-method__option:active {
+    transform: scale(0.98);
   }
 
   .the-method__option:focus-visible {
@@ -305,16 +463,42 @@
     outline-offset: 2px;
   }
 
+  /* Selection is border/ring only — background always stays the scheme's own (white) background */
   .the-method__option[aria-checked="true"] {
     border-color: rgb(var(--accent));
-    background: rgb(var(--accent) / 0.08);
+    box-shadow: 0 0 0 1px rgb(var(--accent));
+    background: rgb(var(--background));
+  }
+
+  .the-method__option-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .the-method__option-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    color: rgb(var(--text-color) / 0.65);
+    transition: color 0.2s ease;
+  }
+
+  .the-method__option-icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .the-method__option[aria-checked="true"] .the-method__option-icon {
+    color: rgb(var(--accent));
   }
 
   .the-method__option-check {
     display: inline-flex;
     flex-shrink: 0;
     opacity: 0;
-    transition: opacity 0.15s ease;
+    transform: scale(0.6);
+    transition: opacity 0.15s ease, transform 0.15s ease;
   }
 
   .the-method__option-check .icon {
@@ -324,6 +508,162 @@
 
   .the-method__option[aria-checked="true"] .the-method__option-check {
     opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Step 2 — tipo de piel: minimal pills, no icons */
+  .the-method__options--pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+  }
+
+  .the-method__options--pills .the-method__option {
+    width: auto;
+    border-radius: 999px;
+    padding: 0.625rem 1.25rem;
+  }
+
+  /* Step 3 — sensibilidad: typographic list, no boxed cards */
+  .the-method__options--list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .the-method__options--list .the-method__option {
+    position: relative;
+    border: none;
+    border-bottom: 1px solid rgb(var(--border-color));
+    border-radius: 0;
+    padding: 1rem 0 1rem 1.25rem;
+    justify-content: flex-start;
+  }
+
+  .the-method__options--list .the-method__option:last-child {
+    border-bottom: none;
+  }
+
+  .the-method__options--list .the-method__option::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    background: transparent;
+    transition: background-color 0.2s ease;
+  }
+
+  .the-method__options--list .the-method__option[aria-checked="true"] {
+    border-color: rgb(var(--border-color));
+    box-shadow: none;
+    background: rgb(var(--background));
+  }
+
+  .the-method__options--list .the-method__option[aria-checked="true"]::before {
+    background: rgb(var(--accent));
+  }
+
+  .the-method__options--list .the-method__option[aria-checked="true"] .the-method__option-label {
+    color: rgb(var(--accent));
+  }
+
+  /* Step 4 — tono de piel: circular grayscale swatch scale (abstract, not literal skin tones) */
+  .the-method__tone-scale {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.625rem;
+    width: 100%;
+    max-width: 26rem;
+    margin-inline: auto;
+  }
+
+  .the-method__tone-swatch {
+    appearance: none;
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 1px solid rgb(var(--border-color));
+    border-radius: 50%;
+    background: rgb(var(--text-color) / var(--tone-opacity));
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+  }
+
+  .the-method__tone-swatch:hover {
+    transform: scale(1.08);
+  }
+
+  .the-method__tone-swatch:focus-visible {
+    outline: 2px solid rgb(var(--text-color));
+    outline-offset: 2px;
+  }
+
+  .the-method__tone-swatch[aria-checked="true"] {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 2px rgb(var(--background)), 0 0 0 4px rgb(var(--accent));
+  }
+
+  /* Step 5 — intensidad: two-card scale with a connecting line */
+  .the-method__options--scale {
+    display: grid;
+    gap: 1rem;
+    justify-items: center;
+  }
+
+  .the-method__scale {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: stretch;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .the-method__scale-line {
+    align-self: center;
+    width: 3rem;
+    height: 1px;
+    background: linear-gradient(to right, rgb(var(--border-color)), rgb(var(--accent)), rgb(var(--border-color)));
+  }
+
+  .the-method__scale-unsure {
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  @media screen and (max-width: 479px) {
+    .the-method__scale {
+      grid-template-columns: 1fr;
+    }
+
+    .the-method__scale-line {
+      width: 1px;
+      height: 1.5rem;
+      justify-self: center;
+      background: linear-gradient(to bottom, rgb(var(--border-color)), rgb(var(--accent)), rgb(var(--border-color)));
+    }
+  }
+
+  /* Step 6 — formato: bigger editorial cards (reuses the card system at a larger scale) */
+  .the-method__options--editorial {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .the-method__options--editorial .the-method__option {
+    padding: 1.5rem;
+  }
+
+  .the-method__options--editorial .the-method__option-icon svg {
+    width: 1.75rem;
+    height: 1.75rem;
   }
 
   .the-method__result-card {
@@ -352,6 +692,16 @@
   .the-method__rationale {
     margin: 0;
     color: rgb(var(--text-color) / 0.75);
+  }
+
+  .the-method__context-note {
+    margin: 0;
+    font-size: var(--text-sm, 0.875rem);
+    color: rgb(var(--text-color) / 0.6);
+  }
+
+  .the-method__context-note:empty {
+    display: none;
   }
 
   .the-method__secondary {
@@ -396,21 +746,44 @@
 {% javascript %}
 (function () {
   var STEP1_SCORES = {
-    brotes_acne: { salicylic: 2, tca: 0 },
-    grasa_congestion: { salicylic: 2, tca: 0 },
-    manchas_tono: { salicylic: 0, tca: 2 },
-    textura_secuelas: { salicylic: 0, tca: 2 },
+    brotes_acne: { salicylic: 3, tca: 0 },
+    grasa_congestion: { salicylic: 3, tca: 0 },
+    manchas_tono: { salicylic: 0, tca: 3 },
+    textura_secuelas: { salicylic: 0, tca: 3 },
     no_seguro_1: { salicylic: 0, tca: 0 }
   };
 
   var STEP2_SCORES = {
-    refinar: { salicylic: 1, tca: 0 },
-    renovar: { salicylic: 0, tca: 1 },
+    piel_grasa: { salicylic: 1, tca: 0 },
+    piel_mixta: { salicylic: 0, tca: 0 },
+    piel_normal: { salicylic: 0, tca: 0 },
+    piel_seca: { salicylic: 0, tca: 0 },
     no_seguro_2: { salicylic: 0, tca: 0 }
   };
 
-  var COMBINE_GAP_THRESHOLD = 1;
-  var STEPS = ['intro', 'step-1', 'step-2', 'step-3', 'result'];
+  var STEP5_SCORES = {
+    refinar: { salicylic: 3, tca: 0 },
+    renovar: { salicylic: 0, tca: 3 },
+    no_seguro_5: { salicylic: 0, tca: 0 }
+  };
+
+  var SENSITIVITY_NOTES = {
+    tolera: 'Tu piel suele tolerar bien los activos, lo que da flexibilidad para avanzar en el método.',
+    irrita_ocasional: 'Tu piel puede irritarse ocasionalmente, así que conviene introducir el método de forma progresiva.',
+    sensible: 'Tus respuestas sugieren que conviene considerar la intensidad del método antes de elegir, e ir de forma gradual.',
+    no_seguro_3: ''
+  };
+
+  var SKIN_TYPE_NOTES = {
+    piel_grasa: 'Al tratarse de piel grasa, este enfoque suele sentirse especialmente afín.',
+    piel_seca: 'Al tratarse de piel seca, conviene prestar atención a la hidratación posterior.',
+    piel_mixta: '',
+    piel_normal: '',
+    no_seguro_2: ''
+  };
+
+  var COMBINE_GAP_THRESHOLD = 2;
+  var STEPS = ['intro', 'step-1', 'step-2', 'step-3', 'step-4', 'step-5', 'step-6', 'result'];
   var DURATION = 150;
 
   var reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -429,17 +802,21 @@
   function computeScores(answers) {
     var s1 = STEP1_SCORES[answers.step1] || { salicylic: 0, tca: 0 };
     var s2 = STEP2_SCORES[answers.step2] || { salicylic: 0, tca: 0 };
-    return { salicylic: s1.salicylic + s2.salicylic, tca: s1.tca + s2.tca };
+    var s5 = STEP5_SCORES[answers.step5] || { salicylic: 0, tca: 0 };
+    return {
+      salicylic: s1.salicylic + s2.salicylic + s5.salicylic,
+      tca: s1.tca + s2.tca + s5.tca
+    };
   }
 
   function resolveMethod(scores) {
     return scores.tca > scores.salicylic ? 'tca' : 'salicylic';
   }
 
-  function resolveFormat(step3Key, scores) {
-    if (step3Key === 'mismo_metodo') return 'duo';
-    if (step3Key === 'combinar') return 'combo';
-    if (step3Key === 'un_metodo') return 'single';
+  function resolveFormat(step6Key, scores) {
+    if (step6Key === 'mismo_metodo') return 'duo';
+    if (step6Key === 'combinar') return 'combo';
+    if (step6Key === 'un_metodo') return 'single';
     return Math.abs(scores.salicylic - scores.tca) <= COMBINE_GAP_THRESHOLD ? 'combo' : 'single';
   }
 
@@ -447,6 +824,12 @@
     if (format === 'duo') return 'duo-peel';
     if (format === 'combo') return 'set-peel-reserve';
     return method;
+  }
+
+  function buildContextNote(answers) {
+    var sensitivityNote = SENSITIVITY_NOTES[answers.step3] || '';
+    var skinTypeNote = SKIN_TYPE_NOTES[answers.step2] || '';
+    return [skinTypeNote, sensitivityNote].filter(Boolean).join(' ');
   }
 
   function initInstance(wrapper) {
@@ -457,6 +840,7 @@
     var progressWrapper = wrapper.querySelector('[data-the-method-progress]');
     var progressCurrent = wrapper.querySelector('[data-the-method-progress-current]');
     var resultCards = wrapper.querySelectorAll('[data-the-method-result]');
+    var contextNotes = wrapper.querySelectorAll('[data-the-method-context-note]');
 
     var state = { answers: {} };
 
@@ -498,11 +882,16 @@
     function showResult() {
       var scores = computeScores(state.answers);
       var method = resolveMethod(scores);
-      var format = resolveFormat(state.answers.step3, scores);
+      var format = resolveFormat(state.answers.step6, scores);
       var key = resolveProductKey(method, format);
+      var note = buildContextNote(state.answers);
 
       resultCards.forEach(function (card) {
         card.hidden = card.getAttribute('data-the-method-result') !== key;
+      });
+
+      contextNotes.forEach(function (el) {
+        el.textContent = note;
       });
     }
 
@@ -716,13 +1105,13 @@
     },
     {
       "type": "header",
-      "content": "Paso 1"
+      "content": "Paso 1 — Necesidad"
     },
     {
       "type": "text",
       "id": "step_1_question",
       "label": "Pregunta",
-      "default": "¿QUÉ QUIERES CAMBIAR?"
+      "default": "¿QUÉ QUIERES MEJORAR?"
     },
     {
       "type": "text",
@@ -756,63 +1145,148 @@
     },
     {
       "type": "header",
-      "content": "Paso 2"
+      "content": "Paso 2 — Tipo de piel"
     },
     {
       "type": "text",
       "id": "step_2_question",
       "label": "Pregunta",
-      "default": "¿QUÉ TAN INTENSO QUIERES QUE SEA?"
+      "default": "¿CÓMO DESCRIBIRÍAS TU PIEL?"
     },
     {
       "type": "text",
       "id": "step_2_option_1",
       "label": "Opción 1",
-      "default": "Refinar"
+      "default": "Grasa"
     },
     {
       "type": "text",
       "id": "step_2_option_2",
       "label": "Opción 2",
-      "default": "Renovar"
+      "default": "Mixta"
     },
     {
       "type": "text",
       "id": "step_2_option_3",
       "label": "Opción 3",
+      "default": "Normal"
+    },
+    {
+      "type": "text",
+      "id": "step_2_option_4",
+      "label": "Opción 4",
+      "default": "Seca"
+    },
+    {
+      "type": "text",
+      "id": "step_2_option_5",
+      "label": "Opción 5",
       "default": "No estoy seguro/a"
     },
     {
       "type": "header",
-      "content": "Paso 3"
+      "content": "Paso 3 — Sensibilidad"
     },
     {
       "type": "text",
       "id": "step_3_question",
       "label": "Pregunta",
-      "default": "¿CÓMO QUIERES ABORDARLO?"
+      "default": "¿CÓMO REACCIONA TU PIEL NORMALMENTE?"
     },
     {
       "type": "text",
       "id": "step_3_option_1",
       "label": "Opción 1",
-      "default": "Un método"
+      "default": "Tolera fácilmente los productos"
     },
     {
       "type": "text",
       "id": "step_3_option_2",
       "label": "Opción 2",
-      "default": "El mismo método dos veces"
+      "default": "Se irrita ocasionalmente"
     },
     {
       "type": "text",
       "id": "step_3_option_3",
       "label": "Opción 3",
-      "default": "Combinar métodos"
+      "default": "Es bastante sensible"
     },
     {
       "type": "text",
       "id": "step_3_option_4",
+      "label": "Opción 4",
+      "default": "No estoy seguro/a"
+    },
+    {
+      "type": "header",
+      "content": "Paso 4 — Tono de piel",
+      "info": "Escala visual (círculos), sin texto por opción."
+    },
+    {
+      "type": "text",
+      "id": "step_4_question",
+      "label": "Pregunta",
+      "default": "¿QUÉ TAN PROFUNDO ES EL TONO DE TU PIEL?"
+    },
+    {
+      "type": "header",
+      "content": "Paso 5 — Intensidad"
+    },
+    {
+      "type": "text",
+      "id": "step_5_question",
+      "label": "Pregunta",
+      "default": "¿QUÉ TAN INTENSO QUIERES QUE SEA EL MÉTODO?"
+    },
+    {
+      "type": "text",
+      "id": "step_5_option_1",
+      "label": "Opción 1",
+      "default": "Refinar"
+    },
+    {
+      "type": "text",
+      "id": "step_5_option_2",
+      "label": "Opción 2",
+      "default": "Renovar"
+    },
+    {
+      "type": "text",
+      "id": "step_5_option_3",
+      "label": "Opción 3",
+      "default": "No estoy seguro/a"
+    },
+    {
+      "type": "header",
+      "content": "Paso 6 — Formato"
+    },
+    {
+      "type": "text",
+      "id": "step_6_question",
+      "label": "Pregunta",
+      "default": "¿CÓMO QUIERES ABORDARLO?"
+    },
+    {
+      "type": "text",
+      "id": "step_6_option_1",
+      "label": "Opción 1",
+      "default": "Un método"
+    },
+    {
+      "type": "text",
+      "id": "step_6_option_2",
+      "label": "Opción 2",
+      "default": "El mismo método dos veces"
+    },
+    {
+      "type": "text",
+      "id": "step_6_option_3",
+      "label": "Opción 3",
+      "default": "Combinar métodos"
+    },
+    {
+      "type": "text",
+      "id": "step_6_option_4",
       "label": "Opción 4",
       "default": "No estoy seguro/a"
     },
