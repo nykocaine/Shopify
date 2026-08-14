@@ -1,0 +1,173 @@
+{%- doc -%}
+A rounded panel with a heading, a description and a list of collapsible FAQ items ("FAQ item" child blocks).
+Each item reuses the theme's shared accordion component (same open/close behavior and +/- icon as the
+"Collapsible text" block on the product page) instead of a separate accordion implementation.
+
+@param {object} block - the FAQ block
+{%- enddoc -%}
+
+<div
+  id="shopify-block-{{ block.id }}"
+  class="media-blocks__item faq-block color-scheme color-scheme--{{ block.settings.color_scheme.id }}"
+  style="
+    border-radius: {{ block.settings.corner_radius }}px;
+    margin-block-start: {{ block.settings.margin_top }}px;
+    margin-block-end: {{ block.settings.margin_bottom }}px;
+  "
+  {{ block.shopify_attributes }}
+>
+  <style>
+    #shopify-block-{{ block.id }} .faq-block__inner {
+      max-width: {{ block.settings.max_width }}px;
+      padding: min({{ block.settings.padding }}px, 8vw);
+    }
+
+    #shopify-block-{{ block.id }} .faq-block__header {
+      margin-block-end: clamp(1.5rem, 4vw, 2.5rem);
+    }
+
+    #shopify-block-{{ block.id }} .accordion__summary {
+      font-weight: 600;
+    }
+
+    @media screen and (min-width: 700px) {
+      #shopify-block-{{ block.id }} .faq-block__inner {
+        padding: {{ block.settings.padding }}px;
+      }
+    }
+  </style>
+
+  <div class="faq-block__inner">
+    {%- if block.settings.heading != blank or block.settings.description != blank -%}
+      <div class="prose faq-block__header">
+        {%- if block.settings.heading != blank -%}
+          {%- render 'heading', content: block.settings.heading, style: 'h3', html_tag: 'h2', balance_text: true -%}
+        {%- endif -%}
+
+        {%- if block.settings.description != blank -%}
+          {{- block.settings.description -}}
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="faq-block__list">
+      {%- content_for 'blocks' -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "FAQ",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "A rounded panel with a heading, a description and a list of collapsible FAQ items. Add \"FAQ item\" blocks below for each question."
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "t:global.text.heading",
+      "default": "FAQ"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Find out more about our products.</p>"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:global.colors.scheme",
+      "default": "scheme-2"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "margin_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Margin top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Margin bottom",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "min": 16,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "corner_radius",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "min": 400,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "label": "Maximum content width",
+      "default": 720
+    }
+  ],
+  "blocks": [
+    { "type": "_faq-item" }
+  ],
+  "presets": [
+    {
+      "name": "FAQ",
+      "blocks": [
+        {
+          "type": "_faq-item",
+          "settings": {
+            "question": "How much should I apply?",
+            "answer": "<p>Start with a small, pea-sized amount and build up as needed.</p>"
+          }
+        },
+        {
+          "type": "_faq-item",
+          "settings": {
+            "question": "Where does this fit into my daily routine?",
+            "answer": "<p>Add this step after cleansing and before moisturizing, morning or night.</p>"
+          }
+        },
+        {
+          "type": "_faq-item",
+          "settings": {
+            "question": "Is it dermatologist tested?",
+            "answer": "<p>Yes, our formula has been dermatologist tested for safety and efficacy.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
