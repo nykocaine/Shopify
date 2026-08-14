@@ -922,73 +922,102 @@
                       assign faq_item_count = faq_item_count | plus: 1
                     endif
                   endfor
+
+                  # Same top_left..bottom_right -> align-self-*/prose-justify-* mapping the
+                  # image_with_text/video_with_text blocks above use for their placement-grid content,
+                  # reused as-is so FAQ shares the exact same alignment system (id: content_position).
+                  case block.settings.content_position
+                    when 'top_left'
+                      assign faq_vertical_class = 'align-self-start'
+                      assign faq_horizontal_class = 'prose-justify-start'
+                    when 'top_center'
+                      assign faq_vertical_class = 'align-self-start'
+                      assign faq_horizontal_class = 'prose-justify-center'
+                    when 'top_right'
+                      assign faq_vertical_class = 'align-self-start'
+                      assign faq_horizontal_class = 'prose-justify-end'
+                    when 'middle_left'
+                      assign faq_vertical_class = 'align-self-center'
+                      assign faq_horizontal_class = 'prose-justify-start'
+                    when 'middle_center'
+                      assign faq_vertical_class = 'align-self-center'
+                      assign faq_horizontal_class = 'prose-justify-center'
+                    when 'middle_right'
+                      assign faq_vertical_class = 'align-self-center'
+                      assign faq_horizontal_class = 'prose-justify-end'
+                    when 'bottom_left'
+                      assign faq_vertical_class = 'align-self-end'
+                      assign faq_horizontal_class = 'prose-justify-start'
+                    when 'bottom_center'
+                      assign faq_vertical_class = 'align-self-end'
+                      assign faq_horizontal_class = 'prose-justify-center'
+                    when 'bottom_right'
+                      assign faq_vertical_class = 'align-self-end'
+                      assign faq_horizontal_class = 'prose-justify-end'
+                    else
+                      assign faq_vertical_class = 'align-self-center'
+                      assign faq_horizontal_class = 'prose-justify-center'
+                  endcase
                 -%}
 
-                <div id="faq-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} faq-block" style="border-radius: {{ block.settings.corner_radius }}px; margin-block-start: {{ block.settings.margin_top }}px; margin-block-end: {{ block.settings.margin_bottom }}px;" {{ block.shopify_attributes }}>
+                <div id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} @container/content-box color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {{ block.shopify_attributes }}>
                   <style>
-                    #faq-{{ block.id }} .faq-block__inner {
-                      max-width: {{ block.settings.max_width }}px;
-                      padding: min({{ block.settings.padding }}px, 8vw);
-                    }
-
-                    #faq-{{ block.id }} .faq-block__header {
-                      margin-block-end: clamp(1.5rem, 4vw, 2.5rem);
-                    }
-
-                    #faq-{{ block.id }} .accordion__summary {
+                    {%- comment -%}
+                    Question weight only - spacing, corner radius and padding all come from the same
+                    .media-blocks__item/.content-box system used by the other Media Blocks block types
+                    above (--media-blocks-gap, --media-blocks-corner-radius, --content-box-spacing), not
+                    from FAQ-specific overrides.
+                    {%- endcomment -%}
+                    #block-{{ block.id }} .accordion__summary {
                       font-weight: 600;
-                    }
-
-                    @media screen and (min-width: 700px) {
-                      #faq-{{ block.id }} .faq-block__inner {
-                        padding: {{ block.settings.padding }}px;
-                      }
                     }
                   </style>
 
-                  <div class="faq-block__inner">
-                    {%- if block.settings.title != blank or block.settings.content != blank -%}
-                      <div class="prose faq-block__header">
-                        {%- if block.settings.title != blank -%}
-                          {%- render 'heading', content: block.settings.title, style: 'h3', html_tag: 'h2', balance_text: true -%}
-                        {%- endif -%}
-
-                        {%- if block.settings.content != blank -%}
-                          {{- block.settings.content -}}
-                        {%- endif -%}
-                      </div>
-                    {%- endif -%}
-
-                    {%- if faq_item_count > 0 -%}
-                      <div class="faq-block__list">
-                        {%- for i in (1..8) -%}
-                          {%- liquid
-                            capture faq_question_key
-                              echo 'question_'
-                              echo i
-                            endcapture
-
-                            capture faq_answer_key
-                              echo 'answer_'
-                              echo i
-                            endcapture
-
-                            capture faq_open_key
-                              echo 'open_'
-                              echo i
-                            endcapture
-
-                            assign faq_question = block.settings[faq_question_key]
-                            assign faq_answer = block.settings[faq_answer_key]
-                            assign faq_open = block.settings[faq_open_key]
-                          -%}
-
-                          {%- if faq_question != blank or faq_answer != blank -%}
-                            {%- render 'accordion', title: faq_question, content: faq_answer, open: faq_open, uppercase_title: true, prose_content: true, toggle_icon: 'accordion-plus' -%}
+                  <div class="content-box h-full">
+                    <div class="placement-grid">
+                      <div class="{{ faq_vertical_class }}">
+                        <div class="prose {{ faq_horizontal_class }}">
+                          {%- if block.settings.title != blank -%}
+                            {%- render 'heading', content: block.settings.title, style: 'h3', html_tag: 'h2', balance_text: true -%}
                           {%- endif -%}
-                        {%- endfor -%}
+
+                          {%- if block.settings.content != blank -%}
+                            {{- block.settings.content -}}
+                          {%- endif -%}
+
+                          {%- if faq_item_count > 0 -%}
+                            <div class="faq-block__list">
+                              {%- for i in (1..8) -%}
+                                {%- liquid
+                                  capture faq_question_key
+                                    echo 'question_'
+                                    echo i
+                                  endcapture
+
+                                  capture faq_answer_key
+                                    echo 'answer_'
+                                    echo i
+                                  endcapture
+
+                                  capture faq_open_key
+                                    echo 'open_'
+                                    echo i
+                                  endcapture
+
+                                  assign faq_question = block.settings[faq_question_key]
+                                  assign faq_answer = block.settings[faq_answer_key]
+                                  assign faq_open = block.settings[faq_open_key]
+                                -%}
+
+                                {%- if faq_question != blank or faq_answer != blank -%}
+                                  {%- render 'accordion', title: faq_question, content: faq_answer, open: faq_open, uppercase_title: true, prose_content: true, toggle_icon: 'accordion-plus' -%}
+                                {%- endif -%}
+                              {%- endfor -%}
+                            </div>
+                          {%- endif -%}
+                        </div>
                       </div>
-                    {%- endif -%}
+                    </div>
                   </div>
                 </div>
 
@@ -4418,58 +4447,48 @@
           "default": "scheme-2"
         },
         {
-          "type": "header",
-          "content": "Layout"
-        },
-        {
-          "type": "range",
-          "id": "margin_top",
-          "min": 0,
-          "max": 100,
-          "step": 4,
-          "unit": "px",
-          "label": "Margin top",
-          "default": 0
-        },
-        {
-          "type": "range",
-          "id": "margin_bottom",
-          "min": 0,
-          "max": 100,
-          "step": 4,
-          "unit": "px",
-          "label": "Margin bottom",
-          "default": 0
-        },
-        {
-          "type": "range",
-          "id": "padding",
-          "min": 16,
-          "max": 96,
-          "step": 4,
-          "unit": "px",
-          "label": "Padding",
-          "default": 40
-        },
-        {
-          "type": "range",
-          "id": "corner_radius",
-          "min": 0,
-          "max": 40,
-          "step": 1,
-          "unit": "px",
-          "label": "Corner radius",
-          "default": 24
-        },
-        {
-          "type": "range",
-          "id": "max_width",
-          "min": 400,
-          "max": 1200,
-          "step": 20,
-          "unit": "px",
-          "label": "Maximum content width",
-          "default": 720
+          "type": "select",
+          "id": "content_position",
+          "label": "t:global.position.alignment",
+          "options": [
+            {
+              "value": "top_left",
+              "label": "t:global.position.top_left"
+            },
+            {
+              "value": "top_center",
+              "label": "t:global.position.top_center"
+            },
+            {
+              "value": "top_right",
+              "label": "t:global.position.top_right"
+            },
+            {
+              "value": "middle_left",
+              "label": "t:global.position.middle_left"
+            },
+            {
+              "value": "middle_center",
+              "label": "t:global.position.middle_center"
+            },
+            {
+              "value": "middle_right",
+              "label": "t:global.position.middle_right"
+            },
+            {
+              "value": "bottom_left",
+              "label": "t:global.position.bottom_left"
+            },
+            {
+              "value": "bottom_center",
+              "label": "t:global.position.bottom_center"
+            },
+            {
+              "value": "bottom_right",
+              "label": "t:global.position.bottom_right"
+            }
+          ],
+          "default": "top_left"
         },
         {
           "type": "header",
