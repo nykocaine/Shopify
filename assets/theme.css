@@ -289,6 +289,41 @@ height-observer {
   }
 }
 
+/* ---------------------------------------------------------------------
+   FAQ (shared between the Media Blocks "FAQ" block and the standalone
+   FAQ section, so the styling lives here once instead of being
+   duplicated in both .liquid files)
+   ------------------------------------------------------------------- */
+
+/* Text-panel padding (info_panel/results_tabs' own formula) instead of .content-box's media-card
+   default (max(1.5rem, var(--container-gutter))) - still fully driven by --container-gutter, so it
+   stays in step with the theme's spacing settings at every breakpoint. */
+.faq-content-box {
+  --content-box-spacing: min(2.5rem, var(--container-gutter));
+}
+
+.faq-block__list .accordion__summary {
+  font-weight: 600;
+}
+
+/* .accordion's own box-shadow draws both a top (inset) and a bottom line on every instance, meant for
+   accordions used standalone. Stacked back-to-back in a FAQ list, that doubles the line at every
+   boundary and leaves a stray line above the first question and below the last. Keep only the bottom
+   line, then drop it on whichever accordion is actually last in the rendered list (a CSS :last-child,
+   not a fixed index - blank questions are never rendered at all, so this stays correct regardless of
+   how many questions exist or which ones are filled in).
+   :not(.bg-secondary) excludes the FAQ section's own "background" accordion style, which already sets
+   box-shadow: none on purpose (that variant separates questions with background color, not a line) -
+   without it, this rule would tie in specificity with .accordion.bg-secondary and win by source order,
+   reintroducing a divider that style intentionally doesn't have. */
+.faq-block__list .accordion:not(.bg-secondary) {
+  box-shadow: 0 1px 0 rgb(var(--border-color));
+}
+
+.faq-block__list .accordion:not(.bg-secondary):last-child {
+  box-shadow: none;
+}
+
 .accordion.bg-secondary {
   --accordion-inline-padding: 1rem;
   box-shadow: none;

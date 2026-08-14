@@ -18,7 +18,7 @@
 
     {%- capture section_content -%}
       <div class="faq">
-        <div class="faq__content">
+        <div class="faq__content faq-block__list">
           {%- for block in section.blocks -%}
             {%- case block.type -%}
               {%- when 'category' -%}
@@ -33,7 +33,7 @@
                     <p class="h6 text-start" {{ block.shopify_attributes }}>{{ block.settings.title }}</p>
                   </div>
                 {%- endif -%}
-  
+
               {%- when 'question' -%}
                 {%- liquid
                   assign use_secondary_background = false
@@ -44,15 +44,17 @@
 
                   if block.settings.question != blank and block.settings.answer != blank
                     if section.settings.question_style == 'subheading'
-                      render 'accordion', title: block.settings.question, content: block.settings.answer, prose_content: true, subheading_title: true, icon: block.settings.icon, custom_icon: block.settings.custom_icon, icon_width: block.settings.icon_width, mobile_icon_width: block.settings.mobile_icon_width, use_secondary_background: use_secondary_background, block: block
+                      render 'accordion', title: block.settings.question, content: block.settings.answer, prose_content: true, subheading_title: true, icon: block.settings.icon, custom_icon: block.settings.custom_icon, icon_width: block.settings.icon_width, mobile_icon_width: block.settings.mobile_icon_width, use_secondary_background: use_secondary_background, toggle_icon: 'accordion-plus', block: block
                     else
-                      render 'accordion', title: block.settings.question, content: block.settings.answer, prose_content: true, icon: block.settings.icon, custom_icon: block.settings.custom_icon, icon_width: block.settings.icon_width, mobile_icon_width: block.settings.mobile_icon_width, use_secondary_background: use_secondary_background, block: block
+                      render 'accordion', title: block.settings.question, content: block.settings.answer, prose_content: true, icon: block.settings.icon, custom_icon: block.settings.custom_icon, icon_width: block.settings.icon_width, mobile_icon_width: block.settings.mobile_icon_width, use_secondary_background: use_secondary_background, toggle_icon: 'accordion-plus', block: block
                     endif
                   endif
                 -%}
             {%- endcase -%}
           {%- endfor -%}
         </div>
+
+        {%- render 'faq-accordion-group' -%}
       </div>
     {%- endcapture -%}
 

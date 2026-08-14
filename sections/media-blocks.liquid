@@ -961,43 +961,7 @@
                 -%}
 
                 <div id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} @container/content-box color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {{ block.shopify_attributes }}>
-                  <style>
-                    {%- comment -%}
-                    Corner radius and outer spacing between blocks still come untouched from
-                    .media-blocks__item/.media-blocks (--media-blocks-gap, --media-blocks-corner-radius).
-                    The line below only re-points --content-box-spacing (the variable .content-box itself
-                    already reads for its padding, on every axis, at every breakpoint) from its media-card
-                    default to the same min(2.5rem, var(--container-gutter)) formula the section's other
-                    pure-text panels (info_panel, results_tabs) already use - same container-gutter source,
-                    same responsive tiers, just the text-panel value instead of the media-card one.
-                    {%- endcomment -%}
-                    #block-{{ block.id }} .content-box {
-                      --content-box-spacing: min(2.5rem, var(--container-gutter));
-                    }
-
-                    #block-{{ block.id }} .accordion__summary {
-                      font-weight: 600;
-                    }
-
-                    {%- comment -%}
-                    .accordion's own box-shadow draws both a top (inset) and a bottom line on every
-                    instance, meant for accordions used standalone. Stacked back-to-back here, that
-                    doubles the line at every boundary and leaves a stray line above the first question
-                    and below the last. Keep only the bottom line, then drop it on whichever accordion is
-                    actually last in the rendered list (a CSS :last-child, not question_8 - blank
-                    questions are never rendered at all, so this stays correct no matter how many
-                    questions the merchant fills in or removes).
-                    {%- endcomment -%}
-                    #block-{{ block.id }} .faq-block__list .accordion {
-                      box-shadow: 0 1px 0 rgb(var(--border-color));
-                    }
-
-                    #block-{{ block.id }} .faq-block__list .accordion:last-child {
-                      box-shadow: none;
-                    }
-                  </style>
-
-                  <div class="content-box h-full">
+                  <div class="content-box faq-content-box h-full">
                     <div class="placement-grid">
                       <div class="{{ faq_vertical_class }}">
                         <div class="prose {{ faq_horizontal_class }}">
@@ -1038,6 +1002,8 @@
                                 {%- endif -%}
                               {%- endfor -%}
                             </div>
+
+                            {%- render 'faq-accordion-group' -%}
                           {%- endif -%}
                         </div>
                       </div>
