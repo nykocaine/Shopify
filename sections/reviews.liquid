@@ -77,19 +77,8 @@ the merchant reads the email and adds a matching Review block here.
           <p class="reviews__summary-count">Based on {{ review_count }} review{% if review_count != 1 %}s{% endif %}</p>
         </div>
 
-        {%- if review_count > 0 -%}
+        {%- if review_blocks.size > 0 -%}
           <div class="reviews__controls">
-            <div class="reviews__filter">
-              {%- render 'button', content: 'Filters', style: 'outline', type: 'button', class: 'reviews__filter-toggle', icon: 'chevron-down' -%}
-
-              <div class="reviews__filter-panel" data-reviews-filter-panel hidden>
-                {%- for i in (5..1) -%}
-                  {%- capture star_label -%}{{ i }} star{% if i != 1 %}s{% endif %}{%- endcapture -%}
-                  {%- render 'checkbox', name: 'review_star_filter', value: i, label: star_label, id_prefix: section.id -%}
-                {%- endfor -%}
-              </div>
-            </div>
-
             <div class="reviews__sort button button--outline">
               <label class="sr-only" for="reviews-sort-{{ section.id }}">Sort reviews</label>
               <div class="button__content">
@@ -103,7 +92,7 @@ the merchant reads the email and adds a matching Review block here.
             </div>
           </div>
 
-          <p class="reviews__count" data-reviews-visible-count>{{ review_count }} review{% if review_count != 1 %}s{% endif %}</p>
+          <p class="reviews__count">{{ review_blocks.size }} review{% if review_blocks.size != 1 %}s{% endif %}</p>
 
           <div class="reviews__list" data-reviews-list>
             {%- for block in review_blocks -%}
@@ -349,42 +338,19 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
   }
 
   #shopify-section-{{ section.id }} .reviews__controls {
-    justify-content: space-between;
+    justify-content: end;
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
     display: flex;
   }
 
-  #shopify-section-{{ section.id }} .reviews__filter {
-    position: relative;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__filter-panel {
-    z-index: 2;
-    min-width: 12rem;
-    padding: 1rem;
-    border: 1px solid rgb(var(--border-color));
-    border-radius: 1rem;
-    background: rgb(var(--background));
-    flex-direction: column;
-    gap: .5rem;
-    display: flex;
-    position: absolute;
-    inset-block-start: calc(100% + .5rem);
-    inset-inline-start: 0;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__filter-panel[hidden] {
-    display: none;
-  }
-
   {%- comment -%}
   .reviews__sort only resets the .select/.icon's own boxed-input styling (border/background/height,
   and the icon's absolute positioning, both meant for a standalone input field) - the actual height,
   padding, border and border-radius all come from the .button/.button--outline/.button__content classes
-  on the element itself, same as the Filters button, so both controls inherit the exact same global
-  button height and border instead of custom values.
+  on the element itself, so it inherits the same global button height and border as the rest of the theme
+  instead of custom values.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__sort .button__content {
     column-gap: .5rem;
@@ -594,45 +560,6 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
     var list = root.querySelector('[data-reviews-list]');
     var cards = list ? Array.prototype.slice.call(list.querySelectorAll('.review-card')) : [];
     var sortSelect = root.querySelector('[data-reviews-sort]');
-    var filterToggle = root.querySelector('.reviews__filter-toggle');
-    var filterPanel = root.querySelector('[data-reviews-filter-panel]');
-    var filterInputs = filterPanel ? Array.prototype.slice.call(filterPanel.querySelectorAll('input[name="review_star_filter"]')) : [];
-    var visibleCount = root.querySelector('[data-reviews-visible-count]');
-
-    if (filterToggle && filterPanel) {
-      filterToggle.addEventListener('click', function () {
-        var isHidden = filterPanel.hasAttribute('hidden');
-        if (isHidden) {
-          filterPanel.removeAttribute('hidden');
-        } else {
-          filterPanel.setAttribute('hidden', '');
-        }
-        filterToggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
-      });
-    }
-
-    function applyFilter() {
-      var checkedRatings = filterInputs.filter(function (input) { return input.checked; }).map(function (input) { return input.value; });
-      var shown = 0;
-
-      cards.forEach(function (card) {
-        var matches = checkedRatings.length === 0 || checkedRatings.indexOf(card.getAttribute('data-rating')) !== -1;
-        if (matches) {
-          card.removeAttribute('hidden');
-          shown += 1;
-        } else {
-          card.setAttribute('hidden', '');
-        }
-      });
-
-      if (visibleCount) {
-        visibleCount.textContent = shown + (shown === 1 ? ' review' : ' reviews');
-      }
-    }
-
-    filterInputs.forEach(function (input) {
-      input.addEventListener('change', applyFilter);
-    });
 
     if (sortSelect) {
       sortSelect.addEventListener('change', function () {
