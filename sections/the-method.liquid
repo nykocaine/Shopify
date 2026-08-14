@@ -410,7 +410,11 @@
     width: 100%;
   }
 
-  .the-method__option {
+  /* Scoped under .the-method__options (not just .the-method__option alone) so background/border
+     reliably beat the theme's own global button reset (assets/theme.css:80-85, which targets
+     [type="button"] and sets background-color: transparent at the same specificity) without
+     needing !important. */
+  .the-method__options .the-method__option {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -438,7 +442,7 @@
   }
 
   /* Selection changes only the border — background is always the same form-input color, never tinted */
-  .the-method__option[aria-checked="true"] {
+  .the-method__options .the-method__option[aria-checked="true"] {
     border-color: var(--input-border-color, rgb(var(--text-color) / 0.3));
     background: rgb(var(--input-background, transparent));
   }
