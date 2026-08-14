@@ -77,9 +77,9 @@ the merchant reads the email and adds a matching Review block here.
               </div>
             </div>
 
-            <div class="reviews__sort">
+            <div class="reviews__sort button button--outline">
               <label class="sr-only" for="reviews-sort-{{ section.id }}">Sort reviews</label>
-              <div class="reviews__sort-control button button--outline">
+              <div class="button__content">
                 <select id="reviews-sort-{{ section.id }}" class="select" data-reviews-sort>
                   <option value="recent">Most Recent</option>
                   <option value="rating_desc">Highest Rating</option>
@@ -366,19 +366,28 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
     display: none;
   }
 
-  #shopify-section-{{ section.id }} .reviews__sort-control {
-    align-items: center;
-    gap: .5rem;
-    padding: .6rem 1.25rem;
-    border: 1px solid rgb(var(--border-color));
-    border-radius: var(--rounded-full);
-    display: flex;
+  {%- comment -%}
+  .reviews__sort only resets the .select/.icon's own boxed-input styling (border/background/height,
+  and the icon's absolute positioning, both meant for a standalone input field) - the actual height,
+  padding, border and border-radius all come from the .button/.button--outline/.button__content classes
+  on the element itself, same as the Filters button, so both controls inherit the exact same global
+  button height and border instead of custom values.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews__sort .button__content {
+    column-gap: .5rem;
   }
 
-  #shopify-section-{{ section.id }} .reviews__sort-control .select {
+  #shopify-section-{{ section.id }} .reviews__sort .select {
+    width: auto;
+    height: auto;
     border: none;
     padding: 0;
     background: none;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__sort .select ~ svg {
+    position: static;
+    inset: auto;
   }
 
   #shopify-section-{{ section.id }} .reviews__count {
