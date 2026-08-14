@@ -10,21 +10,25 @@
     <div class="the-method" data-the-method data-section-id="{{ section.id }}">
 
       <div class="the-method__meta">
-        <button type="button" class="link subheading the-method__back" data-the-method-back hidden>
-          {%- render 'icon' with 'back-arrow', width: 16 -%}
-          <span>{{ section.settings.back_button_text }}</span>
+        <button type="button" class="circle-button the-method__back" data-the-method-back hidden>
+          <span class="sr-only">{{ section.settings.back_button_text }}</span>
+          {%- render 'icon' with 'back-arrow', width: 14, direction_aware: true -%}
         </button>
 
         <p class="the-method__progress" data-the-method-progress hidden aria-hidden="true">
           <span data-the-method-progress-current>01</span> / <span data-the-method-progress-total>0{{ total_steps }}</span>
         </p>
 
-        <button type="button" class="link subheading the-method__restart" data-the-method-restart hidden>
-          {{ section.settings.restart_button_text }}
+        <button type="button" class="circle-button the-method__restart" data-the-method-restart hidden>
+          <span class="sr-only">{{ section.settings.restart_button_text }}</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 12a8 8 0 1 1 2.5 5.8"/>
+            <path d="M4 17v-5h5"/>
+          </svg>
         </button>
       </div>
 
-      <div class="the-method__panels min-h-fill" data-the-method-panels>
+      <div class="the-method__panels" data-the-method-panels>
 
         <div class="the-method__panel the-method__panel--intro justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="intro" tabindex="-1">
           {%- if section.settings.heading != blank -%}
@@ -184,47 +188,24 @@
           </div>
         </div>
 
-        {%- comment -%} STEP 5 — Intensidad (stacked 2-card scale, connecting line) {%- endcomment -%}
+        {%- comment -%} STEP 5 — Formato (bigger editorial cards + icons) {%- endcomment -%}
         <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-5" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-5" hidden>
           <h3 id="the-method-q-{{ section.id }}-5" class="the-method__question">{{ section.settings.step_5_question }}</h3>
 
-          <div class="the-method__options the-method__options--scale" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-5">
-            <div class="the-method__scale">
-              <button type="button" class="the-method__option the-method__option--scale-end" role="radio" aria-checked="false" data-the-method-option data-step="5" data-key="refinar">
-                <span class="the-method__option-label">{{ section.settings.step_5_option_1 }}</span>
-                <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
-              </button>
-              <span class="the-method__scale-line" aria-hidden="true"></span>
-              <button type="button" class="the-method__option the-method__option--scale-end" role="radio" aria-checked="false" data-the-method-option data-step="5" data-key="renovar">
-                <span class="the-method__option-label">{{ section.settings.step_5_option_2 }}</span>
-                <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
-              </button>
-            </div>
-
-            <button type="button" class="the-method__scale-unsure link subheading" role="radio" aria-checked="false" data-the-method-option data-step="5" data-key="no_seguro_5">
-              {{ section.settings.step_5_option_3 }}
-            </button>
-          </div>
-        </div>
-
-        {%- comment -%} STEP 6 — Formato (bigger editorial cards + icons) {%- endcomment -%}
-        <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-6" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-6" hidden>
-          <h3 id="the-method-q-{{ section.id }}-6" class="the-method__question">{{ section.settings.step_6_question }}</h3>
-
-          <div class="the-method__options the-method__options--editorial" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-6">
-            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="6" data-key="un_metodo">
+          <div class="the-method__options the-method__options--editorial" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-5">
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="5" data-key="un_metodo">
               <span class="the-method__option-main">
                 <span class="the-method__option-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                     <circle cx="12" cy="12" r="7"/>
                   </svg>
                 </span>
-                <span class="the-method__option-label">{{ section.settings.step_6_option_1 }}</span>
+                <span class="the-method__option-label">{{ section.settings.step_5_option_1 }}</span>
               </span>
               <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 18 -%}</span>
             </button>
 
-            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="6" data-key="mismo_metodo">
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="5" data-key="mismo_metodo">
               <span class="the-method__option-main">
                 <span class="the-method__option-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
@@ -232,12 +213,12 @@
                     <circle cx="16.5" cy="12" r="4.5"/>
                   </svg>
                 </span>
-                <span class="the-method__option-label">{{ section.settings.step_6_option_2 }}</span>
+                <span class="the-method__option-label">{{ section.settings.step_5_option_2 }}</span>
               </span>
               <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 18 -%}</span>
             </button>
 
-            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="6" data-key="combinar">
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="5" data-key="combinar">
               <span class="the-method__option-main">
                 <span class="the-method__option-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
@@ -245,12 +226,12 @@
                     <circle cx="14.5" cy="12" r="6"/>
                   </svg>
                 </span>
-                <span class="the-method__option-label">{{ section.settings.step_6_option_3 }}</span>
+                <span class="the-method__option-label">{{ section.settings.step_5_option_3 }}</span>
               </span>
               <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 18 -%}</span>
             </button>
 
-            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="6" data-key="no_seguro_6">
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="5" data-key="no_seguro_5">
               <span class="the-method__option-main">
                 <span class="the-method__option-icon">
                   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -259,7 +240,7 @@
                     <circle cx="18" cy="12" r="1.5"/>
                   </svg>
                 </span>
-                <span class="the-method__option-label">{{ section.settings.step_6_option_4 }}</span>
+                <span class="the-method__option-label">{{ section.settings.step_5_option_4 }}</span>
               </span>
               <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 18 -%}</span>
             </button>
@@ -371,30 +352,20 @@
     color: rgb(var(--text-color) / 0.6);
   }
 
-  .the-method__back,
-  .the-method__restart {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    appearance: none;
-    background: none;
-    border: none;
-    padding: 0;
-    font: inherit;
-    cursor: pointer;
+  /* Back/restart reuse the theme's own circular step-control button (.circle-button) as-is —
+     size, colors, hover and disabled states all come from that shared system, not from THE METHOD. */
+  .the-method__back[hidden],
+  .the-method__restart[hidden] {
+    display: none;
   }
 
-  .the-method__back .icon,
-  .the-method__restart .icon {
-    width: 1rem;
-    height: 1rem;
+  .the-method__restart svg {
+    width: 0.875rem;
+    height: 0.875rem;
   }
 
   .the-method__panels {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
   }
 
   .the-method__panel {
@@ -449,16 +420,12 @@
     text-align: start;
     cursor: pointer;
     background: rgb(var(--input-background, transparent));
-    color: rgb(var(--input-text-color, var(--text-color)));
-    border: 1px solid var(--input-border-color, rgb(var(--input-text-color, var(--text-color)) / 0.3));
+    color: rgb(var(--text-color));
+    border: 1px solid transparent;
     border-radius: var(--input-border-radius);
     padding: var(--input-padding-block) var(--input-padding-inline);
     font: inherit;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
-  }
-
-  .the-method__option:hover {
-    border-color: rgb(var(--input-text-color, var(--text-color)));
+    transition: border-color 0.2s ease, transform 0.15s ease;
   }
 
   .the-method__option:active {
@@ -470,10 +437,9 @@
     outline-offset: 2px;
   }
 
-  /* Selection is border/ring only — background always stays the scheme's own input color, never tinted */
+  /* Selection changes only the border — background is always the same form-input color, never tinted */
   .the-method__option[aria-checked="true"] {
-    border-color: rgb(var(--accent));
-    box-shadow: 0 0 0 1px rgb(var(--accent));
+    border-color: var(--input-border-color, rgb(var(--text-color) / 0.3));
     background: rgb(var(--input-background, transparent));
   }
 
@@ -487,17 +453,12 @@
   .the-method__option-icon {
     display: inline-flex;
     flex-shrink: 0;
-    color: rgb(var(--input-text-color, var(--text-color)) / 0.65);
-    transition: color 0.2s ease;
+    color: rgb(var(--text-color));
   }
 
   .the-method__option-icon svg {
     width: 1.5rem;
     height: 1.5rem;
-  }
-
-  .the-method__option[aria-checked="true"] .the-method__option-icon {
-    color: rgb(var(--accent));
   }
 
   .the-method__option-check {
@@ -561,37 +522,7 @@
     box-shadow: 0 0 0 2px rgb(var(--background)), 0 0 0 4px rgb(var(--accent));
   }
 
-  /* Step 5 — intensidad: two-card scale with a connecting line */
-  .the-method__options--scale {
-    display: grid;
-    gap: 1rem;
-    justify-items: center;
-  }
-
-  .the-method__scale {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    width: 100%;
-  }
-
-  .the-method__scale-line {
-    width: 1px;
-    height: 1.5rem;
-    background: linear-gradient(to bottom, var(--input-border-color, rgb(var(--border-color))), rgb(var(--accent)), var(--input-border-color, rgb(var(--border-color))));
-  }
-
-  .the-method__scale-unsure {
-    appearance: none;
-    background: none;
-    border: none;
-    padding: 0;
-    font: inherit;
-    cursor: pointer;
-  }
-
-  /* Step 6 — formato: bigger editorial cards (reuses the card system at a larger scale, still vertical) */
+  /* Step 5 — formato: bigger editorial cards (reuses the card system at a larger scale, still vertical) */
   .the-method__options--editorial {
     gap: 1rem;
   }
@@ -725,17 +656,27 @@
   var STEPS = ['intro', 'step-1', 'step-2', 'step-3', 'step-4', 'step-5', 'step-6', 'result'];
   var DURATION = 150;
 
+  var HEIGHT_DURATION = 250;
+
   var reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  function animate(el, keyframes) {
+  function animate(el, keyframes, duration, easing) {
     if (!el || !el.animate || reducedMotionQuery.matches) {
       return Promise.resolve();
     }
     try {
-      return el.animate(keyframes, { duration: DURATION, easing: 'ease' }).finished.catch(function () {});
+      return el.animate(keyframes, { duration: duration || DURATION, easing: easing || 'ease' }).finished.catch(function () {});
     } catch (e) {
       return Promise.resolve();
     }
+  }
+
+  /* Mirrors the theme's own accordion height-transition (assets/theme.js AccordionDisclosure):
+     measure the current height, lock it + clip overflow, swap content, then tween to the new
+     natural height (via scrollHeight, since the box is currently height-locked) before releasing
+     the inline height so the container stays naturally responsive again. */
+  function animateHeight(panelsEl, fromHeight, toHeight) {
+    return animate(panelsEl, [{ height: fromHeight + 'px' }, { height: toHeight + 'px' }], HEIGHT_DURATION, 'ease-in-out');
   }
 
   function computeScores(answers) {
