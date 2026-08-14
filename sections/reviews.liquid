@@ -71,26 +71,26 @@ the merchant reads the email and adds a matching Review block here.
             </span>
           </div>
 
-          <p class="reviews__summary-label subheading">Average rating</p>
-          <p class="reviews__summary-count">Based on {{ review_count }} review{% if review_count != 1 %}s{% endif %}</p>
+          <p class="reviews__summary-label subheading">Calificación promedio</p>
+          <p class="reviews__summary-count">Basado en {{ review_count }} reseña{% if review_count != 1 %}s{% endif %}</p>
         </div>
 
         {%- if review_blocks.size > 0 -%}
           <div class="reviews__controls">
             <div class="reviews__sort button">
-              <label class="sr-only" for="reviews-sort-{{ section.id }}">Sort reviews</label>
+              <label class="sr-only" for="reviews-sort-{{ section.id }}">Ordenar reseñas</label>
               <div class="button__content">
                 <select id="reviews-sort-{{ section.id }}" class="select" data-reviews-sort>
-                  <option value="recent">Most Recent</option>
-                  <option value="rating_desc">Highest Rating</option>
-                  <option value="rating_asc">Lowest Rating</option>
+                  <option value="recent">Más recientes</option>
+                  <option value="rating_desc">Mejor calificación</option>
+                  <option value="rating_asc">Peor calificación</option>
                 </select>
                 {%- render 'icon' with 'chevron-down' -%}
               </div>
             </div>
           </div>
 
-          <p class="reviews__count">{{ review_blocks.size }} review{% if review_blocks.size != 1 %}s{% endif %}</p>
+          <p class="reviews__count">{{ review_blocks.size }} reseña{% if review_blocks.size != 1 %}s{% endif %}</p>
 
           <div class="reviews__list" data-reviews-list>
             {%- for block in review_blocks -%}
@@ -100,13 +100,16 @@ the merchant reads the email and adds a matching Review block here.
                     <strong class="review-card__name">{{ block.settings.reviewer_name }}</strong>
 
                     {%- if block.settings.verified_buyer -%}
-                      <span class="review-card__verified">Verified Buyer</span>
+                      <span class="review-card__verified">
+                        {%- render 'icon' with 'picto-checked', width: 13, stroke_width: 1.5 -%}
+                        Comprador verificado
+                      </span>
                     {%- endif -%}
                   </div>
 
                   {%- if block.settings.product_name != blank -%}
                     <div class="review-card__product">
-                      <p class="review-card__product-label subheading">Reviewing</p>
+                      <p class="review-card__product-label subheading">Producto</p>
                       {%- if block.settings.product_url != blank -%}
                         <a href="{{ block.settings.product_url }}" class="link">{{ block.settings.product_name }}</a>
                       {%- else -%}
@@ -205,8 +208,8 @@ the merchant reads the email and adds a matching Review block here.
                   {%- endif -%}
 
                   <div class="review-card__helpful" data-reviews-helpful>
-                    <span data-reviews-helpful-label>Was this helpful?</span>
-                    <button type="button" data-reviews-helpful-button="yes">Yes</button>
+                    <span data-reviews-helpful-label>¿Te resultó útil?</span>
+                    <button type="button" data-reviews-helpful-button="yes">Sí</button>
                     <button type="button" data-reviews-helpful-button="no">No</button>
                   </div>
                 </div>
@@ -230,7 +233,7 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
 {%- capture review_form_content -%}
   {%- form 'contact', class: 'form' -%}
     {%- if form.posted_successfully? -%}
-      {%- render 'banner', status: 'success', content: 'Thanks! Your review has been submitted and will appear here once approved.' -%}
+      {%- render 'banner', status: 'success', content: '¡Gracias! Tu reseña fue enviada y aparecerá aquí una vez aprobada.' -%}
     {%- endif -%}
 
     {%- if form.errors -%}
@@ -242,29 +245,29 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
 
     <div class="fieldset">
       <div class="fieldset-row">
-        {%- render 'input', type: 'text', name: 'contact[name]', label: 'Name', required: true, autocomplete: 'name' -%}
-        {%- render 'input', type: 'email', name: 'contact[email]', label: 'Email', required: true, autocomplete: 'email' -%}
+        {%- render 'input', type: 'text', name: 'contact[name]', label: 'Nombre', required: true, autocomplete: 'name' -%}
+        {%- render 'input', type: 'email', name: 'contact[email]', label: 'Correo electrónico', required: true, autocomplete: 'email' -%}
       </div>
 
       <div class="review-form__rating">
-        <span class="review-form__rating-label">Rating</span>
+        <span class="review-form__rating-label">Calificación</span>
         <div class="review-form__rating-options">
           {%- for i in (5..1) -%}
-            {%- capture rating_option_label -%}{{ i }} star{% if i != 1 %}s{% endif %}{%- endcapture -%}
+            {%- capture rating_option_label -%}{{ i }} estrella{% if i != 1 %}s{% endif %}{%- endcapture -%}
             {%- render 'checkbox', type: 'radio', name: 'contact[Rating]', value: i, label: rating_option_label, required: true, id_prefix: section.id -%}
           {%- endfor -%}
         </div>
       </div>
 
-      {%- render 'input', type: 'text', name: 'contact[Review title]', label: 'Review title', required: true -%}
-      {%- render 'input', name: 'contact[body]', label: 'Review', multiline: 5, required: true -%}
+      {%- render 'input', type: 'text', name: 'contact[Review title]', label: 'Título de la reseña', required: true -%}
+      {%- render 'input', name: 'contact[body]', label: 'Reseña', multiline: 5, required: true -%}
     </div>
 
     <div>
-      {%- render 'button', content: 'Submit review', type: 'submit' -%}
+      {%- render 'button', content: 'Enviar reseña', type: 'submit' -%}
     </div>
 
-    <p class="review-form__disclaimer">Reviews are moderated and may take a few days to appear.</p>
+    <p class="review-form__disclaimer">Las reseñas son moderadas y pueden tardar unos días en aparecer.</p>
   {%- endform -%}
 {%- endcapture -%}
 
@@ -406,6 +409,13 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
   #shopify-section-{{ section.id }} .review-card__verified {
     color: rgb(var(--text-color) / .6);
     font-size: .875em;
+    align-items: center;
+    column-gap: .3em;
+    display: inline-flex;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__verified svg {
+    flex-shrink: 0;
   }
 
   #shopify-section-{{ section.id }} .review-card__product-label {
@@ -580,7 +590,7 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
         button.addEventListener('click', function () {
           buttons.forEach(function (otherButton) { otherButton.setAttribute('aria-pressed', 'false'); });
           button.setAttribute('aria-pressed', 'true');
-          if (label) label.textContent = 'Thanks for your feedback!';
+          if (label) label.textContent = '¡Gracias por tu opinión!';
         });
       });
     });
