@@ -70,8 +70,6 @@ to the first 5 of the newly sorted order.
             <p class="reviews__summary-count">Basado en {{ review_count }} reseña{% if review_count != 1 %}s{% endif %}</p>
           </div>
 
-          <div class="reviews__summary-divider" aria-hidden="true"></div>
-
           <div class="reviews__summary-write">
             {%- render 'button', content: 'Escribir una reseña', style: 'outline', aria_controls: write_review_modal_id -%}
           </div>
@@ -83,8 +81,8 @@ to the first 5 of the newly sorted order.
               <label class="sr-only" for="reviews-sort-{{ section.id }}">Ordenar reseñas</label>
               <div class="button__content">
                 <select id="reviews-sort-{{ section.id }}" class="select" data-reviews-sort>
+                  <option value="rating_desc" selected>Mejor calificación</option>
                   <option value="recent">Más recientes</option>
-                  <option value="rating_desc">Mejor calificación</option>
                   <option value="rating_asc">Peor calificación</option>
                 </select>
                 {%- render 'icon' with 'chevron-down' -%}
@@ -229,7 +227,7 @@ to the first 5 of the newly sorted order.
           </div>
         {%- endif -%}
 
-        {%- if review_blocks.size > 5 -%}
+        {%- if review_blocks.size > 3 -%}
           <div class="reviews__load-more">
             {%- render 'button', content: 'Ver más', type: 'button', style: 'outline', class: 'reviews__load-more-button' -%}
           </div>
@@ -333,20 +331,8 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     display: flex;
   }
 
-  #shopify-section-{{ section.id }} .reviews__summary-divider {
-    width: 1px;
-    align-self: stretch;
-    background: rgb(var(--border-color));
-  }
-
   #shopify-section-{{ section.id }} .reviews__summary-write {
     flex-shrink: 0;
-  }
-
-  @media screen and (max-width: 749px) {
-    #shopify-section-{{ section.id }} .reviews__summary-divider {
-      display: none;
-    }
   }
 
   #shopify-section-{{ section.id }} .reviews__summary {
@@ -408,17 +394,30 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     background: transparent;
   }
 
+  {%- comment -%}
+  position: relative here (not on .select) is the actual fix: .select ~ svg's own position: absolute
+  (theme.css) was resolving against .reviews__sort - the outer button, which has position: relative from
+  the base .button class - using theme.css's default inset-inline-end formula (meant for a plain input).
+  But .select only fills .button__content's own content box (100% width, inset from .reviews__sort's edge
+  by .button__content's own horizontal padding), so the icon landed outside .select's actual clickable
+  box: visually near the button, but a click there missed the select entirely. Making .button__content the
+  positioned ancestor and pinning the icon's inset-inline-end to 0 (its own padding edge) aligns the icon
+  exactly with .select's real right edge instead.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__sort .button__content {
+    position: relative;
     column-gap: .5rem;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__sort .select ~ svg {
+    inset-inline-end: 0;
   }
 
   {%- comment -%}
   The .select itself stays the real clickable/focusable control (native <select>, full width of
   .button__content) with its own text hidden behind transparent styling - the chevron icon is layered on
   top of it via .select ~ svg's own existing position: absolute + pointer-events: none (theme.css), which
-  is what lets a click anywhere on the icon fall through to the select underneath. An earlier version of
-  this rule reset the icon to position: static, which moved it outside the select's own clickable area and
-  broke the dropdown - removed here, not reintroduced.
+  is what lets a click anywhere on the icon fall through to the select underneath.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__sort .select {
     width: 100%;
@@ -681,11 +680,12 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     var cards = list ? Array.prototype.slice.call(list.querySelectorAll('.review-card')) : [];
     var sortSelect = root.querySelector('[data-reviews-sort]');
     var loadMoreButton = root.querySelector('.reviews__load-more-button');
+    var initialCount = 3;
     var pageSize = 5;
-    var visibleCount = pageSize;
+    var visibleCount = initialCount;
 
     {%- comment -%}
-    Fades + slides in only the cards a "Ver más" click actually newly reveals (not the initial 5, not a
+    Fades + slides in only the cards a "Ver más" click actually newly reveals (not the initial batch, not a
     sort change - those would look odd re-animating on every interaction). The card is unhidden first, then
     the "revealing" class (opacity/translateY starting state) is added and forced to reflow before removing
     it next frame, so the browser has a real starting frame to transition away from instead of jumping.
@@ -702,7 +702,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     {%- comment -%}
     Re-queries the list on every call instead of reusing the "cards" array above, so it always reflects
     whatever order sorting last put the cards in - "cards" itself is never reassigned, only the live DOM
-    order is (via appendChild in the sort handler below).
+    order is (via appendChild in applySort below).
     {%- endcomment -%}
     function updateVisibility(animateReveal) {
       var currentCards = list ? Array.prototype.slice.call(list.querySelectorAll('.review-card')) : [];
@@ -727,6 +727,33 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       }
     }
 
+    {%- comment -%}
+    Shared by the "change" listener below and the initial call further down, so the page-load order (best
+    rating first, by default) is produced by the exact same logic a manual sort change uses - not a
+    separate one-off sort.
+    {%- endcomment -%}
+    function applySort(value, resetVisibleCount) {
+      var sortedCards = cards.slice();
+
+      if (value === 'rating_desc') {
+        sortedCards.sort(function (a, b) { return b.getAttribute('data-rating') - a.getAttribute('data-rating'); });
+      } else if (value === 'rating_asc') {
+        sortedCards.sort(function (a, b) { return a.getAttribute('data-rating') - b.getAttribute('data-rating'); });
+      } else {
+        sortedCards.sort(function (a, b) { return a.getAttribute('data-index') - b.getAttribute('data-index'); });
+      }
+
+      sortedCards.forEach(function (card) { list.appendChild(card); });
+
+      if (resetVisibleCount) {
+        // Sorting re-applies before the reveal count, same as a fresh page load: back to the first 3 of
+        // the newly sorted order, not whatever count "Ver más" had already reached.
+        visibleCount = initialCount;
+      }
+
+      updateVisibility();
+    }
+
     if (loadMoreButton) {
       loadMoreButton.addEventListener('click', function () {
         var totalCards = list ? list.querySelectorAll('.review-card').length : 0;
@@ -737,26 +764,13 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
 
     if (sortSelect) {
       sortSelect.addEventListener('change', function () {
-        var sortedCards = cards.slice();
-
-        if (sortSelect.value === 'rating_desc') {
-          sortedCards.sort(function (a, b) { return b.getAttribute('data-rating') - a.getAttribute('data-rating'); });
-        } else if (sortSelect.value === 'rating_asc') {
-          sortedCards.sort(function (a, b) { return a.getAttribute('data-rating') - b.getAttribute('data-rating'); });
-        } else {
-          sortedCards.sort(function (a, b) { return a.getAttribute('data-index') - b.getAttribute('data-index'); });
-        }
-
-        sortedCards.forEach(function (card) { list.appendChild(card); });
-
-        // Sorting re-applies before the reveal count, same as a fresh page load: back to the first 5 of
-        // the newly sorted order, not whatever count "Ver más" had already reached.
-        visibleCount = pageSize;
-        updateVisibility();
+        applySort(sortSelect.value, true);
       });
     }
 
-    updateVisibility();
+    // Best-rated first on load, same as selecting "Mejor calificación" manually - reuses applySort instead
+    // of relying on the cards' own render order matching the select's default value.
+    applySort(sortSelect ? sortSelect.value : 'rating_desc', false);
 
     root.querySelectorAll('[data-reviews-helpful]').forEach(function (group) {
       var label = group.querySelector('[data-reviews-helpful-label]');
