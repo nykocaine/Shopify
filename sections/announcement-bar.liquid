@@ -47,6 +47,17 @@
       #shopify-section-{{ section.id }} carousel-next-button .tap-area {
         color: var(--nav-control-icon-color, currentColor);
       }
+
+      {%- if section.settings.display_mode != 'marquee' -%}
+        {%- comment -%}
+        Same duration/easing as the theme's own height animation (AccordionDisclosure in theme.js: 0.25s,
+        easeInOut) - the script below sets an explicit height on this element so it can transition instead
+        of jumping between however tall each message naturally is.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} .announcement-bar__message-list {
+          transition: height .25s ease-in-out;
+        }
+      {%- endif -%}
     </style>
 
     <height-observer variable="announcement-bar">
@@ -95,6 +106,66 @@
               </carousel-next-button>
             {%- endif -%}
           </announcement-bar>
+
+          {%- comment -%}
+          .announcement-bar__message-list (theme.css) stacks every message in the same CSS grid area so
+          the existing crossfade (EffectCarousel/AnnouncementBar in theme.js, via the vendor "animate"
+          helper) can fade the outgoing/incoming message in place. That stacking is why the container was
+          keeping the tallest message's height at all times: visibility: hidden (not display: none, which
+          would break the crossfade) still counts toward the grid track's size, even for messages that
+          aren't shown.
+
+          Rather than touching that shared stacking/crossfade CSS or theme.js's bundled AnnouncementBar
+          class, this measures the actually-selected message's own natural height and applies it directly
+          as the grid's height, transitioning smoothly between values - same duration/easing the theme's
+          own height animations already use (AccordionDisclosure in theme.js: duration 0.25, easeInOut).
+          Only the container's height animates; the message text itself is untouched here, so the
+          existing crossfade (or its absence, if the merchant switches messages instantly) still fully
+          owns how the text itself appears/disappears.
+          {%- endcomment -%}
+          <script>
+            (function () {
+              var list = document.querySelector('#shopify-section-{{ section.id }} .announcement-bar__message-list');
+              var carousel = document.getElementById('{{ carousel_id }}');
+              if (!list) return;
+
+              function selectedHeight() {
+                var selected = list.querySelector(':scope > .is-selected');
+                return selected ? selected.offsetHeight : list.offsetHeight;
+              }
+
+              function setHeight(px, animated) {
+                if (!animated) list.style.transition = 'none';
+                list.style.height = px + 'px';
+                if (!animated) {
+                  void list.offsetHeight; // force reflow so the transition: none above actually applies
+                  list.style.transition = '';
+                }
+              }
+
+              // Starts from the real selected message's height instead of the grid's own
+              // tallest-of-all-messages height.
+              setHeight(selectedHeight(), false);
+
+              if (carousel) {
+                carousel.addEventListener('carousel:change', function (event) {
+                  if (event.detail && event.detail.cell) {
+                    setHeight(event.detail.cell.offsetHeight, true);
+                  }
+                });
+              }
+
+              var resizeTimeout;
+              window.addEventListener('resize', function () {
+                // Debounced: the same message can reflow to a different number of lines as the viewport
+                // width changes, so the height needs recalculating - but not on every single resize tick.
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(function () {
+                  setHeight(selectedHeight(), false);
+                }, 150);
+              });
+            })();
+          </script>
         {%- endif -%}
       </div>
     </height-observer>
