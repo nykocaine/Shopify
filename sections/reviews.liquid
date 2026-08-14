@@ -1,0 +1,823 @@
+{%- doc -%}
+A reviews section modeled visually on the Okendo reviews widget (rating summary, filter/sort controls,
+review cards with reviewer/product/attribute info, an attribute bar, and helpful voting), but built
+natively with theme blocks instead of depending on the Okendo app.
+
+Reviews are not stored anywhere outside the theme: each review shown on the storefront is a "Review"
+block that the merchant adds/edits/reorders from the theme editor, exactly like the FAQ block. The "Write
+a Review" button opens a native Shopify contact form (same mechanism as the Contact section) which emails
+the submission to the shop's customer email - nothing is published automatically. To "approve" a review,
+the merchant reads the email and adds a matching Review block here.
+{%- enddoc -%}
+
+{%- liquid
+  assign review_blocks = section.blocks | where: 'type', 'review'
+  assign review_count = review_blocks.size
+
+  assign rating_sum = 0
+  for review_block in review_blocks
+    assign rating_sum = rating_sum | plus: review_block.settings.rating
+  endfor
+
+  if review_count > 0
+    assign average_rating = rating_sum | times: 1.0 | divided_by: review_count | round: 1
+  else
+    assign average_rating = 0
+  endif
+
+  assign write_review_modal_id = 'write-review-' | append: section.id
+-%}
+
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+  <div class="section-spacing">
+    <div class="container">
+      <div id="reviews-{{ section.id }}" class="reviews section-stack">
+        {%- if section.settings.title != blank -%}
+          <div class="prose">
+            {%- render 'heading', content: section.settings.title, style: 'h3', html_tag: 'h2' -%}
+          </div>
+        {%- endif -%}
+
+        <div class="reviews__summary">
+          <div class="reviews__summary-rating">
+            <span class="reviews__summary-average">{{ average_rating }}</span>
+
+            <span class="reviews__stars" role="img" aria-label="{{ 'general.rating.info' | t: rating_value: average_rating, rating_max: 5 }}">
+              {%- for i in (1..5) -%}
+                {%- liquid
+                  assign half_threshold = i | minus: 0.5
+
+                  if review_count == 0
+                    render 'icon' with 'star-rating-empty'
+                  elsif average_rating >= i
+                    render 'icon' with 'star-rating'
+                  elsif average_rating >= half_threshold
+                    render 'icon' with 'star-rating-half'
+                  else
+                    render 'icon' with 'star-rating-empty'
+                  endif
+                -%}
+              {%- endfor -%}
+            </span>
+          </div>
+
+          <p class="reviews__summary-label subheading">Average rating</p>
+          <p class="reviews__summary-count">Based on {{ review_count }} review{% if review_count != 1 %}s{% endif %}</p>
+        </div>
+
+        {%- if review_count > 0 -%}
+          <div class="reviews__controls">
+            <div class="reviews__filter">
+              {%- render 'button', content: 'Filters', style: 'outline', size: 'sm', type: 'button', class: 'reviews__filter-toggle', icon: 'chevron-down' -%}
+
+              <div class="reviews__filter-panel" data-reviews-filter-panel hidden>
+                {%- for i in (5..1) -%}
+                  {%- capture star_label -%}{{ i }} star{% if i != 1 %}s{% endif %}{%- endcapture -%}
+                  {%- render 'checkbox', name: 'review_star_filter', value: i, label: star_label, id_prefix: section.id -%}
+                {%- endfor -%}
+              </div>
+            </div>
+
+            <div class="reviews__sort">
+              <label class="sr-only" for="reviews-sort-{{ section.id }}">Sort reviews</label>
+              <div class="reviews__sort-control">
+                <select id="reviews-sort-{{ section.id }}" class="select" data-reviews-sort>
+                  <option value="recent">Most Recent</option>
+                  <option value="rating_desc">Highest Rating</option>
+                  <option value="rating_asc">Lowest Rating</option>
+                </select>
+                {%- render 'icon' with 'chevron-down' -%}
+              </div>
+            </div>
+          </div>
+
+          <p class="reviews__count" data-reviews-visible-count>{{ review_count }} review{% if review_count != 1 %}s{% endif %}</p>
+
+          <div class="reviews__list" data-reviews-list>
+            {%- for block in review_blocks -%}
+              <div class="review-card" data-rating="{{ block.settings.rating }}" data-index="{{ forloop.index }}" {{ block.shopify_attributes }}>
+                <div class="review-card__side">
+                  <div class="review-card__reviewer">
+                    <strong class="review-card__name">{{ block.settings.reviewer_name }}</strong>
+
+                    {%- if block.settings.verified_buyer -%}
+                      <span class="review-card__verified">Verified Buyer</span>
+                    {%- endif -%}
+                  </div>
+
+                  {%- if block.settings.product_name != blank -%}
+                    <div class="review-card__product">
+                      <p class="review-card__product-label subheading">Reviewing</p>
+                      {%- if block.settings.product_url != blank -%}
+                        <a href="{{ block.settings.product_url }}" class="link">{{ block.settings.product_name }}</a>
+                      {%- else -%}
+                        <span>{{ block.settings.product_name }}</span>
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+
+                  {%- liquid
+                    assign has_attributes = false
+
+                    for i in (1..3)
+                      capture attr_label_key
+                        echo 'attribute_'
+                        echo i
+                        echo '_label'
+                      endcapture
+
+                      if block.settings[attr_label_key] != blank
+                        assign has_attributes = true
+                      endif
+                    endfor
+                  -%}
+
+                  {%- if has_attributes -%}
+                    <div class="review-card__attributes">
+                      {%- for i in (1..3) -%}
+                        {%- liquid
+                          capture attr_label_key
+                            echo 'attribute_'
+                            echo i
+                            echo '_label'
+                          endcapture
+
+                          capture attr_value_key
+                            echo 'attribute_'
+                            echo i
+                            echo '_value'
+                          endcapture
+
+                          assign attr_label = block.settings[attr_label_key]
+                          assign attr_value = block.settings[attr_value_key]
+                        -%}
+
+                        {%- if attr_label != blank -%}
+                          <div class="review-card__attribute">
+                            <strong>{{ attr_label }}</strong>
+                            <span>{{ attr_value }}</span>
+                          </div>
+                        {%- endif -%}
+                      {%- endfor -%}
+                    </div>
+                  {%- endif -%}
+                </div>
+
+                <div class="review-card__main">
+                  <div class="review-card__top">
+                    <span class="review-card__stars" role="img" aria-label="{{ 'general.rating.info' | t: rating_value: block.settings.rating, rating_max: 5 }}">
+                      {%- for i in (1..5) -%}
+                        {%- if block.settings.rating >= i -%}
+                          {%- render 'icon' with 'star-rating' -%}
+                        {%- else -%}
+                          {%- render 'icon' with 'star-rating-empty' -%}
+                        {%- endif -%}
+                      {%- endfor -%}
+                    </span>
+
+                    {%- if block.settings.date_label != blank -%}
+                      <span class="review-card__date">{{ block.settings.date_label }}</span>
+                    {%- endif -%}
+                  </div>
+
+                  {%- if block.settings.title != blank -%}
+                    <p class="review-card__title">{{ block.settings.title }}</p>
+                  {%- endif -%}
+
+                  {%- if block.settings.body != blank -%}
+                    <div class="review-card__body">
+                      {{- block.settings.body -}}
+                    </div>
+                  {%- endif -%}
+
+                  {%- if block.settings.bar_question != blank -%}
+                    <div class="review-card__bar">
+                      <p class="review-card__bar-question">{{ block.settings.bar_question }}</p>
+
+                      <div class="review-card__bar-track">
+                        <div class="review-card__bar-fill" style="width: {{ block.settings.bar_value | times: 1.0 | divided_by: 5 | times: 100 }}%;"></div>
+                      </div>
+
+                      <div class="review-card__bar-labels">
+                        <span>{{ block.settings.bar_min_label }}</span>
+                        <span>{{ block.settings.bar_max_label }}</span>
+                      </div>
+                    </div>
+                  {%- endif -%}
+
+                  <div class="review-card__helpful" data-reviews-helpful>
+                    <span data-reviews-helpful-label>Was this helpful?</span>
+                    <button type="button" data-reviews-helpful-button="yes">Yes</button>
+                    <button type="button" data-reviews-helpful-button="no">No</button>
+                  </div>
+                </div>
+              </div>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
+        <div class="reviews__write">
+          {%- render 'button', content: section.settings.write_review_button_text, aria_controls: write_review_modal_id -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{%- comment -%}
+The form block has to run (and "form" become available) before the has_form_feedback check below, so
+its output is captured here and echoed inside the modal afterwards - not evaluated directly inside the
+<x-modal> tag, whose opening tag (with the "open" attribute) needs that same check to happen first.
+{%- endcomment -%}
+{%- capture review_form_content -%}
+  {%- form 'contact', class: 'form' -%}
+    {%- if form.posted_successfully? -%}
+      {%- render 'banner', status: 'success', content: 'Thanks! Your review has been submitted and will appear here once approved.' -%}
+    {%- endif -%}
+
+    {%- if form.errors -%}
+      {%- capture error_content -%}{{ form.errors.translated_fields[form.errors.first] | capitalize }} {{ form.errors.messages[form.errors.first] }}{%- endcapture -%}
+      {%- render 'banner', status: 'error', content: error_content -%}
+    {%- endif -%}
+
+    <input type="hidden" name="contact[Submission type]" value="Review">
+
+    <div class="fieldset">
+      <div class="fieldset-row">
+        {%- render 'input', type: 'text', name: 'contact[name]', label: 'Name', required: true, autocomplete: 'name' -%}
+        {%- render 'input', type: 'email', name: 'contact[email]', label: 'Email', required: true, autocomplete: 'email' -%}
+      </div>
+
+      <div class="review-form__rating">
+        <span class="review-form__rating-label">Rating</span>
+        <div class="review-form__rating-options">
+          {%- for i in (5..1) -%}
+            {%- capture rating_option_label -%}{{ i }} star{% if i != 1 %}s{% endif %}{%- endcapture -%}
+            {%- render 'checkbox', type: 'radio', name: 'contact[Rating]', value: i, label: rating_option_label, required: true, id_prefix: section.id -%}
+          {%- endfor -%}
+        </div>
+      </div>
+
+      {%- render 'input', type: 'text', name: 'contact[Review title]', label: 'Review title', required: true -%}
+      {%- render 'input', name: 'contact[body]', label: 'Review', multiline: 5, required: true -%}
+    </div>
+
+    <div>
+      {%- render 'button', content: 'Submit review', type: 'submit' -%}
+    </div>
+
+    <p class="review-form__disclaimer">Reviews are moderated and may take a few days to appear.</p>
+  {%- endform -%}
+{%- endcapture -%}
+
+{%- liquid
+  assign has_form_feedback = false
+
+  if form.posted_successfully? or form.errors
+    assign has_form_feedback = true
+  endif
+-%}
+
+<x-modal id="{{ write_review_modal_id }}" append-to-body {% if has_form_feedback %}open{% endif %} class="modal color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
+  <div class="prose">
+    <p class="h5">{{ section.settings.write_review_button_text }}</p>
+  </div>
+
+  {{- review_form_content -}}
+</x-modal>
+
+<style>
+  #shopify-section-{{ section.id }} .reviews__summary {
+    text-align: center;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__summary-rating {
+    align-items: center;
+    justify-content: center;
+    column-gap: .75rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__summary-average {
+    font-size: var(--text-h2);
+    font-weight: 600;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__stars,
+  #shopify-section-{{ section.id }} .review-card__stars {
+    gap: .125rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__summary-label {
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-block-start: .5rem;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__summary-count {
+    color: rgb(var(--text-color) / .6);
+  }
+
+  #shopify-section-{{ section.id }} .reviews__controls {
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__filter {
+    position: relative;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__filter-panel {
+    z-index: 2;
+    min-width: 12rem;
+    padding: 1rem;
+    border: 1px solid rgb(var(--border-color));
+    border-radius: 1rem;
+    background: rgb(var(--background));
+    flex-direction: column;
+    gap: .5rem;
+    display: flex;
+    position: absolute;
+    inset-block-start: calc(100% + .5rem);
+    inset-inline-start: 0;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__filter-panel[hidden] {
+    display: none;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__sort-control {
+    align-items: center;
+    gap: .5rem;
+    padding: .6rem 1.25rem;
+    border: 1px solid rgb(var(--border-color));
+    border-radius: var(--rounded-full);
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__sort-control .select {
+    border: none;
+    padding: 0;
+    background: none;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__count {
+    color: rgb(var(--text-color) / .6);
+    border-block-end: 1px solid rgb(var(--border-color));
+    padding-block-end: 1.5rem;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #shopify-section-{{ section.id }} .review-card {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 2rem;
+    padding-block: 2rem;
+    border-block-end: 1px solid rgb(var(--border-color));
+    display: grid;
+  }
+
+  #shopify-section-{{ section.id }} .review-card:last-child {
+    border-block-end: none;
+  }
+
+  #shopify-section-{{ section.id }} .review-card[hidden] {
+    display: none;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__side {
+    flex-direction: column;
+    gap: 1.25rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__reviewer {
+    flex-direction: column;
+    gap: .375rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__verified {
+    color: rgb(var(--text-color) / .6);
+    font-size: .875em;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__product-label {
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-block-end: .25rem;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__attributes {
+    flex-direction: column;
+    gap: .75rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__attribute {
+    flex-direction: column;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__attribute span {
+    color: rgb(var(--text-color) / .8);
+  }
+
+  #shopify-section-{{ section.id }} .review-card__main {
+    flex-direction: column;
+    gap: 1rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__top {
+    justify-content: space-between;
+    align-items: center;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__date {
+    color: rgb(var(--text-color) / .6);
+    font-size: .875em;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__title {
+    font-weight: 600;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__bar {
+    max-width: 22rem;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__bar-question {
+    font-weight: 600;
+    margin-block-end: .75rem;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__bar-track {
+    height: 4px;
+    border-radius: var(--rounded-full);
+    background: rgb(var(--border-color));
+    position: relative;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__bar-fill {
+    height: 100%;
+    border-radius: var(--rounded-full);
+    background: rgb(var(--text-color));
+  }
+
+  #shopify-section-{{ section.id }} .review-card__bar-fill::after {
+    content: "";
+    width: 12px;
+    height: 12px;
+    border-radius: var(--rounded-full);
+    background: rgb(var(--text-color));
+    position: absolute;
+    inset-inline-end: -6px;
+    inset-block-start: -4px;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__bar-labels {
+    justify-content: space-between;
+    color: rgb(var(--text-color) / .6);
+    font-size: .875em;
+    margin-block-start: .5rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__helpful {
+    align-items: center;
+    gap: .75rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__helpful button {
+    padding: .25rem .75rem;
+    border: 1px solid rgb(var(--border-color));
+    border-radius: var(--rounded-full);
+    background: none;
+    cursor: pointer;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__helpful button[aria-pressed="true"] {
+    background: rgb(var(--text-color) / .08);
+  }
+
+  #shopify-section-{{ section.id }} .reviews__write {
+    text-align: center;
+  }
+
+  #shopify-section-{{ section.id }} .review-form__rating-options {
+    flex-wrap: wrap;
+    gap: 1rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .review-form__rating-label {
+    font-weight: 600;
+    display: block;
+    margin-block-end: .5rem;
+  }
+
+  #shopify-section-{{ section.id }} .review-form__disclaimer {
+    color: rgb(var(--text-color) / .6);
+    font-size: .875em;
+    text-align: center;
+  }
+
+  @media screen and (max-width: 749px) {
+    #shopify-section-{{ section.id }} .review-card {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.25rem;
+    }
+
+    #shopify-section-{{ section.id }} .review-card__main {
+      order: 1;
+    }
+
+    #shopify-section-{{ section.id }} .review-card__side {
+      order: 2;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    var root = document.getElementById('reviews-{{ section.id }}');
+    if (!root) return;
+
+    var list = root.querySelector('[data-reviews-list]');
+    var cards = list ? Array.prototype.slice.call(list.querySelectorAll('.review-card')) : [];
+    var sortSelect = root.querySelector('[data-reviews-sort]');
+    var filterToggle = root.querySelector('.reviews__filter-toggle');
+    var filterPanel = root.querySelector('[data-reviews-filter-panel]');
+    var filterInputs = filterPanel ? Array.prototype.slice.call(filterPanel.querySelectorAll('input[name="review_star_filter"]')) : [];
+    var visibleCount = root.querySelector('[data-reviews-visible-count]');
+
+    if (filterToggle && filterPanel) {
+      filterToggle.addEventListener('click', function () {
+        var isHidden = filterPanel.hasAttribute('hidden');
+        if (isHidden) {
+          filterPanel.removeAttribute('hidden');
+        } else {
+          filterPanel.setAttribute('hidden', '');
+        }
+        filterToggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+      });
+    }
+
+    function applyFilter() {
+      var checkedRatings = filterInputs.filter(function (input) { return input.checked; }).map(function (input) { return input.value; });
+      var shown = 0;
+
+      cards.forEach(function (card) {
+        var matches = checkedRatings.length === 0 || checkedRatings.indexOf(card.getAttribute('data-rating')) !== -1;
+        if (matches) {
+          card.removeAttribute('hidden');
+          shown += 1;
+        } else {
+          card.setAttribute('hidden', '');
+        }
+      });
+
+      if (visibleCount) {
+        visibleCount.textContent = shown + (shown === 1 ? ' review' : ' reviews');
+      }
+    }
+
+    filterInputs.forEach(function (input) {
+      input.addEventListener('change', applyFilter);
+    });
+
+    if (sortSelect) {
+      sortSelect.addEventListener('change', function () {
+        var sortedCards = cards.slice();
+
+        if (sortSelect.value === 'rating_desc') {
+          sortedCards.sort(function (a, b) { return b.getAttribute('data-rating') - a.getAttribute('data-rating'); });
+        } else if (sortSelect.value === 'rating_asc') {
+          sortedCards.sort(function (a, b) { return a.getAttribute('data-rating') - b.getAttribute('data-rating'); });
+        } else {
+          sortedCards.sort(function (a, b) { return a.getAttribute('data-index') - b.getAttribute('data-index'); });
+        }
+
+        sortedCards.forEach(function (card) { list.appendChild(card); });
+      });
+    }
+
+    root.querySelectorAll('[data-reviews-helpful]').forEach(function (group) {
+      var label = group.querySelector('[data-reviews-helpful-label]');
+      var buttons = Array.prototype.slice.call(group.querySelectorAll('[data-reviews-helpful-button]'));
+
+      buttons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          buttons.forEach(function (otherButton) { otherButton.setAttribute('aria-pressed', 'false'); });
+          button.setAttribute('aria-pressed', 'true');
+          if (label) label.textContent = 'Thanks for your feedback!';
+        });
+      });
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Reviews",
+  "class": "shopify-section--reviews",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "custom.overlay"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:global.colors.scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "title",
+      "label": "t:global.text.heading",
+      "default": "Reviews"
+    },
+    {
+      "type": "paragraph",
+      "content": "Reviews shown below are \"Review\" blocks you add/edit/reorder here - nothing is pulled from an external app. \"Write a Review\" opens a form that emails the submission to the shop's customer email (same as the Contact form); add a matching block once you decide to approve it."
+    },
+    {
+      "type": "text",
+      "id": "write_review_button_text",
+      "label": "Write a review button text",
+      "default": "Write a Review"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        {
+          "type": "text",
+          "id": "reviewer_name",
+          "label": "Reviewer name",
+          "default": "Customer"
+        },
+        {
+          "type": "checkbox",
+          "id": "verified_buyer",
+          "label": "Verified buyer",
+          "default": true
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "label": "Rating",
+          "default": 5
+        },
+        {
+          "type": "text",
+          "id": "date_label",
+          "label": "Date",
+          "info": "Shown as entered, eg. \"3 days ago\" or \"August 2026\".",
+          "default": "3 days ago"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Review title",
+          "default": "Great product!"
+        },
+        {
+          "type": "richtext",
+          "id": "body",
+          "label": "Review",
+          "default": "<p>Share what the customer wrote.</p>"
+        },
+        {
+          "type": "header",
+          "content": "Product (optional)"
+        },
+        {
+          "type": "text",
+          "id": "product_name",
+          "label": "Product name"
+        },
+        {
+          "type": "url",
+          "id": "product_url",
+          "label": "Product link"
+        },
+        {
+          "type": "header",
+          "content": "Attributes (optional)"
+        },
+        {
+          "type": "paragraph",
+          "content": "Extra label/value pairs shown next to the reviewer, eg. \"Age Range: 45-54\". Leave a label blank to skip it."
+        },
+        {
+          "type": "text",
+          "id": "attribute_1_label",
+          "label": "Attribute 1 label"
+        },
+        {
+          "type": "text",
+          "id": "attribute_1_value",
+          "label": "Attribute 1 value"
+        },
+        {
+          "type": "text",
+          "id": "attribute_2_label",
+          "label": "Attribute 2 label"
+        },
+        {
+          "type": "text",
+          "id": "attribute_2_value",
+          "label": "Attribute 2 value"
+        },
+        {
+          "type": "text",
+          "id": "attribute_3_label",
+          "label": "Attribute 3 label"
+        },
+        {
+          "type": "text",
+          "id": "attribute_3_value",
+          "label": "Attribute 3 value"
+        },
+        {
+          "type": "header",
+          "content": "Rating bar (optional)"
+        },
+        {
+          "type": "paragraph",
+          "content": "An extra ranged question shown below the review, eg. \"How glowy did your skin look?\"."
+        },
+        {
+          "type": "text",
+          "id": "bar_question",
+          "label": "Question"
+        },
+        {
+          "type": "range",
+          "id": "bar_value",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "label": "Value",
+          "default": 5
+        },
+        {
+          "type": "text",
+          "id": "bar_min_label",
+          "label": "Low label",
+          "default": "Not very glowy"
+        },
+        {
+          "type": "text",
+          "id": "bar_max_label",
+          "label": "High label",
+          "default": "Super glowy"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Reviews",
+      "category": "t:global.categories.trust_social",
+      "blocks": [
+        {
+          "type": "review",
+          "settings": {
+            "reviewer_name": "Isabel C.",
+            "title": "The ultimate natural glow!",
+            "body": "<p>Love this formula! It glides on effortlessly for a radiant finish that looks super natural. Non-sticky, long-lasting, and ideal for effortless everyday wear. Love it!</p>",
+            "date_label": "3 days ago"
+          }
+        },
+        {
+          "type": "review",
+          "settings": {
+            "reviewer_name": "Madison W.",
+            "title": "Obsessed",
+            "body": "<p>This is gorgeous!! Used it on my body for wedding and was glowing.</p>",
+            "date_label": "3 days ago"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
