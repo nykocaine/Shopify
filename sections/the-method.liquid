@@ -495,7 +495,11 @@
     margin-inline: auto;
   }
 
-  .the-method__tone-swatch {
+  /* Scoped under .the-method__tone-scale (not just .the-method__tone-swatch alone) so this
+     reliably beats the theme's own global button reset (assets/theme.css:80-85, which targets
+     [type="button"] and sets background-color: transparent at the same specificity) without
+     needing !important. */
+  .the-method__tone-scale .the-method__tone-swatch {
     appearance: none;
     flex-shrink: 0;
     width: 2.5rem;
