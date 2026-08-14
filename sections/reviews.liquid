@@ -30,10 +30,9 @@ the merchant reads the email and adds a matching Review block here.
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_reviews %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_reviews %} style="border-radius: {{ section.settings.reviews_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
-    <div class="container">
-      <div id="reviews-{{ section.id }}" class="reviews section-stack">
-        {%- if section.settings.title != blank -%}
-          <div class="prose">
+    <div id="reviews-{{ section.id }}" class="reviews section-stack">
+      {%- if section.settings.title != blank -%}
+        <div class="prose">
             {%- render 'heading', content: section.settings.title, style: 'h3', html_tag: 'h2' -%}
           </div>
         {%- endif -%}
@@ -68,7 +67,7 @@ the merchant reads the email and adds a matching Review block here.
         {%- if review_count > 0 -%}
           <div class="reviews__controls">
             <div class="reviews__filter">
-              {%- render 'button', content: 'Filters', style: 'outline', size: 'sm', type: 'button', class: 'reviews__filter-toggle', icon: 'chevron-down' -%}
+              {%- render 'button', content: 'Filters', style: 'outline', type: 'button', class: 'reviews__filter-toggle', icon: 'chevron-down' -%}
 
               <div class="reviews__filter-panel" data-reviews-filter-panel hidden>
                 {%- for i in (5..1) -%}
@@ -80,7 +79,7 @@ the merchant reads the email and adds a matching Review block here.
 
             <div class="reviews__sort">
               <label class="sr-only" for="reviews-sort-{{ section.id }}">Sort reviews</label>
-              <div class="reviews__sort-control">
+              <div class="reviews__sort-control button button--outline">
                 <select id="reviews-sort-{{ section.id }}" class="select" data-reviews-sort>
                   <option value="recent">Most Recent</option>
                   <option value="rating_desc">Highest Rating</option>
@@ -220,7 +219,6 @@ the merchant reads the email and adds a matching Review block here.
           {%- render 'button', content: section.settings.write_review_button_text, aria_controls: write_review_modal_id -%}
         </div>
       </div>
-    </div>
   </div>
 </div>
 
