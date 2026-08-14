@@ -12,17 +12,30 @@ the merchant reads the email and adds a matching Review block here.
 
 {%- liquid
   assign review_blocks = section.blocks | where: 'type', 'review'
-  assign review_count = review_blocks.size
 
-  assign rating_sum = 0
-  for review_block in review_blocks
-    assign rating_sum = rating_sum | plus: review_block.settings.rating
-  endfor
-
-  if review_count > 0
-    assign average_rating = rating_sum | times: 1.0 | divided_by: review_count | round: 1
+  {% comment %}
+    Same metafields snippets/product-rating.liquid already reads (product.metafields.custom.reviews_rating
+    / reviews_count) - when this section sits on a product page and they're set, the summary badge shown
+    here matches whatever the product card/product page already shows, instead of only reflecting however
+    many "Review" blocks happen to be added below. Falls back to counting/averaging the blocks themselves
+    when the metafields aren't set (eg. a non-product page, or a product without them yet).
+  {% endcomment %}
+  if product and product.metafields.custom.reviews_rating.value != blank
+    assign average_rating = product.metafields.custom.reviews_rating.value.rating | plus: 0
+    assign review_count = product.metafields.custom.reviews_count.value | default: 0
   else
-    assign average_rating = 0
+    assign review_count = review_blocks.size
+    assign rating_sum = 0
+
+    for review_block in review_blocks
+      assign rating_sum = rating_sum | plus: review_block.settings.rating
+    endfor
+
+    if review_count > 0
+      assign average_rating = rating_sum | times: 1.0 | divided_by: review_count | round: 1
+    else
+      assign average_rating = 0
+    endif
   endif
 
   assign write_review_modal_id = 'write-review-' | append: section.id
