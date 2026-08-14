@@ -791,6 +791,9 @@
         applySelectedState(panelKey.split('-')[1]);
       }
 
+      var panelsEl = wrapper.querySelector('[data-the-method-panels]');
+      var fromHeight = panelsEl ? panelsEl.getBoundingClientRect().height : 0;
+
       var chain = Promise.resolve();
 
       if (fromEl) {
@@ -808,13 +811,33 @@
 
       return chain
         .then(function () {
+          var heightAnimation = Promise.resolve();
+
+          if (panelsEl) {
+            panelsEl.style.height = fromHeight + 'px';
+            panelsEl.style.overflow = 'hidden';
+          }
+
           toEl.hidden = false;
-          return animate(toEl, [
-            { opacity: 0, transform: 'translateY(10px)' },
-            { opacity: 1, transform: 'translateY(0)' }
+
+          if (panelsEl) {
+            var toHeight = panelsEl.scrollHeight;
+            heightAnimation = animateHeight(panelsEl, fromHeight, toHeight);
+          }
+
+          return Promise.all([
+            heightAnimation,
+            animate(toEl, [
+              { opacity: 0, transform: 'translateY(10px)' },
+              { opacity: 1, transform: 'translateY(0)' }
+            ])
           ]);
         })
         .then(function () {
+          if (panelsEl) {
+            panelsEl.style.height = '';
+            panelsEl.style.overflow = '';
+          }
           updateControls(panelKey);
           if (typeof toEl.focus === 'function') {
             toEl.focus({ preventScroll: false });
