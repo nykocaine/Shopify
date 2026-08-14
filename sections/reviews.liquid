@@ -28,7 +28,7 @@ the merchant reads the email and adds a matching Review block here.
   assign write_review_modal_id = 'write-review-' | append: section.id
 -%}
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_reviews %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_reviews %} style="border-end-start-radius: {{ section.settings.reviews_border_radius }}px; border-end-end-radius: {{ section.settings.reviews_border_radius }}px; overflow: hidden;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_reviews %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_reviews %} style="border-radius: {{ section.settings.reviews_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div class="container">
       <div id="reviews-{{ section.id }}" class="reviews section-stack">
@@ -287,13 +287,31 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
 </x-modal>
 
 <style>
+  {%- if section.settings.floating_reviews -%}
+    {%- comment -%}
+    Floating mode: this section behaves as its own padded card (like the floating info_panel it typically
+    sits next to) instead of a plain page section, so .section-spacing's generic page-to-page rhythm is
+    zeroed out and replaced with info_panel's own exact card padding formula - same
+    min(2.5rem, var(--container-gutter)), same --container-gutter source, so the two line up when stacked.
+    Left as the normal .section-spacing rhythm when not floating, since then this is just a regular
+    full-width page section like any other.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .section-spacing {
+      padding-block: 0;
+    }
+
+    #shopify-section-{{ section.id }} .reviews {
+      padding: min(2.5rem, var(--container-gutter));
+    }
+  {%- endif -%}
+
   #shopify-section-{{ section.id }} .reviews__summary {
-    text-align: center;
+    text-align: start;
   }
 
   #shopify-section-{{ section.id }} .reviews__summary-rating {
     align-items: center;
-    justify-content: center;
+    justify-content: start;
     column-gap: .75rem;
     display: flex;
   }
