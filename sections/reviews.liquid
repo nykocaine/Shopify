@@ -299,8 +299,8 @@ to the first 5 of the newly sorted order.
   variables instead of the Buttons global style - transparent background, border and text following
   --border-color/--text-color, the same variables already used everywhere else in this section (eg. the
   divider lines, the muted counts), so it reacts correctly if the merchant changes the section's color
-  scheme. :not([disabled]) on the hover rule keeps .button's own hover background from re-applying a
-  solid fill on top of this.
+  scheme. The explicit :hover override below keeps .button's own hover background (a Buttons-scheme color)
+  from re-applying a solid fill on top of this.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__sort {
     background: transparent;
@@ -350,11 +350,17 @@ to the first 5 of the newly sorted order.
     gap: 2rem;
     padding-block: 2rem;
     border-block-end: 1px solid rgb(var(--border-color));
+    transition: opacity .35s ease, transform .35s ease;
     display: grid;
   }
 
   #shopify-section-{{ section.id }} .review-card:last-child {
     border-block-end: none;
+  }
+
+  #shopify-section-{{ section.id }} .review-card--revealing {
+    opacity: 0;
+    transform: translateY(16px);
   }
 
   #shopify-section-{{ section.id }} .review-card__side {
@@ -519,15 +525,41 @@ to the first 5 of the newly sorted order.
     var visibleCount = pageSize;
 
     {%- comment -%}
+    Fades + slides in only the cards a "Ver más" click actually newly reveals (not the initial 5, not a
+    sort change - those would look odd re-animating on every interaction). The card is unhidden first, then
+    the "revealing" class (opacity/translateY starting state) is added and forced to reflow before removing
+    it next frame, so the browser has a real starting frame to transition away from instead of jumping.
+    {%- endcomment -%}
+    function revealCard(card) {
+      card.hidden = false;
+      card.classList.add('review-card--revealing');
+      void card.offsetWidth;
+      requestAnimationFrame(function () {
+        card.classList.remove('review-card--revealing');
+      });
+    }
+
+    {%- comment -%}
     Re-queries the list on every call instead of reusing the "cards" array above, so it always reflects
     whatever order sorting last put the cards in - "cards" itself is never reassigned, only the live DOM
     order is (via appendChild in the sort handler below).
     {%- endcomment -%}
-    function updateVisibility() {
+    function updateVisibility(animateReveal) {
       var currentCards = list ? Array.prototype.slice.call(list.querySelectorAll('.review-card')) : [];
 
       currentCards.forEach(function (card, index) {
-        card.hidden = index >= visibleCount;
+        var shouldBeVisible = index < visibleCount;
+
+        if (shouldBeVisible && card.hidden) {
+          if (animateReveal) {
+            revealCard(card);
+          } else {
+            card.hidden = false;
+          }
+        } else if (!shouldBeVisible) {
+          card.hidden = true;
+          card.classList.remove('review-card--revealing');
+        }
       });
 
       if (loadMoreButton) {
@@ -539,7 +571,7 @@ to the first 5 of the newly sorted order.
       loadMoreButton.addEventListener('click', function () {
         var totalCards = list ? list.querySelectorAll('.review-card').length : 0;
         visibleCount = Math.min(visibleCount + pageSize, totalCards);
-        updateVisibility();
+        updateVisibility(true);
       });
     }
 
