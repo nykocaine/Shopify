@@ -4,10 +4,10 @@ cards with reviewer/product/attribute info, an attribute bar, and helpful voting
 with theme blocks instead of depending on the Okendo app.
 
 Reviews are not stored anywhere outside the theme: each review shown on the storefront is a "Review"
-block that the merchant adds/edits/reorders from the theme editor, exactly like the FAQ block. The "Write
-a Review" button opens a native Shopify contact form (same mechanism as the Contact section) which emails
-the submission to the shop's customer email - nothing is published automatically. To "approve" a review,
-the merchant reads the email and adds a matching Review block here.
+block that the merchant adds/edits/reorders from the theme editor, exactly like the FAQ block. Only the
+first 5 review cards show initially; a "Ver más" button reveals 5 more at a time, and disappears once
+every review is visible. Sorting always re-applies before the reveal count, so changing sort resets back
+to the first 5 of the newly sorted order.
 {%- enddoc -%}
 
 {%- liquid
@@ -35,8 +35,6 @@ the merchant reads the email and adds a matching Review block here.
       assign average_rating = 0
     endif
   endif
-
-  assign write_review_modal_id = 'write-review-' | append: section.id
 -%}
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_reviews %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_reviews %} style="border-radius: {{ section.settings.reviews_border_radius }}px; overflow: hidden;"{% endif %}>
@@ -227,74 +225,14 @@ the merchant reads the email and adds a matching Review block here.
           </div>
         {%- endif -%}
 
-        <div class="reviews__write">
-          {%- render 'button', content: section.settings.write_review_button_text, aria_controls: write_review_modal_id -%}
-        </div>
+        {%- if review_blocks.size > 5 -%}
+          <div class="reviews__load-more">
+            {%- render 'button', content: 'Ver más', type: 'button', style: 'outline', class: 'reviews__load-more-button' -%}
+          </div>
+        {%- endif -%}
       </div>
   </div>
 </div>
-
-{%- comment -%}
-The form block has to run (and "form" become available) before the has_form_feedback check below, so
-its output is captured here and echoed inside the modal afterwards - not evaluated directly inside the
-<x-modal> tag, whose opening tag (with the "open" attribute) needs that same check to happen first.
-{%- endcomment -%}
-{%- capture review_form_content -%}
-  {%- form 'contact', class: 'form' -%}
-    {%- if form.posted_successfully? -%}
-      {%- render 'banner', status: 'success', content: '¡Gracias! Tu reseña fue enviada y aparecerá aquí una vez aprobada.' -%}
-    {%- endif -%}
-
-    {%- if form.errors -%}
-      {%- capture error_content -%}{{ form.errors.translated_fields[form.errors.first] | capitalize }} {{ form.errors.messages[form.errors.first] }}{%- endcapture -%}
-      {%- render 'banner', status: 'error', content: error_content -%}
-    {%- endif -%}
-
-    <input type="hidden" name="contact[Submission type]" value="Review">
-
-    <div class="fieldset">
-      <div class="fieldset-row">
-        {%- render 'input', type: 'text', name: 'contact[name]', label: 'Nombre', required: true, autocomplete: 'name' -%}
-        {%- render 'input', type: 'email', name: 'contact[email]', label: 'Correo electrónico', required: true, autocomplete: 'email' -%}
-      </div>
-
-      <div class="review-form__rating">
-        <span class="review-form__rating-label">Calificación</span>
-        <div class="review-form__rating-options">
-          {%- for i in (5..1) -%}
-            {%- capture rating_option_label -%}{{ i }} estrella{% if i != 1 %}s{% endif %}{%- endcapture -%}
-            {%- render 'checkbox', type: 'radio', name: 'contact[Rating]', value: i, label: rating_option_label, required: true, id_prefix: section.id -%}
-          {%- endfor -%}
-        </div>
-      </div>
-
-      {%- render 'input', type: 'text', name: 'contact[Review title]', label: 'Título de la reseña', required: true -%}
-      {%- render 'input', name: 'contact[body]', label: 'Reseña', multiline: 5, required: true -%}
-    </div>
-
-    <div>
-      {%- render 'button', content: 'Enviar reseña', type: 'submit' -%}
-    </div>
-
-    <p class="review-form__disclaimer">Las reseñas son moderadas y pueden tardar unos días en aparecer.</p>
-  {%- endform -%}
-{%- endcapture -%}
-
-{%- liquid
-  assign has_form_feedback = false
-
-  if form.posted_successfully? or form.errors
-    assign has_form_feedback = true
-  endif
--%}
-
-<x-modal id="{{ write_review_modal_id }}" append-to-body {% if has_form_feedback %}open{% endif %} class="modal color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
-  <div class="prose">
-    <p class="h5">{{ section.settings.write_review_button_text }}</p>
-  </div>
-
-  {{- review_form_content -}}
-</x-modal>
 
 <style>
   {%- if section.settings.floating_reviews -%}
@@ -356,28 +294,44 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
   }
 
   {%- comment -%}
-  .reviews__sort only resets the .select/.icon's own boxed-input styling (border/background/color/height,
-  and the icon's absolute positioning, both meant for a standalone input field) - the actual background,
-  border, text color and height all come from the plain .button/.button__content classes on the element
-  itself (no --outline modifier), so it inherits the same solid background/border/text color the schema's
-  other buttons (eg. "Write a Review") already use, instead of custom values.
+  .reviews__sort keeps .button's height/padding/border-radius (still sized like every other button in the
+  theme), but overrides color/background/border to read from the color scheme's own body text and border
+  variables instead of the Buttons global style - transparent background, border and text following
+  --border-color/--text-color, the same variables already used everywhere else in this section (eg. the
+  divider lines, the muted counts), so it reacts correctly if the merchant changes the section's color
+  scheme. :not([disabled]) on the hover rule keeps .button's own hover background from re-applying a
+  solid fill on top of this.
   {%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews__sort {
+    background: transparent;
+    border-color: rgb(var(--border-color));
+    color: rgb(var(--text-color));
+  }
+
+  #shopify-section-{{ section.id }} .reviews__sort:hover {
+    background: transparent;
+  }
+
   #shopify-section-{{ section.id }} .reviews__sort .button__content {
     column-gap: .5rem;
   }
 
+  {%- comment -%}
+  The .select itself stays the real clickable/focusable control (native <select>, full width of
+  .button__content) with its own text hidden behind transparent styling - the chevron icon is layered on
+  top of it via .select ~ svg's own existing position: absolute + pointer-events: none (theme.css), which
+  is what lets a click anywhere on the icon fall through to the select underneath. An earlier version of
+  this rule reset the icon to position: static, which moved it outside the select's own clickable area and
+  broke the dropdown - removed here, not reintroduced.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__sort .select {
-    width: auto;
+    width: 100%;
     height: auto;
     border: none;
     padding: 0;
+    padding-inline-end: 1.25rem;
     background: none;
     color: inherit;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__sort .select ~ svg {
-    position: static;
-    inset: auto;
   }
 
   #shopify-section-{{ section.id }} .reviews__count {
@@ -528,26 +482,12 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
     background: rgb(var(--text-color) / .08);
   }
 
-  #shopify-section-{{ section.id }} .reviews__write {
+  #shopify-section-{{ section.id }} .reviews__load-more {
     text-align: center;
   }
 
-  #shopify-section-{{ section.id }} .review-form__rating-options {
-    flex-wrap: wrap;
-    gap: 1rem;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .review-form__rating-label {
-    font-weight: 600;
-    display: block;
-    margin-block-end: .5rem;
-  }
-
-  #shopify-section-{{ section.id }} .review-form__disclaimer {
-    color: rgb(var(--text-color) / .6);
-    font-size: .875em;
-    text-align: center;
+  #shopify-section-{{ section.id }} .review-card[hidden] {
+    display: none;
   }
 
   @media screen and (max-width: 749px) {
@@ -647,13 +587,7 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
     },
     {
       "type": "paragraph",
-      "content": "Reviews shown below are \"Review\" blocks you add/edit/reorder here - nothing is pulled from an external app. \"Write a Review\" opens a form that emails the submission to the shop's customer email (same as the Contact form); add a matching block once you decide to approve it."
-    },
-    {
-      "type": "text",
-      "id": "write_review_button_text",
-      "label": "Write a review button text",
-      "default": "Escribir una reseña"
+      "content": "Reviews shown below are \"Review\" blocks you add/edit/reorder here - nothing is pulled from an external app. Only the first 5 are shown initially; visitors reveal 5 more at a time with the \"Ver más\" button."
     }
   ],
   "blocks": [
