@@ -1,0 +1,923 @@
+{%- liquid
+  assign total_steps = 3
+  assign result_keys = 'salicylic,tca,duo-peel,set-peel-reserve' | split: ','
+  assign text_alignment = section.settings.text_alignment | default: 'center'
+  assign text_alignment_class = text_alignment | replace: 'left', 'start' | replace: 'right', 'end'
+-%}
+
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_the_method %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_the_method %} style="border-radius: {{ section.settings.the_method_border_radius }}px; overflow: hidden;"{% endif %}>
+  <div class="container section-spacing">
+    <div class="the-method" data-the-method data-section-id="{{ section.id }}">
+
+      <div class="the-method__meta">
+        <button type="button" class="link subheading the-method__back" data-the-method-back hidden>
+          {%- render 'icon' with 'back-arrow', width: 16 -%}
+          <span>{{ section.settings.back_button_text }}</span>
+        </button>
+
+        <p class="the-method__progress" data-the-method-progress hidden aria-hidden="true">
+          <span data-the-method-progress-current>01</span> / <span data-the-method-progress-total>0{{ total_steps }}</span>
+        </p>
+
+        <button type="button" class="link subheading the-method__restart" data-the-method-restart hidden>
+          {{ section.settings.restart_button_text }}
+        </button>
+      </div>
+
+      <div class="the-method__panels" data-the-method-panels>
+
+        <div class="the-method__panel the-method__panel--intro justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="intro" tabindex="-1">
+          {%- if section.settings.heading != blank -%}
+            {%- render 'heading', content: section.settings.heading, style: 'display-m', html_tag: 'h2', balance_text: true, instant: true -%}
+          {%- endif -%}
+
+          {%- if section.settings.tagline != blank -%}
+            <p class="the-method__tagline">{{ section.settings.tagline }}</p>
+          {%- endif -%}
+
+          {%- if section.settings.start_button_text != blank -%}
+            <button type="button" class="button the-method__cta" data-the-method-start>
+              <button-content class="button__content">{{ section.settings.start_button_text }}</button-content>
+            </button>
+          {%- endif -%}
+        </div>
+
+        <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-1" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-1" hidden>
+          <h3 id="the-method-q-{{ section.id }}-1" class="the-method__question">{{ section.settings.step_1_question }}</h3>
+
+          <div class="the-method__options" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-1">
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="1" data-key="brotes_acne">
+              <span class="the-method__option-label">{{ section.settings.step_1_option_1 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+            </button>
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="1" data-key="grasa_congestion">
+              <span class="the-method__option-label">{{ section.settings.step_1_option_2 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+            </button>
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="1" data-key="manchas_tono">
+              <span class="the-method__option-label">{{ section.settings.step_1_option_3 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+            </button>
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="1" data-key="textura_secuelas">
+              <span class="the-method__option-label">{{ section.settings.step_1_option_4 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+            </button>
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="1" data-key="no_seguro_1">
+              <span class="the-method__option-label">{{ section.settings.step_1_option_5 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-2" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-2" hidden>
+          <h3 id="the-method-q-{{ section.id }}-2" class="the-method__question">{{ section.settings.step_2_question }}</h3>
+
+          <div class="the-method__options" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-2">
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="2" data-key="refinar">
+              <span class="the-method__option-label">{{ section.settings.step_2_option_1 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+            </button>
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="2" data-key="renovar">
+              <span class="the-method__option-label">{{ section.settings.step_2_option_2 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+            </button>
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="2" data-key="no_seguro_2">
+              <span class="the-method__option-label">{{ section.settings.step_2_option_3 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-3" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-3" hidden>
+          <h3 id="the-method-q-{{ section.id }}-3" class="the-method__question">{{ section.settings.step_3_question }}</h3>
+
+          <div class="the-method__options" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-3">
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="un_metodo">
+              <span class="the-method__option-label">{{ section.settings.step_3_option_1 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+            </button>
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="mismo_metodo">
+              <span class="the-method__option-label">{{ section.settings.step_3_option_2 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+            </button>
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="combinar">
+              <span class="the-method__option-label">{{ section.settings.step_3_option_3 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+            </button>
+            <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="no_seguro_3">
+              <span class="the-method__option-label">{{ section.settings.step_3_option_4 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="the-method__panel the-method__panel--result" data-the-method-panel="result" tabindex="-1" aria-live="polite" aria-atomic="true" hidden>
+          {%- if section.settings.result_eyebrow != blank -%}
+            {%- render 'subheading', content: section.settings.result_eyebrow -%}
+          {%- endif -%}
+
+          {%- for key in result_keys -%}
+            {%- liquid
+              case key
+                when 'salicylic'
+                  assign result_product = section.settings.salicylic_product
+                  assign result_rationale = section.settings.salicylic_rationale
+                  assign result_secondary_product = section.settings.salicylic_secondary_product
+                when 'tca'
+                  assign result_product = section.settings.tca_product
+                  assign result_rationale = section.settings.tca_rationale
+                  assign result_secondary_product = section.settings.tca_secondary_product
+                when 'duo-peel'
+                  assign result_product = section.settings.duo_peel_product
+                  assign result_rationale = section.settings.duo_peel_rationale
+                  assign result_secondary_product = section.settings.duo_peel_secondary_product
+                when 'set-peel-reserve'
+                  assign result_product = section.settings.set_peel_reserve_product
+                  assign result_rationale = section.settings.set_peel_reserve_rationale
+                  assign result_secondary_product = section.settings.set_peel_reserve_secondary_product
+              endcase
+            -%}
+
+            <div class="the-method__result-card" data-the-method-result="{{ key }}" hidden>
+              {%- if result_product != blank -%}
+                <div class="the-method__result-media">
+                  {%- if result_product.featured_media != blank -%}
+                    {%- render 'media', media: result_product.featured_media, sizes: '(max-width: 699px) 100vw, 480px' -%}
+                  {%- endif -%}
+                </div>
+
+                <div class="the-method__result-info">
+                  {%- render 'heading', content: result_product.title, style: 'h3', html_tag: 'h3', instant: true -%}
+
+                  {%- if result_rationale != blank -%}
+                    <p class="the-method__rationale">{{ result_rationale }}</p>
+                  {%- endif -%}
+
+                  {%- render 'price-list', product: result_product, context: 'product' -%}
+
+                  {%- if section.settings.result_cta_text != blank -%}
+                    {%- render 'button', content: section.settings.result_cta_text, href: result_product.url, style: 'solid' -%}
+                  {%- endif -%}
+
+                  {%- if section.settings.show_secondary_recommendation and result_secondary_product != blank -%}
+                    <div class="the-method__secondary">
+                      {%- if section.settings.secondary_recommendation_heading != blank -%}
+                        <p class="subheading">{{ section.settings.secondary_recommendation_heading }}</p>
+                      {%- endif -%}
+
+                      <div class="the-method__secondary-card">
+                        <div class="the-method__secondary-media">
+                          {%- if result_secondary_product.featured_media != blank -%}
+                            {%- render 'media', media: result_secondary_product.featured_media, sizes: '96px' -%}
+                          {%- endif -%}
+                        </div>
+
+                        <div class="the-method__secondary-info">
+                          {%- render 'heading', content: result_secondary_product.title, style: 'h6', html_tag: 'p', instant: true -%}
+                          {%- render 'price-list', product: result_secondary_product, context: 'card' -%}
+                          {%- render 'button', content: 'product.general.view_details' | t, href: result_secondary_product.url, style: 'link' -%}
+                        </div>
+                      </div>
+                    </div>
+                  {%- endif -%}
+                </div>
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  .the-method {
+    --the-method-gap: var(--container-gutter, 1.5rem);
+    display: grid;
+    gap: calc(var(--the-method-gap) * 1.5);
+  }
+
+  .the-method__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 1.5rem;
+  }
+
+  .the-method__progress {
+    margin: 0;
+    font-size: var(--text-xs);
+    letter-spacing: var(--subheading-letter-spacing);
+    text-transform: uppercase;
+    color: rgb(var(--text-color) / 0.6);
+  }
+
+  .the-method__back,
+  .the-method__restart {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .the-method__back .icon,
+  .the-method__restart .icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .the-method__panels {
+    position: relative;
+  }
+
+  .the-method__panel {
+    display: grid;
+    gap: var(--the-method-gap);
+    max-width: 40rem;
+    margin-inline: auto;
+  }
+
+  .the-method__panel[hidden] {
+    display: none;
+  }
+
+  .the-method__panel:focus {
+    outline: none;
+  }
+
+  .the-method__panel--result {
+    max-width: 64rem;
+    gap: calc(var(--the-method-gap) * 1.5);
+  }
+
+  .the-method__tagline {
+    margin: 0;
+    color: rgb(var(--text-color) / 0.7);
+  }
+
+  .the-method__cta {
+    min-width: 12rem;
+    justify-self: center;
+  }
+
+  .the-method__question {
+    margin: 0;
+  }
+
+  .the-method__options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .the-method__option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+    appearance: none;
+    text-align: start;
+    cursor: pointer;
+    background: rgb(var(--background));
+    color: rgb(var(--text-color));
+    border: 1px solid rgb(var(--border-color));
+    border-radius: var(--input-border-radius);
+    padding: var(--input-padding-block) var(--input-padding-inline);
+    font: inherit;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .the-method__option:hover {
+    border-color: rgb(var(--text-color));
+  }
+
+  .the-method__option:focus-visible {
+    outline: 2px solid rgb(var(--text-color));
+    outline-offset: 2px;
+  }
+
+  .the-method__option[aria-checked="true"] {
+    border-color: rgb(var(--accent));
+    background: rgb(var(--accent) / 0.08);
+  }
+
+  .the-method__option-check {
+    display: inline-flex;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .the-method__option-check .icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .the-method__option[aria-checked="true"] .the-method__option-check {
+    opacity: 1;
+  }
+
+  .the-method__result-card {
+    display: grid;
+    gap: 2rem;
+    text-align: start;
+  }
+
+  .the-method__result-card[hidden] {
+    display: none;
+  }
+
+  .the-method__result-media img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--input-border-radius);
+  }
+
+  .the-method__result-info {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+  }
+
+  .the-method__rationale {
+    margin: 0;
+    color: rgb(var(--text-color) / 0.75);
+  }
+
+  .the-method__secondary {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgb(var(--border-color));
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .the-method__secondary-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .the-method__secondary-media {
+    width: 4rem;
+    flex-shrink: 0;
+  }
+
+  .the-method__secondary-media img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--input-border-radius);
+  }
+
+  .the-method__secondary-info {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  @media screen and (min-width: 700px) {
+    .the-method__result-card {
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+(function () {
+  var STEP1_SCORES = {
+    brotes_acne: { salicylic: 2, tca: 0 },
+    grasa_congestion: { salicylic: 2, tca: 0 },
+    manchas_tono: { salicylic: 0, tca: 2 },
+    textura_secuelas: { salicylic: 0, tca: 2 },
+    no_seguro_1: { salicylic: 0, tca: 0 }
+  };
+
+  var STEP2_SCORES = {
+    refinar: { salicylic: 1, tca: 0 },
+    renovar: { salicylic: 0, tca: 1 },
+    no_seguro_2: { salicylic: 0, tca: 0 }
+  };
+
+  var COMBINE_GAP_THRESHOLD = 1;
+  var STEPS = ['intro', 'step-1', 'step-2', 'step-3', 'result'];
+  var DURATION = 150;
+
+  var reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  function animate(el, keyframes) {
+    if (!el || !el.animate || reducedMotionQuery.matches) {
+      return Promise.resolve();
+    }
+    try {
+      return el.animate(keyframes, { duration: DURATION, easing: 'ease' }).finished.catch(function () {});
+    } catch (e) {
+      return Promise.resolve();
+    }
+  }
+
+  function computeScores(answers) {
+    var s1 = STEP1_SCORES[answers.step1] || { salicylic: 0, tca: 0 };
+    var s2 = STEP2_SCORES[answers.step2] || { salicylic: 0, tca: 0 };
+    return { salicylic: s1.salicylic + s2.salicylic, tca: s1.tca + s2.tca };
+  }
+
+  function resolveMethod(scores) {
+    return scores.tca > scores.salicylic ? 'tca' : 'salicylic';
+  }
+
+  function resolveFormat(step3Key, scores) {
+    if (step3Key === 'mismo_metodo') return 'duo';
+    if (step3Key === 'combinar') return 'combo';
+    if (step3Key === 'un_metodo') return 'single';
+    return Math.abs(scores.salicylic - scores.tca) <= COMBINE_GAP_THRESHOLD ? 'combo' : 'single';
+  }
+
+  function resolveProductKey(method, format) {
+    if (format === 'duo') return 'duo-peel';
+    if (format === 'combo') return 'set-peel-reserve';
+    return method;
+  }
+
+  function initInstance(wrapper) {
+    var options = wrapper.querySelectorAll('[data-the-method-option]');
+    var startButton = wrapper.querySelector('[data-the-method-start]');
+    var backButton = wrapper.querySelector('[data-the-method-back]');
+    var restartButton = wrapper.querySelector('[data-the-method-restart]');
+    var progressWrapper = wrapper.querySelector('[data-the-method-progress]');
+    var progressCurrent = wrapper.querySelector('[data-the-method-progress-current]');
+    var resultCards = wrapper.querySelectorAll('[data-the-method-result]');
+
+    var state = { answers: {} };
+
+    function panelFor(key) {
+      return wrapper.querySelector('[data-the-method-panel="' + key + '"]');
+    }
+
+    function optionsForStep(step) {
+      return Array.prototype.slice.call(wrapper.querySelectorAll('[data-the-method-option][data-step="' + step + '"]'));
+    }
+
+    function currentPanelKey() {
+      var visible = wrapper.querySelector('[data-the-method-panel]:not([hidden])');
+      return visible ? visible.getAttribute('data-the-method-panel') : 'intro';
+    }
+
+    function applySelectedState(step) {
+      var answerKey = state.answers['step' + step];
+      optionsForStep(step).forEach(function (option) {
+        var isSelected = option.getAttribute('data-key') === answerKey;
+        option.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+      });
+    }
+
+    function updateControls(panelKey) {
+      var isIntro = panelKey === 'intro';
+      var isQuestion = panelKey.indexOf('step-') === 0;
+
+      if (backButton) backButton.hidden = isIntro;
+      if (restartButton) restartButton.hidden = isIntro;
+      if (progressWrapper) progressWrapper.hidden = isIntro;
+
+      if (isQuestion && progressCurrent) {
+        var stepNumber = panelKey.split('-')[1];
+        progressCurrent.textContent = stepNumber.length < 2 ? '0' + stepNumber : stepNumber;
+      }
+    }
+
+    function showResult() {
+      var scores = computeScores(state.answers);
+      var method = resolveMethod(scores);
+      var format = resolveFormat(state.answers.step3, scores);
+      var key = resolveProductKey(method, format);
+
+      resultCards.forEach(function (card) {
+        card.hidden = card.getAttribute('data-the-method-result') !== key;
+      });
+    }
+
+    function goTo(panelKey) {
+      var fromEl = wrapper.querySelector('[data-the-method-panel]:not([hidden])');
+      var toEl = panelFor(panelKey);
+
+      if (!toEl || toEl === fromEl) {
+        return Promise.resolve();
+      }
+
+      if (panelKey === 'result') {
+        showResult();
+      }
+
+      if (panelKey.indexOf('step-') === 0) {
+        applySelectedState(panelKey.split('-')[1]);
+      }
+
+      var chain = Promise.resolve();
+
+      if (fromEl) {
+        chain = chain
+          .then(function () {
+            return animate(fromEl, [
+              { opacity: 1, transform: 'translateY(0)' },
+              { opacity: 0, transform: 'translateY(10px)' }
+            ]);
+          })
+          .then(function () {
+            fromEl.hidden = true;
+          });
+      }
+
+      return chain
+        .then(function () {
+          toEl.hidden = false;
+          return animate(toEl, [
+            { opacity: 0, transform: 'translateY(10px)' },
+            { opacity: 1, transform: 'translateY(0)' }
+          ]);
+        })
+        .then(function () {
+          updateControls(panelKey);
+          if (typeof toEl.focus === 'function') {
+            toEl.focus({ preventScroll: false });
+          }
+        });
+    }
+
+    function goToStepIndex(delta) {
+      var index = STEPS.indexOf(currentPanelKey());
+      var nextIndex = index + delta;
+      if (nextIndex < 0 || nextIndex >= STEPS.length) return;
+      goTo(STEPS[nextIndex]);
+    }
+
+    options.forEach(function (option) {
+      option.addEventListener('click', function () {
+        var step = option.getAttribute('data-step');
+        var key = option.getAttribute('data-key');
+        state.answers['step' + step] = key;
+        applySelectedState(step);
+        goToStepIndex(1);
+      });
+
+      option.addEventListener('keydown', function (event) {
+        var isNext = event.key === 'ArrowRight' || event.key === 'ArrowDown';
+        var isPrev = event.key === 'ArrowLeft' || event.key === 'ArrowUp';
+        if (!isNext && !isPrev) return;
+
+        event.preventDefault();
+        var step = option.getAttribute('data-step');
+        var stepOptions = optionsForStep(step);
+        var currentPos = stepOptions.indexOf(option);
+        var direction = isNext ? 1 : -1;
+        var nextPos = (currentPos + direction + stepOptions.length) % stepOptions.length;
+        stepOptions[nextPos].focus();
+      });
+    });
+
+    if (startButton) {
+      startButton.addEventListener('click', function () {
+        goTo('step-1');
+      });
+    }
+
+    if (backButton) {
+      backButton.addEventListener('click', function () {
+        goToStepIndex(-1);
+      });
+    }
+
+    if (restartButton) {
+      restartButton.addEventListener('click', function () {
+        state.answers = {};
+        options.forEach(function (option) {
+          option.setAttribute('aria-checked', 'false');
+        });
+        goTo('intro');
+      });
+    }
+  }
+
+  function initAll() {
+    document.querySelectorAll('[data-the-method]').forEach(function (wrapper) {
+      if (wrapper.dataset.tmInitialized === 'true') return;
+      wrapper.dataset.tmInitialized = 'true';
+      initInstance(wrapper);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
+  }
+
+  document.addEventListener('shopify:section:load', initAll);
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "t:sections.the_method.name",
+  "class": "shopify-section--the-method",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "custom.overlay"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:global.colors.scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Floating"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_the_method",
+      "label": "Floating",
+      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "the_method_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_the_method }}"
+    },
+    {
+      "type": "header",
+      "content": "Contenido"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "THE METHOD"
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "Frase breve",
+      "default": "Descubre tu método."
+    },
+    {
+      "type": "text_alignment",
+      "id": "text_alignment",
+      "label": "t:global.text.alignment",
+      "default": "center"
+    },
+    {
+      "type": "text",
+      "id": "start_button_text",
+      "label": "Texto del botón de inicio",
+      "default": "COMENZAR"
+    },
+    {
+      "type": "text",
+      "id": "back_button_text",
+      "label": "Texto del botón \"Atrás\"",
+      "default": "Atrás"
+    },
+    {
+      "type": "text",
+      "id": "restart_button_text",
+      "label": "Texto del botón \"Reiniciar\"",
+      "default": "Reiniciar"
+    },
+    {
+      "type": "text",
+      "id": "result_eyebrow",
+      "label": "Texto sobre el resultado",
+      "default": "TU MÉTODO"
+    },
+    {
+      "type": "text",
+      "id": "result_cta_text",
+      "label": "Texto del botón de resultado",
+      "default": "DESCUBRIR MÉTODO"
+    },
+    {
+      "type": "header",
+      "content": "Paso 1"
+    },
+    {
+      "type": "text",
+      "id": "step_1_question",
+      "label": "Pregunta",
+      "default": "¿QUÉ QUIERES CAMBIAR?"
+    },
+    {
+      "type": "text",
+      "id": "step_1_option_1",
+      "label": "Opción 1",
+      "default": "Brotes y acné"
+    },
+    {
+      "type": "text",
+      "id": "step_1_option_2",
+      "label": "Opción 2",
+      "default": "Grasa y congestión"
+    },
+    {
+      "type": "text",
+      "id": "step_1_option_3",
+      "label": "Opción 3",
+      "default": "Manchas y tono irregular"
+    },
+    {
+      "type": "text",
+      "id": "step_1_option_4",
+      "label": "Opción 4",
+      "default": "Textura y secuelas"
+    },
+    {
+      "type": "text",
+      "id": "step_1_option_5",
+      "label": "Opción 5",
+      "default": "No estoy seguro/a"
+    },
+    {
+      "type": "header",
+      "content": "Paso 2"
+    },
+    {
+      "type": "text",
+      "id": "step_2_question",
+      "label": "Pregunta",
+      "default": "¿QUÉ TAN INTENSO QUIERES QUE SEA?"
+    },
+    {
+      "type": "text",
+      "id": "step_2_option_1",
+      "label": "Opción 1",
+      "default": "Refinar"
+    },
+    {
+      "type": "text",
+      "id": "step_2_option_2",
+      "label": "Opción 2",
+      "default": "Renovar"
+    },
+    {
+      "type": "text",
+      "id": "step_2_option_3",
+      "label": "Opción 3",
+      "default": "No estoy seguro/a"
+    },
+    {
+      "type": "header",
+      "content": "Paso 3"
+    },
+    {
+      "type": "text",
+      "id": "step_3_question",
+      "label": "Pregunta",
+      "default": "¿CÓMO QUIERES ABORDARLO?"
+    },
+    {
+      "type": "text",
+      "id": "step_3_option_1",
+      "label": "Opción 1",
+      "default": "Un método"
+    },
+    {
+      "type": "text",
+      "id": "step_3_option_2",
+      "label": "Opción 2",
+      "default": "El mismo método dos veces"
+    },
+    {
+      "type": "text",
+      "id": "step_3_option_3",
+      "label": "Opción 3",
+      "default": "Combinar métodos"
+    },
+    {
+      "type": "text",
+      "id": "step_3_option_4",
+      "label": "Opción 4",
+      "default": "No estoy seguro/a"
+    },
+    {
+      "type": "header",
+      "content": "Resultado — Salicylic Peel"
+    },
+    {
+      "type": "product",
+      "id": "salicylic_product",
+      "label": "Producto"
+    },
+    {
+      "type": "textarea",
+      "id": "salicylic_rationale",
+      "label": "Explicación",
+      "default": "Según tus respuestas, tu método está enfocado en congestión, grasa y brotes."
+    },
+    {
+      "type": "product",
+      "id": "salicylic_secondary_product",
+      "label": "Producto secundario (opcional)"
+    },
+    {
+      "type": "header",
+      "content": "Resultado — TCA Peel"
+    },
+    {
+      "type": "product",
+      "id": "tca_product",
+      "label": "Producto"
+    },
+    {
+      "type": "textarea",
+      "id": "tca_rationale",
+      "label": "Explicación",
+      "default": "Según tus respuestas, tu método está enfocado en textura, tono y secuelas, con un enfoque más intenso."
+    },
+    {
+      "type": "product",
+      "id": "tca_secondary_product",
+      "label": "Producto secundario (opcional)"
+    },
+    {
+      "type": "header",
+      "content": "Resultado — Duo Peel"
+    },
+    {
+      "type": "product",
+      "id": "duo_peel_product",
+      "label": "Producto"
+    },
+    {
+      "type": "textarea",
+      "id": "duo_peel_rationale",
+      "label": "Explicación",
+      "default": "Según tus respuestas, prefieres profundizar en un mismo método con dos aplicaciones."
+    },
+    {
+      "type": "product",
+      "id": "duo_peel_secondary_product",
+      "label": "Producto secundario (opcional)"
+    },
+    {
+      "type": "header",
+      "content": "Resultado — Set Peel Reserve"
+    },
+    {
+      "type": "product",
+      "id": "set_peel_reserve_product",
+      "label": "Producto"
+    },
+    {
+      "type": "textarea",
+      "id": "set_peel_reserve_rationale",
+      "label": "Explicación",
+      "default": "Según tus respuestas, tu método combina ambos enfoques para necesidades diferentes."
+    },
+    {
+      "type": "product",
+      "id": "set_peel_reserve_secondary_product",
+      "label": "Producto secundario (opcional)"
+    },
+    {
+      "type": "header",
+      "content": "También podría interesarte"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_recommendation",
+      "label": "Mostrar producto secundario",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "secondary_recommendation_heading",
+      "label": "Título",
+      "default": "TAMBIÉN PODRÍA INTERESARTE"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.the_method.name",
+      "category": "t:global.categories.products"
+    }
+  ]
+}
+{% endschema %}
