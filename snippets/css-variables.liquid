@@ -75,8 +75,14 @@ note that this may have impact on different places.
     --container-max-width: 100%;
     --container-gutter: {{ settings.container_gutter | times: 0.41667 | round: 3 }}rem;
 
+    {%- comment -%}
+    Mobile tier only: uses the independent section_spacing_mobile setting directly (not a proportion of
+    section_spacing, unlike the tablet/desktop tiers further down which are untouched). Keeps the same
+    --section-vertical-spacing variable and --section-stack-row-gap relationship every section already
+    reads, so this is a value swap, not a new spacing system.
+    {%- endcomment -%}
     /* Spacing */
-    --section-vertical-spacing: {{ settings.section_spacing | times: 0.41667 | round: 3 }}rem;
+    --section-vertical-spacing: {{ settings.section_spacing_mobile | round: 3 }}rem;
     --section-stack-row-gap: calc(var(--section-vertical-spacing) * 0.75);
 
     /* Form settings */
