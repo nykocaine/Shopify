@@ -295,11 +295,11 @@ height-observer {
    duplicated in both .liquid files)
    ------------------------------------------------------------------- */
 
-/* Text-panel padding (info_panel/results_tabs' own formula) instead of .content-box's media-card
-   default (max(1.5rem, var(--container-gutter))) - still fully driven by --container-gutter, so it
+/* Same literal padding formula as info_panel/results_tabs (not .content-box's media-card padding
+   system, which is meant for image/video cards) - still fully driven by --container-gutter, so it
    stays in step with the theme's spacing settings at every breakpoint. */
 .faq-content-box {
-  --content-box-spacing: min(2.5rem, var(--container-gutter));
+  padding: min(2.5rem, var(--container-gutter));
 }
 
 .faq-block__list .accordion__summary {
