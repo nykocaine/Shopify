@@ -53,9 +53,20 @@
         Same duration/easing as the theme's own height animation (AccordionDisclosure in theme.js: 0.25s,
         easeInOut) - the script below sets an explicit height on this element so it can transition instead
         of jumping between however tall each message naturally is.
+
+        grid-template-rows: 100% is the actual fix for vertical centering: theme.css's own rule leaves row
+        sizing on "auto" (the default), which keeps sizing the row to the tallest stacked message
+        regardless of this element's own explicit height - place-items: center (theme.css) was then
+        centering each message within that still-tall auto row, not within the shorter height this script
+        sets, which is what pushed a single-line message off-center. Pinning the row to 100% makes it
+        track this element's own explicit height instead, so centering happens against the real visible
+        height. overflow: hidden only matters for the brief instant during a transition where the row
+        hasn't caught up yet.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .announcement-bar__message-list {
+          grid-template-rows: 100%;
           transition: height .25s ease-in-out;
+          overflow: hidden;
         }
       {%- endif -%}
     </style>
