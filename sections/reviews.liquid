@@ -514,6 +514,34 @@ to the first 5 of the newly sorted order.
     var list = root.querySelector('[data-reviews-list]');
     var cards = list ? Array.prototype.slice.call(list.querySelectorAll('.review-card')) : [];
     var sortSelect = root.querySelector('[data-reviews-sort]');
+    var loadMoreButton = root.querySelector('.reviews__load-more-button');
+    var pageSize = 5;
+    var visibleCount = pageSize;
+
+    {%- comment -%}
+    Re-queries the list on every call instead of reusing the "cards" array above, so it always reflects
+    whatever order sorting last put the cards in - "cards" itself is never reassigned, only the live DOM
+    order is (via appendChild in the sort handler below).
+    {%- endcomment -%}
+    function updateVisibility() {
+      var currentCards = list ? Array.prototype.slice.call(list.querySelectorAll('.review-card')) : [];
+
+      currentCards.forEach(function (card, index) {
+        card.hidden = index >= visibleCount;
+      });
+
+      if (loadMoreButton) {
+        loadMoreButton.hidden = visibleCount >= currentCards.length;
+      }
+    }
+
+    if (loadMoreButton) {
+      loadMoreButton.addEventListener('click', function () {
+        var totalCards = list ? list.querySelectorAll('.review-card').length : 0;
+        visibleCount = Math.min(visibleCount + pageSize, totalCards);
+        updateVisibility();
+      });
+    }
 
     if (sortSelect) {
       sortSelect.addEventListener('change', function () {
@@ -528,8 +556,15 @@ to the first 5 of the newly sorted order.
         }
 
         sortedCards.forEach(function (card) { list.appendChild(card); });
+
+        // Sorting re-applies before the reveal count, same as a fresh page load: back to the first 5 of
+        // the newly sorted order, not whatever count "Ver más" had already reached.
+        visibleCount = pageSize;
+        updateVisibility();
       });
     }
+
+    updateVisibility();
 
     root.querySelectorAll('[data-reviews-helpful]').forEach(function (group) {
       var label = group.querySelector('[data-reviews-helpful-label]');
