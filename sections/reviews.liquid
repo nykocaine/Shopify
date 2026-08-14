@@ -77,7 +77,7 @@ the merchant reads the email and adds a matching Review block here.
 
         {%- if review_blocks.size > 0 -%}
           <div class="reviews__controls">
-            <div class="reviews__sort button button--outline">
+            <div class="reviews__sort button">
               <label class="sr-only" for="reviews-sort-{{ section.id }}">Sort reviews</label>
               <div class="button__content">
                 <select id="reviews-sort-{{ section.id }}" class="select" data-reviews-sort>
@@ -336,7 +336,7 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
   }
 
   #shopify-section-{{ section.id }} .reviews__controls {
-    justify-content: end;
+    justify-content: start;
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
@@ -344,11 +344,11 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
   }
 
   {%- comment -%}
-  .reviews__sort only resets the .select/.icon's own boxed-input styling (border/background/height,
-  and the icon's absolute positioning, both meant for a standalone input field) - the actual height,
-  padding, border and border-radius all come from the .button/.button--outline/.button__content classes
-  on the element itself, so it inherits the same global button height and border as the rest of the theme
-  instead of custom values.
+  .reviews__sort only resets the .select/.icon's own boxed-input styling (border/background/color/height,
+  and the icon's absolute positioning, both meant for a standalone input field) - the actual background,
+  border, text color and height all come from the plain .button/.button__content classes on the element
+  itself (no --outline modifier), so it inherits the same solid background/border/text color the schema's
+  other buttons (eg. "Write a Review") already use, instead of custom values.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__sort .button__content {
     column-gap: .5rem;
@@ -360,6 +360,7 @@ its output is captured here and echoed inside the modal afterwards - not evaluat
     border: none;
     padding: 0;
     background: none;
+    color: inherit;
   }
 
   #shopify-section-{{ section.id }} .reviews__sort .select ~ svg {
