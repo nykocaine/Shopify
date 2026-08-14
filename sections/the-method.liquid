@@ -1,5 +1,5 @@
 {%- liquid
-  assign total_steps = 6
+  assign total_steps = 5
   assign result_keys = 'salicylic,tca,duo-peel,set-peel-reserve' | split: ','
   assign text_alignment = section.settings.text_alignment | default: 'center'
   assign text_alignment_class = text_alignment | replace: 'left', 'start' | replace: 'right', 'end'
@@ -631,12 +631,6 @@
     no_seguro_2: { salicylic: 0, tca: 0 }
   };
 
-  var STEP5_SCORES = {
-    refinar: { salicylic: 3, tca: 0 },
-    renovar: { salicylic: 0, tca: 3 },
-    no_seguro_5: { salicylic: 0, tca: 0 }
-  };
-
   var SENSITIVITY_NOTES = {
     tolera: 'Tu piel suele tolerar bien los activos, lo que da flexibilidad para avanzar en el método.',
     irrita_ocasional: 'Tu piel puede irritarse ocasionalmente, así que conviene introducir el método de forma progresiva.',
@@ -652,8 +646,8 @@
     no_seguro_2: ''
   };
 
-  var COMBINE_GAP_THRESHOLD = 2;
-  var STEPS = ['intro', 'step-1', 'step-2', 'step-3', 'step-4', 'step-5', 'step-6', 'result'];
+  var COMBINE_GAP_THRESHOLD = 1;
+  var STEPS = ['intro', 'step-1', 'step-2', 'step-3', 'step-4', 'step-5', 'result'];
   var DURATION = 150;
 
   var HEIGHT_DURATION = 250;
@@ -682,10 +676,9 @@
   function computeScores(answers) {
     var s1 = STEP1_SCORES[answers.step1] || { salicylic: 0, tca: 0 };
     var s2 = STEP2_SCORES[answers.step2] || { salicylic: 0, tca: 0 };
-    var s5 = STEP5_SCORES[answers.step5] || { salicylic: 0, tca: 0 };
     return {
-      salicylic: s1.salicylic + s2.salicylic + s5.salicylic,
-      tca: s1.tca + s2.tca + s5.tca
+      salicylic: s1.salicylic + s2.salicylic,
+      tca: s1.tca + s2.tca
     };
   }
 
@@ -693,10 +686,10 @@
     return scores.tca > scores.salicylic ? 'tca' : 'salicylic';
   }
 
-  function resolveFormat(step6Key, scores) {
-    if (step6Key === 'mismo_metodo') return 'duo';
-    if (step6Key === 'combinar') return 'combo';
-    if (step6Key === 'un_metodo') return 'single';
+  function resolveFormat(step5Key, scores) {
+    if (step5Key === 'mismo_metodo') return 'duo';
+    if (step5Key === 'combinar') return 'combo';
+    if (step5Key === 'un_metodo') return 'single';
     return Math.abs(scores.salicylic - scores.tca) <= COMBINE_GAP_THRESHOLD ? 'combo' : 'single';
   }
 
@@ -762,7 +755,7 @@
     function showResult() {
       var scores = computeScores(state.answers);
       var method = resolveMethod(scores);
-      var format = resolveFormat(state.answers.step6, scores);
+      var format = resolveFormat(state.answers.step5, scores);
       var key = resolveProductKey(method, format);
       var note = buildContextNote(state.answers);
 
@@ -985,13 +978,13 @@
     {
       "type": "text",
       "id": "back_button_text",
-      "label": "Texto del botón \"Atrás\"",
+      "label": "Texto accesible del botón \"Atrás\" (lector de pantalla)",
       "default": "Atrás"
     },
     {
       "type": "text",
       "id": "restart_button_text",
-      "label": "Texto del botón \"Reiniciar\"",
+      "label": "Texto accesible del botón \"Reiniciar\" (lector de pantalla)",
       "default": "Reiniciar"
     },
     {
