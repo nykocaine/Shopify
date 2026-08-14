@@ -16,7 +16,7 @@
         </button>
 
         <p class="the-method__progress" data-the-method-progress hidden aria-hidden="true">
-          <span data-the-method-progress-current>01</span> — <span data-the-method-progress-total>0{{ total_steps }}</span>
+          <span data-the-method-progress-current>01</span> / <span data-the-method-progress-total>0{{ total_steps }}</span>
         </p>
 
         <button type="button" class="link subheading the-method__restart" data-the-method-restart hidden>
@@ -24,7 +24,7 @@
         </button>
       </div>
 
-      <div class="the-method__panels" data-the-method-panels>
+      <div class="the-method__panels min-h-fill" data-the-method-panels>
 
         <div class="the-method__panel the-method__panel--intro justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="intro" tabindex="-1">
           {%- if section.settings.heading != blank -%}
@@ -118,11 +118,11 @@
           </div>
         </div>
 
-        {%- comment -%} STEP 2 — Tipo de piel (pills) {%- endcomment -%}
+        {%- comment -%} STEP 2 — Tipo de piel (compact vertical cards, no icons) {%- endcomment -%}
         <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-2" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-2" hidden>
           <h3 id="the-method-q-{{ section.id }}-2" class="the-method__question">{{ section.settings.step_2_question }}</h3>
 
-          <div class="the-method__options the-method__options--pills" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-2">
+          <div class="the-method__options the-method__options--compact" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-2">
             <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="2" data-key="piel_grasa">
               <span class="the-method__option-label">{{ section.settings.step_2_option_1 }}</span>
               <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 14 -%}</span>
@@ -146,22 +146,26 @@
           </div>
         </div>
 
-        {%- comment -%} STEP 3 — Sensibilidad (typographic list) {%- endcomment -%}
+        {%- comment -%} STEP 3 — Sensibilidad (compact vertical cards, no icons) {%- endcomment -%}
         <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-3" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-3" hidden>
           <h3 id="the-method-q-{{ section.id }}-3" class="the-method__question">{{ section.settings.step_3_question }}</h3>
 
-          <div class="the-method__options the-method__options--list" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-3">
+          <div class="the-method__options the-method__options--compact" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-3">
             <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="tolera">
               <span class="the-method__option-label">{{ section.settings.step_3_option_1 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 14 -%}</span>
             </button>
             <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="irrita_ocasional">
               <span class="the-method__option-label">{{ section.settings.step_3_option_2 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 14 -%}</span>
             </button>
             <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="sensible">
               <span class="the-method__option-label">{{ section.settings.step_3_option_3 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 14 -%}</span>
             </button>
             <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="3" data-key="no_seguro_3">
               <span class="the-method__option-label">{{ section.settings.step_3_option_4 }}</span>
+              <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 14 -%}</span>
             </button>
           </div>
         </div>
@@ -180,7 +184,7 @@
           </div>
         </div>
 
-        {%- comment -%} STEP 5 — Intensidad (2-card scale) {%- endcomment -%}
+        {%- comment -%} STEP 5 — Intensidad (stacked 2-card scale, connecting line) {%- endcomment -%}
         <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-5" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-5" hidden>
           <h3 id="the-method-q-{{ section.id }}-5" class="the-method__question">{{ section.settings.step_5_question }}</h3>
 
@@ -388,6 +392,9 @@
 
   .the-method__panels {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .the-method__panel {
@@ -424,10 +431,10 @@
     margin: 0;
   }
 
-  /* Base option grid (steps 1 and 6 override with --editorial for a bigger scale) */
+  /* Options are always a single vertical stack — never columns, on any breakpoint */
   .the-method__options {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 0.75rem;
     width: 100%;
   }
@@ -441,9 +448,9 @@
     appearance: none;
     text-align: start;
     cursor: pointer;
-    background: rgb(var(--background));
-    color: rgb(var(--text-color));
-    border: 1px solid rgb(var(--border-color));
+    background: rgb(var(--input-background, transparent));
+    color: rgb(var(--input-text-color, var(--text-color)));
+    border: 1px solid var(--input-border-color, rgb(var(--input-text-color, var(--text-color)) / 0.3));
     border-radius: var(--input-border-radius);
     padding: var(--input-padding-block) var(--input-padding-inline);
     font: inherit;
@@ -451,7 +458,7 @@
   }
 
   .the-method__option:hover {
-    border-color: rgb(var(--text-color));
+    border-color: rgb(var(--input-text-color, var(--text-color)));
   }
 
   .the-method__option:active {
@@ -463,11 +470,11 @@
     outline-offset: 2px;
   }
 
-  /* Selection is border/ring only — background always stays the scheme's own (white) background */
+  /* Selection is border/ring only — background always stays the scheme's own input color, never tinted */
   .the-method__option[aria-checked="true"] {
     border-color: rgb(var(--accent));
     box-shadow: 0 0 0 1px rgb(var(--accent));
-    background: rgb(var(--background));
+    background: rgb(var(--input-background, transparent));
   }
 
   .the-method__option-main {
@@ -480,7 +487,7 @@
   .the-method__option-icon {
     display: inline-flex;
     flex-shrink: 0;
-    color: rgb(var(--text-color) / 0.65);
+    color: rgb(var(--input-text-color, var(--text-color)) / 0.65);
     transition: color 0.2s ease;
   }
 
@@ -511,62 +518,9 @@
     transform: scale(1);
   }
 
-  /* Step 2 — tipo de piel: minimal pills, no icons */
-  .the-method__options--pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.625rem;
-  }
-
-  .the-method__options--pills .the-method__option {
-    width: auto;
-    border-radius: 999px;
-    padding: 0.625rem 1.25rem;
-  }
-
-  /* Step 3 — sensibilidad: typographic list, no boxed cards */
-  .the-method__options--list {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .the-method__options--list .the-method__option {
-    position: relative;
-    border: none;
-    border-bottom: 1px solid rgb(var(--border-color));
-    border-radius: 0;
-    padding: 1rem 0 1rem 1.25rem;
-    justify-content: flex-start;
-  }
-
-  .the-method__options--list .the-method__option:last-child {
-    border-bottom: none;
-  }
-
-  .the-method__options--list .the-method__option::before {
-    content: '';
-    position: absolute;
-    inset-inline-start: 0;
-    top: 0.5rem;
-    bottom: 0.5rem;
-    width: 2px;
-    background: transparent;
-    transition: background-color 0.2s ease;
-  }
-
-  .the-method__options--list .the-method__option[aria-checked="true"] {
-    border-color: rgb(var(--border-color));
-    box-shadow: none;
-    background: rgb(var(--background));
-  }
-
-  .the-method__options--list .the-method__option[aria-checked="true"]::before {
-    background: rgb(var(--accent));
-  }
-
-  .the-method__options--list .the-method__option[aria-checked="true"] .the-method__option-label {
-    color: rgb(var(--accent));
+  /* Steps 2 (tipo de piel) and 3 (sensibilidad) — same card system, lighter weight, still vertical */
+  .the-method__options--compact .the-method__option {
+    padding: calc(var(--input-padding-block) * 0.85) var(--input-padding-inline);
   }
 
   /* Step 4 — tono de piel: circular grayscale swatch scale (abstract, not literal skin tones) */
@@ -615,18 +569,17 @@
   }
 
   .the-method__scale {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 1rem;
     width: 100%;
   }
 
   .the-method__scale-line {
-    align-self: center;
-    width: 3rem;
-    height: 1px;
-    background: linear-gradient(to right, rgb(var(--border-color)), rgb(var(--accent)), rgb(var(--border-color)));
+    width: 1px;
+    height: 1.5rem;
+    background: linear-gradient(to bottom, var(--input-border-color, rgb(var(--border-color))), rgb(var(--accent)), var(--input-border-color, rgb(var(--border-color))));
   }
 
   .the-method__scale-unsure {
@@ -638,22 +591,8 @@
     cursor: pointer;
   }
 
-  @media screen and (max-width: 479px) {
-    .the-method__scale {
-      grid-template-columns: 1fr;
-    }
-
-    .the-method__scale-line {
-      width: 1px;
-      height: 1.5rem;
-      justify-self: center;
-      background: linear-gradient(to bottom, rgb(var(--border-color)), rgb(var(--accent)), rgb(var(--border-color)));
-    }
-  }
-
-  /* Step 6 — formato: bigger editorial cards (reuses the card system at a larger scale) */
+  /* Step 6 — formato: bigger editorial cards (reuses the card system at a larger scale, still vertical) */
   .the-method__options--editorial {
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 1rem;
   }
 
