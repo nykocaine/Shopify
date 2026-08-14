@@ -904,7 +904,93 @@
                 </div>
 
               {%- when 'faq' -%}
-                {%- render block -%}
+                {%- liquid
+                  assign faq_item_count = 0
+
+                  for i in (1..8)
+                    capture faq_question_key
+                      echo 'question_'
+                      echo i
+                    endcapture
+
+                    capture faq_answer_key
+                      echo 'answer_'
+                      echo i
+                    endcapture
+
+                    if block.settings[faq_question_key] != blank or block.settings[faq_answer_key] != blank
+                      assign faq_item_count = faq_item_count | plus: 1
+                    endif
+                  endfor
+                -%}
+
+                <div id="faq-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} faq-block" style="border-radius: {{ block.settings.corner_radius }}px; margin-block-start: {{ block.settings.margin_top }}px; margin-block-end: {{ block.settings.margin_bottom }}px;" {{ block.shopify_attributes }}>
+                  <style>
+                    #faq-{{ block.id }} .faq-block__inner {
+                      max-width: {{ block.settings.max_width }}px;
+                      padding: min({{ block.settings.padding }}px, 8vw);
+                    }
+
+                    #faq-{{ block.id }} .faq-block__header {
+                      margin-block-end: clamp(1.5rem, 4vw, 2.5rem);
+                    }
+
+                    #faq-{{ block.id }} .accordion__summary {
+                      font-weight: 600;
+                    }
+
+                    @media screen and (min-width: 700px) {
+                      #faq-{{ block.id }} .faq-block__inner {
+                        padding: {{ block.settings.padding }}px;
+                      }
+                    }
+                  </style>
+
+                  <div class="faq-block__inner">
+                    {%- if block.settings.title != blank or block.settings.content != blank -%}
+                      <div class="prose faq-block__header">
+                        {%- if block.settings.title != blank -%}
+                          {%- render 'heading', content: block.settings.title, style: 'h3', html_tag: 'h2', balance_text: true -%}
+                        {%- endif -%}
+
+                        {%- if block.settings.content != blank -%}
+                          {{- block.settings.content -}}
+                        {%- endif -%}
+                      </div>
+                    {%- endif -%}
+
+                    {%- if faq_item_count > 0 -%}
+                      <div class="faq-block__list">
+                        {%- for i in (1..8) -%}
+                          {%- liquid
+                            capture faq_question_key
+                              echo 'question_'
+                              echo i
+                            endcapture
+
+                            capture faq_answer_key
+                              echo 'answer_'
+                              echo i
+                            endcapture
+
+                            capture faq_open_key
+                              echo 'open_'
+                              echo i
+                            endcapture
+
+                            assign faq_question = block.settings[faq_question_key]
+                            assign faq_answer = block.settings[faq_answer_key]
+                            assign faq_open = block.settings[faq_open_key]
+                          -%}
+
+                          {%- if faq_question != blank or faq_answer != blank -%}
+                            {%- render 'accordion', title: faq_question, content: faq_answer, open: faq_open, uppercase_title: true, prose_content: true, toggle_icon: 'accordion-plus' -%}
+                          {%- endif -%}
+                        {%- endfor -%}
+                      </div>
+                    {%- endif -%}
+                  </div>
+                </div>
 
               {%- when 'carousel' -%}
                 {%- liquid
@@ -4306,7 +4392,224 @@
       ]
     },
     {
-      "type": "faq"
+      "type": "faq",
+      "name": "FAQ",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "A rounded panel with a heading, a description and a list of collapsible questions, reusing the same +/- accordion as the product page's \"Collapsible text\" block. Add up to 8 questions below - leave a question blank to skip it."
+        },
+        {
+          "type": "inline_richtext",
+          "id": "title",
+          "label": "t:global.text.heading",
+          "default": "FAQ"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "t:global.text.content",
+          "default": "<p>Find out more about our products.</p>"
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-2"
+        },
+        {
+          "type": "header",
+          "content": "Layout"
+        },
+        {
+          "type": "range",
+          "id": "margin_top",
+          "min": 0,
+          "max": 100,
+          "step": 4,
+          "unit": "px",
+          "label": "Margin top",
+          "default": 0
+        },
+        {
+          "type": "range",
+          "id": "margin_bottom",
+          "min": 0,
+          "max": 100,
+          "step": 4,
+          "unit": "px",
+          "label": "Margin bottom",
+          "default": 0
+        },
+        {
+          "type": "range",
+          "id": "padding",
+          "min": 16,
+          "max": 96,
+          "step": 4,
+          "unit": "px",
+          "label": "Padding",
+          "default": 40
+        },
+        {
+          "type": "range",
+          "id": "corner_radius",
+          "min": 0,
+          "max": 40,
+          "step": 1,
+          "unit": "px",
+          "label": "Corner radius",
+          "default": 24
+        },
+        {
+          "type": "range",
+          "id": "max_width",
+          "min": 400,
+          "max": 1200,
+          "step": 20,
+          "unit": "px",
+          "label": "Maximum content width",
+          "default": 720
+        },
+        {
+          "type": "header",
+          "content": "Questions"
+        },
+        {
+          "type": "text",
+          "id": "question_1",
+          "label": "Question 1",
+          "default": "How much should I apply?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer_1",
+          "label": "Answer 1",
+          "default": "<p>Start with a small, pea-sized amount and build up as needed.</p>"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_1",
+          "label": "Open by default",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "question_2",
+          "label": "Question 2",
+          "default": "Where does this fit into my daily routine?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer_2",
+          "label": "Answer 2",
+          "default": "<p>Add this step after cleansing and before moisturizing, morning or night.</p>"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_2",
+          "label": "Open by default",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "question_3",
+          "label": "Question 3",
+          "default": "Is it dermatologist tested?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer_3",
+          "label": "Answer 3",
+          "default": "<p>Yes, our formula has been dermatologist tested for safety and efficacy.</p>"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_3",
+          "label": "Open by default",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "question_4",
+          "label": "Question 4"
+        },
+        {
+          "type": "richtext",
+          "id": "answer_4",
+          "label": "Answer 4"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_4",
+          "label": "Open by default",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "question_5",
+          "label": "Question 5"
+        },
+        {
+          "type": "richtext",
+          "id": "answer_5",
+          "label": "Answer 5"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_5",
+          "label": "Open by default",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "question_6",
+          "label": "Question 6"
+        },
+        {
+          "type": "richtext",
+          "id": "answer_6",
+          "label": "Answer 6"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_6",
+          "label": "Open by default",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "question_7",
+          "label": "Question 7"
+        },
+        {
+          "type": "richtext",
+          "id": "answer_7",
+          "label": "Answer 7"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_7",
+          "label": "Open by default",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "question_8",
+          "label": "Question 8"
+        },
+        {
+          "type": "richtext",
+          "id": "answer_8",
+          "label": "Answer 8"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_8",
+          "label": "Open by default",
+          "default": false
+        }
+      ]
     },
     {
       "type": "carousel",
