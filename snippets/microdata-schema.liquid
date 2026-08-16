@@ -85,44 +85,133 @@ managed at the theme level.
   }
 </script>
 
-{%- if request.page_type == 'index' -%}
-  {%- assign potential_action_target = request.origin | append: routes.search_url | append: "?q={search_term_string}" -%}
+{%- liquid
+  assign potential_action_target = request.origin | append: routes.search_url | append: "?q={search_term_string}"
 
-  <script type="application/ld+json">
-  [
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": {{ shop.name | json }},
-      "url": {{ shop.url | append: page.url | json }},
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {{ potential_action_target | json }},
-        "query-input": "required name=search_term_string"
-      }
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": {{ shop.name | json }},
-      {%- if shop.brand.logo -%}
-        "logo": {{ shop.brand.logo | image_url: width: shop.brand.logo.width | prepend: "https:" | json }},
-      {%- endif -%}
-      {%- if shop.brand.short_description -%}
-        "description": {{ shop.brand.short_description | json }},
-      {%- endif -%}
-      {%- if shop.brand.slogan -%}
-        "slogan": {{ shop.brand.slogan | json }},
-      {%- endif -%}
-      {%- if shop.brand.metafields.social_links.size > 0 -%}
-        "sameAs": [
-          {%- for social_link in shop.brand.metafields.social_links -%}
-            {{- social_link.last.value | json -}}{%- unless forloop.last -%},{%- endunless -%}
-          {%- endfor -%}
-        ],
-      {%- endif -%}
-      "url": {{ shop.url | append: page.url | json }}
+  # Same settings.social_X -> shop.brand.metafields.social_links.X fallback pattern used by
+  # snippets/social-media.liquid for the visible follow icons, so a merchant only has to fill in
+  # one of the two sources for it to also show up here in Organization.sameAs.
+  assign social_url_list = ''
+  assign social_delimiter = '|||'
+
+  assign social_value = settings.social_facebook | default: shop.brand.metafields.social_links.facebook
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_twitter | default: shop.brand.metafields.social_links.twitter
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_instagram | default: shop.brand.metafields.social_links.instagram
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_threads | default: shop.brand.metafields.social_links.threads
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_pinterest | default: shop.brand.metafields.social_links.pinterest
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_youtube | default: shop.brand.metafields.social_links.youtube
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_tiktok | default: shop.brand.metafields.social_links.tiktok
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_vimeo | default: shop.brand.metafields.social_links.vimeo
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_linkedin | default: shop.brand.metafields.social_links.linkedin
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_snapchat | default: shop.brand.metafields.social_links.snapchat
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_whatsapp | default: shop.brand.metafields.social_links.whatsapp
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_tumblr | default: shop.brand.metafields.social_links.tumblr
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_wechat | default: shop.brand.metafields.social_links.wechat
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_reddit
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_line | default: shop.brand.metafields.social_links.line
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_spotify | default: shop.brand.metafields.social_links.spotify
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_value = settings.social_21buttons
+  if social_value != blank
+    assign social_url_list = social_url_list | append: social_value | append: social_delimiter
+  endif
+
+  assign social_urls = social_url_list | split: social_delimiter
+-%}
+
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": {{ shop.name | json }},
+    "url": {{ shop.url | json }},
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {{ potential_action_target | json }},
+      "query-input": "required name=search_term_string"
     }
-  ]
-  </script>
-{%- endif -%}
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": {{ shop.name | json }},
+    {%- if shop.brand.logo -%}
+      "logo": {{ shop.brand.logo | image_url: width: shop.brand.logo.width | prepend: "https:" | json }},
+    {%- endif -%}
+    {%- if shop.brand.short_description -%}
+      "description": {{ shop.brand.short_description | json }},
+    {%- endif -%}
+    {%- if shop.brand.slogan -%}
+      "slogan": {{ shop.brand.slogan | json }},
+    {%- endif -%}
+    {%- if social_urls.size > 0 -%}
+      "sameAs": {{ social_urls | json }},
+    {%- endif -%}
+    "url": {{ shop.url | json }}
+  }
+]
+</script>
