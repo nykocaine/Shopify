@@ -12,17 +12,6 @@
   if section.settings.desktop_dropdown_menu_style == 'sidebar' and section.settings.desktop_layout == 'logo_center_navigation_inline'
     assign open_dropdown_menu_in_sidebar = true
   endif
-
-  # Neutral (colorless) tint for the floating-header blur background — deliberately not the color
-  # scheme's own background color, so the blurred area never carries a brand/accent hue, only a
-  # plain white or black wash. Picked from the scheme's text color brightness, same "< 150" light/
-  # dark threshold snippets/css-variables.liquid already uses for badge text contrast.
-  assign header_text_brightness = section.settings.color_scheme.settings.text_color | color_brightness
-  if header_text_brightness < 150
-    assign header_blur_tint = '255 255 255'
-  else
-    assign header_blur_tint = '0 0 0'
-  endif
 -%}
 
 <style>
@@ -82,30 +71,6 @@
     }
   {%- endif -%}
 
-  /* Floating header background blur: backdrop-filter only samples what's rendered behind the
-     element's own border box, never its own children (logo/nav/icons), so it's safe to apply
-     directly to .header itself. The background is a neutral white/black wash (--header-blur-tint,
-     computed in Liquid from the scheme's text brightness) at a configurable opacity — deliberately
-     NOT the color scheme's own --background color, so the blurred area never carries a brand hue.
-     This also sidesteps the transparent-header-over-hero feature, which redefines --background
-     to an already-alpha'd value (0 0 0 / 0) while scrolled to the top — since --header-blur-tint
-     is a plain, always-opaque triplet we control ourselves, the effect stays correct at every
-     scroll position instead of only after the header goes solid.
-
-     will-change forces the sticky header onto its own compositing layer so the blur keeps
-     updating live while the page scrolls underneath it (without this, Safari in particular tends
-     to "freeze" backdrop-filter on position: sticky elements once they've pinned to the top). */
-  .header--blurred {
-    transition: background .2s ease-in-out, color .2s ease-in-out, backdrop-filter .2s ease-in-out;
-    -webkit-backdrop-filter: blur(var(--header-backdrop-blur, 0px));
-    backdrop-filter: blur(var(--header-backdrop-blur, 0px));
-    will-change: backdrop-filter;
-  }
-
-  .header.header--blurred {
-    background-color: rgb(var(--header-blur-tint, 255 255 255) / var(--header-blur-opacity, 0.7));
-  }
-
   {%- if section.settings.logo != blank -%}
     #shopify-section-{{ section.id }} {
       --header-logo-width: {{ section.settings.logo_mobile_max_width }}px;
@@ -164,7 +129,7 @@
 </style>
 
 <height-observer variable="header">
-  <x-header class="header {% if section.settings.show_bottom_border %}header--bordered{% endif %} {% if section.settings.floating_header %}header--floating{% endif %}{% if section.settings.floating_header and section.settings.floating_header_enable_blur %} header--blurred{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.hide_on_scroll %}hide-on-scroll{% endif %} style="padding-block: {{ section.settings.header_height_padding }}px; {% if section.settings.floating_header %}border-start-start-radius: {{ section.settings.header_border_radius }}px; border-start-end-radius: {{ section.settings.header_border_radius }}px; border-end-start-radius: {{ section.settings.floating_header_corner_radius }}px; border-end-end-radius: {{ section.settings.floating_header_corner_radius }}px;{% endif %}{% if section.settings.floating_header and section.settings.floating_header_enable_blur %} --header-backdrop-blur: {{ section.settings.floating_header_blur_intensity }}px; --header-blur-opacity: {{ section.settings.floating_header_blur_opacity | divided_by: 100.0 }}; --header-blur-tint: {{ header_blur_tint }};{% endif %}">
+  <x-header class="header {% if section.settings.show_bottom_border %}header--bordered{% endif %} {% if section.settings.floating_header %}header--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.hide_on_scroll %}hide-on-scroll{% endif %} style="padding-block: {{ section.settings.header_height_padding }}px; {% if section.settings.floating_header %}border-start-start-radius: {{ section.settings.header_border_radius }}px; border-start-end-radius: {{ section.settings.header_border_radius }}px;{% endif %}">
     {%- comment -%}
     --------------------------------------------------------------------------------------------------------------------
     LOGO AREA
@@ -561,50 +526,6 @@
       "label": "t:sections.header.header_border_radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_header }}"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.header.floating_header_blur_category"
-    },
-    {
-      "type": "range",
-      "id": "floating_header_corner_radius",
-      "min": 0,
-      "max": 40,
-      "step": 1,
-      "unit": "px",
-      "label": "t:sections.header.floating_header_corner_radius",
-      "default": 16,
-      "visible_if": "{{ section.settings.floating_header }}"
-    },
-    {
-      "type": "checkbox",
-      "id": "floating_header_enable_blur",
-      "label": "t:sections.header.enable_header_blur",
-      "default": false,
-      "visible_if": "{{ section.settings.floating_header }}"
-    },
-    {
-      "type": "range",
-      "id": "floating_header_blur_intensity",
-      "min": 0,
-      "max": 30,
-      "step": 1,
-      "unit": "px",
-      "label": "t:sections.header.header_blur_intensity",
-      "default": 12,
-      "visible_if": "{{ section.settings.floating_header and section.settings.floating_header_enable_blur }}"
-    },
-    {
-      "type": "range",
-      "id": "floating_header_blur_opacity",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "%",
-      "label": "t:sections.header.header_blur_opacity",
-      "default": 70,
-      "visible_if": "{{ section.settings.floating_header and section.settings.floating_header_enable_blur }}"
     },
     {
       "type": "select",
