@@ -117,7 +117,14 @@
                   {%- assign social_menu = block.settings.menu -%}
 
                   {%- if social_menu != blank and social_menu.links.size > 0 -%}
-                    <div class="footer-social-menu v-stack gap-4.5">
+                    {%- comment -%} Icon color is applied as a CSS variable so it only tints the icon (.footer-social-menu__icon in theme.css), leaving the link text to keep inheriting the footer's own color/hover/focus styles. {%- endcomment -%}
+                    {%- capture social_menu_style -%}
+                      {%- if block.settings.icon_color != blank and block.settings.icon_color != 'rgba(0,0,0,0)' -%}
+                        --footer-social-menu-icon-color: rgb({{ block.settings.icon_color.rgb }});
+                      {%- endif -%}
+                    {%- endcapture -%}
+
+                    <div class="footer-social-menu v-stack gap-4.5" {% if social_menu_style != blank %}style="{{ social_menu_style | strip_newlines | strip }}"{% endif %}>
                       {%- if block.settings.heading != blank -%}
                         <p class="subheading footer-social-menu__heading">{{ block.settings.heading }}</p>
                       {%- endif -%}
@@ -153,10 +160,10 @@
                             {%- comment -%} link.type == 'http_link' is Shopify's own signal for an externally-entered URL {%- endcomment -%}
                             <a href="{{ link.url }}" class="footer-social-menu__link link-reversed link-tap-area" {% if link.type == 'http_link' %}target="_blank" rel="noopener noreferrer"{% endif %}>
                               {%- if social_icon != blank -%}
-                                {%- render 'icon' with social_icon, class: 'footer-social-menu__icon shrink-0' -%}
+                                {%- render 'icon' with social_icon, width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width, class: 'footer-social-menu__icon shrink-0' -%}
                               {%- else -%}
                                 {%- comment -%} Generic fallback icon so unmatched links never break the layout {%- endcomment -%}
-                                {%- render 'icon' with 'picto-social-media', class: 'footer-social-menu__icon shrink-0' -%}
+                                {%- render 'icon' with 'picto-social-media', width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width, class: 'footer-social-menu__icon shrink-0' -%}
                               {%- endif -%}
                               <span>{{- link.title -}}</span>
                             </a>
@@ -469,6 +476,32 @@
           "id": "menu",
           "label": "Menú de enlaces",
           "info": "Crea un menú en Navegación con tus redes sociales (Instagram, YouTube, TikTok, etc.) y selecciónalo aquí."
+        },
+        {
+          "type": "color",
+          "id": "icon_color",
+          "label": "Color de los iconos",
+          "info": "Déjalo vacío para heredar el color de texto del footer."
+        },
+        {
+          "type": "range",
+          "id": "icon_width",
+          "min": 12,
+          "max": 48,
+          "step": 1,
+          "unit": "px",
+          "label": "Tamaño del icono (escritorio)",
+          "default": 24
+        },
+        {
+          "type": "range",
+          "id": "mobile_icon_width",
+          "min": 12,
+          "max": 48,
+          "step": 1,
+          "unit": "px",
+          "label": "Tamaño del icono (móvil)",
+          "default": 24
         }
       ]
     },
