@@ -27,6 +27,21 @@
           -webkit-mask-image: -webkit-radial-gradient(white, black);
         {%- endif -%}
       }
+
+      {%- comment -%}
+      Mobile-only width: below 1000px .modal defaults to place-self: end stretch (a full-width bottom sheet, see
+      assets/theme.css). Below 100% we switch the inline axis from "stretch" to a fixed percentage, centered
+      horizontally, without touching the vertical anchor (align-self), so it still combines correctly with
+      "Center popup" above.
+      {%- endcomment -%}
+      {%- if section.settings.mobile_popup_width < 100 -%}
+        @media screen and (max-width: 999px) {
+          .modal--newsletter::part(content) {
+            width: {{ section.settings.mobile_popup_width }}%;
+            justify-self: center;
+          }
+        }
+      {%- endif -%}
     </style>
     <newsletter-popup class="modal modal--newsletter color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.show_only_once %}only-once{% endif %} apparition-delay="{{ section.settings.apparition_delay }}" {% if posted_successfully %}open{% endif %} title="{{ 'sections.newsletter_popup.accessibility_title' | t | escape }}" handle-editor-events>
       {%- if section.settings.image != blank -%}
@@ -116,6 +131,17 @@
       "id": "center_popup",
       "label": "Center popup",
       "default": false
+    },
+    {
+      "type": "range",
+      "id": "mobile_popup_width",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Ancho en móvil",
+      "info": "100% mantiene el ancho completo actual.",
+      "default": 100
     },
     {
       "type": "range",
