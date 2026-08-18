@@ -74,6 +74,16 @@ note that this may have impact on different places.
       assign satoshi_regular_url = 'satoshi-variable.woff2' | asset_url
       assign satoshi_italic_url = 'satoshi-variable-italic.woff2' | asset_url
     endif
+
+    # Typography (Rektorat custom font, used when any font source is set to 'rektorat')
+    if settings.subheading_font_source == 'rektorat' or settings.heading_font_source == 'rektorat' or settings.text_font_source == 'rektorat'
+      assign rektorat_thin_url = 'rektorat-thin.woff2' | asset_url
+      assign rektorat_light_url = 'rektorat-light.woff2' | asset_url
+      assign rektorat_regular_url = 'rektorat-regular.woff2' | asset_url
+      assign rektorat_medium_url = 'rektorat-medium.woff2' | asset_url
+      assign rektorat_bold_url = 'rektorat-bold.woff2' | asset_url
+      assign rektorat_heavy_url = 'rektorat-heavy.woff2' | asset_url
+    endif
   -%}
 
   {%- if settings.subheading_font_source == 'satoshi' or settings.heading_font_source == 'satoshi' or settings.text_font_source == 'satoshi' -%}
@@ -89,6 +99,51 @@ note that this may have impact on different places.
       src: url('{{ satoshi_italic_url }}') format('woff2');
       font-weight: 300 900;
       font-style: italic;
+      font-display: fallback;
+    }
+  {%- endif -%}
+
+  {%- if settings.subheading_font_source == 'rektorat' or settings.heading_font_source == 'rektorat' or settings.text_font_source == 'rektorat' -%}
+    @font-face {
+      font-family: 'Rektorat';
+      src: url('{{ rektorat_thin_url }}') format('woff2');
+      font-weight: 100;
+      font-style: normal;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: 'Rektorat';
+      src: url('{{ rektorat_light_url }}') format('woff2');
+      font-weight: 300;
+      font-style: normal;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: 'Rektorat';
+      src: url('{{ rektorat_regular_url }}') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: 'Rektorat';
+      src: url('{{ rektorat_medium_url }}') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: 'Rektorat';
+      src: url('{{ rektorat_bold_url }}') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: 'Rektorat';
+      src: url('{{ rektorat_heavy_url }}') format('woff2');
+      font-weight: 900;
+      font-style: normal;
       font-display: fallback;
     }
   {%- endif -%}
@@ -167,6 +222,10 @@ note that this may have impact on different places.
     --subheading-font-family: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --subheading-font-weight: {{ settings.subheading_font_weight }};
     --subheading-font-style: normal;
+    {%- elsif settings.subheading_font_source == 'rektorat' -%}
+    --subheading-font-family: "Rektorat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --subheading-font-weight: {{ settings.subheading_font_weight }};
+    --subheading-font-style: normal;
     {%- else -%}
     --subheading-font-family: {{ settings.subheading_font.family }}, {{ settings.subheading_font.fallback_families }};
     --subheading-font-weight: {{ settings.subheading_font.weight }};
@@ -181,6 +240,10 @@ note that this may have impact on different places.
     --heading-font-style: normal;
     {%- elsif settings.heading_font_source == 'satoshi' -%}
     --heading-font-family: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --heading-font-weight: {{ settings.heading_font_weight }};
+    --heading-font-style: normal;
+    {%- elsif settings.heading_font_source == 'rektorat' -%}
+    --heading-font-family: "Rektorat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --heading-font-weight: {{ settings.heading_font_weight }};
     --heading-font-style: normal;
     {%- else -%}
@@ -201,6 +264,10 @@ note that this may have impact on different places.
     --text-font-style: normal;
     {%- elsif settings.text_font_source == 'satoshi' -%}
     --text-font-family: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --text-font-weight: {{ settings.text_font_weight }};
+    --text-font-style: normal;
+    {%- elsif settings.text_font_source == 'rektorat' -%}
+    --text-font-family: "Rektorat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --text-font-weight: {{ settings.text_font_weight }};
     --text-font-style: normal;
     {%- else -%}
