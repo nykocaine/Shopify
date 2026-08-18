@@ -13,7 +13,7 @@
 
     <style>
       .modal--newsletter {
-        {%- comment -%} Consumed by .modal--newsletter [slot="image"] in assets/theme.css {%- endcomment -%}
+        {%- comment -%} Consumed by .newsletter-popup__image in assets/theme.css {%- endcomment -%}
         --newsletter-image-radius: {{ section.settings.image_border_radius }}px;
       }
 
@@ -30,7 +30,13 @@
     </style>
     <newsletter-popup class="modal modal--newsletter color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.show_only_once %}only-once{% endif %} apparition-delay="{{ section.settings.apparition_delay }}" {% if posted_successfully %}open{% endif %} title="{{ 'sections.newsletter_popup.accessibility_title' | t | escape }}" handle-editor-events>
       {%- if section.settings.image != blank -%}
-        {{- section.settings.image | image_url: width: section.settings.image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 100vw, 430px', widths: '200,400,600,800,1000,1200', slot: 'image' -}}
+        {%- comment -%}
+        The radius + overflow:hidden live on this wrapper (not directly on the <img>) to reliably clip the image
+        across browsers, same pattern as .media-blocks__item / --media-blocks-corner-radius in media-blocks.liquid.
+        {%- endcomment -%}
+        <div class="newsletter-popup__image" slot="image">
+          {{- section.settings.image | image_url: width: section.settings.image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 100vw, 430px', widths: '200,400,600,800,1000,1200' -}}
+        </div>
       {%- endif -%}
 
       <div class="v-stack gap-6">
