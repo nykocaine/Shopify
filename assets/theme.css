@@ -4779,6 +4779,29 @@ table caption {
   outline-offset: -2px;
 }
 
+/* Password page: the newsletter form and the "storefront password" form share the same x-tabs component so they
+   cross-fade in place as a single component with two states, instead of opening a separate modal. Only the tab
+   button that switches to the OTHER state should ever be visible. */
+.password-access-tabs {
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 1rem;
+  display: grid;
+}
+
+.password-access-tabs::part(tab-list) {
+  order: 2;
+  text-align: center;
+  display: block;
+}
+
+.password-access-tabs::part(tab-panels) {
+  order: 1;
+}
+
+.password-access-tabs [role="tab"][aria-selected="true"] {
+  display: none;
+}
+
 .inventory {
   row-gap: .7rem;
   display: grid;
