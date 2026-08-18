@@ -4733,6 +4733,50 @@ table caption {
   height: 1rem;
 }
 
+/* Newsletter: merge the email input and the submit button into a single rounded pill with a thin
+   vertical divider, instead of two separate controls. Shared by the footer newsletter block and the
+   password page newsletter form (see snippets/newsletter-form.liquid). */
+.newsletter-input-group {
+  background: rgb(var(--input-background));
+  border-radius: var(--input-border-radius);
+  overflow: hidden;
+  width: 100%;
+  column-gap: 0;
+}
+
+.newsletter-input-group .form-control {
+  flex: 1;
+  min-width: 0;
+}
+
+.newsletter-input-group .input {
+  background: none;
+  border: none;
+}
+
+.newsletter-input-group .input:focus {
+  outline: none;
+}
+
+.newsletter-input-group hr {
+  align-self: stretch;
+  height: auto;
+}
+
+.newsletter-input-group .link {
+  background: none;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--input-padding-inline);
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.newsletter-input-group .link:focus-visible {
+  outline-offset: -2px;
+}
+
 .inventory {
   row-gap: .7rem;
   display: grid;
