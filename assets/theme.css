@@ -1359,6 +1359,17 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   max-height: 200px;
 }
 
+/* Newsletter popup image: padding reuses the modal's own body padding tokens (--modal-body-padding-block/inline,
+   defined on .modal) instead of a hardcoded value, so it always matches the popup's existing spacing scale. The
+   radius is configurable per-instance via --newsletter-image-radius (set in sections/newsletter-popup.liquid from
+   the "Radio de imagen" setting). Applied directly on the <img> (not a wrapper) so object-fit keeps clipping
+   correctly and no extra overflow/inset is needed. */
+.modal--newsletter [slot="image"] {
+  padding: var(--modal-body-padding-block) var(--modal-body-padding-inline);
+  border-radius: var(--newsletter-image-radius, 0px);
+  box-sizing: border-box;
+}
+
 .modal--lg {
   --modal-content-width: 60rem;
 }

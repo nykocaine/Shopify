@@ -12,6 +12,11 @@
     -%}
 
     <style>
+      .modal--newsletter {
+        {%- comment -%} Consumed by .modal--newsletter [slot="image"] in assets/theme.css {%- endcomment -%}
+        --newsletter-image-radius: {{ section.settings.image_border_radius }}px;
+      }
+
       .modal--newsletter::part(content) {
         {%- if section.settings.center_popup -%}
           place-self: center;
@@ -38,34 +43,15 @@
         {%- endif -%}
 
         <div class="v-stack gap-4">
-          {%- form 'customer', id: newsletter_id, class: 'form' -%}
-            {%- if form.posted_successfully? -%}
-              {%- capture success_message -%}{{ 'general.newsletter.subscribed_successfully' | t }}{%- endcapture -%}
-              {%- render 'banner', content: success_message, status: 'success', text_alignment: 'start' -%}
+          {%- comment -%}
+          Same component as the footer newsletter block and the password page (snippets/newsletter-form.liquid):
+          merged email + submit pill, identical styles and submission logic.
+          {%- endcomment -%}
+          {%- render 'newsletter-form', id: section.id, value: customer.email, button_label: section.settings.button_text, remember_success_locally: true -%}
 
-              <script>
-                localStorage.setItem('theme:popup-filled', 'true');
-              </script>
-            {%- else -%}
-              {%- if form.errors -%}
-                {%- assign content = form.errors | default_errors -%}
-                {%- render 'banner', status: 'error', content: content, text_alignment: 'start' -%}
-              {%- endif -%}
-
-              <div class="fieldset">
-                <input type="hidden" name="contact[tags]" value="newsletter">
-
-                {%- assign label = 'general.newsletter.email' | t -%}
-                {%- render 'input', type: 'email', name: 'contact[email]', label: label, value: customer.email, required: true, autocomplete: 'email' -%}
-
-                {%- render 'button', content: section.settings.button_text, type: 'submit' -%}
-              </div> 
-
-              {%- if section.settings.conditions != blank -%}
-                <p class="text-sm text-subdued">{{ section.settings.conditions }}</p>
-              {%- endif -%}
-            {%- endif -%}
-          {%- endform -%}
+          {%- if section.settings.conditions != blank -%}
+            <p class="text-sm text-subdued">{{ section.settings.conditions }}</p>
+          {%- endif -%}
         </div>
       </div>
     </newsletter-popup>
@@ -133,6 +119,16 @@
       "step": 2,
       "unit": "px",
       "label": "Corner radius",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Radio de imagen",
       "default": 0
     },
     {

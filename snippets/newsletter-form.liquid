@@ -1,11 +1,15 @@
 {%- doc -%}
 Renders the newsletter subscription form as a single merged pill (email input + submit button separated by a thin
 vertical divider). This is the single source of truth for the newsletter form's markup, styles (.newsletter-input-group,
-defined in assets/theme.css) and submission logic (Shopify customer form), used by both the footer newsletter block
-and the password page.
+defined in assets/theme.css) and submission logic (Shopify customer form), used by the footer newsletter block, the
+password page and the newsletter popup.
 
 @param {string} id - a unique identifier appended to the form id (e.g. section.id), to avoid ID collisions when the
   form is rendered more than once on a page
+@param {string} [value] - an optional prefilled value for the email input (e.g. customer.email)
+@param {string} [button_label] - an optional override for the submit button label (defaults to "Subscribe")
+@param {boolean} [remember_success_locally] - if true, sets a "theme:popup-filled" local storage flag on a
+  successful submission (used by the newsletter popup so it doesn't show again)
 {%- enddoc -%}
 
 {%- assign newsletter_form_id = 'newsletter-form-' | append: id -%}
@@ -14,6 +18,12 @@ and the password page.
   {%- if form.posted_successfully? -%}
     {%- assign success_message = 'general.newsletter.subscribed_successfully' | t -%}
     {%- render 'banner', content: success_message, status: 'success', text_alignment: 'center' -%}
+
+    {%- if remember_success_locally -%}
+      <script>
+        localStorage.setItem('theme:popup-filled', 'true');
+      </script>
+    {%- endif -%}
   {%- else -%}
     {%- if form.errors -%}
       {%- capture error_message -%}{{ form.errors.translated_fields['email'] }} {{ form.errors.messages['email'] }}{%- endcapture -%}
@@ -24,11 +34,13 @@ and the password page.
 
     <div class="newsletter-input-group vertically-separated-list">
       {%- assign input_label = 'general.newsletter.email' | t -%}
-      {%- render 'input', name: 'contact[email]', label: input_label, type: 'email', required: true, autocomplete: 'email', enterkeyhint: 'send' -%}
+      {%- render 'input', name: 'contact[email]', label: input_label, type: 'email', value: value, required: true, autocomplete: 'email', enterkeyhint: 'send' -%}
 
       <hr>
 
-      {%- assign button_label = 'general.newsletter.subscribe' | t -%}
+      {%- unless button_label -%}
+        {%- assign button_label = 'general.newsletter.subscribe' | t -%}
+      {%- endunless -%}
       {%- render 'button', type: 'submit', content: button_label, style: 'link' -%}
     </div>
   {%- endif -%}
