@@ -9,6 +9,13 @@
           assign posted_successfully = form.posted_successfully?
         endform
       endcapture
+
+      # Hide the marketing heading/text once the discount code is showing, so the "thank you + code" message isn't
+      # competing with the original pitch copy.
+      assign show_discount_after_success = false
+      if posted_successfully and section.settings.show_discount_code and section.settings.discount_code != blank
+        assign show_discount_after_success = true
+      endif
     -%}
 
     <style>
@@ -55,13 +62,15 @@
       {%- endif -%}
 
       <div class="v-stack gap-6">
-        {%- if section.settings.title != blank -%}
-          <p class="h4" style="padding-inline-end: 2rem">{{ section.settings.title }}</p>
-        {%- endif -%}
+        {%- unless show_discount_after_success -%}
+          {%- if section.settings.title != blank -%}
+            <p class="h4" style="padding-inline-end: 2rem">{{ section.settings.title }}</p>
+          {%- endif -%}
 
-        {%- if section.settings.content != blank -%}
-          <p>{{ section.settings.content }}</p>
-        {%- endif -%}
+          {%- if section.settings.content != blank -%}
+            <p>{{ section.settings.content }}</p>
+          {%- endif -%}
+        {%- endunless -%}
 
         <div class="v-stack gap-4">
           {%- comment -%}
