@@ -1359,10 +1359,9 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
    container-gutter spacing setting. The radius is configurable per-instance via --newsletter-image-radius (set in
    sections/newsletter-popup.liquid from the "Radio de imagen" setting). Radius + overflow:hidden live on this
    wrapper (not the <img>) so the image reliably clips to the rounded corners in every browser, same pattern as
-   .media-blocks__item / --media-blocks-corner-radius in media-blocks.liquid. A definite height (not max-height) is
-   required so the child img's height: 100% (below) has something to resolve against. */
+   .media-blocks__item / --media-blocks-corner-radius in media-blocks.liquid. Height is intentionally left auto
+   (no object-fit: cover / fixed height) so the image's own aspect ratio is preserved and it's never cropped. */
 .newsletter-popup__image {
-  height: 200px;
   padding: min(1.25rem, var(--container-gutter));
   border-radius: var(--newsletter-image-radius, 0px);
   box-sizing: border-box;
@@ -1371,9 +1370,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 
 .newsletter-popup__image img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
+  height: auto;
   border-radius: inherit;
 }
 
@@ -1408,7 +1405,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   .newsletter-popup__image {
     grid-column-end: -2;
     width: 430px;
-    height: 100%;
+    align-self: start;
   }
 
   .modal--tight {
