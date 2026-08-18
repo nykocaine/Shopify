@@ -23,9 +23,10 @@ password page and the newsletter popup.
   {%- if form.posted_successfully? -%}
     {%- comment -%}
     .form-row is a flex-row (built for input + button side by side), not a vertical stack - so the success banner
-    and the discount block are wrapped in their own v-stack rather than left as loose .form-row children.
+    and the discount block are wrapped in their own v-stack rather than left as loose .form-row children. w-full is
+    required because a flex item without an explicit width only takes its content's size, leaving empty flex space.
     {%- endcomment -%}
-    <div class="v-stack gap-4">
+    <div class="v-stack gap-4 w-full">
       {%- assign success_message = 'general.newsletter.subscribed_successfully' | t -%}
       {%- render 'banner', content: success_message, status: 'success', text_alignment: 'center' -%}
 
