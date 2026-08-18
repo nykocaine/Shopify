@@ -10,6 +10,11 @@ password page and the newsletter popup.
 @param {string} [button_label] - an optional override for the submit button label (defaults to "Subscribe")
 @param {boolean} [remember_success_locally] - if true, sets a "theme:popup-filled" local storage flag on a
   successful submission (used by the newsletter popup so it doesn't show again)
+@param {boolean} [show_discount] - if true (and discount_code is set), shows the configured discount code with a
+  copy-to-clipboard button after a successful subscription
+@param {string} [discount_code] - the discount code to display. This must match a discount the merchant already
+  created in Shopify Admin (Discounts) - Liquid has no API to look up or generate real discount codes, so this is
+  always a merchant-entered value, never invented or validated by the theme
 {%- enddoc -%}
 
 {%- assign newsletter_form_id = 'newsletter-form-' | append: id -%}
@@ -23,6 +28,23 @@ password page and the newsletter popup.
       <script>
         localStorage.setItem('theme:popup-filled', 'true');
       </script>
+    {%- endif -%}
+
+    {%- if show_discount and discount_code != blank -%}
+      <div class="newsletter-discount v-stack gap-3">
+        <p class="text-sm text-subdued">{{ 'general.newsletter.discount_code_label' | t }}</p>
+
+        <div class="newsletter-discount__code-group">
+          <span class="newsletter-discount__code">{{ discount_code }}</span>
+
+          <copy-button class="contents" data-text="{{ discount_code | escape }}">
+            <button type="button" class="link newsletter-discount__copy-button">
+              <span class="newsletter-discount__copy-label">{{ 'general.newsletter.copy_code' | t }}</span>
+              <span class="newsletter-discount__copied-label">{{ 'general.newsletter.copied_code' | t }}</span>
+            </button>
+          </copy-button>
+        </div>
+      </div>
     {%- endif -%}
   {%- else -%}
     {%- if form.errors -%}

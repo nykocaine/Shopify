@@ -4793,6 +4793,39 @@ table caption {
   outline-offset: -2px;
 }
 
+/* Newsletter discount code: reuses the same input border/radius tokens as .newsletter-input-group so the "coupon"
+   box reads as part of the same component system instead of a new invented style. */
+.newsletter-discount__code-group {
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: var(--input-padding-block) var(--input-padding-inline);
+  border: 1px solid var(--input-border-color, rgb(var(--input-text-color) / calc(var(--has-transparent-background, 0) * .85 + .15)));
+  border-radius: var(--input-border-radius);
+  display: flex;
+}
+
+.newsletter-discount__code {
+  font-weight: var(--text-font-bold-weight, 700);
+  letter-spacing: .05em;
+}
+
+.newsletter-discount__copy-button {
+  flex-shrink: 0;
+}
+
+.newsletter-discount__copied-label {
+  display: none;
+}
+
+.newsletter-discount__copy-button[aria-busy="true"] .newsletter-discount__copy-label {
+  display: none;
+}
+
+.newsletter-discount__copy-button[aria-busy="true"] .newsletter-discount__copied-label {
+  display: inline;
+}
+
 /* Password page: the newsletter form and the "storefront password" form share the same x-tabs component so they
    cross-fade in place as a single component with two states, instead of opening a separate modal. Only the tab
    button that switches to the OTHER state should ever be visible. */

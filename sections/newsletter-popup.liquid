@@ -53,7 +53,7 @@
           Same component as the footer newsletter block and the password page (snippets/newsletter-form.liquid):
           merged email + submit pill, identical styles and submission logic.
           {%- endcomment -%}
-          {%- render 'newsletter-form', id: section.id, value: customer.email, button_label: section.settings.button_text, remember_success_locally: true -%}
+          {%- render 'newsletter-form', id: section.id, value: customer.email, button_label: section.settings.button_text, remember_success_locally: true, show_discount: section.settings.show_discount_code, discount_code: section.settings.discount_code -%}
 
           {%- if section.settings.conditions != blank -%}
             <p class="text-sm text-subdued">{{ section.settings.conditions }}</p>
@@ -166,6 +166,24 @@
       "id": "conditions",
       "label": "t:global.text.secondary_text",
       "default": "By entering your address, you confirm that you have read our privacy policy."
+    },
+    {
+      "type": "header",
+      "content": "Descuento por suscripción"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_discount_code",
+      "label": "Mostrar descuento después de suscribirse",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "discount_code",
+      "label": "Código de descuento",
+      "info": "Debe ser exactamente igual a un descuento que ya hayas creado en Shopify Admin → Descuentos. El tema no puede crear ni validar descuentos, solo muestra este texto.",
+      "placeholder": "WELCOME10",
+      "visible_if": "{{ section.settings.show_discount_code }}"
     }
   ],
   "presets": [
