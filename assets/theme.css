@@ -1374,13 +1374,18 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   border-radius: inherit;
 }
 
-/* Newsletter popup content (title, text, form, discount code) centered on mobile. justify-items: center centers
-   auto-sized blocks (text, the discount code box); elements with an explicit width: 100% (.newsletter-input-group)
-   are unaffected and stay full width. */
+/* Newsletter popup content (title, text, form, discount code) centered on mobile. text-align (inherited) centers
+   text lines while keeping full-width elements (.newsletter-input-group) intact. justify-items: center was tried
+   first but shrinks the whole .v-stack column to its content width, which then makes width: 100% children (the
+   email pill) resolve against that shrunk width instead of the popup's - so the code+button row is centered
+   directly instead (justify-content, not a container-shrinking property). */
 @media screen and (max-width: 999px) {
   .modal--newsletter::part(body) {
     text-align: center;
-    justify-items: center;
+  }
+
+  .modal--newsletter .newsletter-discount__code-group {
+    justify-content: center;
   }
 }
 
