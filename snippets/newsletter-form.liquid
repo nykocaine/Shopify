@@ -21,30 +21,36 @@ password page and the newsletter popup.
 
 {%- form 'customer', id: newsletter_form_id, class: 'form-row' -%}
   {%- if form.posted_successfully? -%}
-    {%- assign success_message = 'general.newsletter.subscribed_successfully' | t -%}
-    {%- render 'banner', content: success_message, status: 'success', text_alignment: 'center' -%}
+    {%- comment -%}
+    .form-row is a flex-row (built for input + button side by side), not a vertical stack - so the success banner
+    and the discount block are wrapped in their own v-stack rather than left as loose .form-row children.
+    {%- endcomment -%}
+    <div class="v-stack gap-4">
+      {%- assign success_message = 'general.newsletter.subscribed_successfully' | t -%}
+      {%- render 'banner', content: success_message, status: 'success', text_alignment: 'center' -%}
+
+      {%- if show_discount and discount_code != blank -%}
+        <div class="newsletter-discount v-stack gap-3">
+          <p class="text-sm text-subdued">{{ 'general.newsletter.discount_code_label' | t }}</p>
+
+          <div class="newsletter-discount__code-group">
+            <span class="newsletter-discount__code">{{ discount_code }}</span>
+
+            <copy-button class="contents" data-text="{{ discount_code | escape }}">
+              <button type="button" class="link newsletter-discount__copy-button">
+                <span class="newsletter-discount__copy-label">{{ 'general.newsletter.copy_code' | t }}</span>
+                <span class="newsletter-discount__copied-label">{{ 'general.newsletter.copied_code' | t }}</span>
+              </button>
+            </copy-button>
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
 
     {%- if remember_success_locally -%}
       <script>
         localStorage.setItem('theme:popup-filled', 'true');
       </script>
-    {%- endif -%}
-
-    {%- if show_discount and discount_code != blank -%}
-      <div class="newsletter-discount v-stack gap-3">
-        <p class="text-sm text-subdued">{{ 'general.newsletter.discount_code_label' | t }}</p>
-
-        <div class="newsletter-discount__code-group">
-          <span class="newsletter-discount__code">{{ discount_code }}</span>
-
-          <copy-button class="contents" data-text="{{ discount_code | escape }}">
-            <button type="button" class="link newsletter-discount__copy-button">
-              <span class="newsletter-discount__copy-label">{{ 'general.newsletter.copy_code' | t }}</span>
-              <span class="newsletter-discount__copied-label">{{ 'general.newsletter.copied_code' | t }}</span>
-            </button>
-          </copy-button>
-        </div>
-      </div>
     {%- endif -%}
   {%- else -%}
     {%- if form.errors -%}
