@@ -113,6 +113,59 @@
                     {%- endif -%}
                   {%- endif -%}
 
+                {%- when 'social_menu' -%}
+                  {%- assign social_menu = block.settings.menu -%}
+
+                  {%- if social_menu != blank and social_menu.links.size > 0 -%}
+                    <div class="footer-social-menu v-stack gap-4.5">
+                      {%- if block.settings.heading != blank -%}
+                        <p class="subheading footer-social-menu__heading">{{ block.settings.heading }}</p>
+                      {%- endif -%}
+
+                      <ul class="footer-social-menu__list v-stack gap-2.5 unstyled-list" role="list">
+                        {%- for link in social_menu.links -%}
+                          {%- liquid
+                            # Detect the network from the URL first (most reliable), falling back to the link text
+                            assign link_url_downcase = link.url | downcase
+                            assign link_title_downcase = link.title | downcase
+                            assign social_icon = blank
+
+                            if link_url_downcase contains 'instagram.com' or link_title_downcase contains 'instagram'
+                              assign social_icon = 'instagram'
+                            elsif link_url_downcase contains 'youtube.com' or link_url_downcase contains 'youtu.be' or link_title_downcase contains 'youtube'
+                              assign social_icon = 'youtube'
+                            elsif link_url_downcase contains 'tiktok.com' or link_title_downcase contains 'tiktok'
+                              assign social_icon = 'tiktok'
+                            elsif link_url_downcase contains 'pinterest.com' or link_title_downcase contains 'pinterest'
+                              assign social_icon = 'pinterest'
+                            elsif link_url_downcase contains 'facebook.com' or link_title_downcase contains 'facebook'
+                              assign social_icon = 'facebook'
+                            elsif link_url_downcase contains '//x.com' or link_url_downcase contains '.x.com' or link_url_downcase contains 'twitter.com' or link_title_downcase contains 'twitter'
+                              assign social_icon = 'twitter'
+                            elsif link_url_downcase contains 'linkedin.com' or link_title_downcase contains 'linkedin'
+                              assign social_icon = 'linkedin'
+                            elsif link_url_downcase contains 'whatsapp.com' or link_url_downcase contains 'wa.me' or link_title_downcase contains 'whatsapp'
+                              assign social_icon = 'whatsapp'
+                            endif
+                          -%}
+
+                          <li class="footer-social-menu__item">
+                            {%- comment -%} link.type == 'http_link' is Shopify's own signal for an externally-entered URL {%- endcomment -%}
+                            <a href="{{ link.url }}" class="footer-social-menu__link link-reversed link-tap-area" {% if link.type == 'http_link' %}target="_blank" rel="noopener noreferrer"{% endif %}>
+                              {%- if social_icon != blank -%}
+                                {%- render 'icon' with social_icon, class: 'footer-social-menu__icon shrink-0' -%}
+                              {%- else -%}
+                                {%- comment -%} Generic fallback icon so unmatched links never break the layout {%- endcomment -%}
+                                {%- render 'icon' with 'picto-social-media', class: 'footer-social-menu__icon shrink-0' -%}
+                              {%- endif -%}
+                              <span>{{- link.title -}}</span>
+                            </a>
+                          </li>
+                        {%- endfor -%}
+                      </ul>
+                    </div>
+                  {%- endif -%}
+
                 {%- when 'newsletter' -%}
                   <div class="v-stack gap-4.5">
                     {%- if block.settings.title != blank -%}
@@ -398,6 +451,24 @@
           "id": "menu_title",
           "label": "t:sections.footer.blocks.links.menu_title",
           "info": "t:sections.footer.blocks.links.menu_title_info"
+        }
+      ]
+    },
+    {
+      "type": "social_menu",
+      "name": "Menú social con iconos",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Título",
+          "default": "SOCIAL"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menú de enlaces",
+          "info": "Crea un menú en Navegación con tus redes sociales (Instagram, YouTube, TikTok, etc.) y selecciónalo aquí."
         }
       ]
     },
