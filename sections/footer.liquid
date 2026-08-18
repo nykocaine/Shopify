@@ -117,14 +117,13 @@
                   {%- assign social_menu = block.settings.menu -%}
 
                   {%- if social_menu != blank and social_menu.links.size > 0 -%}
-                    {%- comment -%} Icon color is applied as a CSS variable so it only tints the icon (.footer-social-menu__icon in theme.css), leaving the link text to keep inheriting the footer's own color/hover/focus styles. {%- endcomment -%}
-                    {%- capture social_menu_style -%}
-                      {%- if block.settings.icon_color != blank and block.settings.icon_color != 'rgba(0,0,0,0)' -%}
-                        --footer-social-menu-icon-color: rgb({{ block.settings.icon_color.rgb }});
-                      {%- endif -%}
+                    {%- comment -%} Icon color: captured once here and applied below directly on the <span> that wraps ONLY the icon (never the <a> or the text), so it cannot affect the link text under any circumstance. {%- endcomment -%}
+                    {%- capture icon_style -%}
+                      {%- if block.settings.icon_color != blank and block.settings.icon_color != 'rgba(0,0,0,0)' -%}color: rgb({{ block.settings.icon_color.rgb }});{%- endif -%}
                     {%- endcapture -%}
+                    {%- assign icon_style = icon_style | strip -%}
 
-                    <div class="footer-social-menu v-stack gap-4.5" {% if social_menu_style != blank %}style="{{ social_menu_style | strip_newlines | strip }}"{% endif %}>
+                    <div class="footer-social-menu v-stack gap-4.5">
                       {%- if block.settings.heading != blank -%}
                         <p class="subheading footer-social-menu__heading">{{ block.settings.heading }}</p>
                       {%- endif -%}
@@ -159,13 +158,15 @@
                           <li class="footer-social-menu__item">
                             {%- comment -%} link.type == 'http_link' is Shopify's own signal for an externally-entered URL {%- endcomment -%}
                             <a href="{{ link.url }}" class="footer-social-menu__link link-reversed link-tap-area" {% if link.type == 'http_link' %}target="_blank" rel="noopener noreferrer"{% endif %}>
-                              {%- if social_icon != blank -%}
-                                {%- render 'icon' with social_icon, width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width, class: 'footer-social-menu__icon shrink-0' -%}
-                              {%- else -%}
-                                {%- comment -%} Generic fallback icon so unmatched links never break the layout {%- endcomment -%}
-                                {%- render 'icon' with 'picto-social-media', width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width, class: 'footer-social-menu__icon shrink-0' -%}
-                              {%- endif -%}
-                              <span>{{- link.title -}}</span>
+                              <span class="footer-social-menu__icon-wrap shrink-0" {% if icon_style != blank %}style="{{ icon_style }}"{% endif %}>
+                                {%- if social_icon != blank -%}
+                                  {%- render 'icon' with social_icon, width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width, class: 'footer-social-menu__icon' -%}
+                                {%- else -%}
+                                  {%- comment -%} Generic fallback icon so unmatched links never break the layout {%- endcomment -%}
+                                  {%- render 'icon' with 'picto-social-media', width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width, class: 'footer-social-menu__icon' -%}
+                                {%- endif -%}
+                              </span>
+                              <span class="footer-social-menu__text">{{- link.title -}}</span>
                             </a>
                           </li>
                         {%- endfor -%}
