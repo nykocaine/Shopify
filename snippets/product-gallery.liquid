@@ -159,14 +159,14 @@ only way to do it on Shopify right now.
   assign product_gallery_carousel_id = 'product-gallery-carousel-' | append: product.id | append: '-' | append: section.id
   assign filtered_indexes = null | sort
 
-  # Display order only: move the first media item to the end of the gallery. Filtering (variant matching below)
-  # and the 3D model lookup further down intentionally keep using the original product.media order/positions,
-  # since those aren't about visual slide order.
+  # Display order only: the 2nd media item onward is shown first, and the 1st is pushed to the end (a left
+  # rotation by 1). Filtering (variant matching below) and the 3D model lookup further down intentionally keep
+  # using the original product.media order/positions, since those aren't about visual slide order.
   assign gallery_media = product.media
   if product.media.size > 1
+    assign gallery_media_from_second = product.media | slice: 1, product.media.size
     assign gallery_media_first = product.media | slice: 0, 1
-    assign gallery_media_rest = product.media | slice: 1, product.media.size
-    assign gallery_media = gallery_media_rest | concat: gallery_media_first
+    assign gallery_media = gallery_media_from_second | concat: gallery_media_first
   endif
 
   if product.variants.size > 1
