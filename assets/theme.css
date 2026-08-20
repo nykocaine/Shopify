@@ -1389,6 +1389,16 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   }
 }
 
+/* The shared dialog overlay (:where(.drawer, .drawer-popover, .modal, .popover)::part(overlay), further up in this
+   file) is position: fixed; inset: 0 - covering the full viewport, including the header, with the backdrop blur.
+   Scoped here to .modal--newsletter only (not the shared rule, so cart-drawer/search-drawer/other modals/popovers
+   are unaffected): the overlay's top edge is pulled down to sit right below the header's real current bottom edge
+   (--newsletter-popup-header-offset, set by NewsletterPopup in theme.js via getBoundingClientRect(), recalculated
+   on open and on resize), so the header is never covered by the blur/dim, on any screen size. */
+.modal--newsletter::part(overlay) {
+  inset-block-start: var(--newsletter-popup-header-offset, 0px);
+}
+
 .modal--lg {
   --modal-content-width: 60rem;
 }

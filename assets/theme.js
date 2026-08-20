@@ -6051,6 +6051,19 @@ if (!window.customElements.get("news-modal-button")) {
 
 // js/sections/newsletter-popup.js
 var NewsletterPopup = class extends Modal {
+  constructor() {
+    super();
+    const updateHeaderOffset = () => {
+      if (!this.open) {
+        return;
+      }
+      const header = document.querySelector("x-header");
+      const offsetTop = header ? Math.max(header.getBoundingClientRect().bottom, 0) : 0;
+      this.style.setProperty("--newsletter-popup-header-offset", `${offsetTop}px`);
+    };
+    this.addEventListener("dialog:before-show", updateHeaderOffset);
+    window.addEventListener("resize", updateHeaderOffset);
+  }
   connectedCallback() {
     super.connectedCallback();
     if (this.shouldAppearAutomatically) {
