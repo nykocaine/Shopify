@@ -5467,7 +5467,7 @@ _HeaderMenuDrawer_instances = new WeakSet();
  */
 onBeforeShow_fn = function() {
   __privateMethod(this, _HeaderMenuDrawer_instances, calculateOffsets_fn).call(this);
-  if (matchesMediaQuery("sm-max")) {
+  if (matchesMediaQuery("md-max")) {
     this.dispatchEvent(new CustomEvent("header:disable-transparent-header", { bubbles: true }));
   }
   this.querySelector(`#menu-drawer-panel-main`)?.show({ initial: true });
@@ -5476,7 +5476,7 @@ onBeforeShow_fn = function() {
  * After the drawer is fully closed, we hide all existing panels
  */
 onAfterHide_fn2 = function() {
-  if (matchesMediaQuery("sm-max")) {
+  if (matchesMediaQuery("md-max")) {
     this.dispatchEvent(new CustomEvent("header:allow-transparent-header", { bubbles: true }));
   }
   this.querySelectorAll("header-menu-drawer-panel").forEach((panel) => panel.hide({ instant: true }));
