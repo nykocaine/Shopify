@@ -5450,7 +5450,7 @@ var HeaderMenuDrawer = class extends DialogElement {
     ];
     if (window.matchMedia("(prefers-reduced-motion: no-preference)").matches) {
       timelineSteps.push(
-        [this.getShadowPartByName("content"), { transform: ["translateX(calc(var(--transform-logical-flip) * -100%))", "translateX(0)"] }, { duration: 0.35, at: "<", ease: [0.2, 0.4, 0.2, 1] }]
+        [this.getShadowPartByName("content"), { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] }, { duration: 0.32, at: "<", ease: [0.22, 1, 0.36, 1] }]
       );
     } else {
       timelineSteps.push(
@@ -5465,8 +5465,7 @@ var HeaderMenuDrawer = class extends DialogElement {
     ];
     if (window.matchMedia("(prefers-reduced-motion: no-preference)").matches) {
       timelineSteps.push(
-        [this.shadowRoot.querySelector("slot").assignedElements(), { opacity: [1, 0] }, { duration: 0.15, ease: "easeInOut", at: "<" }],
-        [this.getShadowPartByName("content"), { transform: ["translateX(0)", "translateX(calc(var(--transform-logical-flip) * -100%))"] }, { duration: 0.25, ease: [0.645, 0.045, 0.355, 1] }]
+        [this.getShadowPartByName("content"), { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] }, { duration: 0.32, ease: [0.22, 1, 0.36, 1] }]
       );
     } else {
       timelineSteps.push(

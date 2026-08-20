@@ -6917,6 +6917,16 @@ product-rerender {
   transform: translateY(calc(-1 * var(--icon-stroke-width, 1px) * 2)) rotate(-45deg);
 }
 
+/* Mobile menu drawer trigger only (not the desktop sidebar-menu hamburger, which also uses .header__hamburger but
+   is controlled by aria-controls="menu-dropdown-sidebar"): collapse to a single horizontal line instead of an X. */
+[aria-controls="menu-drawer"][aria-expanded="true"] .header__hamburger > :first-child {
+  transform: translateY(calc(var(--icon-stroke-width, 1px) * 2));
+}
+
+[aria-controls="menu-drawer"][aria-expanded="true"] .header__hamburger > :last-child {
+  transform: translateY(calc(-1 * var(--icon-stroke-width, 1px) * 2));
+}
+
 @media screen and (min-width: 1000px) {
   .header__primary-nav {
     gap: .625rem var(--header-menu-gap, 1.5rem);
@@ -7190,6 +7200,22 @@ shopify-account::part(signed-out-avatar) {
 @supports (height: 100dvh) {
   .menu-drawer::part(content) {
     height: calc(100dvh - var(--menu-offset-top, 0px));
+  }
+}
+
+/* Mobile menu drawer: below 999px it drops down from the header edge as a full-width (minus the theme's own
+   --container-gutter) panel instead of the default 480px side-anchored one, closed via clip-path (see
+   HeaderMenuDrawer in theme.js) so the content is revealed top-to-bottom rather than sliding/fading in place.
+   --drawer-border-radius and --container-gutter are the theme's own existing tokens (set in css-variables.liquid),
+   not new values. Desktop (>= 1000px, including the "drawer" desktop_layout mode) is untouched. */
+@media screen and (max-width: 999px) {
+  .menu-drawer::part(content) {
+    inset-inline: var(--container-gutter);
+    width: auto;
+    max-width: none;
+    border-block-start: none;
+    border-radius: var(--drawer-border-radius);
+    clip-path: inset(0 0 100% 0);
   }
 }
 
