@@ -8,10 +8,16 @@
       echo i
       echo '_image'
     endcapture
+    capture tab_text_key
+      echo 'tab_'
+      echo i
+      echo '_text'
+    endcapture
 
     assign tab_image = section.settings[tab_image_key]
+    assign tab_text = section.settings[tab_text_key]
 
-    if tab_image != blank
+    if tab_image != blank or tab_text != blank
       assign feature_tab_count = feature_tab_count | plus: 1
 
       if feature_tab_first_index == 0
@@ -198,13 +204,26 @@
         <div id="feature-tabs-{{ section.id }}" class="featured-tabs">
           <div class="feature-tabs__media min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
             <div id="feature-tabs-media-track-{{ section.id }}" class="feature-tabs__media-track" style="width: {{ feature_tab_count | times: 100 }}%;">
+              {%- assign feature_tab_fallback_image = blank -%}
               {%- for i in (1..5) -%}
                 {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
+                {%- capture tab_text_key -%}tab_{{ i }}_text{%- endcapture -%}
                 {%- assign tab_image = section.settings[tab_image_key] -%}
+                {%- assign tab_text = section.settings[tab_text_key] -%}
 
                 {%- if tab_image != blank -%}
+                  {%- assign feature_tab_fallback_image = tab_image -%}
+                {%- endif -%}
+
+                {%- if tab_image != blank or tab_text != blank -%}
+                  {%- assign tab_media_image = tab_image -%}
+                  {%- if tab_media_image == blank -%}
+                    {%- assign tab_media_image = feature_tab_fallback_image -%}
+                  {%- endif -%}
                   <div class="feature-tabs__media-item" style="width: {{ 100.0 | divided_by: feature_tab_count }}%;">
-                    {{- tab_image | image_url: width: tab_image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 100vw, 50vw', widths: '400,600,800,1000,1200,1400,1600,1800', class: 'image-cover' -}}
+                    {%- if tab_media_image != blank -%}
+                      {{- tab_media_image | image_url: width: tab_media_image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 100vw, 50vw', widths: '400,600,800,1000,1200,1400,1600,1800', class: 'image-cover' -}}
+                    {%- endif -%}
                   </div>
                 {%- endif -%}
               {%- endfor -%}
@@ -237,7 +256,7 @@
                   {%- assign tab_icon = section.settings[tab_icon_key] -%}
                   {%- assign tab_text = section.settings[tab_text_key] -%}
 
-                  {%- if tab_image != blank -%}
+                  {%- if tab_image != blank or tab_text != blank -%}
                     <div class="feature-tabs__panel v-stack gap-4" style="width: {{ 100.0 | divided_by: feature_tab_count }}%;">
                       {%- if tab_label != blank or tab_icon != blank -%}
                         <div class="feature-tabs__panel-heading">
