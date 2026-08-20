@@ -7269,18 +7269,20 @@ shopify-account::part(signed-out-avatar) {
      above turn the menu drawer into a fixed, evenly-inset floating card - overriding the position/size below it
      with higher specificity. This re-overrides just the positioning (not the radius/background/mask-image skin)
      so the menu drawer specifically still anchors below the header and reaches the bottom, per request, while
-     cart-drawer/search-drawer (which also use this setting) are unaffected since this only targets .menu-drawer. */
+     cart-drawer/search-drawer (which also use this setting) are unaffected since this only targets .menu-drawer.
+     Same --header-group-height approach as the base rule above (position: fixed, not absolute - body has
+     position: relative, so an absolute "100%" top-inset would resolve against the whole page's height). */
   .drawer-mobile-centered .menu-drawer::part(content) {
-    position: absolute;
-    inset-block-start: 100%;
+    position: fixed;
+    inset-block-start: var(--header-group-height, var(--header-height, 0px));
     inset-block-end: auto;
     inset-inline: var(--container-gutter);
-    height: calc(100vh - var(--menu-offset-top, 0px));
+    height: calc(100vh - var(--header-group-height, var(--header-height, 0px)));
   }
 
   @supports (height: 100dvh) {
     .drawer-mobile-centered .menu-drawer::part(content) {
-      height: calc(100dvh - var(--menu-offset-top, 0px));
+      height: calc(100dvh - var(--header-group-height, var(--header-height, 0px)));
     }
   }
 }
