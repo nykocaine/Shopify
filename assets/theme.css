@@ -6917,6 +6917,18 @@ product-rerender {
   transform: translateY(calc(-1 * var(--icon-stroke-width, 1px) * 2)) rotate(-45deg);
 }
 
+/* Mobile menu drawer trigger only (not the desktop sidebar-menu hamburger, which also uses .header__hamburger but
+   is controlled by aria-controls="menu-dropdown-sidebar"): collapse to a single horizontal line instead of an X,
+   since this same button now also acts as the drawer's only close control (no more separate X inside the drawer -
+   see snippets/main-menu-drawer.liquid). */
+[aria-controls="menu-drawer"][aria-expanded="true"] .header__hamburger > :first-child {
+  transform: translateY(calc(var(--icon-stroke-width, 1px) * 2));
+}
+
+[aria-controls="menu-drawer"][aria-expanded="true"] .header__hamburger > :last-child {
+  transform: translateY(calc(-1 * var(--icon-stroke-width, 1px) * 2));
+}
+
 @media screen and (min-width: 1000px) {
   .header__primary-nav {
     gap: .625rem var(--header-menu-gap, 1.5rem);
@@ -7233,10 +7245,6 @@ shopify-account::part(signed-out-avatar) {
   }
 }
 
-.menu-drawer__close-button button {
-  display: none;
-}
-
 @media screen and (max-width: 999px) {
   .drawer-mobile-centered .menu-drawer::part(overlay) {
     background: var(--drawer-mobile-overlay-color, rgb(var(--page-overlay)));
@@ -7256,27 +7264,6 @@ shopify-account::part(signed-out-avatar) {
     overflow: hidden;
     -webkit-mask-image: -webkit-radial-gradient(white, black);
     z-index: 999;
-  }
-
-  .drawer-mobile-centered .menu-drawer__close-button button {
-    color: var(--close-control-icon-color, rgb(var(--button-text-primary)));
-    cursor: pointer;
-    background: var(--close-control-background-color, rgb(var(--button-background-primary)));
-    border: 1px solid var(--close-control-border-color, rgb(var(--border-color)));
-    border-radius: 100%;
-    place-content: center;
-    width: var(--control-button-size, 1.75rem);
-    height: var(--control-button-size, 1.75rem);
-    display: grid;
-    position: absolute;
-    inset-block-start: 1rem;
-    inset-inline-end: 1rem;
-    z-index: 1;
-    transition: background .2s;
-  }
-
-  .drawer-mobile-centered .menu-drawer__close-button button:hover {
-    background: var(--close-control-hover-background-color, rgb(var(--button-hover-background)));
   }
 
   /* This store has "Center drawers on mobile" (settings.drawer_mobile_centered) enabled, which makes the rule
