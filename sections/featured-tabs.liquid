@@ -285,9 +285,11 @@
               {%- assign feature_tab_column = 0 -%}
               {%- for i in (1..5) -%}
                 {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
+                {%- capture tab_text_key -%}tab_{{ i }}_text{%- endcapture -%}
                 {%- assign tab_image = section.settings[tab_image_key] -%}
+                {%- assign tab_text = section.settings[tab_text_key] -%}
 
-                {%- if tab_image != blank -%}
+                {%- if tab_image != blank or tab_text != blank -%}
                   {%- assign feature_tab_column = feature_tab_column | plus: 1 -%}
                   <button type="button" class="feature-tabs__tab {% if i == feature_tab_first_index %}is-active{% endif %}" data-tab-index="{{ i }}" data-tab-position="{{ feature_tab_column }}" style="grid-column: {{ feature_tab_column }};" role="tab" aria-selected="{% if i == feature_tab_first_index %}true{% else %}false{% endif %}">
                     <span class="subheading">0{{ i }}</span>
@@ -298,12 +300,14 @@
               {%- assign feature_tab_column = 0 -%}
               {%- for i in (1..5) -%}
                 {%- capture tab_image_key -%}tab_{{ i }}_image{%- endcapture -%}
+                {%- capture tab_text_key -%}tab_{{ i }}_text{%- endcapture -%}
                 {%- capture tab_number_label_key -%}tab_{{ i }}_number_label{%- endcapture -%}
 
                 {%- assign tab_image = section.settings[tab_image_key] -%}
+                {%- assign tab_text = section.settings[tab_text_key] -%}
                 {%- assign tab_number_label = section.settings[tab_number_label_key] -%}
 
-                {%- if tab_image != blank -%}
+                {%- if tab_image != blank or tab_text != blank -%}
                   {%- assign feature_tab_column = feature_tab_column | plus: 1 -%}
 
                   {%- if tab_number_label != blank -%}
