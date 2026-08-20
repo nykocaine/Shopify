@@ -5446,33 +5446,16 @@ var HeaderMenuDrawer = class extends DialogElement {
   }
   createEnterAnimationControls() {
     const timelineSteps = [
-      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.2 }]
+      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.2 }],
+      [this.getShadowPartByName("content"), { opacity: [0, 1] }, { duration: 0.25, at: "<" }]
     ];
-    if (window.matchMedia("(prefers-reduced-motion: no-preference)").matches) {
-      timelineSteps.push(
-        [this.getShadowPartByName("content"), { transform: ["translateX(calc(var(--transform-logical-flip) * -100%))", "translateX(0)"] }, { duration: 0.35, at: "<", ease: [0.2, 0.4, 0.2, 1] }]
-      );
-    } else {
-      timelineSteps.push(
-        [this.getShadowPartByName("content"), { opacity: [0, 1] }, { duration: 0.2, at: "<" }]
-      );
-    }
     return animateSequence8(timelineSteps);
   }
   createLeaveAnimationControls() {
     const timelineSteps = [
-      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.25 }]
+      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.25 }],
+      [this.getShadowPartByName("content"), { opacity: [1, 0] }, { duration: 0.2, at: "<" }]
     ];
-    if (window.matchMedia("(prefers-reduced-motion: no-preference)").matches) {
-      timelineSteps.push(
-        [this.shadowRoot.querySelector("slot").assignedElements(), { opacity: [1, 0] }, { duration: 0.15, ease: "easeInOut", at: "<" }],
-        [this.getShadowPartByName("content"), { transform: ["translateX(0)", "translateX(calc(var(--transform-logical-flip) * -100%))"] }, { duration: 0.25, ease: [0.645, 0.045, 0.355, 1] }]
-      );
-    } else {
-      timelineSteps.push(
-        [this.getShadowPartByName("content"), { opacity: [1, 0] }, { duration: 0.2, at: "<" }]
-      );
-    }
     return animateSequence8(timelineSteps);
   }
 };

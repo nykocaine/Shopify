@@ -7193,6 +7193,19 @@ shopify-account::part(signed-out-avatar) {
   }
 }
 
+/* Mobile menu drawer: below 999px it drops down right below the header (position: absolute; inset-block-start: 100%
+   above already anchors it there, leaving the header and anything above it visible) instead of the default 480px
+   side-anchored panel. inset-inline uses the theme's own --container-gutter for the side margins - the existing
+   height calc (100vh/100dvh - header offset) already reaches the bottom of the viewport, no change needed there.
+   Desktop (>= 1000px, including the "drawer" desktop_layout mode) is untouched. */
+@media screen and (max-width: 999px) {
+  .menu-drawer::part(content) {
+    inset-inline: var(--container-gutter);
+    width: auto;
+    max-width: none;
+  }
+}
+
 .menu-drawer__close-button button {
   display: none;
 }
