@@ -7251,6 +7251,26 @@ shopify-account::part(signed-out-avatar) {
   .drawer-mobile-centered .menu-drawer__close-button button:hover {
     background: var(--close-control-hover-background-color, rgb(var(--button-hover-background)));
   }
+
+  {%- comment -%}{%- endcomment -%}
+  /* This store has "Center drawers on mobile" (settings.drawer_mobile_centered) enabled, which makes the rule
+     above turn the menu drawer into a fixed, evenly-inset floating card - overriding the position/size below it
+     with higher specificity. This re-overrides just the positioning (not the radius/background/mask-image skin)
+     so the menu drawer specifically still anchors below the header and reaches the bottom, per request, while
+     cart-drawer/search-drawer (which also use this setting) are unaffected since this only targets .menu-drawer. */
+  .drawer-mobile-centered .menu-drawer::part(content) {
+    position: absolute;
+    inset-block: auto;
+    inset-block-start: 100%;
+    inset-inline: var(--container-gutter);
+    height: calc(100vh - var(--menu-offset-top, 0px));
+  }
+
+  @supports (height: 100dvh) {
+    .drawer-mobile-centered .menu-drawer::part(content) {
+      height: calc(100dvh - var(--menu-offset-top, 0px));
+    }
+  }
 }
 
 .menu-drawer__panel {
