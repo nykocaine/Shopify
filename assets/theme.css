@@ -7193,16 +7193,29 @@ shopify-account::part(signed-out-avatar) {
   }
 }
 
-/* Mobile menu drawer: below 999px it drops down right below the header (position: absolute; inset-block-start: 100%
-   above already anchors it there, leaving the header and anything above it visible) instead of the default 480px
-   side-anchored panel. inset-inline uses the theme's own --container-gutter for the side margins - the existing
-   height calc (100vh/100dvh - header offset) already reaches the bottom of the viewport, no change needed there.
-   Desktop (>= 1000px, including the "drawer" desktop_layout mode) is untouched. */
+/* Mobile menu drawer: below 999px it drops down right below the header, leaving the header and anything above it
+   (announcement bar, countdown bar) visible, reaching the bottom of the viewport, with --container-gutter side
+   margins. position: fixed (not absolute) + --header-group-height (the theme's own existing variable, already
+   kept in sync by <height-observer> in sections/header.liquid - includes announcement bar + countdown + header)
+   is used instead of position: absolute + inset-block-start: 100%, because body has position: relative (see the
+   base body rule), which would make a "100%" top-inset resolve against the whole body's height (the full page),
+   not the header's - pushing the panel far below the viewport with a negative computed height. Desktop
+   (>= 1000px, including the "drawer" desktop_layout mode) is untouched. */
 @media screen and (max-width: 999px) {
   .menu-drawer::part(content) {
+    position: fixed;
+    inset-block-start: var(--header-group-height, var(--header-height, 0px));
+    inset-block-end: auto;
     inset-inline: var(--container-gutter);
     width: auto;
     max-width: none;
+    height: calc(100vh - var(--header-group-height, var(--header-height, 0px)));
+  }
+
+  @supports (height: 100dvh) {
+    .menu-drawer::part(content) {
+      height: calc(100dvh - var(--header-group-height, var(--header-height, 0px)));
+    }
   }
 }
 
