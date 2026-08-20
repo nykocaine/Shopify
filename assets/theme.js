@@ -5440,6 +5440,7 @@ var HeaderMenuDrawer = class extends DialogElement {
     } else {
       window.addEventListener("scroll", __privateMethod(this, _HeaderMenuDrawer_instances, calculateOffsets_fn).bind(this));
     }
+    window.addEventListener("resize", __privateMethod(this, _HeaderMenuDrawer_instances, calculateOffsets_fn).bind(this));
   }
   get shouldLock() {
     return true;
@@ -5468,6 +5469,8 @@ _HeaderMenuDrawer_instances = new WeakSet();
 onBeforeShow_fn = function() {
   __privateMethod(this, _HeaderMenuDrawer_instances, calculateOffsets_fn).call(this);
   if (matchesMediaQuery("md-max")) {
+    const header = document.querySelector("x-header");
+    this._wasHeaderSolidBeforeOpen = header?.classList.contains("is-solid") ?? false;
     this.dispatchEvent(new CustomEvent("header:disable-transparent-header", { bubbles: true }));
   }
   this.querySelector(`#menu-drawer-panel-main`)?.show({ initial: true });
@@ -5476,7 +5479,7 @@ onBeforeShow_fn = function() {
  * After the drawer is fully closed, we hide all existing panels
  */
 onAfterHide_fn2 = function() {
-  if (matchesMediaQuery("md-max")) {
+  if (matchesMediaQuery("md-max") && !this._wasHeaderSolidBeforeOpen) {
     this.dispatchEvent(new CustomEvent("header:allow-transparent-header", { bubbles: true }));
   }
   this.querySelectorAll("header-menu-drawer-panel").forEach((panel) => panel.hide({ instant: true }));
@@ -5498,8 +5501,9 @@ calculateOffsets_fn = function() {
   if (!this.open) {
     return;
   }
-  const boundingRect = this.getShadowPartByName("content").getBoundingClientRect();
-  this.style.setProperty("--menu-offset-top", `${boundingRect.top}px`);
+  const header = document.querySelector("x-header");
+  const offsetTop = header ? Math.max(header.getBoundingClientRect().bottom, 0) : 0;
+  this.style.setProperty("--menu-offset-top", `${offsetTop}px`);
 };
 var HeaderMenuDrawerPanel = class extends HTMLElement {
   async show({ initial = true } = {}) {

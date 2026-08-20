@@ -7195,12 +7195,16 @@ shopify-account::part(signed-out-avatar) {
 
 /* Mobile menu drawer: below 999px it drops down right below the header, leaving the header and anything above it
    (announcement bar, countdown bar) visible, reaching the bottom of the viewport, with --container-gutter side
-   margins. position: fixed (not absolute) + --sticky-area-height (the theme's own existing variable - see
-   snippets/css-variables.liquid and its use for min-height: calc(100dvh - var(--sticky-area-height)) elsewhere in
-   this file - is used instead of --header-group-height, because --header-group-height always sums announcement
-   bar + countdown + header regardless of whether they're actually sticky, while --sticky-area-height only counts
-   the pieces that are actually sticky/visible at the top of the viewport - using the former left a gap whenever
-   a non-sticky announcement bar had already scrolled out of view but its height was still being reserved.
+   margins. position: fixed (not absolute) + --menu-offset-top (a CSS var written by HeaderMenuDrawer's
+   calculateOffsets_fn in theme.js, using the header's own getBoundingClientRect().bottom - a live, direct
+   measurement of the header's real current bottom edge in the viewport). This was tried first with the theme's
+   own --sticky-area-height variable, but that only accounts for header/announcement-bar height when
+   --header-is-sticky / --announcement-bar-is-sticky are 1 (this theme has header configs with
+   enable_sticky: false - see sections/header-group.json) - with a non-sticky header, --sticky-area-height
+   would compute to 0 while the header is still visible on screen (not yet scrolled away), so the fixed-position
+   panel would render at the very top and overlap it. Measuring the header directly works regardless of its
+   sticky setting, and is recalculated on open/scroll/resize (see theme.js), so it tracks any height change
+   (responsive, content, announcement bar, sticky behavior) automatically - no hardcoded height anywhere.
    position: fixed (not absolute) is used instead of position: absolute + inset-block-start: 100%, because body
    has position: relative (see the base body rule), which would make a "100%" top-inset resolve against the whole
    body's height (the full page), not the header's - pushing the panel far below the viewport with a negative
@@ -7209,22 +7213,22 @@ shopify-account::part(signed-out-avatar) {
   /* Overlay/backdrop starts at the same offset as the panel (not inset: 0's default 0), so it never darkens/blurs
      over the header - only alongside and below the panel. */
   .menu-drawer::part(overlay) {
-    inset-block-start: var(--sticky-area-height, 0px);
+    inset-block-start: var(--menu-offset-top, 0px);
   }
 
   .menu-drawer::part(content) {
     position: fixed;
-    inset-block-start: var(--sticky-area-height, 0px);
+    inset-block-start: var(--menu-offset-top, 0px);
     inset-block-end: auto;
     inset-inline: var(--container-gutter);
     width: auto;
     max-width: none;
-    height: calc(100vh - var(--sticky-area-height, 0px));
+    height: calc(100vh - var(--menu-offset-top, 0px));
   }
 
   @supports (height: 100dvh) {
     .menu-drawer::part(content) {
-      height: calc(100dvh - var(--sticky-area-height, 0px));
+      height: calc(100dvh - var(--menu-offset-top, 0px));
     }
   }
 }
@@ -7280,14 +7284,14 @@ shopify-account::part(signed-out-avatar) {
      with higher specificity. This re-overrides just the positioning (not the radius/background/mask-image skin)
      so the menu drawer specifically still anchors below the header and reaches the bottom, per request, while
      cart-drawer/search-drawer (which also use this setting) are unaffected since this only targets .menu-drawer.
-     Same --sticky-area-height approach as the base rule above (position: fixed, not absolute - body has
+     Same --menu-offset-top approach as the base rule above (position: fixed, not absolute - body has
      position: relative, so an absolute "100%" top-inset would resolve against the whole page's height). */
   .drawer-mobile-centered .menu-drawer::part(content) {
     position: fixed;
-    inset-block-start: var(--sticky-area-height, 0px);
+    inset-block-start: var(--menu-offset-top, 0px);
     inset-block-end: auto;
     inset-inline: var(--container-gutter);
-    height: calc(100vh - var(--sticky-area-height, 0px));
+    height: calc(100vh - var(--menu-offset-top, 0px));
     /* The panel now touches the header above and the viewport's bottom edge below, so rounding the top/bottom
        corners (the original rule's border-radius: var(--drawer-border-radius)) no longer reads as a floating
        card - squared off top and bottom. */
@@ -7296,7 +7300,7 @@ shopify-account::part(signed-out-avatar) {
 
   @supports (height: 100dvh) {
     .drawer-mobile-centered .menu-drawer::part(content) {
-      height: calc(100dvh - var(--sticky-area-height, 0px));
+      height: calc(100dvh - var(--menu-offset-top, 0px));
     }
   }
 }
