@@ -7202,6 +7202,12 @@ shopify-account::part(signed-out-avatar) {
    not the header's - pushing the panel far below the viewport with a negative computed height. Desktop
    (>= 1000px, including the "drawer" desktop_layout mode) is untouched. */
 @media screen and (max-width: 999px) {
+  /* Overlay/backdrop starts at the same offset as the panel (not inset: 0's default 0), so it never darkens/blurs
+     over the header - only alongside and below the panel. */
+  .menu-drawer::part(overlay) {
+    inset-block-start: var(--header-group-height, var(--header-height, 0px));
+  }
+
   .menu-drawer::part(content) {
     position: fixed;
     inset-block-start: var(--header-group-height, var(--header-height, 0px));
@@ -7278,6 +7284,10 @@ shopify-account::part(signed-out-avatar) {
     inset-block-end: auto;
     inset-inline: var(--container-gutter);
     height: calc(100vh - var(--header-group-height, var(--header-height, 0px)));
+    /* The panel now touches the header above and the viewport's bottom edge below, so rounding the top/bottom
+       corners (the original rule's border-radius: var(--drawer-border-radius)) no longer reads as a floating
+       card - squared off top and bottom. */
+    border-radius: 0;
   }
 
   @supports (height: 100dvh) {
