@@ -597,6 +597,17 @@ height-observer {
   justify-content: space-between;
 }
 
+/* button-content (theme.js) only attaches its shadow root the first time aria-busy toggles (ie. the
+   first "add to cart" click) - once it does, layout switches from the light-DOM ".button__content"
+   rule above to this shadow-internal ::part(content) row instead, which by default has no
+   justify-content and shrinks to fit its own content (:host uses place-items: center), so label/price
+   collapse together at the start instead of staying pinned to opposite ends. width: 100% makes the
+   row actually span the button so space-between has room to push the price to the far end. */
+.buy-buttons__cta .button__content::part(content) {
+  width: 100%;
+  justify-content: space-between;
+}
+
 .button__content::part(content) {
   align-items: center;
   column-gap: .75rem;
