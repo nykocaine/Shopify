@@ -220,7 +220,7 @@ note that this may have impact on different places.
     --control-button-size: {{ settings.control_button_size_mobile }}px;
 
     /* Badges */
-    --badge-font-size: {{ settings.badge_font_size_mobile | divided_by: 16.0 }}rem;
+    --badge-font-size: {%- render 'fluid-font-size', mobile: settings.badge_font_size_mobile, desktop: settings.badge_font_size_desktop -%};
 
     /**
      * ---------------------------------------------------------------------
@@ -250,7 +250,7 @@ note that this may have impact on different places.
     --subheading-font-weight: {{ settings.subheading_font.weight }};
     --subheading-font-style: {{ settings.subheading_font.style }};
     {%- endif -%}
-    --subheading-font-size: {{ settings.subheading_font_size_mobile | divided_by: 16.0 }}rem;
+    --subheading-font-size: {%- render 'fluid-font-size', mobile: settings.subheading_font_size_mobile, desktop: settings.subheading_font_size_desktop -%};
     --subheading-text-transform: {{ settings.subheading_text_transform }};
     --subheading-letter-spacing: {% if language_code == 'ar' %}0{% else %}{{ settings.subheading_letter_spacing | divided_by: 100.0 }}{% endif %}em;
     {%- if settings.heading_font_source == 'apple' -%}
@@ -315,23 +315,25 @@ note that this may have impact on different places.
     {%- comment -%}
     Heading sizes are all derived proportionally from the "Heading base size" settings (which map to h1), preserving
     the same relative scale between h1..h7 and the display sizes. At least: 12px, which is considered the minimum for
-    good accessibility.
+    good accessibility. Each uses snippets/fluid-font-size.liquid to scale smoothly between the mobile and desktop
+    settings (700px-1400px viewport) instead of jumping between two fixed sizes at a single breakpoint - so resizing
+    a browser window never makes text visibly "shrink" at one exact width.
     {%- endcomment -%}
-    --text-display-xl: {{ settings.heading_font_size_mobile | times: 56 | divided_by: 48.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-    --text-display-l: {{ settings.heading_font_size_mobile | times: 54 | divided_by: 48.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-    --text-display-m: {{ settings.heading_font_size_mobile | times: 52 | divided_by: 48.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-    --text-h1: {{ settings.heading_font_size_mobile | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-    --text-h2: {{ settings.heading_font_size_mobile | times: 40 | divided_by: 48.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-    --text-h3: {{ settings.heading_font_size_mobile | times: 32 | divided_by: 48.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-    --text-h4: {{ settings.heading_font_size_mobile | times: 28 | divided_by: 48.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-    --text-h5: {{ settings.heading_font_size_mobile | times: 22 | divided_by: 48.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-    --text-h6: {{ settings.heading_font_size_mobile | times: 19 | divided_by: 48.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-    --text-h7: {{ settings.heading_font_size_mobile | times: 16 | divided_by: 48.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-    --text-xs: {{ settings.text_font_size_mobile | minus: 3 | at_least: 11 | divided_by: 16.0 }}rem;
-    --text-sm: {{ settings.text_font_size_mobile | minus: 2 | at_least: 12 | divided_by: 16.0 }}rem;
-    --text-base: {{ settings.text_font_size_mobile | divided_by: 16.0 }}rem;
-    --text-lg: {{ settings.text_font_size_mobile | plus: 3 | divided_by: 16.0 }}rem;
-    --button-font-size: {{ settings.button_font_size_mobile | divided_by: 16.0 }}rem;
+    --text-display-xl: {%- render 'fluid-font-size', mobile: settings.heading_font_size_mobile | times: 56 | divided_by: 48.0, desktop: settings.heading_font_size_desktop | times: 160 | divided_by: 92.0, min_px: 12 -%};
+    --text-display-l: {%- render 'fluid-font-size', mobile: settings.heading_font_size_mobile | times: 54 | divided_by: 48.0, desktop: settings.heading_font_size_desktop | times: 136 | divided_by: 92.0, min_px: 12 -%};
+    --text-display-m: {%- render 'fluid-font-size', mobile: settings.heading_font_size_mobile | times: 52 | divided_by: 48.0, desktop: settings.heading_font_size_desktop | times: 110 | divided_by: 92.0, min_px: 12 -%};
+    --text-h1: {%- render 'fluid-font-size', mobile: settings.heading_font_size_mobile, desktop: settings.heading_font_size_desktop, min_px: 12 -%};
+    --text-h2: {%- render 'fluid-font-size', mobile: settings.heading_font_size_mobile | times: 40 | divided_by: 48.0, desktop: settings.heading_font_size_desktop | times: 76 | divided_by: 92.0, min_px: 12 -%};
+    --text-h3: {%- render 'fluid-font-size', mobile: settings.heading_font_size_mobile | times: 32 | divided_by: 48.0, desktop: settings.heading_font_size_desktop | times: 56 | divided_by: 92.0, min_px: 12 -%};
+    --text-h4: {%- render 'fluid-font-size', mobile: settings.heading_font_size_mobile | times: 28 | divided_by: 48.0, desktop: settings.heading_font_size_desktop | times: 48 | divided_by: 92.0, min_px: 12 -%};
+    --text-h5: {%- render 'fluid-font-size', mobile: settings.heading_font_size_mobile | times: 22 | divided_by: 48.0, desktop: settings.heading_font_size_desktop | times: 32 | divided_by: 92.0, min_px: 12 -%};
+    --text-h6: {%- render 'fluid-font-size', mobile: settings.heading_font_size_mobile | times: 19 | divided_by: 48.0, desktop: settings.heading_font_size_desktop | times: 24 | divided_by: 92.0, min_px: 12 -%};
+    --text-h7: {%- render 'fluid-font-size', mobile: settings.heading_font_size_mobile | times: 16 | divided_by: 48.0, desktop: settings.heading_font_size_desktop | times: 19 | divided_by: 92.0, min_px: 12 -%};
+    --text-xs: {%- render 'fluid-font-size', mobile: settings.text_font_size_mobile | minus: 3, desktop: settings.text_font_size_desktop | minus: 4, min_px: 11 -%};
+    --text-sm: {%- render 'fluid-font-size', mobile: settings.text_font_size_mobile | minus: 2, desktop: settings.text_font_size_desktop | minus: 2, min_px: 12 -%};
+    --text-base: {%- render 'fluid-font-size', mobile: settings.text_font_size_mobile, desktop: settings.text_font_size_desktop -%};
+    --text-lg: {%- render 'fluid-font-size', mobile: settings.text_font_size_mobile | plus: 3, desktop: settings.text_font_size_desktop | plus: 3 -%};
+    --button-font-size: {%- render 'fluid-font-size', mobile: settings.button_font_size_mobile, desktop: settings.button_font_size_desktop -%};
 
     /* Rounded variables (used for border radius) */
     --rounded-full: 9999px;
@@ -362,27 +364,6 @@ note that this may have impact on different places.
 
   @media screen and (min-width: 700px) {
     :root {
-      --text-xs: {{ settings.text_font_size_desktop | minus: 4 | at_least: 11 | divided_by: 16.0 }}rem;
-      --text-sm: {{ settings.text_font_size_desktop | minus: 2 | at_least: 12 | divided_by: 16.0 }}rem;
-      --text-base: {{ settings.text_font_size_desktop | divided_by: 16.0 }}rem;
-      --text-lg: {{ settings.text_font_size_desktop | plus: 3 | divided_by: 16.0 }}rem;
-      --subheading-font-size: {{ settings.subheading_font_size_desktop | divided_by: 16.0 }}rem;
-
-      /* Heading sizes (desktop), derived proportionally from "Heading base size (desktop)" (maps to h1) */
-      --text-display-xl: {{ settings.heading_font_size_desktop | times: 160 | divided_by: 92.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-      --text-display-l: {{ settings.heading_font_size_desktop | times: 136 | divided_by: 92.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-      --text-display-m: {{ settings.heading_font_size_desktop | times: 110 | divided_by: 92.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-      --text-h1: {{ settings.heading_font_size_desktop | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-      --text-h2: {{ settings.heading_font_size_desktop | times: 76 | divided_by: 92.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-      --text-h3: {{ settings.heading_font_size_desktop | times: 56 | divided_by: 92.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-      --text-h4: {{ settings.heading_font_size_desktop | times: 48 | divided_by: 92.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-      --text-h5: {{ settings.heading_font_size_desktop | times: 32 | divided_by: 92.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-      --text-h6: {{ settings.heading_font_size_desktop | times: 24 | divided_by: 92.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-      --text-h7: {{ settings.heading_font_size_desktop | times: 19 | divided_by: 92.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
-
-      /* Badges */
-      --badge-font-size: {{ settings.badge_font_size_desktop | divided_by: 16.0 }}rem;
-
       /* Controls */
       --control-button-size: {{ settings.control_button_size }}px;
       --control-button-border-width: {{ settings.control_button_border_width }}px;
@@ -395,9 +376,6 @@ note that this may have impact on different places.
       --form-gap: 1.25rem; /* Gap between fieldset and submit button */
       --fieldset-gap: 0.75rem; /* Gap between each form input within a fieldset */
       --input-padding-block: 0.75rem; /* Vertical padding for input, textarea and native select */
-
-      /* Font sizes */
-      --button-font-size: {{ settings.button_font_size_desktop | divided_by: 16.0 }}rem;
 
       /* Product listing gaps */
       {%- if settings.product_card_info_position == 'outside' -%}
