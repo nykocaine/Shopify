@@ -396,6 +396,15 @@
         --distance-to-bleed: 0;
       }
 
+      {%- comment -%}
+      Mobile-only: zeroes just the horizontal half of the padding shorthand set above
+      (padding: var(--section-vertical-spacing) var(--container-gutter)) - padding-block stays, so the
+      card keeps its usual top/bottom breathing room, only the left/right inset is removed.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-info-frame {
+        padding-inline: 0;
+      }
+
       {%- if section.settings.product_height_mobile > 0 -%}
         {%- comment -%}
         Mobile stacks gallery and info as two independent blocks (no shared row to stretch across, unlike the
