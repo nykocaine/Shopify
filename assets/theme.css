@@ -585,6 +585,13 @@ height-observer {
   padding-block: 0;
 }
 
+/* Buy button (buy-buttons.liquid): label and price are two separate flex children instead of one
+   concatenated string, pinned to opposite ends of the already-flex .button__content - scoped to this
+   one button only, so every other button in the theme keeps its default centered content. */
+.buy-buttons__cta .button__content {
+  justify-content: space-between;
+}
+
 .button__content::part(content) {
   align-items: center;
   column-gap: .75rem;

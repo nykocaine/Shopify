@@ -127,6 +127,7 @@ This component is used to show the buy buttons
 
       {% liquid
         assign button_disabled = false
+        assign button_content_class = ''
 
         if product.selected_or_first_available_variant == nil
           assign button_disabled = true
@@ -160,7 +161,12 @@ This component is used to show the buy buttons
             assign button_price = button_price | append: ' <s>' | append: button_compare_at_price | append: '</s>'
           endif
 
-          assign button_content = button_content | append: ' - ' | append: button_price
+          # Two separate flex children (label/price) instead of one concatenated string, so
+          # .buy-buttons__cta below can push them to opposite ends - button.liquid renders `content`
+          # as raw HTML (no | escape) directly inside .button__content, which is already a flex
+          # container, so no extra wrapping element is needed here.
+          assign button_content = '<span>' | append: button_content | append: '</span><span>' | append: button_price | append: '</span>'
+          assign button_content_class = 'buy-buttons__cta'
         endif
       %}
 
@@ -227,11 +233,11 @@ This component is used to show the buy buttons
 
                 {%- if show_new_badge -%}
                   <div class="buy-buttons__new-badge-wrapper grow">
-                    {%- render 'button', content: button_content, type: 'submit', disabled: button_disabled, secondary: show_payment_button, style: atc_button_style, background: atc_button_background, text_color: atc_button_text_color, stretch: true -%}
+                    {%- render 'button', content: button_content, type: 'submit', disabled: button_disabled, secondary: show_payment_button, style: atc_button_style, background: atc_button_background, text_color: atc_button_text_color, stretch: true, class: button_content_class -%}
                     <span class="buy-buttons__new-badge">{{ new_badge_text | default: 'New' }}</span>
                   </div>
                 {%- else -%}
-                  {%- render 'button', content: button_content, type: 'submit', disabled: button_disabled, secondary: show_payment_button, style: atc_button_style, background: atc_button_background, text_color: atc_button_text_color, stretch: true -%}
+                  {%- render 'button', content: button_content, type: 'submit', disabled: button_disabled, secondary: show_payment_button, style: atc_button_style, background: atc_button_background, text_color: atc_button_text_color, stretch: true, class: button_content_class -%}
                 {%- endif -%}
               </div>
 
