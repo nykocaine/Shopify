@@ -30,19 +30,6 @@
 {%- if feature_tab_count > 0 -%}
   <style>
     {%- comment -%}
-    Section-only font: loaded and scoped here so it never touches the theme's global heading/body
-    font settings - only elements inside this section's #shopify-section-{{ section.id }} root
-    inherit it.
-    {%- endcomment -%}
-    {%- if section.settings.use_custom_font and section.settings.custom_font != blank -%}
-      {{ section.settings.custom_font | font_face: font_display: 'swap' }}
-
-      #shopify-section-{{ section.id }} {
-        font-family: {{ section.settings.custom_font.family }}, {{ section.settings.custom_font.fallback_families }};
-      }
-    {%- endif -%}
-
-    {%- comment -%}
     Top section spacing as margin instead of padding, so it reads the same way as the other
     converted sections. display: flow-root on the outer wrapper contains that margin (stops it
     collapsing through the wrapper's own top edge).
@@ -148,53 +135,6 @@
       width: 3rem;
     }
 
-    #shopify-section-{{ section.id }} .feature-tabs__title {
-      position: relative;
-      isolation: isolate;
-    }
-
-    #shopify-section-{{ section.id }} .feature-tabs__title > .h3 {
-      font-weight: {{ section.settings.title_font_weight }};
-    }
-
-    {%- comment -%}
-    Outline-only title: transparent fill + a stroke drawn with the section's own text color (not
-    currentColor - color is set to transparent right above, and currentColor would resolve to that
-    same transparent value for the stroke too, so the color has to be named explicitly here).
-    {%- endcomment -%}
-    {%- if section.settings.title_outline_only -%}
-      #shopify-section-{{ section.id }} .feature-tabs__title > .h3 {
-        color: transparent;
-        -webkit-text-stroke: {{ section.settings.title_outline_width }}px rgb(var(--text-color));
-      }
-    {%- endif -%}
-
-    {%- comment -%}
-    Interactive fill: a second copy of the title (aria-hidden, real DOM node rather than a
-    ::before/::after so it can't get double-announced by screen readers) sits absolutely over the
-    outlined one, solid-filled, and clipped down to nothing by default. JS below drives the
-    clip-path directly from the cursor's live X position while hovering (real scrubbing, not a
-    canned animation) and only falls back to the CSS transition here for the release-on-mouseleave
-    tween. data-fill-direction (set on enter, from which half of the title the cursor entered)
-    flips which edge the reveal grows from.
-    {%- endcomment -%}
-    {%- if section.settings.title_outline_only and section.settings.title_interactive_fill -%}
-      #shopify-section-{{ section.id }} .feature-tabs__title-fill {
-        position: absolute;
-        inset: 0;
-        margin: 0;
-        font-weight: {{ section.settings.title_font_weight }};
-        color: {% if section.settings.title_fill_color != blank %}{{ section.settings.title_fill_color }}{% else %}rgb(var(--accent)){% endif %};
-        pointer-events: none;
-        clip-path: inset(0 100% 0 0);
-        transition: clip-path .4s ease;
-      }
-
-      #shopify-section-{{ section.id }} .feature-tabs__title[data-fill-direction="rtl"] .feature-tabs__title-fill {
-        clip-path: inset(0 0 0 100%);
-      }
-    {%- endif -%}
-
     {%- comment -%}
     Buttons and their label sit in the same grid, matched up by grid-column (set inline per item,
     same index counter in both loops) - the label always lands centered under its own button,
@@ -294,12 +234,7 @@
             {%- if section.settings.title != blank or section.settings.subtitle != blank -%}
               <div class="prose">
                 {%- if section.settings.title != blank -%}
-                  <div class="feature-tabs__title" data-fill-direction="ltr">
-                    {%- render 'heading', content: section.settings.title, style: 'h3', html_tag: 'h2' -%}
-                    {%- if section.settings.title_outline_only and section.settings.title_interactive_fill -%}
-                      <span class="feature-tabs__title-fill h3" aria-hidden="true">{{ section.settings.title }}</span>
-                    {%- endif -%}
-                  </div>
+                  {%- render 'heading', content: section.settings.title, style: 'h3', html_tag: 'h2' -%}
                 {%- endif -%}
 
                 {%- if section.settings.subtitle != blank -%}
@@ -433,50 +368,6 @@
           });
         });
       }
-
-      {%- if section.settings.title_outline_only and section.settings.title_interactive_fill -%}
-      {%- comment -%}
-      Fill tracks the cursor's real X position while hovering (a short transition just smooths
-      out per-frame jitter, it isn't what drives the motion) and only switches to a slower,
-      explicit transition for the release tween on mouseleave.
-      {%- endcomment -%}
-      var titleEl = root.querySelector('.feature-tabs__title');
-      var fillEl = root.querySelector('.feature-tabs__title-fill');
-
-      if (titleEl && fillEl && window.matchMedia('(pointer: fine)').matches) {
-        var setFill = function(progress, direction, transitionMs) {
-          var pct = (1 - progress) * 100;
-          fillEl.style.transition = 'clip-path ' + transitionMs + 'ms ease';
-          fillEl.style.clipPath = direction === 'rtl'
-            ? 'inset(0 0 0 ' + pct + '%)'
-            : 'inset(0 ' + pct + '% 0 0)';
-        };
-
-        titleEl.addEventListener('mouseenter', function(event) {
-          var rect = titleEl.getBoundingClientRect();
-          var direction = event.clientX < (rect.left + rect.width / 2) ? 'ltr' : 'rtl';
-          titleEl.setAttribute('data-fill-direction', direction);
-
-          var progress = direction === 'rtl'
-            ? (rect.right - event.clientX) / rect.width
-            : (event.clientX - rect.left) / rect.width;
-          setFill(Math.max(0, Math.min(1, progress)), direction, 80);
-        });
-
-        titleEl.addEventListener('mousemove', function(event) {
-          var rect = titleEl.getBoundingClientRect();
-          var direction = titleEl.getAttribute('data-fill-direction');
-          var progress = direction === 'rtl'
-            ? (rect.right - event.clientX) / rect.width
-            : (event.clientX - rect.left) / rect.width;
-          setFill(Math.max(0, Math.min(1, progress)), direction, 80);
-        });
-
-        titleEl.addEventListener('mouseleave', function() {
-          setFill(0, titleEl.getAttribute('data-fill-direction'), 400);
-        });
-      }
-      {%- endif -%}
     })();
   </script>
 {%- endif -%}
@@ -591,71 +482,6 @@
       "id": "subtitle",
       "label": "Subtitle",
       "default": "Essentials to throw in your purse or pocket."
-    },
-    {
-      "type": "header",
-      "content": "Typography"
-    },
-    {
-      "type": "checkbox",
-      "id": "use_custom_font",
-      "label": "Use custom font",
-      "info": "Loads a font just for this section (title, subtitle and tab text), independent of the theme's typography settings under Theme settings.",
-      "default": false
-    },
-    {
-      "type": "font_picker",
-      "id": "custom_font",
-      "label": "Custom font",
-      "default": "helvetica_n4",
-      "visible_if": "{{ section.settings.use_custom_font }}"
-    },
-    {
-      "type": "header",
-      "content": "Title style"
-    },
-    {
-      "type": "range",
-      "id": "title_font_weight",
-      "min": 100,
-      "max": 900,
-      "step": 10,
-      "label": "Title font weight",
-      "default": 700
-    },
-    {
-      "type": "checkbox",
-      "id": "title_outline_only",
-      "label": "Outline only",
-      "info": "Removes the title's fill, leaving only its outline. Only affects the Title, not the subtitle or tab text.",
-      "default": false
-    },
-    {
-      "type": "range",
-      "id": "title_outline_width",
-      "min": 0.5,
-      "max": 4,
-      "step": 0.5,
-      "unit": "px",
-      "label": "Outline thickness",
-      "info": "Larger values may start to fill in small letters (like the hole in \"o\" or \"a\").",
-      "default": 1.5,
-      "visible_if": "{{ section.settings.title_outline_only }}"
-    },
-    {
-      "type": "checkbox",
-      "id": "title_interactive_fill",
-      "label": "Interactive fill (hover)",
-      "info": "While Outline only is on, hovering the title fills it in from whichever side the cursor enters, following the cursor as it moves.",
-      "default": false,
-      "visible_if": "{{ section.settings.title_outline_only }}"
-    },
-    {
-      "type": "color",
-      "id": "title_fill_color",
-      "label": "Fill color",
-      "info": "Leave blank to use the content color scheme's accent color.",
-      "visible_if": "{{ section.settings.title_outline_only and section.settings.title_interactive_fill }}"
     },
     {
       "type": "color_scheme",
