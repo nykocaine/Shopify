@@ -534,20 +534,18 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   }
 
   {%- comment -%}
-  Reuses the theme's global "Progress bar" design (Theme settings > Bars, plus each color scheme's
-  progress_bar_* colors) instead of a bar style local to this section - same variables the free shipping
-  bar/inventory bar/etc. already read (see snippets/css-variables.liquid). --bar-border-width and
-  --bar-indicator-size are derived from --progress-bar-height so both the outline and the marker scale
-  with whatever height the merchant configures there, rather than being fixed px values tuned for one size.
+  Own style, controlled entirely by this section's "Rating bar" settings above - not the theme's global
+  "Progress bar" design (that one stays reserved for the free shipping bar/inventory bar/etc.). Border is
+  fixed at 1px regardless of the configured height; only --bar-height and --bar-indicator-size come from
+  settings, so the outline and the marker both read from the merchant's own review-bar config.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .review-card__bar-track {
-    --bar-height: var(--progress-bar-height, 4px);
-    --bar-border-width: clamp(1px, calc(var(--bar-height) * .2), 2px);
-    --bar-indicator-size: clamp(10px, calc(var(--bar-height) * 2.4), 22px);
+    --bar-height: {{ section.settings.review_bar_height }}px;
+    --bar-indicator-size: {{ section.settings.review_bar_indicator_size }}px;
     height: var(--bar-height);
-    border: var(--bar-border-width) solid var(--progress-bar-border-color, rgb(var(--border-color)));
-    border-radius: var(--progress-bar-radius, var(--rounded-full));
-    background: var(--progress-bar-background-color, transparent);
+    border: 1px solid {% if section.settings.review_bar_border_color != blank %}rgb({{ section.settings.review_bar_border_color.rgb }}){% else %}rgb(var(--border-color)){% endif %};
+    border-radius: var(--rounded-full);
+    background: {% if section.settings.review_bar_background_color != blank %}rgb({{ section.settings.review_bar_background_color.rgb }}){% else %}transparent{% endif %};
     position: relative;
   }
 
@@ -567,7 +565,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     width: var(--bar-indicator-size);
     height: var(--bar-indicator-size);
     border-radius: 50%;
-    background: var(--progress-bar-fill-color, rgb(var(--text-color)));
+    background: {% if section.settings.review_bar_border_color != blank %}rgb({{ section.settings.review_bar_border_color.rgb }}){% else %}rgb(var(--text-color)){% endif %};
     position: absolute;
     inset-inline-end: calc(var(--bar-indicator-size) / -2);
     inset-block-start: 50%;
@@ -840,6 +838,43 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     {
       "type": "paragraph",
       "content": "Reviews shown below are \"Review\" blocks you add/edit/reorder here - nothing is pulled from an external app. Only the first 5 are shown initially; visitors reveal 5 more at a time with the \"Ver más\" button. \"Escribir una reseña\" opens a form that emails the submission to the shop's customer email (same as the Contact form); add a matching block once you decide to approve it."
+    },
+    {
+      "type": "header",
+      "content": "Rating bar",
+      "info": "Style of each review's optional rating bar (the \"Rating bar\" settings on a Review block)."
+    },
+    {
+      "type": "range",
+      "id": "review_bar_height",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Bar height",
+      "default": 4
+    },
+    {
+      "type": "color",
+      "id": "review_bar_border_color",
+      "label": "Border & indicator color",
+      "default": "#4a4a4a"
+    },
+    {
+      "type": "color",
+      "id": "review_bar_background_color",
+      "label": "Background color",
+      "info": "Leave blank for a transparent background."
+    },
+    {
+      "type": "range",
+      "id": "review_bar_indicator_size",
+      "min": 6,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "label": "Indicator size",
+      "default": 12
     }
   ],
   "blocks": [
