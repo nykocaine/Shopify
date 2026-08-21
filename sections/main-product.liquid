@@ -524,6 +524,12 @@
           {%- endif -%}
 
           <div class="product-gallery-frame">
+            {%- comment -%}
+            skip_first_media: true whenever the first-image card above renders, so it isn't duplicated
+            inside the gallery too - applies on every viewport (product-gallery.liquid doesn't know about
+            breakpoints), which currently means that first image is also skipped in the gallery on mobile,
+            where the first-image card itself stays hidden - decided to leave as-is for now, revisit later.
+            {%- endcomment -%}
             {%- render 'product-gallery',
                 product: product,
                 product_form_id: product_form_id,
@@ -535,7 +541,8 @@
                 enable_image_zoom: section.settings.enable_image_zoom,
                 max_image_zoom_level: section.settings.max_image_zoom_level,
                 gallery_border_radius: gallery_border_radius,
-                thumbnail_border_radius: section.settings.thumbnail_border_radius
+                thumbnail_border_radius: section.settings.thumbnail_border_radius,
+                skip_first_media: first_product_image
             -%}
           </div>
         {%- endif -%}

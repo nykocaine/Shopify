@@ -13,6 +13,7 @@ This component is used to show the product gallery (used in product page and fea
 @param {number} [gallery_border_radius] - if set, rounds the bottom corners of the image carousel on mobile
 @param {number} [thumbnail_border_radius] - if set, rounds the corners of the gallery thumbnails
 @param {string} [class] - extra class applied on the container
+@param {boolean} [skip_first_media] - if set to true, product.media's first item is left out of the gallery entirely (used when it's already shown elsewhere, eg. main-product.liquid's separate first-image card)
 @param {object} [section]
 {%- enddoc -%}
 
@@ -178,6 +179,14 @@ only way to do it on Shopify right now.
   assign product_gallery_carousel_id = 'product-gallery-carousel-' | append: product.id | append: '-' | append: section.id
   assign filtered_indexes = null | sort
 
+  # gallery_media is what every loop below actually renders/counts - product.media itself, unless
+  # skip_first_media asks to drop the first item (only when there's more than 1 item to begin with, so
+  # the gallery never ends up with zero slides).
+  assign gallery_media = product.media
+  if skip_first_media and product.media.size > 1
+    assign gallery_media = product.media | slice: 1, product.media.size
+  endif
+
   if product.variants.size > 1
     for media in product.media
       if media.alt contains '#' and media.alt != product.title
@@ -198,16 +207,16 @@ only way to do it on Shopify right now.
   # Shared by numbers_controls and bar_controls below (both show a "current / total" counter) so the
   # filtered-media counting logic only lives in one place.
   if product != blank
-    assign media_count = product.media.size
+    assign media_count = gallery_media.size
     assign default_media_index = 0
 
-    for media in product.media
+    for media in gallery_media
       if filtered_indexes contains media.position
         assign media_count = media_count | minus: 1
       endif
     endfor
 
-    for media in product.media
+    for media in gallery_media
       unless filtered_indexes contains media.position
         assign default_media_index = default_media_index | plus: 1
 
@@ -231,10 +240,10 @@ only way to do it on Shopify right now.
       <scroll-carousel adaptive-height id="{{ product_gallery_carousel_id }}" class="product-gallery__carousel scroll-area bleed md:unbleed" role="region">
         {%- if product != blank -%}
           {%- assign image_index = 0 -%}
-          {%- for media in product.media -%}
+          {%- for media in gallery_media -%}
             {%- capture sizes -%}(max-width: 699px) 100vw, 50vw{%- endcapture -%}
 
-            <div class="product-gallery__media snap-center {% if media == default_media %}is-initial{% endif %} {% if enable_image_zoom and section.settings.desktop_media_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: media.position, count: product.media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
+            <div class="product-gallery__media snap-center {% if media == default_media %}is-initial{% endif %} {% if enable_image_zoom and section.settings.desktop_media_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: gallery_media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
               {%- if default_media == media -%}
                 {%- assign preload = true -%}
               {%- else -%}
@@ -272,7 +281,7 @@ only way to do it on Shopify right now.
         {%- endif -%}
       </scroll-carousel>
 
-      {%- if desktop_layout == 'carousel' and product.media.size > 1 -%}
+      {%- if desktop_layout == 'carousel' and gallery_media.size > 1 -%}
         <custom-cursor class="product-gallery__cursor custom-cursor" {% if default_media.media_type != 'image' %}hidden{% endif %}>
           <div class="circle-button circle-button--xl">
             {%- render 'icon' with 'big-arrow-right', width: 12 -%}
@@ -296,7 +305,7 @@ only way to do it on Shopify right now.
   ----------------------------------------------------------------------------------------------------------------------
   {%- endcomment -%}
 
-    {%- if product.media.size > 1 or product == blank -%}
+    {%- if gallery_media.size > 1 or product == blank -%}
       {%- comment -%}
       IMPLEMENTATION NOTE: we allow merchants to control independently the desktop and mobile controls. To handle that, we
         render each type of controls, and then add the correct one based on the settings
@@ -307,7 +316,7 @@ only way to do it on Shopify right now.
         <div class="product-gallery__thumbnail-list">
           <carousel-navigation align-selected aria-controls="{{ product_gallery_carousel_id }}" class="scroll-marker-group scroll-marker-group--thumbnails scroll-area bleed md:unbleed">
             {%- if product != blank -%}
-              {%- for media in product.media -%}
+              {%- for media in gallery_media -%}
                 <button type="button" class="scroll-marker" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == default_media %}true{% else %}false{% endif %}" aria-label="{{ 'general.accessibility.go_to_item' | t: index: forloop.index | escape }}">
                   {{- media | image_url: width: media.preview_image.width | image_tag: loading: 'lazy', sizes: '56px', widths: '56,112,168', class: 'object-contain' -}}
 
@@ -340,9 +349,9 @@ only way to do it on Shopify right now.
       {%- capture lines_controls -%}
         <carousel-navigation class="scroll-marker-group scroll-marker-group--lines align-self-center" aria-controls="{{ product_gallery_carousel_id }}">
           {%- if product != blank -%}
-            {%- for media in product.media -%}
+            {%- for media in gallery_media -%}
               <button type="button" class="scroll-marker tap-area tap-area--sm" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == default_media %}true{% else %}false{% endif %}">
-                <span class="sr-only">{{ 'general.accessibility.go_to_item' | t: index: media.position }}</span>
+                <span class="sr-only">{{ 'general.accessibility.go_to_item' | t: index: forloop.index }}</span>
               </button>
             {%- endfor -%}
           {%- else -%}
@@ -360,9 +369,9 @@ only way to do it on Shopify right now.
       {%- capture dots_controls -%}
         <carousel-navigation class="scroll-marker-group scroll-marker-group--dots align-self-center" aria-controls="{{ product_gallery_carousel_id }}">
           {%- if product != blank -%}
-            {%- for media in product.media -%}
+            {%- for media in gallery_media -%}
               <button type="button" class="scroll-marker tap-area tap-area--sm" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == default_media %}true{% else %}false{% endif %}">
-                <span class="sr-only">{{ 'general.accessibility.go_to_item' | t: index: media.position }}</span>
+                <span class="sr-only">{{ 'general.accessibility.go_to_item' | t: index: forloop.index }}</span>
               </button>
             {%- endfor -%}
           {%- else -%}
@@ -475,7 +484,7 @@ only way to do it on Shopify right now.
   VIEW IN YOUR SPACE
   ----------------------------------------------------------------------------------------------------------------------
   {%- endcomment -%}
-  {%- assign first_3d_model = product.media | where: 'media_type', 'model' | first -%}
+  {%- assign first_3d_model = gallery_media | where: 'media_type', 'model' | first -%}
 
   {%- if first_3d_model -%}
     <link rel="stylesheet" href="https://cdn.shopify.com/shopifycloud/model-viewer-ui/assets/v1.0/model-viewer-ui.css" media="print" onload="this.media='all'; this.onload = null">
