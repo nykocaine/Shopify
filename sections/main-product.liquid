@@ -180,6 +180,26 @@
         padding-inline-start: 0;
       }
 
+      {%- comment -%}
+      Desktop-only "Image position" swap: moves .product-info-frame to the start of the grid row and
+      the gallery side (the first-image card, if present, and .product-gallery-frame) to the end,
+      keeping their own relative order to each other - source order (and mobile) stay untouched, since
+      .order only takes effect where these are actual grid items (min-width: 1000px, set above).
+      {%- endcomment -%}
+      {%- if section.settings.desktop_media_position == 'end' -%}
+        #shopify-section-{{ section.id }} .product-first-image-frame {
+          order: 2;
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery-frame {
+          order: 3;
+        }
+
+        #shopify-section-{{ section.id }} .product-info-frame {
+          order: 1;
+        }
+      {%- endif -%}
+
       {%- if first_product_image -%}
         #shopify-section-{{ section.id }} .product-first-image-frame {
           border-radius: {{ gallery_border_radius }}px;
@@ -725,6 +745,22 @@
       "step": 1,
       "unit": "%",
       "default": 50
+    },
+    {
+      "type": "select",
+      "id": "desktop_media_position",
+      "label": "t:global.position.desktop_media_position",
+      "options": [
+        {
+          "value": "start",
+          "label": "t:global.position.left"
+        },
+        {
+          "value": "end",
+          "label": "t:global.position.right"
+        }
+      ],
+      "default": "start"
     },
     {
       "type": "select",
