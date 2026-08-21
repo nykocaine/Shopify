@@ -308,6 +308,19 @@
     }
 
     {%- comment -%}
+    The *2 above only makes sense when the next section independently contributes its own
+    padding-block-start that needs collapsing away (the ".section-spacing" case the rule below and
+    theme.css's own :has() mechanism both target). When the next section is ALSO a floating section
+    (eg. Featured Tabs with its own "Floating" setting on), it contributes zero top spacing of its own
+    (.section-floating--block-end only ever sets a bottom margin, never a top one) - so there's nothing
+    left to collapse, and the *2 just becomes a literal double gap. Halving it back down to the theme's
+    normal single inter-section spacing in that specific case only.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }}:has(+ .shopify-section .section-floating--block-end) .section-floating--block-end {
+      margin-block-end: var(--section-vertical-spacing);
+    }
+
+    {%- comment -%}
     Without this, the gap below doubles up: this section contributes the margin-block-end above, and the next
     section (if it uses the standard ".container.section-spacing" pattern) independently adds its own full
     padding-block-start on top of it — margin and padding never collapse with each other in CSS. The theme's
