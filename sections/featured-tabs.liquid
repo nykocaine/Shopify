@@ -135,6 +135,22 @@
       width: 3rem;
     }
 
+    #shopify-section-{{ section.id }} .prose > .h3 {
+      font-weight: {{ section.settings.title_font_weight }};
+    }
+
+    {%- comment -%}
+    Outline-only title: transparent fill + a stroke drawn with the section's own text color (not
+    currentColor - color is set to transparent right above, and currentColor would resolve to that
+    same transparent value for the stroke too, so the color has to be named explicitly here).
+    {%- endcomment -%}
+    {%- if section.settings.title_outline_only -%}
+      #shopify-section-{{ section.id }} .prose > .h3 {
+        color: transparent;
+        -webkit-text-stroke: {{ section.settings.title_outline_width }}px rgb(var(--text-color));
+      }
+    {%- endif -%}
+
     {%- comment -%}
     Buttons and their label sit in the same grid, matched up by grid-column (set inline per item,
     same index counter in both loops) - the label always lands centered under its own button,
@@ -482,6 +498,38 @@
       "id": "subtitle",
       "label": "Subtitle",
       "default": "Essentials to throw in your purse or pocket."
+    },
+    {
+      "type": "header",
+      "content": "Title style"
+    },
+    {
+      "type": "range",
+      "id": "title_font_weight",
+      "min": 100,
+      "max": 900,
+      "step": 10,
+      "label": "Title font weight",
+      "default": 700
+    },
+    {
+      "type": "checkbox",
+      "id": "title_outline_only",
+      "label": "Outline only",
+      "info": "Removes the title's fill, leaving only its outline. Only affects the Title, not the subtitle or tab text.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "title_outline_width",
+      "min": 0.5,
+      "max": 4,
+      "step": 0.5,
+      "unit": "px",
+      "label": "Outline thickness",
+      "info": "Larger values may start to fill in small letters (like the hole in \"o\" or \"a\").",
+      "default": 1.5,
+      "visible_if": "{{ section.settings.title_outline_only }}"
     },
     {
       "type": "color_scheme",
