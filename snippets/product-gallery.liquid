@@ -198,6 +198,31 @@ only way to do it on Shopify right now.
       endif
     endfor
   endif
+
+  {%- comment -%}
+  Shared by numbers_controls and bar_controls below (both show a "current / total" counter) so the
+  filtered-media counting logic only lives in one place.
+  {%- endcomment -%}
+  if product != blank
+    assign media_count = product.media.size
+    assign default_media_index = 0
+
+    for media in product.media
+      if filtered_indexes contains media.position
+        assign media_count = media_count | minus: 1
+      endif
+    endfor
+
+    for media in product.media
+      unless filtered_indexes contains media.position
+        assign default_media_index = default_media_index | plus: 1
+
+        if media == default_media
+          break
+        endif
+      endunless
+    endfor
+  endif
 %}
 
 <product-gallery id="product-gallery-{{ product_gallery_carousel_id }}" class="product-gallery {{ class }}" form="{{ product_form_id }}" filtered-indexes="{{ filtered_indexes | json }}" {% if enable_media_autoplay %}autoplay-media{% endif %} {% if enable_image_zoom %}allow-zoom="{{ max_image_zoom_level }}" zoom-color-scheme-id="{{ settings.default_color_scheme.id }}"{% endif %}>
@@ -359,27 +384,6 @@ only way to do it on Shopify right now.
       {%- capture numbers_controls -%}
         <carousel-navigation class="scroll-marker-group scroll-marker-group--counter align-self-center" aria-controls="{{ product_gallery_carousel_id }}">
           {%- if product != blank -%}
-            {%- liquid
-              assign media_count = product.media.size
-              assign default_media_index = 0
-
-              for media in product.media
-                if filtered_indexes contains media.position
-                  assign media_count = media_count | minus: 1
-                endif
-              endfor
-
-              for media in product.media
-                unless filtered_indexes contains media.position
-                  assign default_media_index = default_media_index | plus: 1
-
-                  if media == default_media
-                    break
-                  endif
-                endunless
-              endfor
-            -%}
-
             <carousel-prev-button class="tap-area" aria-controls="{{ product_gallery_carousel_id }}">
               <button type="button">
                 {%- render 'icon' with 'arrow-left', width: 9, direction_aware: true -%}
@@ -413,21 +417,17 @@ only way to do it on Shopify right now.
         <div class="product-gallery__progress-bar-row h-stack gap-4 align-self-center full-bleed md:unbleed" style="width: 100%;">
           <progress-bar track-scroll-target="{{ product_gallery_carousel_id }}" class="progress-bar grow"></progress-bar>
 
-          <div class="h-stack gap-2">
-            <carousel-prev-button aria-controls="{{ product_gallery_carousel_id }}">
-              <button type="button" class="circle-button circle-button--outline">
-                <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
-                {%- render 'icon' with 'chevron-right', width: 8 -%}
-              </button>
-            </carousel-prev-button>
-
-            <carousel-next-button aria-controls="{{ product_gallery_carousel_id }}">
-              <button type="button" class="circle-button circle-button--outline">
-                <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
-                {%- render 'icon' with 'chevron-right', width: 8 -%}
-              </button>
-            </carousel-next-button>
-          </div>
+          <carousel-page-indicator class="h-stack gap-2" aria-controls="{{ product_gallery_carousel_id }}">
+            {%- if product != blank -%}
+              <span current-slide-index>{{ default_media_index }}</span>
+              <span class="text-subdued">/</span>
+              <span page-size class="text-subdued">{{ media_count }}</span>
+            {%- else -%}
+              <span current-slide-index>1</span>
+              <span class="text-subdued">/</span>
+              <span page-size class="text-subdued">3</span>
+            {%- endif -%}
+          </carousel-page-indicator>
         </div>
       {%- endcapture -%}
 
