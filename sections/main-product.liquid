@@ -198,6 +198,8 @@
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-gallery-columns > * {
         border-radius: {{ gallery_border_radius }}px;
+        min-width: 0;
+        width: 100%;
         overflow: hidden;
       }
 
@@ -571,8 +573,12 @@
                   thumbnail_border_radius: section.settings.thumbnail_border_radius
               -%}
 
-              {%- comment -%}Box 3: reserved, structurally present, intentionally empty for now.{%- endcomment -%}
-              <div class="product-gallery-columns__box product-gallery-columns__box--reserved hidden md:block"></div>
+              {%- comment -%}
+              Box 3: reserved, structurally present, intentionally empty for now - given the same
+              aspect-ratio as box 1's image (not "content", just sizing) so an empty box doesn't collapse
+              to 0 height and read as a missing/different-sized column next to the other two.
+              {%- endcomment -%}
+              <div class="product-gallery-columns__box product-gallery-columns__box--reserved hidden md:block" style="aspect-ratio: {{ first_product_image.aspect_ratio | default: 1 }};"></div>
             </div>
           </div>
         {%- endif -%}
