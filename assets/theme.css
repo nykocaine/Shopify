@@ -587,8 +587,13 @@ height-observer {
 
 /* Buy button (buy-buttons.liquid): label and price are two separate flex children instead of one
    concatenated string, pinned to opposite ends of the already-flex .button__content - scoped to this
-   one button only, so every other button in the theme keeps its default centered content. */
+   one button only, so every other button in the theme keeps its default centered content.
+   padding-inline is set to half of --button-padding-inline directly (not by reassigning the custom
+   property itself - a var() referencing its own property name in the same rule is an invalid cycle
+   and would zero out the whole padding shorthand), so it stays in sync with whatever the theme's own
+   responsive button padding resolves to at each breakpoint. */
 .buy-buttons__cta .button__content {
+  padding-inline: calc(var(--button-padding-inline) / 2);
   justify-content: space-between;
 }
 
