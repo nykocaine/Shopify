@@ -75,27 +75,21 @@ note that this may have impact on different places.
       assign satoshi_italic_url = 'satoshi-variable-italic.woff2' | asset_url
     endif
 
-    # Typography (Rektorat custom font, used when any font source is set to 'rektorat')
-    if settings.subheading_font_source == 'rektorat' or settings.heading_font_source == 'rektorat' or settings.text_font_source == 'rektorat'
-      assign rektorat_thin_url = 'rektorat-thin.woff2' | asset_url
-      assign rektorat_light_url = 'rektorat-light.woff2' | asset_url
-      assign rektorat_regular_url = 'rektorat-regular.woff2' | asset_url
-      assign rektorat_medium_url = 'rektorat-medium.woff2' | asset_url
-      assign rektorat_bold_url = 'rektorat-bold.woff2' | asset_url
-      assign rektorat_heavy_url = 'rektorat-heavy.woff2' | asset_url
-    endif
-
     # Typography (Pros custom font, used when any font source is set to 'pros')
     if settings.subheading_font_source == 'pros' or settings.heading_font_source == 'pros' or settings.text_font_source == 'pros'
       assign pros_regular_url = 'pros-regular.woff2' | asset_url
     endif
 
-    # Typography (Apercu Mono custom font, used when any font source is set to 'apercu-mono')
-    if settings.subheading_font_source == 'apercu-mono' or settings.heading_font_source == 'apercu-mono' or settings.text_font_source == 'apercu-mono'
-      assign apercu_mono_light_url = 'apercu-mono-light.woff2' | asset_url
-      assign apercu_mono_regular_url = 'apercu-mono-regular.woff2' | asset_url
-      assign apercu_mono_medium_url = 'apercu-mono-medium.woff2' | asset_url
-      assign apercu_mono_bold_url = 'apercu-mono-bold.woff2' | asset_url
+    # Typography (Apercu custom font, used when any font source is set to 'apercu')
+    if settings.subheading_font_source == 'apercu' or settings.heading_font_source == 'apercu' or settings.text_font_source == 'apercu'
+      assign apercu_thin_url = 'apercu-thin.woff2' | asset_url
+      assign apercu_extralight_url = 'apercu-extralight.woff2' | asset_url
+      assign apercu_light_url = 'apercu-light.woff2' | asset_url
+      assign apercu_regular_url = 'apercu-regular.woff2' | asset_url
+      assign apercu_medium_url = 'apercu-medium.woff2' | asset_url
+      assign apercu_bold_url = 'apercu-bold.woff2' | asset_url
+      assign apercu_extrabold_url = 'apercu-extrabold.woff2' | asset_url
+      assign apercu_black_url = 'apercu-black.woff2' | asset_url
     endif
   -%}
 
@@ -116,51 +110,6 @@ note that this may have impact on different places.
     }
   {%- endif -%}
 
-  {%- if settings.subheading_font_source == 'rektorat' or settings.heading_font_source == 'rektorat' or settings.text_font_source == 'rektorat' -%}
-    @font-face {
-      font-family: 'Rektorat';
-      src: url('{{ rektorat_thin_url }}') format('woff2');
-      font-weight: 100;
-      font-style: normal;
-      font-display: fallback;
-    }
-    @font-face {
-      font-family: 'Rektorat';
-      src: url('{{ rektorat_light_url }}') format('woff2');
-      font-weight: 300;
-      font-style: normal;
-      font-display: fallback;
-    }
-    @font-face {
-      font-family: 'Rektorat';
-      src: url('{{ rektorat_regular_url }}') format('woff2');
-      font-weight: 400;
-      font-style: normal;
-      font-display: fallback;
-    }
-    @font-face {
-      font-family: 'Rektorat';
-      src: url('{{ rektorat_medium_url }}') format('woff2');
-      font-weight: 500;
-      font-style: normal;
-      font-display: fallback;
-    }
-    @font-face {
-      font-family: 'Rektorat';
-      src: url('{{ rektorat_bold_url }}') format('woff2');
-      font-weight: 700;
-      font-style: normal;
-      font-display: fallback;
-    }
-    @font-face {
-      font-family: 'Rektorat';
-      src: url('{{ rektorat_heavy_url }}') format('woff2');
-      font-weight: 900;
-      font-style: normal;
-      font-display: fallback;
-    }
-  {%- endif -%}
-
   {%- if settings.subheading_font_source == 'pros' or settings.heading_font_source == 'pros' or settings.text_font_source == 'pros' -%}
     @font-face {
       font-family: 'Pros';
@@ -171,32 +120,60 @@ note that this may have impact on different places.
     }
   {%- endif -%}
 
-  {%- if settings.subheading_font_source == 'apercu-mono' or settings.heading_font_source == 'apercu-mono' or settings.text_font_source == 'apercu-mono' -%}
+  {%- if settings.subheading_font_source == 'apercu' or settings.heading_font_source == 'apercu' or settings.text_font_source == 'apercu' -%}
     @font-face {
-      font-family: 'Apercu Mono';
-      src: url('{{ apercu_mono_light_url }}') format('woff2');
+      font-family: 'Apercu';
+      src: url('{{ apercu_thin_url }}') format('woff2');
+      font-weight: 100;
+      font-style: normal;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: 'Apercu';
+      src: url('{{ apercu_extralight_url }}') format('woff2');
+      font-weight: 200;
+      font-style: normal;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: 'Apercu';
+      src: url('{{ apercu_light_url }}') format('woff2');
       font-weight: 300;
       font-style: normal;
       font-display: fallback;
     }
     @font-face {
-      font-family: 'Apercu Mono';
-      src: url('{{ apercu_mono_regular_url }}') format('woff2');
+      font-family: 'Apercu';
+      src: url('{{ apercu_regular_url }}') format('woff2');
       font-weight: 400;
       font-style: normal;
       font-display: fallback;
     }
     @font-face {
-      font-family: 'Apercu Mono';
-      src: url('{{ apercu_mono_medium_url }}') format('woff2');
+      font-family: 'Apercu';
+      src: url('{{ apercu_medium_url }}') format('woff2');
       font-weight: 500;
       font-style: normal;
       font-display: fallback;
     }
     @font-face {
-      font-family: 'Apercu Mono';
-      src: url('{{ apercu_mono_bold_url }}') format('woff2');
+      font-family: 'Apercu';
+      src: url('{{ apercu_bold_url }}') format('woff2');
       font-weight: 700;
+      font-style: normal;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: 'Apercu';
+      src: url('{{ apercu_extrabold_url }}') format('woff2');
+      font-weight: 800;
+      font-style: normal;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: 'Apercu';
+      src: url('{{ apercu_black_url }}') format('woff2');
+      font-weight: 900;
       font-style: normal;
       font-display: fallback;
     }
@@ -276,16 +253,12 @@ note that this may have impact on different places.
     --subheading-font-family: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --subheading-font-weight: {{ settings.subheading_font_weight }};
     --subheading-font-style: normal;
-    {%- elsif settings.subheading_font_source == 'rektorat' -%}
-    --subheading-font-family: "Rektorat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --subheading-font-weight: {{ settings.subheading_font_weight }};
-    --subheading-font-style: normal;
     {%- elsif settings.subheading_font_source == 'pros' -%}
     --subheading-font-family: "Pros", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --subheading-font-weight: 400;
     --subheading-font-style: normal;
-    {%- elsif settings.subheading_font_source == 'apercu-mono' -%}
-    --subheading-font-family: "Apercu Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    {%- elsif settings.subheading_font_source == 'apercu' -%}
+    --subheading-font-family: "Apercu", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --subheading-font-weight: {{ settings.subheading_font_weight }};
     --subheading-font-style: normal;
     {%- else -%}
@@ -304,16 +277,12 @@ note that this may have impact on different places.
     --heading-font-family: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --heading-font-weight: {{ settings.heading_font_weight }};
     --heading-font-style: normal;
-    {%- elsif settings.heading_font_source == 'rektorat' -%}
-    --heading-font-family: "Rektorat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --heading-font-weight: {{ settings.heading_font_weight }};
-    --heading-font-style: normal;
     {%- elsif settings.heading_font_source == 'pros' -%}
     --heading-font-family: "Pros", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --heading-font-weight: 400;
     --heading-font-style: normal;
-    {%- elsif settings.heading_font_source == 'apercu-mono' -%}
-    --heading-font-family: "Apercu Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    {%- elsif settings.heading_font_source == 'apercu' -%}
+    --heading-font-family: "Apercu", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --heading-font-weight: {{ settings.heading_font_weight }};
     --heading-font-style: normal;
     {%- else -%}
@@ -336,16 +305,12 @@ note that this may have impact on different places.
     --text-font-family: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --text-font-weight: {{ settings.text_font_weight }};
     --text-font-style: normal;
-    {%- elsif settings.text_font_source == 'rektorat' -%}
-    --text-font-family: "Rektorat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --text-font-weight: {{ settings.text_font_weight }};
-    --text-font-style: normal;
     {%- elsif settings.text_font_source == 'pros' -%}
     --text-font-family: "Pros", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --text-font-weight: 400;
     --text-font-style: normal;
-    {%- elsif settings.text_font_source == 'apercu-mono' -%}
-    --text-font-family: "Apercu Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    {%- elsif settings.text_font_source == 'apercu' -%}
+    --text-font-family: "Apercu", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --text-font-weight: {{ settings.text_font_weight }};
     --text-font-style: normal;
     {%- else -%}
