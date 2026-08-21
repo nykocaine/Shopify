@@ -15,6 +15,7 @@ This component is used to show the buy buttons
 @param {boolean} [show_new_badge] - if true, shows a small pill badge overlapping the bottom edge of the add to cart button
 @param {string} [new_badge_text] - the text shown inside the new badge
 @param {string} [new_badge_color] - the background color of the new badge
+@param {string} [below_button_text] - richtext shown as a line of text right below the add to cart button
 {%- enddoc -%}
 
 {%- if show_quantity_selector and form_id != blank -%}
@@ -234,6 +235,10 @@ This component is used to show the buy buttons
                 {%- endif -%}
               </div>
 
+              {%- if below_button_text != blank -%}
+                <div class="buy-buttons__below-text text-subdued text-sm">{{ below_button_text }}</div>
+              {%- endif -%}
+
               {%- if show_payment_button -%}
                 {{- form | payment_button -}}
 
@@ -269,6 +274,10 @@ This component is used to show the buy buttons
       </div>
     {%- else -%}
       {%- render 'button', content: button_content, type: 'submit', background: atc_button_background, text_color: atc_button_text_color, stretch: true -%}
+    {%- endif -%}
+
+    {%- if below_button_text != blank -%}
+      <div class="buy-buttons__below-text text-subdued text-sm">{{ below_button_text }}</div>
     {%- endif -%}
   </buy-buttons>
 {%- endif -%}
