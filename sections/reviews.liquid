@@ -533,28 +533,45 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     margin-block-end: .75rem;
   }
 
+  {%- comment -%}
+  Reuses the theme's global "Progress bar" design (Theme settings > Bars, plus each color scheme's
+  progress_bar_* colors) instead of a bar style local to this section - same variables the free shipping
+  bar/inventory bar/etc. already read (see snippets/css-variables.liquid). --bar-border-width and
+  --bar-indicator-size are derived from --progress-bar-height so both the outline and the marker scale
+  with whatever height the merchant configures there, rather than being fixed px values tuned for one size.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .review-card__bar-track {
-    height: 4px;
-    border-radius: var(--rounded-full);
-    background: rgb(var(--border-color));
+    --bar-height: var(--progress-bar-height, 4px);
+    --bar-border-width: clamp(1px, calc(var(--bar-height) * .2), 2px);
+    --bar-indicator-size: clamp(10px, calc(var(--bar-height) * 2.4), 22px);
+    height: var(--bar-height);
+    border: var(--bar-border-width) solid var(--progress-bar-border-color, rgb(var(--border-color)));
+    border-radius: var(--progress-bar-radius, var(--rounded-full));
+    background: var(--progress-bar-background-color, transparent);
     position: relative;
   }
 
   #shopify-section-{{ section.id }} .review-card__bar-fill {
     height: 100%;
-    border-radius: var(--rounded-full);
-    background: rgb(var(--text-color));
+    background: none;
+    position: relative;
   }
 
+  {%- comment -%}
+  Positioned against .review-card__bar-fill (not .review-card__bar-track), so the marker sits at the fill's
+  own right edge - which is where the width: {percent}% inline style above already places it - instead of
+  always sitting at the track's fixed right edge regardless of rating.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .review-card__bar-fill::after {
     content: "";
-    width: 12px;
-    height: 12px;
-    border-radius: var(--rounded-full);
-    background: rgb(var(--text-color));
+    width: var(--bar-indicator-size);
+    height: var(--bar-indicator-size);
+    border-radius: 50%;
+    background: var(--progress-bar-fill-color, rgb(var(--text-color)));
     position: absolute;
-    inset-inline-end: -6px;
-    inset-block-start: -4px;
+    inset-inline-end: calc(var(--bar-indicator-size) / -2);
+    inset-block-start: 50%;
+    transform: translateY(-50%);
   }
 
   #shopify-section-{{ section.id }} .review-card__bar-labels {
