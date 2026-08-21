@@ -3505,10 +3505,24 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 }
 
 .product-subtitle {
-  font-family: var(--heading-font-family);
+  font-family: var(--text-font-family);
   font-weight: var(--text-font-weight);
-  font-style: var(--heading-font-style);
+  font-style: var(--text-font-style);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Product cards should only ever inherit the Body Text typeface, never Heading/Subheading - the
+   "Product card style" setting (product-card.liquid) still picks ".subheading"/".heading" for the
+   title/vendor/swatch "+N more" label depending on merchant choice, purely for their font-size;
+   this overrides the typeface itself (family/style/weight/letter-spacing/text-transform) back to
+   Body Text on both, without touching the global ".subheading"/".heading" rules used elsewhere. */
+.product-card .subheading,
+.product-card .heading {
+  font-family: var(--text-font-family);
+  font-style: var(--text-font-style);
+  font-weight: var(--text-font-weight);
+  letter-spacing: var(--text-letter-spacing);
+  text-transform: var(--text-transform);
 }
 
 .product-card__figure {

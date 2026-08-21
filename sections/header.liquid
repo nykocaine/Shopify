@@ -84,13 +84,15 @@
   {%- endif -%}
 
   /* Menu links, Menu/Account/Search/Cart labels all use ".subheading" (its own
-     typography, separate from headings). Override the typeface here (family,
-     style, weight, letter-spacing, text-transform) so these header texts fully
-     inherit the Heading typography instead, without touching the global
-     ".subheading" rule used elsewhere in the theme. Font-size/line-height are
-     intentionally left alone (kept from ".subheading"): there is no dedicated
-     nav-sized "--heading-font-size", only the h1-h7 scale, which would be far
-     too large here.
+     typography, separate from headings), and the logo text (when no logo image
+     is set) uses ".heading". The header should only ever inherit the Body Text
+     typeface, not Heading/Subheading - override the typeface here (family,
+     style, weight, letter-spacing, text-transform) on both classes so these
+     header texts fully inherit the Body typography instead, without touching
+     the global ".subheading"/".heading" rules used elsewhere in the theme.
+     Font-size/line-height are intentionally left alone (kept from whichever of
+     ".subheading"/".heading" is in play): there is no dedicated nav-sized
+     "--text-font-size" scale that would replace either one's own sizing.
 
      The ".menu-drawer .subheading" selector (not scoped to this section's ID)
      is needed on top of the section-scoped one: <header-menu-drawer append-to-body>
@@ -99,12 +101,13 @@
      "#shopify-section-{{ section.id }}" — so the Account link's text inside the
      mobile drawer would otherwise fall back to the plain Subheading look. */
   #shopify-section-{{ section.id }} .subheading,
+  #shopify-section-{{ section.id }} .heading,
   .menu-drawer .subheading {
-    font-family: var(--heading-font-family);
-    font-style: var(--heading-font-style);
-    font-weight: var(--heading-font-weight);
-    letter-spacing: var(--heading-letter-spacing);
-    text-transform: var(--heading-text-transform);
+    font-family: var(--text-font-family);
+    font-style: var(--text-font-style);
+    font-weight: var(--text-font-weight);
+    letter-spacing: var(--text-letter-spacing);
+    text-transform: var(--text-transform);
   }
 
   /* "Show text instead of icons" hides the icon on desktop entirely (it's md:hidden), so if the
@@ -122,9 +125,9 @@
   }
 
   #shopify-section-{{ section.id }} .header__cart-count-text {
-    font-family: var(--heading-font-family);
-    font-style: var(--heading-font-style);
-    font-weight: var(--heading-font-weight);
+    font-family: var(--text-font-family);
+    font-style: var(--text-font-style);
+    font-weight: var(--text-font-weight);
   }
 </style>
 
