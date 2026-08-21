@@ -1562,6 +1562,8 @@ var EffectCarousel = class extends HTMLElement {
     }
     this.dispatchEvent(new CustomEvent("carousel:select", { detail: { index, cell: this.cells[index] } }));
     if (index === this.selectedIndex) {
+      __privateGet(this, _player)?.setDuration(await this.getPlayerDurationForSlide(this.cells[index]));
+      __privateGet(this, _player)?.resume(true);
       return Promise.resolve();
     }
     __privateGet(this, _player)?.pause();

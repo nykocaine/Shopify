@@ -48,6 +48,15 @@
         color: var(--nav-control-icon-color, currentColor);
       }
 
+      /* 44x44px min tap target (WCAG 2.5.5). Scoped to this section only -
+         --tap-area-size is a global token shared by the header, social-media,
+         product-gallery, product-card, testimonials and other carousels, so
+         it isn't touched here. html has no font-size override in this theme
+         (verified in assets/theme.css), so 1rem = 16px and 44px is exact. */
+      #shopify-section-{{ section.id }} .tap-area {
+        --tap-area-size: 44px;
+      }
+
       {%- if section.settings.display_mode != 'marquee' -%}
         {%- comment -%}
         Same duration/easing as the theme's own height animation (AccordionDisclosure in theme.js: 0.25s,
