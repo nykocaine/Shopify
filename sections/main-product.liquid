@@ -185,6 +185,7 @@
       #shopify-section-{{ section.id }} .product-gallery-columns {
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: var(--product-column-gap, 0px);
+        align-items: start;
         display: grid;
         position: relative;
       }
@@ -244,6 +245,16 @@
     height: 100% override above provides.
     {%- endcomment -%}
     {%- capture product_gallery_fill_css -%}
+      {%- comment -%}
+      .product-gallery-columns is a plain block (no explicit height) sitting inside .product-gallery-frame,
+      which is what actually gets stretched to the fixed row height below - without this, .product-gallery-
+      columns would only be as tall as box 1's natural image height, and .product-gallery (absolute, inset:
+      0 against it - see below) would collapse to match instead of the intended fixed height.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery-columns {
+        height: 100% !important;
+      }
+
       {%- comment -%}
       Targets .product-gallery-columns > .product-gallery (not .product-gallery-frame's direct child
       anymore, now that the 3-column layout wraps it) with an explicit grid-column: 2 - harmless on
