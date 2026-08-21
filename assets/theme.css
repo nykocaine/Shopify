@@ -598,13 +598,16 @@ height-observer {
 }
 
 /* button-content (theme.js) only attaches its shadow root the first time aria-busy toggles (ie. the
-   first "add to cart" click) - once it does, layout switches from the light-DOM ".button__content"
-   rule above to this shadow-internal ::part(content) row instead, which by default has no
-   justify-content and shrinks to fit its own content (:host uses place-items: center), so label/price
-   collapse together at the start instead of staying pinned to opposite ends. width: 100% makes the
-   row actually span the button so space-between has room to push the price to the far end. */
+   first "add to cart" click) - once it does, the host itself switches to "display: grid !important;
+   place-items: center !important" (button-content's own shadow <style>), which no light-DOM rule can
+   out-cascade for the host's own display. Layout then depends entirely on this shadow-exposed
+   ::part(content) row instead of the ".button__content" rule above. justify-self: stretch is set
+   directly on this item (not inherited from the host's justify-items, so the host's !important never
+   enters the fight) so it actually fills its grid area instead of shrinking to content width under
+   place-items: center - width: 100% is kept too, now unambiguous once the area itself is full-width. */
 .buy-buttons__cta .button__content::part(content) {
   width: 100%;
+  justify-self: stretch;
   justify-content: space-between;
 }
 
