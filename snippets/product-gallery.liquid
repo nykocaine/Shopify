@@ -29,6 +29,29 @@ This component is used to show the product gallery (used in product page and fea
       }
     }
 
+  {%- if mobile_controls == 'bar' -%}
+    {%- comment -%}
+    mobile_controls: "bar" (bar_controls below) normally renders as the image-list's own second grid row,
+    below the carousel. Moved to the top instead, using the exact same floating mechanism the other
+    mobile_controls variants (dots/numbers/thumbnails) already use to sit over the image without adding to
+    the gallery's height - .product-gallery__controls-floating's "display: contents" wrapper means this still
+    resolves its containing block against .product-gallery__image-list (position: relative, theme.css), same
+    as those. Only the anchor edge changes (top here vs. their inset-block-end). The progress-bar element's
+    own scroll-tracking (assets/theme.js, track-scroll-target) reads the carousel by id, not DOM position, so
+    it keeps working unchanged.
+    {%- endcomment -%}
+    @media screen and (max-width: 999px) {
+      #shopify-section-{{ section.id }} .product-gallery__controls-floating .product-gallery__progress-bar-row {
+        margin-inline: 0;
+        padding-inline: var(--container-gutter);
+        position: absolute;
+        inset-block-start: 1rem;
+        inset-inline: 0;
+        z-index: 1;
+      }
+    }
+  {%- endif -%}
+
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} {
       {%- if desktop_layout == 'grid' -%}
@@ -387,7 +410,7 @@ only way to do it on Shopify right now.
       {%- comment -%}BAR{%- endcomment -%}
 
       {%- capture bar_controls -%}
-        <div class="h-stack gap-4 align-self-center full-bleed md:unbleed" style="width: 100%; padding-block: var(--section-vertical-spacing) 0;">
+        <div class="product-gallery__progress-bar-row h-stack gap-4 align-self-center full-bleed md:unbleed" style="width: 100%;">
           <progress-bar track-scroll-target="{{ product_gallery_carousel_id }}" class="progress-bar grow"></progress-bar>
 
           <div class="h-stack gap-2">
