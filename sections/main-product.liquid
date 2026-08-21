@@ -167,6 +167,49 @@
     }
   {%- endif -%}
 
+  {%- comment -%}
+  Desktop-only 3-column layout inside the gallery frame: box 1 is a static presentation of the
+  product's first image (always product.media's first actual image - never another slider, never
+  tied to variant selection or gallery navigation), box 2 is the existing <product-gallery> completely
+  untouched, box 3 is reserved empty for future use. This wraps .product-gallery-frame's existing
+  content in a new .product-gallery-columns grid instead of changing the frame itself, so the frame's
+  own floating_product overflow/border-radius/height-fill CSS above keeps working unmodified. Reuses
+  --product-column-gap (same gap already used between the gallery and info columns) and
+  gallery_border_radius (same variable .product-gallery-frame/.product-gallery__carousel-frame already
+  use) instead of introducing new tokens. Below 1000px .product-gallery-columns is a plain block (no
+  grid), and boxes 1/3 are hidden via the theme's existing .hidden/.md:block utilities - only the
+  gallery itself shows, unchanged from today.
+  {%- endcomment -%}
+  {%- if product.media.size > 0 -%}
+    @media screen and (min-width: 1000px) {
+      #shopify-section-{{ section.id }} .product-gallery-columns {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--product-column-gap, 0px);
+        display: grid;
+        position: relative;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery-columns__box {
+        border-radius: {{ gallery_border_radius }}px;
+        overflow: hidden;
+      }
+
+      {%- comment -%}
+      Explicit placement (not relying on auto-placement) so boxes 1/3 stay pinned to their own column
+      even in the floating_product + fixed-height combo, where .product-gallery (the middle item) gets
+      taken out of normal flow via position: absolute (product_gallery_fill_css below) - auto-placement
+      would otherwise skip the now-absent middle item and slide box 3 into its column.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery-columns__box--first-image {
+        grid-column: 1;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery-columns__box--reserved {
+        grid-column: 3;
+      }
+    }
+  {%- endif -%}
+
   {%- if section.settings.floating_product -%}
     {%- comment -%}
     Shared by both the mobile (product_height_mobile) and desktop (product_height_desktop) branches below:
@@ -201,7 +244,16 @@
     height: 100% override above provides.
     {%- endcomment -%}
     {%- capture product_gallery_fill_css -%}
-      #shopify-section-{{ section.id }} .product-gallery-frame > .product-gallery {
+      {%- comment -%}
+      Targets .product-gallery-columns > .product-gallery (not .product-gallery-frame's direct child
+      anymore, now that the 3-column layout wraps it) with an explicit grid-column: 2 - harmless on
+      mobile (.product-gallery-columns isn't a grid there), but on desktop it's what keeps this
+      absolutely-positioned item's containing block scoped to its own grid cell instead of ballooning
+      out to cover boxes 1/3 too, now that .product-gallery-columns (its actual grid container) is the
+      nearest positioned ancestor.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery-columns > .product-gallery {
+        grid-column: 2;
         position: absolute !important;
         inset: 0 !important;
         height: 100% !important;
@@ -471,20 +523,40 @@
     <product-rerender id="product-info-{{ product.id }}-{{ section.id }}" observe-form="{{ product_form_id }}" allow-partial-rerender>
       <div class="product">
         {%- if product.media.size > 0 -%}
+          {%- assign first_product_image = product.media | where: 'media_type', 'image' | first -%}
+
           <div class="product-gallery-frame">
-            {%- render 'product-gallery',
-                product: product,
-                product_form_id: product_form_id,
-                desktop_layout: section.settings.desktop_media_layout,
-                desktop_carousel_controls: section.settings.desktop_carousel_controls,
-                mobile_controls: section.settings.mobile_controls,
-                enable_media_autoplay: section.settings.enable_media_autoplay,
-                enable_video_looping: section.settings.enable_video_looping,
-                enable_image_zoom: section.settings.enable_image_zoom,
-                max_image_zoom_level: section.settings.max_image_zoom_level,
-                gallery_border_radius: gallery_border_radius,
-                thumbnail_border_radius: section.settings.thumbnail_border_radius
-            -%}
+            <div class="product-gallery-columns">
+              {%- comment -%}
+              Box 1: static first product image, not another slider - always product.media's first
+              image (filtered to media_type "image" so a video/3D model first in position never lands
+              here), independent of variant selection or gallery navigation. Reuses the exact same
+              .product-gallery__media wrapper + 'media' snippet the real gallery uses per-slide
+              (product-gallery.liquid), so it inherits the identical sizing/object-fit treatment.
+              {%- endcomment -%}
+              {%- if first_product_image -%}
+                <div class="product-gallery-columns__box product-gallery-columns__box--first-image product-gallery__media hidden md:block" data-media-type="{{ first_product_image.media_type }}">
+                  {%- render 'media', product: product, media: first_product_image, sizes: '(min-width: 1000px) 33vw, 100vw', preload: false -%}
+                </div>
+              {%- endif -%}
+
+              {%- render 'product-gallery',
+                  product: product,
+                  product_form_id: product_form_id,
+                  desktop_layout: section.settings.desktop_media_layout,
+                  desktop_carousel_controls: section.settings.desktop_carousel_controls,
+                  mobile_controls: section.settings.mobile_controls,
+                  enable_media_autoplay: section.settings.enable_media_autoplay,
+                  enable_video_looping: section.settings.enable_video_looping,
+                  enable_image_zoom: section.settings.enable_image_zoom,
+                  max_image_zoom_level: section.settings.max_image_zoom_level,
+                  gallery_border_radius: gallery_border_radius,
+                  thumbnail_border_radius: section.settings.thumbnail_border_radius
+              -%}
+
+              {%- comment -%}Box 3: reserved, structurally present, intentionally empty for now.{%- endcomment -%}
+              <div class="product-gallery-columns__box product-gallery-columns__box--reserved hidden md:block"></div>
+            </div>
           </div>
         {%- endif -%}
 
