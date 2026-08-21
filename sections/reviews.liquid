@@ -537,15 +537,24 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   Own style, controlled entirely by this section's "Rating bar" settings above - not the theme's global
   "Progress bar" design (that one stays reserved for the free shipping bar/inventory bar/etc.). Border is
   fixed at 1px regardless of the configured height; only --bar-height and --bar-indicator-size come from
-  settings, so the outline and the marker both read from the merchant's own review-bar config.
+  settings, so the outline and the marker both read from the merchant's own review-bar config. The
+  background-image below splits the track into 4 equal segments (3 divider lines at 25/50/75%) purely as
+  decoration - doesn't touch the markup and stays independent of the rating percentage.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .review-card__bar-track {
     --bar-height: {{ section.settings.review_bar_height }}px;
     --bar-indicator-size: {{ section.settings.review_bar_indicator_size }}px;
+    --bar-line-color: {% if section.settings.review_bar_border_color != blank %}rgb({{ section.settings.review_bar_border_color.rgb }}){% else %}rgb(var(--border-color)){% endif %};
     height: var(--bar-height);
-    border: 1px solid {% if section.settings.review_bar_border_color != blank %}rgb({{ section.settings.review_bar_border_color.rgb }}){% else %}rgb(var(--border-color)){% endif %};
+    border: 1px solid var(--bar-line-color);
     border-radius: var(--rounded-full);
-    background: {% if section.settings.review_bar_background_color != blank %}rgb({{ section.settings.review_bar_background_color.rgb }}){% else %}transparent{% endif %};
+    background-color: {% if section.settings.review_bar_background_color != blank %}rgb({{ section.settings.review_bar_background_color.rgb }}){% else %}transparent{% endif %};
+    background-image: linear-gradient(
+      to right,
+      transparent calc(25% - .5px), var(--bar-line-color) calc(25% - .5px), var(--bar-line-color) calc(25% + .5px), transparent calc(25% + .5px),
+      transparent calc(50% - .5px), var(--bar-line-color) calc(50% - .5px), var(--bar-line-color) calc(50% + .5px), transparent calc(50% + .5px),
+      transparent calc(75% - .5px), var(--bar-line-color) calc(75% - .5px), var(--bar-line-color) calc(75% + .5px), transparent calc(75% + .5px)
+    );
     position: relative;
   }
 
@@ -565,7 +574,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     width: var(--bar-indicator-size);
     height: var(--bar-indicator-size);
     border-radius: 50%;
-    background: {% if section.settings.review_bar_border_color != blank %}rgb({{ section.settings.review_bar_border_color.rgb }}){% else %}rgb(var(--text-color)){% endif %};
+    background: var(--bar-line-color);
     position: absolute;
     inset-inline-end: calc(var(--bar-indicator-size) / -2);
     inset-block-start: 50%;
