@@ -13,7 +13,7 @@
   endif
 -%}
 
-<div {% if section.settings.allow_transparent_header and layout != 'plain' %}allow-transparent-header{% endif %} class="color-scheme color-scheme--{{ color_scheme.id }}">
+<div {% if section.settings.allow_transparent_header and layout != 'plain' %}allow-transparent-header{% endif %} class="color-scheme color-scheme--{{ color_scheme.id }}{% if section.settings.floating_collection_banner %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_collection_banner %} style="border-end-start-radius: {{ section.settings.collection_banner_border_radius }}px; border-end-end-radius: {{ section.settings.collection_banner_border_radius }}px; overflow: hidden;"{% endif %}>
   {%- capture quick_navigation -%}
     {%- if section.settings.quick_navigation_menu.links.size > 0 -%}
       {% assign alignment = section.settings.content_position | split: 'place-self-' | last | split: '-' | last %}
@@ -129,6 +129,24 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_collection_banner",
+      "label": "Floating Collection Banner",
+      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "collection_banner_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_collection_banner }}"
     },
     {
       "type": "checkbox",
