@@ -397,12 +397,12 @@
       }
 
       {%- comment -%}
-      Mobile-only: zeroes just the horizontal half of the padding shorthand set above
+      Mobile-only: halves just the horizontal half of the padding shorthand set above
       (padding: var(--section-vertical-spacing) var(--container-gutter)) - padding-block stays, so the
-      card keeps its usual top/bottom breathing room, only the left/right inset is removed.
+      card keeps its usual top/bottom breathing room, only the left/right inset shrinks to half.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-info-frame {
-        padding-inline: 0;
+        padding-inline: calc(var(--container-gutter) / 2);
       }
 
       {%- if section.settings.product_height_mobile > 0 -%}
