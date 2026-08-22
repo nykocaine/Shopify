@@ -72,6 +72,16 @@ This component is used to show the product gallery (used in product page and fea
         color: #fff;
       }
 
+      {%- comment -%}
+      .text-subdued (theme.css, used by the counter's "/" and total-count spans) sets its own
+      rgb(var(--text-color) / .6) color rather than inheriting - on a dark image that stays the theme's
+      dark text at 60% opacity, nearly invisible against a dark photo, so it needs its own white-based
+      override here instead of picking up .is-dark-image's color from above.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery__caption-row.is-dark-image .text-subdued {
+        color: rgb(255 255 255 / .6);
+      }
+
       #shopify-section-{{ section.id }} .product-gallery__caption {
         display: block;
       }
