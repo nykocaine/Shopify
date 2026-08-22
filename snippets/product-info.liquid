@@ -181,10 +181,21 @@ no need to manually pass the section as it is globally available)
             {%- endif -%}
 
           {%- when 'rating' -%}
-            {%- if product != blank -%}
-              {%- render 'product-rating', product: product, alignment: alignment, show_empty: block.settings.show_empty, show_placeholder: false -%}
+            {%- if block.settings.side_text != blank -%}
+              <div class="product-rating-row">
+                <p class="product-rating-row__text">{{ block.settings.side_text }}</p>
+                {%- if product != blank -%}
+                  {%- render 'product-rating', product: product, alignment: 'end', show_empty: block.settings.show_empty, show_placeholder: false -%}
+                {%- else -%}
+                  {%- render 'product-rating', alignment: 'end', show_placeholder: true -%}
+                {%- endif -%}
+              </div>
             {%- else -%}
-              {%- render 'product-rating', alignment: alignment, show_placeholder: true -%}
+              {%- if product != blank -%}
+                {%- render 'product-rating', product: product, alignment: alignment, show_empty: block.settings.show_empty, show_placeholder: false -%}
+              {%- else -%}
+                {%- render 'product-rating', alignment: alignment, show_placeholder: true -%}
+              {%- endif -%}
             {%- endif -%}
 
           {%- when 'separator' -%}

@@ -5177,6 +5177,16 @@ table caption {
   inset-inline-start: calc(50% - (var(--icon-max-width) / 2));
 }
 
+/* Rating block (main-product.liquid "rating" block, side_text setting): text on the left, rating badge
+   pinned to the right on the same row - only rendered when side_text is actually set, so the block
+   keeps its plain rating-only look (no row) when left blank, same as before this setting existed. */
+.product-rating-row {
+  justify-content: space-between;
+  align-items: center;
+  column-gap: 1rem;
+  display: flex;
+}
+
 .rating-badge {
   flex-wrap: wrap;
   align-items: center;
