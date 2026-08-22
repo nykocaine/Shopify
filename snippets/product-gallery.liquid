@@ -146,44 +146,58 @@ This component is used to show the product gallery (used in product page and fea
         grid-column: span 2;
       }
     {%- endif -%}
-
-    {%- if desktop_layout == 'carousel' -%}
-      {%- comment -%}
-      Same inline/block inset as .product-gallery__top-bar (padding-inline: var(--container-gutter),
-      inset-block-start: 1rem, both in bar_css above) instead of flush against the edges, mirrored to the
-      bottom - reads as one consistent alignment with the bar and with .product-zoom-button below. Bare
-      SVGs, no .circle-button background: .product-gallery__nav-button below resets the <button> itself.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .product-gallery__nav-buttons {
-        position: absolute;
-        inset-inline-start: var(--container-gutter);
-        inset-block-end: 1rem;
-        align-items: center;
-        color: rgb(var(--text-color));
-      }
-
-      #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-gallery__nav-buttons {
-        color: #fff;
-      }
-
-      #shopify-section-{{ section.id }} .product-gallery__nav-button {
-        background: none;
-        border: none;
-        padding: .5rem;
-        color: inherit;
-        cursor: pointer;
-        display: grid;
-        place-items: center;
-      }
-
-      {%- comment -%}
-      icon.liquid has no "chevron-left" - flipping chevron-right's own SVG here instead of adding one.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} carousel-prev-button .icon {
-        transform: rotate(180deg);
-      }
-    {%- endif -%}
   }
+
+  {%- if desktop_layout == 'carousel' -%}
+    {%- comment -%}
+    Unconditional (not nested in a breakpoint media query, unlike the rest of this block) so the buttons
+    show on mobile too, not just desktop - same inline/block inset as .product-gallery__top-bar
+    (padding-inline: var(--container-gutter), inset-block-start: 1rem, both in bar_css above), mirrored to
+    the bottom, so it reads as one consistent alignment with the bar and with .product-zoom-button below.
+    Bare SVGs, no .circle-button background: .product-gallery__nav-button below resets the <button> itself,
+    with no padding of its own so its icon's actual edge lines up with the bar's, instead of sitting
+    further in.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-gallery__nav-buttons {
+      position: absolute;
+      inset-inline-start: var(--container-gutter);
+      inset-block-end: 1rem;
+      align-items: center;
+      color: rgb(var(--text-color));
+    }
+
+    #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-gallery__nav-buttons {
+      color: #fff;
+    }
+
+    #shopify-section-{{ section.id }} .product-gallery__nav-button {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+
+    {%- comment -%}
+    icon.liquid hardcodes stroke-width="1.5" on chevron-right regardless of the theme's global icon
+    thickness setting (settings.icon_stroke_width, --icon-stroke-width) - only a handful of "picto" icons
+    read that variable, chevron-right isn't one of them. Overriding it here (CSS wins over the SVG's own
+    presentation attribute) instead of changing the shared icon.liquid definition, which every other
+    chevron-right/chevron-down usage in the theme (selects, accordions, etc.) also relies on.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-gallery__nav-button .icon path {
+      stroke-width: var(--icon-stroke-width);
+    }
+
+    {%- comment -%}
+    icon.liquid has no "chevron-left" - flipping chevron-right's own SVG here instead of adding one.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} carousel-prev-button .icon {
+      transform: rotate(180deg);
+    }
+  {%- endif -%}
 
   {%- comment -%}
   .product-zoom-button (theme.css) inherits currentColor and has a negative inset-inline-end meant to
@@ -472,7 +486,7 @@ only way to do it on Shopify right now.
       "current slide" to step through.
       {%- endcomment -%}
       {%- if desktop_layout == 'carousel' and product != blank and gallery_media.size > 1 -%}
-        <div class="product-gallery__nav-buttons hidden md:flex gap-1">
+        <div class="product-gallery__nav-buttons flex gap-1">
           <carousel-prev-button aria-controls="{{ product_gallery_carousel_id }}">
             <button type="button" class="product-gallery__nav-button">
               {%- render 'icon' with 'chevron-right', width: 12 -%}
