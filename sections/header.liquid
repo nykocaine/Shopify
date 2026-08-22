@@ -129,6 +129,17 @@
     font-style: var(--text-font-style);
     font-weight: var(--text-font-weight);
   }
+
+  {%- comment -%}
+  Unlike the other action icons (search/cart/account), this one always shows the icon AND the text
+  together (not toggled by "show_icons_text"), so it needs its own gap between them - the others never
+  do this, so there's no existing rule to reuse here.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .header__region-link .tap-area {
+    align-items: center;
+    column-gap: .375rem;
+    display: inline-flex;
+  }
 </style>
 
 <height-observer variable="header">
@@ -384,6 +395,13 @@
               {%- render 'icon' with 'search', mobile_width: 16, width: section.settings.desktop_icon_size -%}
             {%- endif -%}
           </a>
+        </li>
+
+        <li class="header__region-link">
+          <span class="tap-area">
+            {%- render 'icon' with 'globe', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+            <span class="subheading">{{ section.settings.region_text }}</span>
+          </span>
         </li>
 
         <li class="header__cart-link relative">
@@ -736,6 +754,13 @@
       "id": "cart_text",
       "label": "Cart text",
       "default": "Cart"
+    },
+    {
+      "type": "text",
+      "id": "region_text",
+      "label": "Region text",
+      "info": "Shown next to the globe icon, before the cart.",
+      "default": "PE"
     },
     {
       "type": "checkbox",
