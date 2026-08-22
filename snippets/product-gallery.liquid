@@ -284,7 +284,10 @@ only way to do it on Shopify right now.
     # mark it as needing white/glow caption text instead of the default dark-on-light styling - see
     # is-dark-image below and each slide's data-dark-image attribute, kept in sync via <carousel-caption>
     # (assets/theme.js) the same way data-caption already is. No live pixel sampling; this is a manual tag.
-    assign default_media_is_dark = effective_default_media.alt contains '!dark'
+    assign default_media_is_dark = false
+    if effective_default_media.alt contains '!dark'
+      assign default_media_is_dark = true
+    endif
 
     for media in gallery_media
       if filtered_indexes contains media.position
