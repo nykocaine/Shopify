@@ -79,12 +79,24 @@
       {%- comment -%}
       Same override product-card.liquid already applies to itself (theme.css, ".product-card .subheading,
       .product-card .heading"): forces the typeface itself (family/weight/style/letter-spacing/casing)
-      back to Body Text, without touching font-size - covers the section title ('heading' snippet, .heading)
-      and the accordion question when "Question style" is set to "Subheading" (.subheading, accordion.liquid's
+      back to Body Text, without touching font-size. The title ('heading' snippet, style: title_tag) never
+      actually renders class ".heading" - title_tag's options are h1-h6/display-xl/l/m, and heading.liquid
+      uses "style" as the class verbatim (theme.css's shared ".heading, .display-xl, ..., .h6" selector is
+      what sets the Heading typeface) - so all of those need covering here, not just ".heading". Also covers
+      the accordion question when "Question style" is set to "Subheading" (.subheading, accordion.liquid's
       subheading_title). The answer (accordion__content, rendered with prose_content: true) already renders
       as plain prose/body text and needs no override.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .heading,
+      #shopify-section-{{ section.id }} .display-xl,
+      #shopify-section-{{ section.id }} .display-l,
+      #shopify-section-{{ section.id }} .display-m,
+      #shopify-section-{{ section.id }} .h1,
+      #shopify-section-{{ section.id }} .h2,
+      #shopify-section-{{ section.id }} .h3,
+      #shopify-section-{{ section.id }} .h4,
+      #shopify-section-{{ section.id }} .h5,
+      #shopify-section-{{ section.id }} .h6,
       #shopify-section-{{ section.id }} .subheading {
         font-family: var(--text-font-family);
         font-weight: var(--text-font-weight);
