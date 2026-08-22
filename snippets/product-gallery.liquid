@@ -71,10 +71,19 @@ This component is used to show the product gallery (used in product page and fea
       #shopify-section-{{ section.id }} .product-gallery__caption-row {
         margin-block-start: .5rem;
         align-items: flex-start;
+      }
+
+      {%- comment -%}
+      is-dark-image lives on .product-gallery__top-bar (the common ancestor of both the progress bar and
+      the caption-row) rather than on the caption-row alone, so .progress-bar picks it up too - its track
+      and fill (theme.css) are both painted from currentColor, so setting color here is enough to turn
+      them white without touching theme.css.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery__top-bar {
         color: rgb(var(--text-color));
       }
 
-      #shopify-section-{{ section.id }} .product-gallery__caption-row.is-dark-image {
+      #shopify-section-{{ section.id }} .product-gallery__top-bar.is-dark-image {
         color: #fff;
       }
 
@@ -84,7 +93,7 @@ This component is used to show the product gallery (used in product page and fea
       dark text at 60% opacity, nearly invisible against a dark photo, so it needs its own white-based
       override here instead of picking up .is-dark-image's color from above.
       {%- endcomment -%}
-      #shopify-section-{{ section.id }} .product-gallery__caption-row.is-dark-image .text-subdued {
+      #shopify-section-{{ section.id }} .product-gallery__top-bar.is-dark-image .text-subdued {
         color: rgb(255 255 255 / .6);
       }
 
@@ -521,7 +530,7 @@ only way to do it on Shopify right now.
       {%- comment -%}BAR{%- endcomment -%}
 
       {%- capture bar_controls -%}
-        <div class="product-gallery__top-bar full-bleed md:unbleed" style="width: 100%;">
+        <div class="product-gallery__top-bar full-bleed md:unbleed {% if product != blank and default_media_is_dark %}is-dark-image{% endif %}" style="width: 100%;">
           <progress-bar track-scroll-target="{{ product_gallery_carousel_id }}" class="progress-bar"></progress-bar>
 
           {%- comment -%}
@@ -530,7 +539,7 @@ only way to do it on Shopify right now.
           computed above. The counter's spans carry no font-size of their own, so like the caption they
           just inherit the body's, keeping the two visually paired.
           {%- endcomment -%}
-          <div class="product-gallery__caption-row h-stack justify-between gap-2 align-self-center {% if product != blank and default_media_is_dark %}is-dark-image{% endif %}">
+          <div class="product-gallery__caption-row h-stack justify-between gap-2 align-self-center">
             {%- comment -%}
             The currently visible slide's alt text (data-caption, set per-slide above), kept in sync via
             <carousel-caption> (assets/theme.js) listening for the same carousel:change event

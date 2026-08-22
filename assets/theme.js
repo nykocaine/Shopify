@@ -1506,7 +1506,7 @@ _CarouselCaption_instances = new WeakSet();
 updateCaption_fn = function(event) {
   const cell = event.detail.cell;
   this.textContent = cell?.getAttribute("data-caption") || "";
-  this.closest(".product-gallery__caption-row")?.classList.toggle("is-dark-image", !!cell?.hasAttribute("data-dark-image"));
+  this.closest(".product-gallery__top-bar")?.classList.toggle("is-dark-image", !!cell?.hasAttribute("data-dark-image"));
 };
 if (!window.customElements.get("carousel-caption")) {
   window.customElements.define("carousel-caption", CarouselCaption);
