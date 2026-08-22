@@ -52,13 +52,17 @@ This component is used to show the product gallery (used in product page and fea
       }
 
       {%- comment -%}
-      The alt-text caption (data-caption per slide, synced by <carousel-caption> in assets/theme.js) -
-      :empty:hidden keeps a product/slide without alt text from leaving a blank gap under the bar.
+      The alt-text caption (data-caption per slide, synced by <carousel-caption> in assets/theme.js) sits
+      inline with the page-number counter (product-gallery.liquid, both in .product-gallery__caption-row)
+      so they share one baseline and font-size, inherited from the body rather than set here. :empty:hidden
+      keeps a slide without alt text from leaving a dangling gap after the counter.
       {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery__caption-row {
+        margin-block-start: .5rem;
+      }
+
       #shopify-section-{{ section.id }} .product-gallery__caption {
         color: rgb(var(--text-color));
-        font-size: var(--text-base);
-        margin-block-start: .5rem;
         display: block;
       }
 
@@ -475,10 +479,16 @@ only way to do it on Shopify right now.
 
       {%- capture bar_controls -%}
         <div class="product-gallery__top-bar full-bleed md:unbleed" style="width: 100%;">
-          <div class="product-gallery__progress-bar-row h-stack gap-4 align-self-center">
-            <progress-bar track-scroll-target="{{ product_gallery_carousel_id }}" class="progress-bar grow"></progress-bar>
+          <progress-bar track-scroll-target="{{ product_gallery_carousel_id }}" class="progress-bar"></progress-bar>
 
-            <carousel-page-indicator class="h-stack gap-2" aria-controls="{{ product_gallery_carousel_id }}">
+          {%- comment -%}
+          Numbering sits inline with the alt-text caption (both meta info about the current slide) rather
+          than next to the progress bar - default_media_caption/media_count/default_media_index are all
+          computed above. The counter's spans carry no font-size of their own, so like the caption they
+          just inherit the body's, keeping the two visually paired.
+          {%- endcomment -%}
+          <div class="product-gallery__caption-row h-stack gap-2 align-self-center">
+            <carousel-page-indicator class="h-stack gap-2 shrink-0" aria-controls="{{ product_gallery_carousel_id }}">
               {%- if product != blank -%}
                 <span current-slide-index>{{ default_media_index }}</span>
                 <span class="text-subdued">/</span>
@@ -489,17 +499,17 @@ only way to do it on Shopify right now.
                 <span page-size class="text-subdued">3</span>
               {%- endif -%}
             </carousel-page-indicator>
-          </div>
 
-          {%- comment -%}
-          The currently visible slide's alt text (data-caption, set per-slide above), kept in sync via
-          <carousel-caption> (assets/theme.js) listening for the same carousel:change event
-          carousel-page-indicator already listens to - default_media_caption (computed above) is only
-          the FIRST paint's value, before any swipe/click has fired that event yet.
-          {%- endcomment -%}
-          {%- if product != blank -%}
-            <carousel-caption class="product-gallery__caption" aria-controls="{{ product_gallery_carousel_id }}">{{ default_media_caption }}</carousel-caption>
-          {%- endif -%}
+            {%- comment -%}
+            The currently visible slide's alt text (data-caption, set per-slide above), kept in sync via
+            <carousel-caption> (assets/theme.js) listening for the same carousel:change event
+            carousel-page-indicator already listens to - default_media_caption (computed above) is only
+            the FIRST paint's value, before any swipe/click has fired that event yet.
+            {%- endcomment -%}
+            {%- if product != blank -%}
+              <carousel-caption class="product-gallery__caption" aria-controls="{{ product_gallery_carousel_id }}">{{ default_media_caption }}</carousel-caption>
+            {%- endif -%}
+          </div>
         </div>
       {%- endcapture -%}
 
