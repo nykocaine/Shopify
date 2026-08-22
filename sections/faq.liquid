@@ -75,6 +75,38 @@
           padding-block: 4.8rem;
         }
       }
+
+      {%- comment -%}
+      Same override product-card.liquid already applies to itself (theme.css, ".product-card .subheading,
+      .product-card .heading"): forces the typeface itself (family/weight/style/letter-spacing/casing)
+      back to Body Text, without touching font-size - covers the section title ('heading' snippet, .heading)
+      and the accordion question when "Question style" is set to "Subheading" (.subheading, accordion.liquid's
+      subheading_title). The answer (accordion__content, rendered with prose_content: true) already renders
+      as plain prose/body text and needs no override.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .heading,
+      #shopify-section-{{ section.id }} .subheading {
+        font-family: var(--text-font-family);
+        font-weight: var(--text-font-weight);
+        font-style: var(--text-font-style);
+        letter-spacing: var(--text-letter-spacing);
+        text-transform: var(--text-transform);
+      }
+
+      {%- comment -%}
+      .icon-accordion-plus (icon.liquid's "accordion-plus", shared with the quantity selector via
+      .step-control-line) renders at 20px/1.3 stroke-width by default - too heavy next to the thin
+      chevron/zoom-plus icons used in product-gallery.liquid (~16px tall, ~0.8-1px stroke). Scoped to this
+      section only, so the quantity selector elsewhere keeps its normal weight.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .icon-accordion-plus {
+        width: 16px;
+        height: 16px;
+      }
+
+      #shopify-section-{{ section.id }} .icon-accordion-plus .step-control-line {
+        stroke-width: 1;
+      }
     </style>
 
     {%- if section.settings.layout == 'split' -%}
