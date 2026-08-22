@@ -509,18 +509,22 @@ only way to do it on Shopify right now.
       chevron-left - carousel-prev-button's is flipped 180deg via CSS above), no button background - only
       for desktop_layout "carousel", since grid layouts show every slide at once and have no single
       "current slide" to step through.
+
+      width: 14.4 (not the earlier 12) makes the rendered SVG the same height as zoom-plus below: chevron-
+      right's viewBox is 9 wide / 10 tall, so at width 14.4 the auto-scaled height is 14.4 * 10/9 = 16px,
+      matching zoom-plus's own 16px-tall render (viewBox 15x15, rendered at width: 16) exactly.
       {%- endcomment -%}
       {%- if desktop_layout == 'carousel' and product != blank and gallery_media.size > 1 -%}
-        <div class="product-gallery__nav-buttons flex gap-1">
+        <div class="product-gallery__nav-buttons flex gap-4">
           <carousel-prev-button aria-controls="{{ product_gallery_carousel_id }}">
             <button type="button" class="product-gallery__nav-button">
-              {%- render 'icon' with 'chevron-right', width: 12 -%}
+              {%- render 'icon' with 'chevron-right', width: 14.4 -%}
             </button>
           </carousel-prev-button>
 
           <carousel-next-button aria-controls="{{ product_gallery_carousel_id }}">
             <button type="button" class="product-gallery__nav-button">
-              {%- render 'icon' with 'chevron-right', width: 12 -%}
+              {%- render 'icon' with 'chevron-right', width: 14.4 -%}
             </button>
           </carousel-next-button>
         </div>
