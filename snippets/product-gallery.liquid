@@ -56,13 +56,20 @@ This component is used to show the product gallery (used in product page and fea
       inline with the page-number counter (product-gallery.liquid, both in .product-gallery__caption-row)
       so they share one baseline and font-size, inherited from the body rather than set here. :empty:hidden
       keeps a slide without alt text from leaving a dangling gap after the counter.
+
+      color: #fff + mix-blend-mode: difference makes the row auto-contrast against whatever's directly
+      behind it (the current slide's image) instead of a fixed color - white text inverts to black over a
+      light photo and stays white over a dark one, so it stays legible without per-product tuning. Applied
+      on the row (not each child) so the counter's dimmer text-subdued spans blend as part of one group
+      instead of separately.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-gallery__caption-row {
         margin-block-start: .5rem;
+        color: #fff;
+        mix-blend-mode: difference;
       }
 
       #shopify-section-{{ section.id }} .product-gallery__caption {
-        color: rgb(var(--text-color));
         display: block;
       }
 
