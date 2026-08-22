@@ -247,10 +247,18 @@ only way to do it on Shopify right now.
   # filtered-media counting logic only lives in one place. default_media_caption is the initial value
   # for <carousel-caption> (bar_controls) - same "#"-stripping as each slide's own data-caption below,
   # so the very first paint (before any carousel:change fires) already matches what the JS would set.
+  #
+  # Uses gallery_media.first rather than default_media directly: when default_media was found above,
+  # the rotation already made it gallery_media's first item, so this is the same media. But when
+  # skip_first_media has excluded default_media from gallery_media entirely (main-product.liquid's
+  # separate first-image card, whose image IS default_media), default_media_position stays -1 and no
+  # rotation happens - falling back to gallery_media.first keeps the caption/counter matching whatever
+  # slide is actually shown first, instead of describing an image that isn't even in the carousel.
   if product != blank
     assign media_count = gallery_media.size
+    assign effective_default_media = gallery_media.first
     assign default_media_index = 0
-    assign default_media_caption = default_media.alt | split: '#' | first | strip
+    assign default_media_caption = effective_default_media.alt | split: '#' | first | strip
 
     for media in gallery_media
       if filtered_indexes contains media.position
@@ -262,7 +270,7 @@ only way to do it on Shopify right now.
       unless filtered_indexes contains media.position
         assign default_media_index = default_media_index | plus: 1
 
-        if media == default_media
+        if media == effective_default_media
           break
         endif
       endunless
@@ -292,8 +300,8 @@ only way to do it on Shopify right now.
             described in the IMPLEMENTATION NOTE above (eg. "Some caption#Color_Red") - a real caption
             should never show that raw suffix.
             {%- endcomment -%}
-            <div class="product-gallery__media snap-center {% if media == default_media %}is-initial{% endif %} {% if enable_image_zoom and section.settings.desktop_media_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" data-caption="{{ media.alt | split: '#' | first | strip | escape }}" role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: gallery_media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
-              {%- if default_media == media -%}
+            <div class="product-gallery__media snap-center {% if media == effective_default_media %}is-initial{% endif %} {% if enable_image_zoom and section.settings.desktop_media_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" data-caption="{{ media.alt | split: '#' | first | strip | escape }}" role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: gallery_media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
+              {%- if effective_default_media == media -%}
                 {%- assign preload = true -%}
               {%- else -%}
                 {%- assign preload = false -%}
@@ -366,7 +374,7 @@ only way to do it on Shopify right now.
           <carousel-navigation align-selected aria-controls="{{ product_gallery_carousel_id }}" class="scroll-marker-group scroll-marker-group--thumbnails scroll-area bleed md:unbleed">
             {%- if product != blank -%}
               {%- for media in gallery_media -%}
-                <button type="button" class="scroll-marker" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == default_media %}true{% else %}false{% endif %}" aria-label="{{ 'general.accessibility.go_to_item' | t: index: forloop.index | escape }}">
+                <button type="button" class="scroll-marker" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == effective_default_media %}true{% else %}false{% endif %}" aria-label="{{ 'general.accessibility.go_to_item' | t: index: forloop.index | escape }}">
                   {{- media | image_url: width: media.preview_image.width | image_tag: loading: 'lazy', sizes: '56px', widths: '56,112,168', class: 'object-contain' -}}
 
                   {%- unless media.media_type == 'image' -%}
@@ -399,7 +407,7 @@ only way to do it on Shopify right now.
         <carousel-navigation class="scroll-marker-group scroll-marker-group--lines align-self-center" aria-controls="{{ product_gallery_carousel_id }}">
           {%- if product != blank -%}
             {%- for media in gallery_media -%}
-              <button type="button" class="scroll-marker tap-area tap-area--sm" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == default_media %}true{% else %}false{% endif %}">
+              <button type="button" class="scroll-marker tap-area tap-area--sm" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == effective_default_media %}true{% else %}false{% endif %}">
                 <span class="sr-only">{{ 'general.accessibility.go_to_item' | t: index: forloop.index }}</span>
               </button>
             {%- endfor -%}
@@ -419,7 +427,7 @@ only way to do it on Shopify right now.
         <carousel-navigation class="scroll-marker-group scroll-marker-group--dots align-self-center" aria-controls="{{ product_gallery_carousel_id }}">
           {%- if product != blank -%}
             {%- for media in gallery_media -%}
-              <button type="button" class="scroll-marker tap-area tap-area--sm" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == default_media %}true{% else %}false{% endif %}">
+              <button type="button" class="scroll-marker tap-area tap-area--sm" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == effective_default_media %}true{% else %}false{% endif %}">
                 <span class="sr-only">{{ 'general.accessibility.go_to_item' | t: index: forloop.index }}</span>
               </button>
             {%- endfor -%}
@@ -491,8 +499,6 @@ only way to do it on Shopify right now.
           {%- endcomment -%}
           {%- if product != blank -%}
             <carousel-caption class="product-gallery__caption" aria-controls="{{ product_gallery_carousel_id }}">{{ default_media_caption }}</carousel-caption>
-            {%- comment -%}TEMP DEBUG - remove after diagnosing{%- endcomment -%}
-            <p style="background:#ff0; color:#000; font-size:12px; padding:4px; word-break:break-all;">DEBUG: pos={{ default_media_position }} size={{ gallery_media.size }} idx={{ default_media_index }} default_id={{ default_media.id }} first_id={{ gallery_media.first.id }} last_id={{ gallery_media.last.id }}</p>
           {%- endif -%}
         </div>
       {%- endcapture -%}
