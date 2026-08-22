@@ -415,14 +415,6 @@ only way to do it on Shopify right now.
         {%- endif -%}
       </scroll-carousel>
 
-      {%- if desktop_layout == 'carousel' and gallery_media.size > 1 -%}
-        <custom-cursor class="product-gallery__cursor custom-cursor" {% if default_media.media_type != 'image' %}hidden{% endif %}>
-          <div class="circle-button circle-button--xl">
-            {%- render 'icon' with 'big-arrow-right', width: 12 -%}
-          </div>
-        </custom-cursor>
-      {%- endif -%}
-
       {%- if enable_image_zoom -%}
         <open-lightbox-button aria-controls="{{ product_gallery_carousel_id}}" {% if section.settings.desktop_media_layout contains 'grid' %}class="sm:hidden"{% endif %}>
           <button class="product-zoom-button">
