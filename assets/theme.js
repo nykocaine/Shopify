@@ -1504,7 +1504,9 @@ var CarouselCaption = class extends HTMLElement {
 };
 _CarouselCaption_instances = new WeakSet();
 updateCaption_fn = function(event) {
-  this.textContent = event.detail.cell?.getAttribute("data-caption") || "";
+  const cell = event.detail.cell;
+  this.textContent = cell?.getAttribute("data-caption") || "";
+  this.closest(".product-gallery__caption-row")?.classList.toggle("is-dark-image", !!cell?.hasAttribute("data-dark-image"));
 };
 if (!window.customElements.get("carousel-caption")) {
   window.customElements.define("carousel-caption", CarouselCaption);
