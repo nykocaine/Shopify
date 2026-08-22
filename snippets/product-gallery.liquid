@@ -4,7 +4,7 @@ This component is used to show the product gallery (used in product page and fea
 @param {object} [product] - the product to render (if empty, renders placeholder content)
 @param {string} [product_form_id] - the product form id
 @param {string} [desktop_layout] - the layout on desktop (can be "grid", "grid_half", "grid_half_highlight_first" or "carousel")
-@param {string} [desktop_carousel_controls] - when desktop layout is set to "carousel", the controls to show (can be "dots", "lines", "numbers", "thumbnails_under", "thumbnails_over" or "thumbnails_left")
+@param {string} [desktop_carousel_controls] - when desktop layout is set to "carousel", the controls to show (can be "dots", "lines", "numbers", "thumbnails_under", "thumbnails_over", "thumbnails_left" or "bar")
 @param {string} [mobile_controls] - the controls to show on mobile (can be "lines", "numbers", "dots", "thumbnails" or "none")
 @param {boolean} [enable_media_autoplay] - if set to true videos are autoplayed when switched to
 @param {boolean} [enable_video_looping] - if set to true videos automatically loop when finished
@@ -30,87 +30,101 @@ This component is used to show the product gallery (used in product page and fea
       }
     }
 
-  {%- if mobile_controls == 'bar' -%}
+  {%- comment -%}
+  "bar" (bar_controls below - progress bar + page counter + alt-text caption) is selectable both as
+  mobile_controls and as desktop_carousel_controls, styled identically either way - only the @media this
+  ruleset is wrapped in changes below, so it's captured once here instead of duplicated per breakpoint.
+
+  Normally renders as the image-list's own second grid row, below the carousel. Moved to the top instead,
+  using the exact same floating mechanism the other mobile_controls/desktop_carousel_controls variants
+  (dots/numbers/thumbnails) already use to sit over the image without adding to the gallery's height -
+  .product-gallery__controls-floating's "display: contents" wrapper means this still resolves its
+  containing block against .product-gallery__image-list (position: relative, theme.css), same as those.
+  Only the anchor edge changes (top here vs. their inset-block-end). The progress-bar element's own
+  scroll-tracking (assets/theme.js, track-scroll-target) reads the carousel by id, not DOM position, so it
+  keeps working unchanged.
+  {%- endcomment -%}
+  {%- capture bar_css -%}
+    #shopify-section-{{ section.id }} .product-gallery__controls-floating .product-gallery__top-bar {
+      margin-inline: 0;
+      padding-inline: var(--container-gutter);
+      position: absolute;
+      inset-block-start: 1rem;
+      inset-inline: 0;
+      z-index: 1;
+    }
+
     {%- comment -%}
-    mobile_controls: "bar" (bar_controls below) normally renders as the image-list's own second grid row,
-    below the carousel. Moved to the top instead, using the exact same floating mechanism the other
-    mobile_controls variants (dots/numbers/thumbnails) already use to sit over the image without adding to
-    the gallery's height - .product-gallery__controls-floating's "display: contents" wrapper means this still
-    resolves its containing block against .product-gallery__image-list (position: relative, theme.css), same
-    as those. Only the anchor edge changes (top here vs. their inset-block-end). The progress-bar element's
-    own scroll-tracking (assets/theme.js, track-scroll-target) reads the carousel by id, not DOM position, so
-    it keeps working unchanged.
+    The alt-text caption (data-caption per slide, synced by <carousel-caption> in assets/theme.js) sits
+    inline with the page-number counter (product-gallery.liquid, both in .product-gallery__caption-row)
+    so they share one baseline and font-size, inherited from the body rather than set here. :empty:hidden
+    keeps a slide without alt text from leaving a dangling gap after the counter.
+
+    Defaults to the theme's normal text color (assumes a light/studio product photo, the common case).
+    .is-dark-image (toggled per slide via data-dark-image + assets/theme.js's updateCaption_fn, same
+    event as the caption/counter sync) switches to white with a glow so it stays legible over a dark
+    photo - a merchant opts an image into this by adding "!dark" to its alt text in the Shopify admin,
+    it's not detected automatically from the pixels.
     {%- endcomment -%}
+    {%- comment -%}
+    .h-stack (theme.css) defaults align-items to center, which centers the counter against the full
+    height of a wrapped 2-line caption - pinning it to flex-start keeps it level with the caption's
+    first line regardless of how many lines the alt text wraps to.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-gallery__caption-row {
+      margin-block-start: .5rem;
+      align-items: flex-start;
+    }
+
+    {%- comment -%}
+    is-dark-image lives on .product-gallery__top-bar (the common ancestor of both the progress bar and
+    the caption-row) rather than on the caption-row alone, so .progress-bar picks it up too.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-gallery__top-bar {
+      color: rgb(var(--text-color));
+    }
+
+    {%- comment -%}
+    --progress-bar-background-color/--progress-bar-fill-color (css-variables.liquid, from the color
+    scheme's progress bar settings) are what .progress-bar (theme.css) actually paints from - they're
+    set explicitly there, not left to currentColor's fallback, so color: #fff alone doesn't reach the
+    bar. Redefining both variables here overrides them for anything inside this scope instead.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-gallery__top-bar.is-dark-image {
+      color: #fff;
+      --progress-bar-background-color: rgb(255 255 255 / .3);
+      --progress-bar-fill-color: #fff;
+    }
+
+    {%- comment -%}
+    .text-subdued (theme.css, used by the counter's "/" and total-count spans) sets its own
+    rgb(var(--text-color) / .6) color rather than inheriting - on a dark image that stays the theme's
+    dark text at 60% opacity, nearly invisible against a dark photo, so it needs its own white-based
+    override here instead of picking up .is-dark-image's color from above.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-gallery__top-bar.is-dark-image .text-subdued {
+      color: rgb(255 255 255 / .6);
+    }
+
+    #shopify-section-{{ section.id }} .product-gallery__caption {
+      padding-inline-end: .5rem;
+      display: block;
+    }
+
+    #shopify-section-{{ section.id }} .product-gallery__caption:empty {
+      display: none;
+    }
+  {%- endcapture -%}
+
+  {%- if mobile_controls == 'bar' -%}
     @media screen and (max-width: 999px) {
-      #shopify-section-{{ section.id }} .product-gallery__controls-floating .product-gallery__top-bar {
-        margin-inline: 0;
-        padding-inline: var(--container-gutter);
-        position: absolute;
-        inset-block-start: 1rem;
-        inset-inline: 0;
-        z-index: 1;
-      }
+      {{ bar_css }}
+    }
+  {%- endif -%}
 
-      {%- comment -%}
-      The alt-text caption (data-caption per slide, synced by <carousel-caption> in assets/theme.js) sits
-      inline with the page-number counter (product-gallery.liquid, both in .product-gallery__caption-row)
-      so they share one baseline and font-size, inherited from the body rather than set here. :empty:hidden
-      keeps a slide without alt text from leaving a dangling gap after the counter.
-
-      Defaults to the theme's normal text color (assumes a light/studio product photo, the common case).
-      .is-dark-image (toggled per slide via data-dark-image + assets/theme.js's updateCaption_fn, same
-      event as the caption/counter sync) switches to white with a glow so it stays legible over a dark
-      photo - a merchant opts an image into this by adding "!dark" to its alt text in the Shopify admin,
-      it's not detected automatically from the pixels.
-      {%- endcomment -%}
-      {%- comment -%}
-      .h-stack (theme.css) defaults align-items to center, which centers the counter against the full
-      height of a wrapped 2-line caption - pinning it to flex-start keeps it level with the caption's
-      first line regardless of how many lines the alt text wraps to.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .product-gallery__caption-row {
-        margin-block-start: .5rem;
-        align-items: flex-start;
-      }
-
-      {%- comment -%}
-      is-dark-image lives on .product-gallery__top-bar (the common ancestor of both the progress bar and
-      the caption-row) rather than on the caption-row alone, so .progress-bar picks it up too.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .product-gallery__top-bar {
-        color: rgb(var(--text-color));
-      }
-
-      {%- comment -%}
-      --progress-bar-background-color/--progress-bar-fill-color (css-variables.liquid, from the color
-      scheme's progress bar settings) are what .progress-bar (theme.css) actually paints from - they're
-      set explicitly there, not left to currentColor's fallback, so color: #fff alone doesn't reach the
-      bar. Redefining both variables here overrides them for anything inside this scope instead.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .product-gallery__top-bar.is-dark-image {
-        color: #fff;
-        --progress-bar-background-color: rgb(255 255 255 / .3);
-        --progress-bar-fill-color: #fff;
-      }
-
-      {%- comment -%}
-      .text-subdued (theme.css, used by the counter's "/" and total-count spans) sets its own
-      rgb(var(--text-color) / .6) color rather than inheriting - on a dark image that stays the theme's
-      dark text at 60% opacity, nearly invisible against a dark photo, so it needs its own white-based
-      override here instead of picking up .is-dark-image's color from above.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .product-gallery__top-bar.is-dark-image .text-subdued {
-        color: rgb(255 255 255 / .6);
-      }
-
-      #shopify-section-{{ section.id }} .product-gallery__caption {
-        padding-inline-end: .5rem;
-        display: block;
-      }
-
-      #shopify-section-{{ section.id }} .product-gallery__caption:empty {
-        display: none;
-      }
+  {%- if desktop_carousel_controls == 'bar' -%}
+    @media screen and (min-width: 1000px) {
+      {{ bar_css }}
     }
   {%- endif -%}
 
@@ -133,39 +147,6 @@ This component is used to show the product gallery (used in product page and fea
       }
     {%- endif -%}
 
-    {%- if desktop_layout == 'carousel' -%}
-      {%- comment -%}
-      Desktop caption (product-gallery.liquid, no counter unlike mobile's bar) is absolutely positioned
-      against the same .relative wrapper as .custom-cursor/.product-zoom-button, anchored to the bottom
-      instead of overlaid mid-image, so it contributes zero height to the frame - the frame's size stays
-      exactly what it already was (fixed or adaptive), it never grows to make room for this text. The
-      gradient gives it enough contrast to read over the photo without needing a separate opaque strip.
-      {%- endcomment -%}
-      {%- comment -%}
-      padding-inline-end reserves room past the text so it doesn't run under .product-zoom-button
-      (theme.css), which anchors to this same bottom-right corner when enable_image_zoom is on.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .product-gallery__caption--desktop {
-        position: absolute;
-        inset-inline: 0;
-        inset-block-end: 0;
-        padding-block: 2rem 1rem;
-        padding-inline-start: var(--container-gutter);
-        padding-inline-end: 3rem;
-        color: rgb(var(--text-color));
-        background: linear-gradient(to top, rgb(var(--background)) 20%, transparent);
-        pointer-events: none;
-      }
-
-      #shopify-section-{{ section.id }} .product-gallery__caption--desktop.is-dark-image {
-        color: #fff;
-        background: linear-gradient(to top, rgba(0, 0, 0, .35) 20%, transparent);
-      }
-
-      #shopify-section-{{ section.id }} .product-gallery__caption--desktop:empty {
-        display: none;
-      }
-    {%- endif -%}
   }
 
   {%- comment -%}
@@ -442,18 +423,6 @@ only way to do it on Shopify right now.
         </custom-cursor>
       {%- endif -%}
 
-      {%- comment -%}
-      Desktop equivalent of the mobile "bar" caption (no counter here, just the alt text) - positioned
-      absolutely against this same .relative wrapper (like .custom-cursor/.product-zoom-button above), so
-      it never adds to the frame's own height/layout, only overlays the bottom edge of the current slide.
-      Synced the same way as the mobile caption, via <carousel-caption> (assets/theme.js) listening for
-      carousel:change - default_media_caption/default_media_is_dark (computed above) are only the FIRST
-      paint's values.
-      {%- endcomment -%}
-      {%- if desktop_layout == 'carousel' and product != blank -%}
-        <carousel-caption class="product-gallery__caption product-gallery__caption--desktop hidden md:block {% if default_media_is_dark %}is-dark-image{% endif %}" aria-controls="{{ product_gallery_carousel_id }}">{{ default_media_caption }}</carousel-caption>
-      {%- endif -%}
-
       {%- if enable_image_zoom -%}
         <open-lightbox-button aria-controls="{{ product_gallery_carousel_id}}" {% if section.settings.desktop_media_layout contains 'grid' %}class="sm:hidden"{% endif %}>
           <button class="product-zoom-button">
@@ -632,6 +601,9 @@ only way to do it on Shopify right now.
 
               when 'numbers'
                 echo numbers_controls
+
+              when 'bar'
+                echo bar_controls
             endcase
           -%}
         </div>
