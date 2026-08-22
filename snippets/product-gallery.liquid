@@ -147,16 +147,47 @@ This component is used to show the product gallery (used in product page and fea
       }
     {%- endif -%}
 
+    {%- if desktop_layout == 'carousel' -%}
+      {%- comment -%}
+      Pinned flush into the bottom-left corner, mirroring .product-zoom-button's own flush bottom-right
+      pin above - both read as one consistent pair of corner controls. .circle-button (theme.css) already
+      reads currentColor for its icon and its own translucent background from --text-color, so it inherits
+      whatever color="rgb(var(--text-color))"/"#fff" the .is-dark-image rules below set without needing to
+      restyle it directly.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery__nav-buttons {
+        position: absolute;
+        inset-inline-start: 0;
+        inset-block-end: 0;
+        align-items: center;
+        color: rgb(var(--text-color));
+      }
+
+      #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-gallery__nav-buttons {
+        color: #fff;
+      }
+    {%- endif -%}
   }
 
   {%- comment -%}
   .product-zoom-button (theme.css) inherits currentColor and has a negative inset-inline-end meant to
   slightly overhang a card's edge - here it sits inside the gallery's own overflow: hidden, so that
-  negative offset clips it off-center instead. Pinning both (same fix as media-blocks' carousel).
+  negative offset clips it off-center instead. Pinned flush into the bottom-right corner (both edges at
+  0) instead of theme.css's own 8px/-12px offsets.
+
+  Defaults to the theme's normal text color and switches to white via .is-dark-image, the same "!dark"
+  alt-text tag and <carousel-caption> (assets/theme.js) sync the caption/counter already use - toggled on
+  the outer <product-gallery> element (not .product-gallery__top-bar) since the zoom button lives outside
+  the bar entirely.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-zoom-button {
+    color: rgb(var(--text-color));
+    inset-inline-end: 0;
+    inset-block-end: 0;
+  }
+
+  #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-zoom-button {
     color: #fff;
-    inset-inline-end: 1rem;
   }
 
   {%- comment -%}
@@ -353,7 +384,7 @@ only way to do it on Shopify right now.
   endif
 %}
 
-<product-gallery id="product-gallery-{{ product_gallery_carousel_id }}" class="product-gallery {{ class }}" form="{{ product_form_id }}" filtered-indexes="{{ filtered_indexes | json }}" {% if enable_media_autoplay %}autoplay-media{% endif %} {% if enable_image_zoom %}allow-zoom="{{ max_image_zoom_level }}" zoom-color-scheme-id="{{ settings.default_color_scheme.id }}"{% endif %}>
+<product-gallery id="product-gallery-{{ product_gallery_carousel_id }}" class="product-gallery {{ class }} {% if product != blank and default_media_is_dark %}is-dark-image{% endif %}" form="{{ product_form_id }}" filtered-indexes="{{ filtered_indexes | json }}" {% if enable_media_autoplay %}autoplay-media{% endif %} {% if enable_image_zoom %}allow-zoom="{{ max_image_zoom_level }}" zoom-color-scheme-id="{{ settings.default_color_scheme.id }}"{% endif %}>
   <div class="product-gallery__image-list">
     {%- comment -%}
     ----------------------------------------------------------------------------------------------------------------------
@@ -414,6 +445,28 @@ only way to do it on Shopify right now.
           {%- endfor -%}
         {%- endif -%}
       </scroll-carousel>
+
+      {%- comment -%}
+      Replaces the old mouse-following <custom-cursor> click-to-navigate overlay: two static prev/next
+      buttons pinned to the bottom-left corner instead, same icons carousel-prev-button/carousel-next-button
+      already use in numbers_controls above. Only for desktop_layout "carousel" - grid layouts show every
+      slide at once, so a single "current slide" to step through doesn't apply.
+      {%- endcomment -%}
+      {%- if desktop_layout == 'carousel' and product != blank and gallery_media.size > 1 -%}
+        <div class="product-gallery__nav-buttons hidden md:flex gap-1">
+          <carousel-prev-button aria-controls="{{ product_gallery_carousel_id }}">
+            <button type="button" class="circle-button">
+              {%- render 'icon' with 'arrow-left', width: 12, direction_aware: true -%}
+            </button>
+          </carousel-prev-button>
+
+          <carousel-next-button aria-controls="{{ product_gallery_carousel_id }}">
+            <button type="button" class="circle-button">
+              {%- render 'icon' with 'arrow-right', width: 12, direction_aware: true -%}
+            </button>
+          </carousel-next-button>
+        </div>
+      {%- endif -%}
 
       {%- if enable_image_zoom -%}
         <open-lightbox-button aria-controls="{{ product_gallery_carousel_id}}" {% if section.settings.desktop_media_layout contains 'grid' %}class="sm:hidden"{% endif %}>
