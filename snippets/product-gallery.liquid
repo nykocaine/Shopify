@@ -75,16 +75,22 @@ This component is used to show the product gallery (used in product page and fea
 
       {%- comment -%}
       is-dark-image lives on .product-gallery__top-bar (the common ancestor of both the progress bar and
-      the caption-row) rather than on the caption-row alone, so .progress-bar picks it up too - its track
-      and fill (theme.css) are both painted from currentColor, so setting color here is enough to turn
-      them white without touching theme.css.
+      the caption-row) rather than on the caption-row alone, so .progress-bar picks it up too.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-gallery__top-bar {
         color: rgb(var(--text-color));
       }
 
+      {%- comment -%}
+      --progress-bar-background-color/--progress-bar-fill-color (css-variables.liquid, from the color
+      scheme's progress bar settings) are what .progress-bar (theme.css) actually paints from - they're
+      set explicitly there, not left to currentColor's fallback, so color: #fff alone doesn't reach the
+      bar. Redefining both variables here overrides them for anything inside this scope instead.
+      {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-gallery__top-bar.is-dark-image {
         color: #fff;
+        --progress-bar-background-color: rgb(255 255 255 / .3);
+        --progress-bar-fill-color: #fff;
       }
 
       {%- comment -%}
