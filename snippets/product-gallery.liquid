@@ -202,6 +202,30 @@ only way to do it on Shopify right now.
     assign gallery_media = product.media | slice: 1, product.media.size
   endif
 
+  # Rotate gallery_media so default_media (the selected variant's featured media - whichever slide the
+  # carousel actually opens on, via .is-initial/ScrollCarousel) becomes its first item, keeping the rest
+  # in their original relative order. Without this, the numbers/bar counter and thumbnails order reflect
+  # the media's raw catalog position (eg. "2/2" for a variant whose featured image happens to be the
+  # product's 2nd photo) instead of viewing order - the photo actually shown first should read "1/N".
+  if product != blank and default_media != blank
+    assign default_media_position = -1
+
+    for media in gallery_media
+      if media == default_media
+        assign default_media_position = forloop.index0
+        break
+      endif
+    endfor
+
+    if default_media_position > 0
+      assign gallery_media_size = gallery_media.size
+      assign rotated_tail_length = gallery_media_size | minus: default_media_position
+      assign rotated_tail = gallery_media | slice: default_media_position, rotated_tail_length
+      assign rotated_head = gallery_media | slice: 0, default_media_position
+      assign gallery_media = rotated_tail | concat: rotated_head
+    endif
+  endif
+
   if product.variants.size > 1
     for media in product.media
       if media.alt contains '#' and media.alt != product.title
