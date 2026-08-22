@@ -132,6 +132,40 @@ This component is used to show the product gallery (used in product page and fea
         grid-column: span 2;
       }
     {%- endif -%}
+
+    {%- if desktop_layout == 'carousel' -%}
+      {%- comment -%}
+      Desktop caption (product-gallery.liquid, no counter unlike mobile's bar) is absolutely positioned
+      against the same .relative wrapper as .custom-cursor/.product-zoom-button, anchored to the bottom
+      instead of overlaid mid-image, so it contributes zero height to the frame - the frame's size stays
+      exactly what it already was (fixed or adaptive), it never grows to make room for this text. The
+      gradient gives it enough contrast to read over the photo without needing a separate opaque strip.
+      {%- endcomment -%}
+      {%- comment -%}
+      padding-inline-end reserves room past the text so it doesn't run under .product-zoom-button
+      (theme.css), which anchors to this same bottom-right corner when enable_image_zoom is on.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery__caption--desktop {
+        position: absolute;
+        inset-inline: 0;
+        inset-block-end: 0;
+        padding-block: 2rem 1rem;
+        padding-inline-start: var(--container-gutter);
+        padding-inline-end: 3rem;
+        color: rgb(var(--text-color));
+        background: linear-gradient(to top, rgb(var(--background)) 20%, transparent);
+        pointer-events: none;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__caption--desktop.is-dark-image {
+        color: #fff;
+        background: linear-gradient(to top, rgba(0, 0, 0, .35) 20%, transparent);
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__caption--desktop:empty {
+        display: none;
+      }
+    {%- endif -%}
   }
 
   {%- comment -%}
@@ -406,6 +440,18 @@ only way to do it on Shopify right now.
             {%- render 'icon' with 'big-arrow-right', width: 12 -%}
           </div>
         </custom-cursor>
+      {%- endif -%}
+
+      {%- comment -%}
+      Desktop equivalent of the mobile "bar" caption (no counter here, just the alt text) - positioned
+      absolutely against this same .relative wrapper (like .custom-cursor/.product-zoom-button above), so
+      it never adds to the frame's own height/layout, only overlays the bottom edge of the current slide.
+      Synced the same way as the mobile caption, via <carousel-caption> (assets/theme.js) listening for
+      carousel:change - default_media_caption/default_media_is_dark (computed above) are only the FIRST
+      paint's values.
+      {%- endcomment -%}
+      {%- if desktop_layout == 'carousel' and product != blank -%}
+        <carousel-caption class="product-gallery__caption product-gallery__caption--desktop hidden md:block {% if default_media_is_dark %}is-dark-image{% endif %}" aria-controls="{{ product_gallery_carousel_id }}">{{ default_media_caption }}</carousel-caption>
       {%- endif -%}
 
       {%- if enable_image_zoom -%}
