@@ -181,14 +181,17 @@ This component is used to show the product gallery (used in product page and fea
     }
 
     {%- comment -%}
-    icon.liquid hardcodes stroke-width="1.5" on chevron-right regardless of the theme's global icon
-    thickness setting (settings.icon_stroke_width, --icon-stroke-width) - only a handful of "picto" icons
-    read that variable, chevron-right isn't one of them. Overriding it here (CSS wins over the SVG's own
-    presentation attribute) instead of changing the shared icon.liquid definition, which every other
-    chevron-right/chevron-down usage in the theme (selects, accordions, etc.) also relies on.
+    icon.liquid hardcodes stroke-width="1.5" on chevron-right, and the theme's global icon thickness
+    setting (settings.icon_stroke_width) still read too heavy next to zoom-plus's "+" (a filled shape, not
+    a stroke, so it doesn't scale with that setting at all). Matched by ratio instead: zoom-plus's bar is
+    1 unit thick in its own 15-unit viewBox (theme.js icon.liquid), rendered at width 16 -> ~1.07px apparent.
+    chevron-right's viewBox is 9 units wide, rendered here at width 12 (a 1.33x scale-up), so a stroke-width
+    of ~0.8 units scales up to that same ~1.07px, matching the "+"'s visual weight. Overriding via CSS (wins
+    over the SVG's own presentation attribute) instead of changing the shared icon.liquid definition, which
+    every other chevron-right/chevron-down usage in the theme (selects, accordions, etc.) also relies on.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .product-gallery__nav-button .icon path {
-      stroke-width: var(--icon-stroke-width);
+      stroke-width: .8;
     }
 
     {%- comment -%}
@@ -223,6 +226,24 @@ This component is used to show the product gallery (used in product page and fea
   }
 
   {%- comment -%}
+  .product-zoom-button .icon (theme.css) has padding: .75rem on every side, meant to pad the "+" away
+  from the revealed label text - but that gap is only needed once the label is actually showing. Zeroing
+  it out so the collapsed "+" alone sits with no padding, adding padding-inline-end back only in the two
+  states where the label is visible: on hover (pointer: fine, matching theme.css's own hover-reveal
+  condition) and permanently on touch (pointer: coarse, where the label-always-visible rule right below
+  applies).
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .product-zoom-button .icon {
+    padding: 0;
+  }
+
+  @media screen and (pointer: fine) {
+    #shopify-section-{{ section.id }} .product-zoom-button:hover .icon {
+      padding-inline-end: .75rem;
+    }
+  }
+
+  {%- comment -%}
   product-zoom-button__label (theme.css) starts at width: 0, only revealed on
   @media (pointer: fine):hover - on touch devices that hover never fires, so it stays hidden forever.
   Showing it always on mobile instead of on hover here (same fix as media-blocks' carousel).
@@ -230,6 +251,10 @@ This component is used to show the product gallery (used in product page and fea
   @media screen and (pointer: coarse) {
     #shopify-section-{{ section.id }} .product-zoom-button__label {
       width: auto;
+    }
+
+    #shopify-section-{{ section.id }} .product-zoom-button .icon {
+      padding-inline-end: .75rem;
     }
   }
 
