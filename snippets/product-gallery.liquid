@@ -487,7 +487,17 @@ only way to do it on Shopify right now.
           computed above. The counter's spans carry no font-size of their own, so like the caption they
           just inherit the body's, keeping the two visually paired.
           {%- endcomment -%}
-          <div class="product-gallery__caption-row h-stack gap-2 align-self-center">
+          <div class="product-gallery__caption-row h-stack justify-between gap-2 align-self-center">
+            {%- comment -%}
+            The currently visible slide's alt text (data-caption, set per-slide above), kept in sync via
+            <carousel-caption> (assets/theme.js) listening for the same carousel:change event
+            carousel-page-indicator already listens to - default_media_caption (computed above) is only
+            the FIRST paint's value, before any swipe/click has fired that event yet.
+            {%- endcomment -%}
+            {%- if product != blank -%}
+              <carousel-caption class="product-gallery__caption" aria-controls="{{ product_gallery_carousel_id }}">{{ default_media_caption }}</carousel-caption>
+            {%- endif -%}
+
             <carousel-page-indicator class="h-stack gap-2 shrink-0" aria-controls="{{ product_gallery_carousel_id }}">
               {%- if product != blank -%}
                 <span current-slide-index>{{ default_media_index }}</span>
@@ -499,16 +509,6 @@ only way to do it on Shopify right now.
                 <span page-size class="text-subdued">3</span>
               {%- endif -%}
             </carousel-page-indicator>
-
-            {%- comment -%}
-            The currently visible slide's alt text (data-caption, set per-slide above), kept in sync via
-            <carousel-caption> (assets/theme.js) listening for the same carousel:change event
-            carousel-page-indicator already listens to - default_media_caption (computed above) is only
-            the FIRST paint's value, before any swipe/click has fired that event yet.
-            {%- endcomment -%}
-            {%- if product != blank -%}
-              <carousel-caption class="product-gallery__caption" aria-controls="{{ product_gallery_carousel_id }}">{{ default_media_caption }}</carousel-caption>
-            {%- endif -%}
           </div>
         </div>
       {%- endcapture -%}
