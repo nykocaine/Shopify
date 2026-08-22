@@ -149,16 +149,15 @@ This component is used to show the product gallery (used in product page and fea
 
     {%- if desktop_layout == 'carousel' -%}
       {%- comment -%}
-      Pinned flush into the bottom-left corner, mirroring .product-zoom-button's own flush bottom-right
-      pin above - both read as one consistent pair of corner controls. .circle-button (theme.css) already
-      reads currentColor for its icon and its own translucent background from --text-color, so it inherits
-      whatever color="rgb(var(--text-color))"/"#fff" the .is-dark-image rules below set without needing to
-      restyle it directly.
+      Same inline/block inset as .product-gallery__top-bar (padding-inline: var(--container-gutter),
+      inset-block-start: 1rem, both in bar_css above) instead of flush against the edges, mirrored to the
+      bottom - reads as one consistent alignment with the bar and with .product-zoom-button below. Bare
+      SVGs, no .circle-button background: .product-gallery__nav-button below resets the <button> itself.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-gallery__nav-buttons {
         position: absolute;
-        inset-inline-start: 0;
-        inset-block-end: 0;
+        inset-inline-start: var(--container-gutter);
+        inset-block-end: 1rem;
         align-items: center;
         color: rgb(var(--text-color));
       }
@@ -166,14 +165,33 @@ This component is used to show the product gallery (used in product page and fea
       #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-gallery__nav-buttons {
         color: #fff;
       }
+
+      #shopify-section-{{ section.id }} .product-gallery__nav-button {
+        background: none;
+        border: none;
+        padding: .5rem;
+        color: inherit;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+      }
+
+      {%- comment -%}
+      icon.liquid has no "chevron-left" - flipping chevron-right's own SVG here instead of adding one.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} carousel-prev-button .icon {
+        transform: rotate(180deg);
+      }
     {%- endif -%}
   }
 
   {%- comment -%}
   .product-zoom-button (theme.css) inherits currentColor and has a negative inset-inline-end meant to
   slightly overhang a card's edge - here it sits inside the gallery's own overflow: hidden, so that
-  negative offset clips it off-center instead. Pinned flush into the bottom-right corner (both edges at
-  0) instead of theme.css's own 8px/-12px offsets.
+  negative offset clips it off-center instead. Uses the same inline/block inset as .product-gallery__top-bar
+  (padding-inline: var(--container-gutter), inset-block-start: 1rem, bar_css above) mirrored to the bottom
+  corner, instead of theme.css's own 8px/-12px offsets, so all three corner controls (bar, nav buttons,
+  zoom) share one alignment.
 
   Defaults to the theme's normal text color and switches to white via .is-dark-image, the same "!dark"
   alt-text tag and <carousel-caption> (assets/theme.js) sync the caption/counter already use - toggled on
@@ -182,8 +200,8 @@ This component is used to show the product gallery (used in product page and fea
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-zoom-button {
     color: rgb(var(--text-color));
-    inset-inline-end: 0;
-    inset-block-end: 0;
+    inset-inline-end: var(--container-gutter);
+    inset-block-end: 1rem;
   }
 
   #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-zoom-button {
@@ -448,21 +466,22 @@ only way to do it on Shopify right now.
 
       {%- comment -%}
       Replaces the old mouse-following <custom-cursor> click-to-navigate overlay: two static prev/next
-      buttons pinned to the bottom-left corner instead, same icons carousel-prev-button/carousel-next-button
-      already use in numbers_controls above. Only for desktop_layout "carousel" - grid layouts show every
-      slide at once, so a single "current slide" to step through doesn't apply.
+      buttons pinned to the bottom-left corner instead. Bare chevron-right SVGs (icon.liquid has no
+      chevron-left - carousel-prev-button's is flipped 180deg via CSS above), no button background - only
+      for desktop_layout "carousel", since grid layouts show every slide at once and have no single
+      "current slide" to step through.
       {%- endcomment -%}
       {%- if desktop_layout == 'carousel' and product != blank and gallery_media.size > 1 -%}
         <div class="product-gallery__nav-buttons hidden md:flex gap-1">
           <carousel-prev-button aria-controls="{{ product_gallery_carousel_id }}">
-            <button type="button" class="circle-button">
-              {%- render 'icon' with 'arrow-left', width: 12, direction_aware: true -%}
+            <button type="button" class="product-gallery__nav-button">
+              {%- render 'icon' with 'chevron-right', width: 12 -%}
             </button>
           </carousel-prev-button>
 
           <carousel-next-button aria-controls="{{ product_gallery_carousel_id }}">
-            <button type="button" class="circle-button">
-              {%- render 'icon' with 'arrow-right', width: 12, direction_aware: true -%}
+            <button type="button" class="product-gallery__nav-button">
+              {%- render 'icon' with 'chevron-right', width: 12 -%}
             </button>
           </carousel-next-button>
         </div>
