@@ -1070,7 +1070,23 @@ var ScrollCarousel = class extends HTMLElement {
       if (this.scrollLeft !== targetScrollLeft) {
         __privateMethod(this, _ScrollCarousel_instances, updateTargetIndex_fn).call(this, index);
         __privateSet(this, _hasPendingProgrammaticScroll, true);
-        this.scrollTo({ left: targetScrollLeft, behavior: instant ? "auto" : "smooth" });
+        if (instant || !matchesMediaQuery("motion-safe")) {
+          this.scrollTo({ left: targetScrollLeft, behavior: "auto" });
+        } else {
+          const startLeft = this.scrollLeft;
+          const distance = targetScrollLeft - startLeft;
+          const duration = 600;
+          const startTime = performance.now();
+          const easeInOutCubic = (t) => t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+          const step = (now) => {
+            const progress = Math.min((now - startTime) / duration, 1);
+            this.scrollLeft = startLeft + distance * easeInOutCubic(progress);
+            if (progress < 1) {
+              requestAnimationFrame(step);
+            }
+          };
+          requestAnimationFrame(step);
+        }
       } else {
         __privateMethod(this, _ScrollCarousel_instances, updateTargetIndex_fn).call(this, __privateMethod(this, _ScrollCarousel_instances, calculateClosestIndexToAlignment_fn).call(this));
       }
