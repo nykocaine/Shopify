@@ -377,6 +377,12 @@ only way to do it on Shopify right now.
     endif
   endif
 
+  # See the media_count/default_media_caption block below for why this uses gallery_media.first rather
+  # than default_media directly - computed here (right after the rotation above, instead of down there)
+  # so the variant-image-set filter loop right below can also protect the actually-shown first slide from
+  # being hidden, not just default_media (which might not even be part of gallery_media).
+  assign effective_default_media = gallery_media.first
+
   if product.variants.size > 1
     for media in product.media
       # Stripped of the "!dark"/"!light" background-color marker (see caption/counter block below) before
@@ -391,7 +397,7 @@ only way to do it on Shopify right now.
         assign option_value = option.selected_value | downcase
         assign downcase_group_value = media_group_parts.last | strip | downcase
 
-        if option_value != downcase_group_value and media != default_media
+        if option_value != downcase_group_value and media != effective_default_media
           assign media_position = media.position | sort
           assign filtered_indexes = filtered_indexes | concat: media_position
         endif
@@ -412,9 +418,8 @@ only way to do it on Shopify right now.
   # slide is actually shown first, instead of describing an image that isn't even in the carousel.
   if product != blank
     assign media_count = gallery_media.size
-    assign effective_default_media = gallery_media.first
     assign default_media_index = 0
-    assign default_media_caption = effective_default_media.alt | remove: '!dark' | remove: '!light' | split: '#' | first | strip
+    assign default_media_caption = effective_default_media.alt | remove: '!dark' | remove: '!light' | split: '#' | first | strip | escape
 
     # Merchant-controlled background flag: append "!dark" to a media's alt text (in the Shopify admin) to
     # mark it as needing white/glow caption text instead of the default dark-on-light styling - see
@@ -465,7 +470,8 @@ only way to do it on Shopify right now.
             described in the IMPLEMENTATION NOTE above (eg. "Some caption#Color_Red") - a real caption
             should never show that raw suffix. Also stripped of "!dark"/"!light" (the background-color
             marker, see default_media_is_dark above) for the same reason - data-dark-image below carries
-            that instead, read by the same JS listener to toggle .product-gallery__caption-row's contrast.
+            that instead, read by the same JS listener (updateCaption_fn) to toggle is-dark-image on
+            .product-gallery__top-bar and the outer <product-gallery> element.
             {%- endcomment -%}
             <div class="product-gallery__media snap-center {% if media == effective_default_media %}is-initial{% endif %} {% if enable_image_zoom and section.settings.desktop_media_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" data-caption="{{ media.alt | remove: '!dark' | remove: '!light' | split: '#' | first | strip | escape }}" {% if media.alt contains '!dark' %}data-dark-image{% endif %} role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: gallery_media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
               {%- if effective_default_media == media -%}

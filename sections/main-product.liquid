@@ -611,6 +611,7 @@
 {%- render 'product-sticky-add-to-cart', product: product, product_form_id: product_form_id -%}
 {%- render 'product-quick-buy', product: product -%}
 
+{%- if product -%}
 <script>
   // We save the product ID in local storage to be eventually used for recently viewed section
   let recentlyViewedProducts;
@@ -636,6 +637,7 @@
     // Safari in private mode does not allow setting item, we silently fail
   }
 </script>
+{%- endif -%}
 
 {% schema %}
 {
