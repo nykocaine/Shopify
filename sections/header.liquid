@@ -371,16 +371,6 @@
           </news-modal-button>
         </li>
 
-        {%- comment -%}
-        Static country label (icon.liquid's "world" icon + hardcoded "PE") - purely visual, not wired to
-        the theme's real localization-selector snippet, so it doesn't reflect the visitor's actual
-        country/locale.
-        {%- endcomment -%}
-        <li class="header__world-link h-stack gap-1 {% if section.settings.mobile_layout == 'logo_center_navigation_split' %}md-max:hidden{% endif %}">
-          {%- render 'icon' with 'world', mobile_width: 16, width: section.settings.desktop_icon_size -%}
-          <span class="subheading">PE</span>
-        </li>
-
         <li class="header__search-link {% if section.settings.mobile_layout == 'logo_center_navigation_split' %}md-max:hidden{% endif %}">
           <a href="{{ routes.search_url }}" class="block tap-area" aria-controls="search-drawer">
             {%- if section.settings.show_icons_text -%}
@@ -438,6 +428,16 @@
             </button>
           </li>
         {%- endif -%}
+
+        {%- comment -%}
+        Static country label (icon.liquid's "world" icon + hardcoded "PE") - purely visual, not wired to
+        the theme's real localization-selector snippet, so it doesn't reflect the visitor's actual
+        country/locale. Last item in the list, next to the menu button.
+        {%- endcomment -%}
+        <li class="header__world-link h-stack gap-1">
+          {%- render 'icon' with 'world', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+          <span class="subheading">PE</span>
+        </li>
       </ul>
     </nav>
 
