@@ -63,8 +63,14 @@ This component is used to show the product gallery (used in product page and fea
       photo - a merchant opts an image into this by adding "!dark" to its alt text in the Shopify admin,
       it's not detected automatically from the pixels.
       {%- endcomment -%}
+      {%- comment -%}
+      .h-stack (theme.css) defaults align-items to center, which centers the counter against the full
+      height of a wrapped 2-line caption - pinning it to flex-start keeps it level with the caption's
+      first line regardless of how many lines the alt text wraps to.
+      {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-gallery__caption-row {
         margin-block-start: .5rem;
+        align-items: flex-start;
         color: rgb(var(--text-color));
       }
 
