@@ -78,7 +78,7 @@
     </style>
 
     {%- if section.settings.layout == 'split' -%}
-      <div class="section-split color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+      <div class="section-split color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_faq %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_faq %} style="border-end-start-radius: {{ section.settings.faq_border_radius }}px; border-end-end-radius: {{ section.settings.faq_border_radius }}px; overflow: hidden;"{% endif %}>
         <div class="section-split__column">
           {{- section_header -}}
         </div>
@@ -160,8 +160,7 @@
       "id": "floating_faq",
       "label": "Floating FAQ",
       "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
-      "default": false,
-      "visible_if": "{{ section.settings.layout == 'stacked' }}"
+      "default": false
     },
     {
       "type": "range",
@@ -172,7 +171,7 @@
       "unit": "px",
       "label": "Corner radius",
       "default": 0,
-      "visible_if": "{{ section.settings.layout == 'stacked' and section.settings.floating_faq }}"
+      "visible_if": "{{ section.settings.floating_faq }}"
     },
     {
       "type": "select",
