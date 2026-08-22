@@ -42,13 +42,28 @@ This component is used to show the product gallery (used in product page and fea
     it keeps working unchanged.
     {%- endcomment -%}
     @media screen and (max-width: 999px) {
-      #shopify-section-{{ section.id }} .product-gallery__controls-floating .product-gallery__progress-bar-row {
+      #shopify-section-{{ section.id }} .product-gallery__controls-floating .product-gallery__top-bar {
         margin-inline: 0;
         padding-inline: var(--container-gutter);
         position: absolute;
         inset-block-start: 1rem;
         inset-inline: 0;
         z-index: 1;
+      }
+
+      {%- comment -%}
+      The alt-text caption (data-caption per slide, synced by <carousel-caption> in assets/theme.js) -
+      :empty:hidden keeps a product/slide without alt text from leaving a blank gap under the bar.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery__caption {
+        color: rgb(var(--text-color) / .6);
+        font-size: var(--text-sm);
+        margin-block-start: .5rem;
+        display: block;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__caption:empty {
+        display: none;
       }
     }
   {%- endif -%}
@@ -205,10 +220,13 @@ only way to do it on Shopify right now.
   endif
 
   # Shared by numbers_controls and bar_controls below (both show a "current / total" counter) so the
-  # filtered-media counting logic only lives in one place.
+  # filtered-media counting logic only lives in one place. default_media_caption is the initial value
+  # for <carousel-caption> (bar_controls) - same "#"-stripping as each slide's own data-caption below,
+  # so the very first paint (before any carousel:change fires) already matches what the JS would set.
   if product != blank
     assign media_count = gallery_media.size
     assign default_media_index = 0
+    assign default_media_caption = default_media.alt | split: '#' | first | strip
 
     for media in gallery_media
       if filtered_indexes contains media.position
@@ -243,7 +261,14 @@ only way to do it on Shopify right now.
           {%- for media in gallery_media -%}
             {%- capture sizes -%}(max-width: 699px) 100vw, 50vw{%- endcapture -%}
 
-            <div class="product-gallery__media snap-center {% if media == default_media %}is-initial{% endif %} {% if enable_image_zoom and section.settings.desktop_media_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: gallery_media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
+            {%- comment -%}
+            data-caption: the media's alt text, shown by <carousel-caption> (bar_controls below) below
+            the mobile progress bar/counter row, synced to whichever slide is currently in view. Stripped
+            of anything from "#" onward, since alt text can also carry the variant-image-set encoding
+            described in the IMPLEMENTATION NOTE above (eg. "Some caption#Color_Red") - a real caption
+            should never show that raw suffix.
+            {%- endcomment -%}
+            <div class="product-gallery__media snap-center {% if media == default_media %}is-initial{% endif %} {% if enable_image_zoom and section.settings.desktop_media_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" data-caption="{{ media.alt | split: '#' | first | strip | escape }}" role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: gallery_media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
               {%- if default_media == media -%}
                 {%- assign preload = true -%}
               {%- else -%}
@@ -417,20 +442,32 @@ only way to do it on Shopify right now.
       {%- comment -%}BAR{%- endcomment -%}
 
       {%- capture bar_controls -%}
-        <div class="product-gallery__progress-bar-row h-stack gap-4 align-self-center full-bleed md:unbleed" style="width: 100%;">
-          <progress-bar track-scroll-target="{{ product_gallery_carousel_id }}" class="progress-bar grow"></progress-bar>
+        <div class="product-gallery__top-bar full-bleed md:unbleed" style="width: 100%;">
+          <div class="product-gallery__progress-bar-row h-stack gap-4 align-self-center">
+            <progress-bar track-scroll-target="{{ product_gallery_carousel_id }}" class="progress-bar grow"></progress-bar>
 
-          <carousel-page-indicator class="h-stack gap-2" aria-controls="{{ product_gallery_carousel_id }}">
-            {%- if product != blank -%}
-              <span current-slide-index>{{ default_media_index }}</span>
-              <span class="text-subdued">/</span>
-              <span page-size class="text-subdued">{{ media_count }}</span>
-            {%- else -%}
-              <span current-slide-index>1</span>
-              <span class="text-subdued">/</span>
-              <span page-size class="text-subdued">3</span>
-            {%- endif -%}
-          </carousel-page-indicator>
+            <carousel-page-indicator class="h-stack gap-2" aria-controls="{{ product_gallery_carousel_id }}">
+              {%- if product != blank -%}
+                <span current-slide-index>{{ default_media_index }}</span>
+                <span class="text-subdued">/</span>
+                <span page-size class="text-subdued">{{ media_count }}</span>
+              {%- else -%}
+                <span current-slide-index>1</span>
+                <span class="text-subdued">/</span>
+                <span page-size class="text-subdued">3</span>
+              {%- endif -%}
+            </carousel-page-indicator>
+          </div>
+
+          {%- comment -%}
+          The currently visible slide's alt text (data-caption, set per-slide above), kept in sync via
+          <carousel-caption> (assets/theme.js) listening for the same carousel:change event
+          carousel-page-indicator already listens to - default_media_caption (computed above) is only
+          the FIRST paint's value, before any swipe/click has fired that event yet.
+          {%- endcomment -%}
+          {%- if product != blank -%}
+            <carousel-caption class="product-gallery__caption" aria-controls="{{ product_gallery_carousel_id }}">{{ default_media_caption }}</carousel-caption>
+          {%- endif -%}
         </div>
       {%- endcapture -%}
 

@@ -1489,6 +1489,26 @@ if (!window.customElements.get("carousel-player-button")) {
 if (!window.customElements.get("carousel-page-indicator")) {
   window.customElements.define("carousel-page-indicator", CarouselPageIndicator);
 }
+var _CarouselCaption_instances, updateCaption_fn;
+var CarouselCaption = class extends HTMLElement {
+  constructor() {
+    super(...arguments);
+    __privateAdd(this, _CarouselCaption_instances);
+  }
+  connectedCallback() {
+    this.carousel.addEventListener("carousel:change", __privateMethod(this, _CarouselCaption_instances, updateCaption_fn).bind(this));
+  }
+  get carousel() {
+    return document.getElementById(this.getAttribute("aria-controls"));
+  }
+};
+_CarouselCaption_instances = new WeakSet();
+updateCaption_fn = function(event) {
+  this.textContent = event.detail.cell?.getAttribute("data-caption") || "";
+};
+if (!window.customElements.get("carousel-caption")) {
+  window.customElements.define("carousel-caption", CarouselCaption);
+}
 
 // js/common/carousel/effect-carousel.js
 import { animate as animate3, animateSequence, inView as inView4 } from "vendor";
