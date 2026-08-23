@@ -60,20 +60,14 @@
 
     <style>
       {%- comment -%}
-      Matches footer's own fixed top/bottom rhythm (.footer__content in theme.css: 2.8rem mobile,
-      4.8rem from 1000px) instead of the global "Section spacing" setting this section normally
-      uses - a deliberate fixed value here, same as footer, not tied to that setting.
+      padding-block matches --container-gutter (the same token .section-split__column's own base rule
+      already uses for padding-inline, theme.css) instead of the footer's fixed 2.8rem/4.8rem rhythm this
+      used to copy - that larger fixed value left more empty space above/below the content than on its
+      sides, reading as vertically centered inside the column rather than pinned to the top.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .section-split__column,
       #shopify-section-{{ section.id }} .section-spacing {
-        padding-block: 2.8rem;
-      }
-
-      @media screen and (min-width: 1000px) {
-        #shopify-section-{{ section.id }} .section-split__column,
-        #shopify-section-{{ section.id }} .section-spacing {
-          padding-block: 4.8rem;
-        }
+        padding-block: var(--container-gutter);
       }
 
       {%- comment -%}
