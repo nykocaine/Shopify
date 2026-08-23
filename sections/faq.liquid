@@ -106,6 +106,15 @@
       }
 
       {%- comment -%}
+      .faq-block__list .accordion__summary (theme.css) hardcodes font-weight: 600 on the question directly
+      - independent of the .heading/.subheading typeface classes above, so it stayed bold even with those
+      overridden. This is what actually made the question look heavier than body text.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .faq-block__list .accordion__summary {
+        font-weight: var(--text-font-weight);
+      }
+
+      {%- comment -%}
       .icon-accordion-plus (icon.liquid's "accordion-plus", shared with the quantity selector via
       .step-control-line) renders at 20px/1.3 stroke-width by default - too heavy next to the thin
       chevron/zoom-plus icons used in product-gallery.liquid (~16px tall, ~0.8-1px stroke). Scoped to this
