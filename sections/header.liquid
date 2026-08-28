@@ -42,6 +42,15 @@
     {%- endif -%}
   }
 
+  {%- if section.settings.floating_header -%}
+    /* Desktop: halve the gap above the floating header. */
+    @media screen and (min-width: 1000px) {
+      #shopify-section-{{ section.id }} {
+        padding-block-start: calc(var(--section-vertical-spacing) / 4);
+      }
+    }
+  {%- endif -%}
+
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} {
       {%- case section.settings.desktop_layout -%}
