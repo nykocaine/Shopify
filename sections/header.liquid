@@ -37,19 +37,13 @@
     --header-menu-gap: {{ section.settings.menu_items_spacing }}px;
     --header-icons-gap: {{ section.settings.icons_spacing }}px;
     {%- if section.settings.floating_header -%}
-      padding-block-start: calc(var(--section-vertical-spacing) / 2);
+      /* Match the floating footer: the only gap above the header is the global side
+         margin (--container-gutter), same value the footer uses for padding-block-end.
+         It lives on the sticky section wrapper, so the gap stays while scrolling. */
+      padding-block-start: var(--container-gutter);
       position: relative;
     {%- endif -%}
   }
-
-  {%- if section.settings.floating_header -%}
-    /* Desktop: halve the gap above the floating header. */
-    @media screen and (min-width: 1000px) {
-      #shopify-section-{{ section.id }} {
-        padding-block-start: calc(var(--section-vertical-spacing) / 4);
-      }
-    }
-  {%- endif -%}
 
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} {
