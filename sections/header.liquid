@@ -441,12 +441,15 @@
         {%- comment -%}
         Static country label (icon.liquid's "world" icon + hardcoded "PE") - purely visual, not wired to
         the theme's real localization-selector snippet, so it doesn't reflect the visitor's actual
-        country/locale. Last item in the list, next to the menu button.
+        country/locale. Last item in the list, next to the menu button. Toggle it off from the theme
+        editor with the "Mostrar globo terráqueo y PE" setting.
         {%- endcomment -%}
-        <li class="header__world-link h-stack gap-1">
-          {%- render 'icon' with 'world', mobile_width: 16, width: section.settings.desktop_icon_size -%}
-          <span class="subheading">PE</span>
-        </li>
+        {%- if section.settings.show_world_link -%}
+          <li class="header__world-link h-stack gap-1">
+            {%- render 'icon' with 'world', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+            <span class="subheading">PE</span>
+          </li>
+        {%- endif -%}
       </ul>
     </nav>
 
@@ -793,6 +796,13 @@
       "label": "t:global.localization.show_country_flag",
       "default": true,
       "visible_if": "{{ section.settings.show_country_selector }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_world_link",
+      "label": "Mostrar globo terráqueo y \"PE\"",
+      "info": "Muestra u oculta el icono del globo y el texto \"PE\" (etiqueta estática) junto al botón de menú en móvil.",
+      "default": true
     },
     {
       "type": "header",
