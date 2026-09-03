@@ -321,6 +321,17 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     #shopify-section-{{ section.id }} .reviews {
       padding: min(2.5rem, var(--container-gutter));
     }
+
+    {%- comment -%}
+    On mobile --container-gutter is small (~10px), so the summary, the controls and the review cards sat
+    too close to the card edges. Give the card a bit more room on all four sides - not double, just the
+    current gutter plus 0.5rem - only below 700px. Matches the same tweak in sections/faq.liquid.
+    {%- endcomment -%}
+    @media screen and (max-width: 699px) {
+      #shopify-section-{{ section.id }} .reviews {
+        padding: calc(var(--container-gutter) + 0.5rem);
+      }
+    }
   {%- endif -%}
 
   #shopify-section-{{ section.id }} .reviews__summary-row {
