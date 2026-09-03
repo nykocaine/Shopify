@@ -3,6 +3,18 @@
     #shopify-section-{{ section.id }} {
       padding-block-end: var(--container-gutter);
     }
+
+    {%- comment -%}
+    On mobile --container-gutter is small (~10px), so .container left the footer content almost touching
+    the floating card's side edges. Give it a bit more room on the sides - not double, just the current
+    gutter plus 0.5rem - only below 700px. Matches the same tweak in sections/faq.liquid and
+    sections/reviews.liquid. (Top/bottom already get .footer__content's own 2.8rem, so they're left alone.)
+    {%- endcomment -%}
+    @media screen and (max-width: 699px) {
+      #shopify-section-{{ section.id }} .footer > .container {
+        margin-inline: calc(var(--container-gutter) + 0.5rem);
+      }
+    }
   </style>
 {%- endif -%}
 
