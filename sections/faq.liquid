@@ -71,6 +71,28 @@
       }
 
       {%- comment -%}
+      On mobile --container-gutter is small (~10px), so the floating card's content (both the title/
+      subtitle/paragraph column and the questions column) sat too close to the card edges. Give it a bit
+      more room on all four sides - not double, just the current gutter plus 0.5rem - only below 700px.
+      Split layout: .section-split__column owns every side. Stacked layout: .section-spacing owns the
+      block padding, .container owns the inline padding.
+      {%- endcomment -%}
+      @media screen and (max-width: 699px) {
+        #shopify-section-{{ section.id }} .section-split__column {
+          padding-block: calc(var(--container-gutter) + 0.5rem);
+          padding-inline: calc(var(--container-gutter) + 0.5rem);
+        }
+
+        #shopify-section-{{ section.id }} .section-spacing {
+          padding-block: calc(var(--container-gutter) + 0.5rem);
+        }
+
+        #shopify-section-{{ section.id }} .section-spacing .container {
+          padding-inline: calc(var(--container-gutter) + 0.5rem);
+        }
+      }
+
+      {%- comment -%}
       Same override product-card.liquid already applies to itself (theme.css, ".product-card .subheading,
       .product-card .heading"): forces the typeface itself (family/weight/style/letter-spacing/casing)
       back to Body Text, without touching font-size. The title ('heading' snippet, style: title_tag) never
