@@ -185,16 +185,16 @@ no need to manually pass the section as it is globally available)
               <div class="product-rating-row">
                 <p class="product-rating-row__text">{{ block.settings.side_text }}</p>
                 {%- if product != blank -%}
-                  {%- render 'product-rating', product: product, alignment: 'end', show_empty: block.settings.show_empty, show_placeholder: false -%}
+                  {%- render 'product-rating', product: product, alignment: 'end', show_empty: block.settings.show_empty, show_placeholder: false, show_single_star: true -%}
                 {%- else -%}
-                  {%- render 'product-rating', alignment: 'end', show_placeholder: true -%}
+                  {%- render 'product-rating', alignment: 'end', show_placeholder: true, show_single_star: true -%}
                 {%- endif -%}
               </div>
             {%- else -%}
               {%- if product != blank -%}
-                {%- render 'product-rating', product: product, alignment: alignment, show_empty: block.settings.show_empty, show_placeholder: false -%}
+                {%- render 'product-rating', product: product, alignment: alignment, show_empty: block.settings.show_empty, show_placeholder: false, show_single_star: true -%}
               {%- else -%}
-                {%- render 'product-rating', alignment: alignment, show_placeholder: true -%}
+                {%- render 'product-rating', alignment: alignment, show_placeholder: true, show_single_star: true -%}
               {%- endif -%}
             {%- endif -%}
 
