@@ -121,6 +121,12 @@
     font-size: var(--text-sm);
   }
 
+  /* Rating block's optional side text: match the product card subtitle's muted color
+     (.product-subtitle in theme.css → rgb(var(--text-color) / .7)). */
+  #shopify-section-{{ section.id }} .product-rating-row__text {
+    color: rgb(var(--text-color) / 0.7);
+  }
+
   {%- if section.settings.allow_transparent_header and section.settings.transparent_header_use_primary_colors and product.media.size > 0 -%}
     {%- comment -%}
     When this setting is enabled, we use the transparent header, but we force the header to use the primary colors and primary logo.
