@@ -1,26 +1,34 @@
 {%- doc -%}
-A reviews section modeled visually on the Okendo reviews widget (rating summary, a sort control, review
-cards with reviewer/product/attribute info, an attribute bar, and helpful voting), but built natively
-with theme blocks instead of depending on the Okendo app.
+Native reviews section with a minimalist / editorial layout.
 
-Reviews are not stored anywhere outside the theme: each review shown on the storefront is a "Review"
-block that the merchant adds/edits/reorders from the theme editor, exactly like the FAQ block. Only the
-first 5 review cards show initially; a "Ver más" button reveals 5 more at a time, and disappears once
-every review is visible. Sorting always re-applies before the reveal count, so changing sort resets back
-to the first 5 of the newly sorted order.
+Each review is a "Review" block the merchant adds, edits and reorders from the theme editor - nothing
+is pulled from an external app, and the block schema (and therefore any existing review data) is left
+untouched by the redesign; only the presentation changed.
+
+Layout: a compact header (optional eyebrow + heading + intro), a small rating summary, then the
+reviews. The first N reviews are visible ("Reseñas visibles al inicio", default 3) and a minimal
+"Ver más reseñas" toggle softly reveals the rest (and turns into "Ver menos"). It is a progressive
+enhancement: with JavaScript disabled every review is rendered and visible.
+
+Stars are coloured only through the `--reviews-star-color` variable (from the "Star color" setting),
+independently of the colour scheme's text colour. All motion is gated behind
+`prefers-reduced-motion: no-preference`.
 {%- enddoc -%}
 
 {%- liquid
   assign review_blocks = section.blocks | where: 'type', 'review'
+  assign initial_count = section.settings.initial_count | default: 3
+  assign header_align = section.settings.text_alignment | default: 'center'
+  assign show_date = section.settings.show_date
+  assign show_author = section.settings.show_author
 
-  # Same metafields snippets/product-rating.liquid already reads (product.metafields.custom.reviews_rating
-  # / reviews_count) - when this section sits on a product page and they're set, the summary badge shown
-  # here matches whatever the product card/product page already shows, instead of only reflecting however
-  # many "Review" blocks happen to be added below. Falls back to counting/averaging the blocks themselves
-  # when the metafields aren't set (eg. a non-product page, or a product without them yet).
+  # Rating summary: prefer the same product metafields the product card / product page already use
+  # (product.metafields.custom.reviews_rating / reviews_count) so the number shown here matches the
+  # rest of the store. Fall back to averaging the review blocks themselves when they are not set
+  # (eg. a non-product page, or a product without them yet).
   if product and product.metafields.custom.reviews_rating.value != blank
     assign average_rating = product.metafields.custom.reviews_rating.value.rating | plus: 0 | round: 1
-    assign review_count = product.metafields.custom.reviews_count.value | default: 0
+    assign review_count = product.metafields.custom.reviews_count.value | default: 0 | plus: 0
   else
     assign review_count = review_blocks.size
     assign rating_sum = 0
@@ -36,203 +44,185 @@ to the first 5 of the newly sorted order.
     endif
   endif
 
+  assign star_color = section.settings.star_color
+  if star_color == blank or star_color == 'rgba(0,0,0,0)'
+    assign star_color = '#404040'
+  endif
+
   assign write_review_modal_id = 'write-review-' | append: section.id
+  assign summary_label = 'general.rating.info' | t: rating_value: average_rating, rating_max: 5
 -%}
+
+{%- capture reviews_content -%}
+  <div id="reviews-{{ section.id }}" class="reviews section-stack max-w-md mx-auto" style="--reviews-star-color: {{ star_color }};">
+    <div class="reviews__header{% if header_align == 'center' %} reviews__header--center{% endif %}">
+      {%- if section.settings.subheading != blank -%}
+        {%- render 'subheading', content: section.settings.subheading -%}
+      {%- endif -%}
+
+      {%- if section.settings.title != blank -%}
+        {%- render 'heading', content: section.settings.title, style: section.settings.title_tag, html_tag: 'h2', instant: true -%}
+      {%- endif -%}
+
+      {%- if section.settings.intro != blank -%}
+        <div class="reviews__intro">{{ section.settings.intro }}</div>
+      {%- endif -%}
+
+      {%- if review_count > 0 -%}
+        <div class="reviews__summary">
+          {%- render 'reviews-stars', rating: average_rating, label: summary_label -%}
+
+          <p class="reviews__summary-meta">
+            <span class="reviews__summary-score">{{ average_rating }}</span>
+            <span aria-hidden="true">·</span>
+            {{ review_count }} {% if review_count == 1 %}reseña{% else %}reseñas{% endif %}
+          </p>
+        </div>
+      {%- endif -%}
+
+      <div class="reviews__actions">
+        {%- render 'button', content: 'Escribir una reseña', style: 'outline', size: 'sm', aria_controls: write_review_modal_id -%}
+      </div>
+    </div>
+
+    {%- if review_blocks.size > 0 -%}
+      {%- if section.settings.show_sort and review_blocks.size > 1 -%}
+        <div class="reviews__toolbar">
+          <div class="reviews__sort">
+            <label class="sr-only" for="reviews-sort-{{ section.id }}">Ordenar reseñas</label>
+            <select id="reviews-sort-{{ section.id }}" data-reviews-sort>
+              <option value="featured">Destacadas</option>
+              <option value="rating_desc">Mejor calificación</option>
+              <option value="rating_asc">Menor calificación</option>
+            </select>
+            <svg class="reviews__sort-caret" width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true" focusable="false">
+              <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      {%- endif -%}
+
+      <ol class="reviews__list" id="reviews-list-{{ section.id }}" data-reviews-list>
+        {%- for block in review_blocks -%}
+          {%- liquid
+            assign is_extra = false
+            if forloop.index > initial_count
+              assign is_extra = true
+            endif
+
+            assign attr_line = ''
+            for i in (1..3)
+              assign attr_label_key = 'attribute_' | append: i | append: '_label'
+              assign attr_value_key = 'attribute_' | append: i | append: '_value'
+              assign attr_label = block.settings[attr_label_key]
+              assign attr_value = block.settings[attr_value_key]
+
+              if attr_label != blank
+                if attr_value != blank
+                  assign attr_pair = attr_label | append: ': ' | append: attr_value
+                else
+                  assign attr_pair = attr_label
+                endif
+
+                if attr_line == blank
+                  assign attr_line = attr_pair
+                else
+                  assign attr_line = attr_line | append: '  ·  ' | append: attr_pair
+                endif
+              endif
+            endfor
+
+            assign review_label = 'general.rating.info' | t: rating_value: block.settings.rating, rating_max: 5
+          -%}
+
+          <li class="review{% if is_extra %} review--extra{% endif %}" data-rating="{{ block.settings.rating }}" data-index="{{ forloop.index }}" {{ block.shopify_attributes }}>
+            <div class="review__inner">
+              <div class="review__head">
+                {%- render 'reviews-stars', rating: block.settings.rating, label: review_label -%}
+
+                {%- if show_date and block.settings.date_label != blank -%}
+                  <span class="review__date">{{ block.settings.date_label }}</span>
+                {%- endif -%}
+              </div>
+
+              {%- if block.settings.title != blank -%}
+                <p class="review__title">{{ block.settings.title }}</p>
+              {%- endif -%}
+
+              {%- if block.settings.body != blank -%}
+                <div class="review__body">{{ block.settings.body }}</div>
+              {%- endif -%}
+
+              {%- if block.settings.bar_question != blank -%}
+                <div class="review__bar">
+                  <p class="review__bar-question">{{ block.settings.bar_question }}</p>
+
+                  <div class="review__bar-track">
+                    <div class="review__bar-fill" style="inline-size: {{ block.settings.bar_value | times: 1.0 | divided_by: 5 | times: 100 }}%;"></div>
+                  </div>
+
+                  {%- if block.settings.bar_min_label != blank or block.settings.bar_max_label != blank -%}
+                    <div class="review__bar-labels">
+                      <span>{{ block.settings.bar_min_label }}</span>
+                      <span>{{ block.settings.bar_max_label }}</span>
+                    </div>
+                  {%- endif -%}
+                </div>
+              {%- endif -%}
+
+              {%- if attr_line != blank -%}
+                <p class="review__attrs">{{ attr_line }}</p>
+              {%- endif -%}
+
+              {%- if show_author or block.settings.verified_buyer or block.settings.product_name != blank -%}
+                <p class="review__footer">
+                  {%- if show_author and block.settings.reviewer_name != blank -%}
+                    <span class="review__author">{{ block.settings.reviewer_name }}</span>
+                  {%- endif -%}
+
+                  {%- if block.settings.verified_buyer -%}
+                    <span class="review__verified">{%- render 'icon' with 'success-checkmark' -%}Compra verificada</span>
+                  {%- endif -%}
+
+                  {%- if block.settings.product_name != blank -%}
+                    {%- if block.settings.product_url != blank -%}
+                      <a class="review__product link" href="{{ block.settings.product_url }}">{{ block.settings.product_name }}</a>
+                    {%- else -%}
+                      <span class="review__product">{{ block.settings.product_name }}</span>
+                    {%- endif -%}
+                  {%- endif -%}
+                </p>
+              {%- endif -%}
+            </div>
+          </li>
+        {%- endfor -%}
+      </ol>
+
+      {%- if review_blocks.size > initial_count -%}
+        <div class="reviews__more">
+          <button type="button" class="reviews__more-toggle" data-reviews-toggle aria-expanded="false" aria-controls="reviews-list-{{ section.id }}" hidden>
+            <span class="reviews__more-label">
+              <span class="reviews__more-text reviews__more-text--more">Ver más reseñas</span>
+              <span class="reviews__more-text reviews__more-text--less">Ver menos</span>
+            </span>
+            <span class="reviews__more-arrow reviews__more-arrow--more" aria-hidden="true">&rarr;</span>
+            <span class="reviews__more-arrow reviews__more-arrow--less" aria-hidden="true">&uarr;</span>
+          </button>
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+{%- endcapture -%}
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_reviews %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_reviews %} style="border-radius: {{ section.settings.reviews_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
-    <div id="reviews-{{ section.id }}" class="reviews section-stack">
-        <div class="reviews__summary-row">
-          <div class="reviews__summary">
-            <div class="reviews__summary-rating">
-              <span class="reviews__summary-average">{{ average_rating }}</span>
-
-              <span class="reviews__stars" role="img" aria-label="{{ 'general.rating.info' | t: rating_value: average_rating, rating_max: 5 }}">
-                {%- for i in (1..5) -%}
-                  {%- liquid
-                    assign half_threshold = i | minus: 0.5
-
-                    if review_count == 0
-                      render 'icon' with 'star-rating-empty'
-                    elsif average_rating >= i
-                      render 'icon' with 'star-rating'
-                    elsif average_rating >= half_threshold
-                      render 'icon' with 'star-rating-half'
-                    else
-                      render 'icon' with 'star-rating-empty'
-                    endif
-                  -%}
-                {%- endfor -%}
-              </span>
-            </div>
-
-            <p class="reviews__summary-label subheading">Calificación promedio</p>
-            <p class="reviews__summary-count">Basado en {{ review_count }} reseña{% if review_count != 1 %}s{% endif %}</p>
-          </div>
-
-          <div class="reviews__summary-write">
-            {%- render 'button', content: 'Escribir una reseña', style: 'outline', aria_controls: write_review_modal_id -%}
-          </div>
-        </div>
-
-        {%- if review_blocks.size > 0 -%}
-          <div class="reviews__controls">
-            <div class="reviews__sort button">
-              <label class="sr-only" for="reviews-sort-{{ section.id }}">Ordenar reseñas</label>
-              <div class="button__content">
-                <select id="reviews-sort-{{ section.id }}" class="select" data-reviews-sort>
-                  <option value="rating_desc" selected>Mejor calificación</option>
-                  <option value="recent">Más recientes</option>
-                  <option value="rating_asc">Peor calificación</option>
-                </select>
-                {%- render 'icon' with 'chevron-down' -%}
-              </div>
-            </div>
-          </div>
-
-          <p class="reviews__count">{{ review_blocks.size }} reseña{% if review_blocks.size != 1 %}s{% endif %}</p>
-
-          <div class="reviews__list" data-reviews-list>
-            {%- for block in review_blocks -%}
-              <div class="review-card" data-rating="{{ block.settings.rating }}" data-index="{{ forloop.index }}" {{ block.shopify_attributes }}>
-                <div class="review-card__side">
-                  <div class="review-card__reviewer">
-                    <strong class="review-card__name">{{ block.settings.reviewer_name }}</strong>
-
-                    {%- if block.settings.verified_buyer -%}
-                      <span class="review-card__verified">
-                        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false" class="review-card__verified-badge">
-                          <circle cx="8" cy="8" r="8" fill="#3897F0"/>
-                          <path d="M4.5 8.3 6.8 10.6 11.5 5.5" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Comprador verificado
-                      </span>
-                    {%- endif -%}
-                  </div>
-
-                  {%- if block.settings.product_name != blank -%}
-                    <div class="review-card__product">
-                      <p class="review-card__product-label subheading">Producto</p>
-                      {%- if block.settings.product_url != blank -%}
-                        <a href="{{ block.settings.product_url }}" class="link">{{ block.settings.product_name }}</a>
-                      {%- else -%}
-                        <span>{{ block.settings.product_name }}</span>
-                      {%- endif -%}
-                    </div>
-                  {%- endif -%}
-
-                  {%- liquid
-                    assign has_attributes = false
-
-                    for i in (1..3)
-                      capture attr_label_key
-                        echo 'attribute_'
-                        echo i
-                        echo '_label'
-                      endcapture
-
-                      if block.settings[attr_label_key] != blank
-                        assign has_attributes = true
-                      endif
-                    endfor
-                  -%}
-
-                  {%- if has_attributes -%}
-                    <div class="review-card__attributes">
-                      {%- for i in (1..3) -%}
-                        {%- liquid
-                          capture attr_label_key
-                            echo 'attribute_'
-                            echo i
-                            echo '_label'
-                          endcapture
-
-                          capture attr_value_key
-                            echo 'attribute_'
-                            echo i
-                            echo '_value'
-                          endcapture
-
-                          assign attr_label = block.settings[attr_label_key]
-                          assign attr_value = block.settings[attr_value_key]
-                        -%}
-
-                        {%- if attr_label != blank -%}
-                          <div class="review-card__attribute">
-                            <strong>{{ attr_label }}</strong>
-                            <span>{{ attr_value }}</span>
-                          </div>
-                        {%- endif -%}
-                      {%- endfor -%}
-                    </div>
-                  {%- endif -%}
-                </div>
-
-                <div class="review-card__main">
-                  <div class="review-card__top">
-                    <span class="review-card__stars" role="img" aria-label="{{ 'general.rating.info' | t: rating_value: block.settings.rating, rating_max: 5 }}">
-                      {%- for i in (1..5) -%}
-                        {%- liquid
-                          assign half_threshold = i | minus: 0.5
-
-                          if block.settings.rating >= i
-                            render 'icon' with 'star-rating'
-                          elsif block.settings.rating >= half_threshold
-                            render 'icon' with 'star-rating-half'
-                          else
-                            render 'icon' with 'star-rating-empty'
-                          endif
-                        -%}
-                      {%- endfor -%}
-                    </span>
-
-                    {%- if block.settings.date_label != blank -%}
-                      <span class="review-card__date">{{ block.settings.date_label }}</span>
-                    {%- endif -%}
-                  </div>
-
-                  {%- if block.settings.title != blank -%}
-                    <p class="review-card__title">{{ block.settings.title }}</p>
-                  {%- endif -%}
-
-                  {%- if block.settings.body != blank -%}
-                    <div class="review-card__body">
-                      {{- block.settings.body -}}
-                    </div>
-                  {%- endif -%}
-
-                  {%- if block.settings.bar_question != blank -%}
-                    <div class="review-card__bar">
-                      <p class="review-card__bar-question">{{ block.settings.bar_question }}</p>
-
-                      <div class="review-card__bar-track">
-                        <div class="review-card__bar-fill" style="width: {{ block.settings.bar_value | times: 1.0 | divided_by: 5 | times: 100 }}%;"></div>
-                      </div>
-
-                      <div class="review-card__bar-labels">
-                        <span>{{ block.settings.bar_min_label }}</span>
-                        <span>{{ block.settings.bar_max_label }}</span>
-                      </div>
-                    </div>
-                  {%- endif -%}
-
-                  <div class="review-card__helpful" data-reviews-helpful>
-                    <span data-reviews-helpful-label>¿Te resultó útil?</span>
-                    <button type="button" data-reviews-helpful-button="yes">Sí</button>
-                    <button type="button" data-reviews-helpful-button="no">No</button>
-                  </div>
-                </div>
-              </div>
-            {%- endfor -%}
-          </div>
-        {%- endif -%}
-
-        {%- if review_blocks.size > 3 -%}
-          <div class="reviews__load-more">
-            {%- render 'button', content: 'Ver más', type: 'button', style: 'outline', class: 'reviews__load-more-button' -%}
-          </div>
-        {%- endif -%}
+    {%- if section.settings.floating_reviews -%}
+      {{ reviews_content }}
+    {%- else -%}
+      <div class="container">
+        {{ reviews_content }}
       </div>
+    {%- endif -%}
   </div>
 </div>
 
