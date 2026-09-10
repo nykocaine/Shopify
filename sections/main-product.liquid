@@ -379,7 +379,7 @@
     }
 
     #shopify-section-{{ section.id }} .product-info-frame {
-      padding: var(--section-vertical-spacing) var(--container-gutter);
+      padding: var(--container-gutter);
     }
 
     {%- comment -%}
@@ -403,12 +403,11 @@
       }
 
       {%- comment -%}
-      Mobile-only: halves just the horizontal half of the padding shorthand set above
-      (padding: var(--section-vertical-spacing) var(--container-gutter)) - padding-block stays, so the
-      card keeps its usual top/bottom breathing room, only the left/right inset shrinks to half.
+      Mobile-only: halve the whole padding (all four sides) so it stays even top/bottom = left/right,
+      just tighter than on desktop.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-info-frame {
-        padding-inline: calc(var(--container-gutter) / 2);
+        padding: calc(var(--container-gutter) / 2);
       }
 
       {%- if section.settings.product_height_mobile > 0 -%}
