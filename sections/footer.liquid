@@ -18,6 +18,21 @@
   </style>
 {%- endif -%}
 
+<style>
+  {%- comment -%}
+  The "Links" and "Social menu" block titles render with .subheading, which has its own
+  (typically smaller/uppercase) type scale. Force just the size/line-height back to Body Text
+  - via --text-base, which already carries its own mobile and desktop values - so the titles
+  match body copy on every breakpoint. Covers the desktop <p class="subheading"> and the
+  mobile collapsible's <summary class="accordion__summary subheading">.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .footer__block--links .subheading,
+  #shopify-section-{{ section.id }} .footer__block--social_menu .subheading {
+    font-size: var(--text-base);
+    line-height: var(--text-line-height);
+  }
+</style>
+
 <div class="footer {% if section.settings.floating_footer %}footer--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.floating_footer %}style="border-radius: {{ section.settings.footer_border_radius }}px;"{% endif %}>
   <div class="container">
     {%- assign scrolling_logo_block = section.blocks | where: 'type', 'scrolling_logo' | first -%}
