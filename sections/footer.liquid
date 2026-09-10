@@ -310,10 +310,25 @@
         {%- render 'social-media' -%}
       {%- endif -%}
 
-      {%- if section.settings.show_copyright or section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
-        <div class="v-stack gap-3">
+      {%- if section.settings.show_copyright or section.settings.footer_bottom_text != blank or section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+        {%- liquid
+          assign bottom_text_align = section.settings.footer_bottom_text_alignment | default: 'center'
+          case bottom_text_align
+            when 'left'
+              assign bottom_text_justify = 'start'
+            when 'right'
+              assign bottom_text_justify = 'end'
+            else
+              assign bottom_text_justify = 'center'
+          endcase
+        -%}
+        <div class="v-stack gap-3" style="text-align: {{ bottom_text_align }}; justify-items: {{ bottom_text_justify }};">
           {%- if section.settings.show_copyright -%}
-            <p class="text-sm">© {{ 'now' | date: '%Y' }} - {{ shop.name }} {%- if section.settings.show_powered_by_shopify -%}{{ powered_by_link }}{%- endif -%}</p>
+            <p class="text-sm">© {{ 'now' | date: '%Y' }} - {{ shop.name }}</p>
+          {%- endif -%}
+
+          {%- if section.settings.footer_bottom_text != blank -%}
+            <p class="text-sm">{{ section.settings.footer_bottom_text }}</p>
           {%- endif -%}
 
           {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
@@ -385,14 +400,25 @@
       "type": "checkbox",
       "id": "show_copyright",
       "label": "Show copyright",
-      "info": "Also controls the divider line and bottom bar it sits in — when nothing in that row is enabled (copyright, payment icons, social media, country/language selector), the bar is hidden entirely.",
+      "info": "Also controls the divider line and bottom bar it sits in — when nothing in that row is enabled (copyright text, custom text, payment icons, social media, country/language selector), the bar is hidden entirely.",
       "default": true
     },
     {
-      "type": "checkbox",
-      "id": "show_powered_by_shopify",
-      "label": "t:sections.footer.show_powered_by_shopify",
-      "default": true
+      "type": "inline_richtext",
+      "id": "footer_bottom_text",
+      "label": "Custom text",
+      "info": "Shown in the bottom bar, next to the copyright line."
+    },
+    {
+      "type": "select",
+      "id": "footer_bottom_text_alignment",
+      "label": "Copyright & custom text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
     },
     {
       "type": "header",
