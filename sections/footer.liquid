@@ -210,6 +210,7 @@
                     {%- assign social_collapse_on_mobile = false -%}
                     {%- if block.settings.collapse_on_mobile and block.settings.heading != blank -%}
                       {%- assign social_collapse_on_mobile = true -%}
+                      {%- assign block_collapses_on_mobile = true -%}
                     {%- endif -%}
 
                     <div class="footer-social-menu v-stack gap-4.5 {% if social_collapse_on_mobile %}sm-max:hidden{% endif %}">
@@ -255,11 +256,10 @@
 
             {%- if block_content != blank -%}
               {%- comment -%}
-              footer__block--accordion-links drives the mobile stacked-accordion spacing. Only the 'links'
-              and 'social_menu' blocks expose a "collapse_on_mobile" setting, so testing the setting alone
-              is enough to catch both without an over-broad OR on block.type.
+              footer__block--accordion-links drives the mobile stacked-accordion spacing - applied only when
+              the block actually rendered a mobile accordion above (see block_collapses_on_mobile).
               {%- endcomment -%}
-              <div class="footer__block footer__block--{{ block.type | remove_first: '@' }} {% if block.settings.collapse_on_mobile %}footer__block--accordion-links{% endif %}" {{ block.shopify_attributes }}>
+              <div class="footer__block footer__block--{{ block.type | remove_first: '@' }} {% if block_collapses_on_mobile %}footer__block--accordion-links{% endif %}" {{ block.shopify_attributes }}>
                 {{- block_content -}}
               </div>
             {%- endif -%}
