@@ -6,11 +6,14 @@
     <div class="v-stack justify-items-{{ text_alignment }} gap-6 sm:gap-8">
       {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank -%}
         
-        <div class="prose prose-justify-{{ text_alignment }}">
+        <div class="prose prose-justify-{{ text_alignment }} w-full">
           {%- render 'subheading', content: section.settings.subheading -%}
           {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.heading_size, html_tag: 'h2' -%}
 
-          <div class="max-w-sm">
+          {%- comment -%} Full section width (no max-w-sm cap), so the text isn't inset with what looks
+          like right-hand padding. w-full on .prose overrides the v-stack's justify-items: start
+          shrink-to-fit so the block fills its column. {%- endcomment -%}
+          <div class="w-full">
             {{- section.settings.content -}}
           </div>
         </div>
