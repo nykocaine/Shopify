@@ -524,6 +524,16 @@
         #shopify-section-{{ section.id }} .product-info-frame {
           overflow: hidden auto !important;
           min-height: 0 !important;
+          {%- comment -%}
+          The frame still scrolls internally when the content overruns the fixed height (wheel, trackpad,
+          keyboard, touch all keep working) - this only hides the scrollbar chrome so it doesn't sit
+          permanently next to the product details.
+          {%- endcomment -%}
+          scrollbar-width: none;
+        }
+
+        #shopify-section-{{ section.id }} .product-info-frame::-webkit-scrollbar {
+          display: none;
         }
 
         {%- comment -%}
