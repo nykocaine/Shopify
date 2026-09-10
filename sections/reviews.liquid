@@ -21,6 +21,7 @@ independently of the colour scheme's text colour. All motion is gated behind
   assign header_align = section.settings.text_alignment | default: 'center'
   assign show_date = section.settings.show_date
   assign show_author = section.settings.show_author
+  assign show_details = section.settings.show_extra_details
 
   # Rating summary: prefer the same product metafields the product card / product page already use
   # (product.metafields.custom.reviews_rating / reviews_count) so the number shown here matches the
@@ -81,7 +82,7 @@ independently of the colour scheme's text colour. All motion is gated behind
       {%- endif -%}
 
       <div class="reviews__actions">
-        {%- render 'button', content: 'Escribir una reseña', style: 'outline', size: 'sm', aria_controls: write_review_modal_id -%}
+        <button type="button" class="reviews__write" aria-controls="{{ write_review_modal_id }}">Escribir una reseña</button>
       </div>
     </div>
 
@@ -153,28 +154,30 @@ independently of the colour scheme's text colour. All motion is gated behind
                 <div class="review__body">{{ block.settings.body }}</div>
               {%- endif -%}
 
-              {%- if block.settings.bar_question != blank -%}
-                <div class="review__bar">
-                  <p class="review__bar-question">{{ block.settings.bar_question }}</p>
+              {%- if show_details -%}
+                {%- if attr_line != blank -%}
+                  <p class="review__attrs">{{ attr_line }}</p>
+                {%- endif -%}
 
-                  <div class="review__bar-track">
-                    <div class="review__bar-fill" style="inline-size: {{ block.settings.bar_value | times: 1.0 | divided_by: 5 | times: 100 }}%;"></div>
-                  </div>
+                {%- if block.settings.bar_question != blank -%}
+                  <div class="review__bar">
+                    <p class="review__bar-question">{{ block.settings.bar_question }}</p>
 
-                  {%- if block.settings.bar_min_label != blank or block.settings.bar_max_label != blank -%}
-                    <div class="review__bar-labels">
-                      <span>{{ block.settings.bar_min_label }}</span>
-                      <span>{{ block.settings.bar_max_label }}</span>
+                    <div class="review__bar-track">
+                      <div class="review__bar-fill" style="inline-size: {{ block.settings.bar_value | times: 1.0 | divided_by: 5 | times: 100 }}%;"></div>
                     </div>
-                  {%- endif -%}
-                </div>
+
+                    {%- if block.settings.bar_min_label != blank or block.settings.bar_max_label != blank -%}
+                      <div class="review__bar-labels">
+                        <span>{{ block.settings.bar_min_label }}</span>
+                        <span>{{ block.settings.bar_max_label }}</span>
+                      </div>
+                    {%- endif -%}
+                  </div>
+                {%- endif -%}
               {%- endif -%}
 
-              {%- if attr_line != blank -%}
-                <p class="review__attrs">{{ attr_line }}</p>
-              {%- endif -%}
-
-              {%- if show_author or block.settings.verified_buyer or block.settings.product_name != blank -%}
+              {%- if show_author or block.settings.verified_buyer or show_details and block.settings.product_name != blank -%}
                 <p class="review__footer">
                   {%- if show_author and block.settings.reviewer_name != blank -%}
                     <span class="review__author">{{ block.settings.reviewer_name }}</span>
@@ -184,7 +187,7 @@ independently of the colour scheme's text colour. All motion is gated behind
                     <span class="review__verified">{%- render 'icon' with 'success-checkmark' -%}Compra verificada</span>
                   {%- endif -%}
 
-                  {%- if block.settings.product_name != blank -%}
+                  {%- if show_details and block.settings.product_name != blank -%}
                     {%- if block.settings.product_url != blank -%}
                       <a class="review__product link" href="{{ block.settings.product_url }}">{{ block.settings.product_name }}</a>
                     {%- else -%}
@@ -286,7 +289,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   endif
 -%}
 
-<x-modal id="{{ write_review_modal_id }}" append-to-body {% if has_form_feedback %}open{% endif %} class="modal color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
+<x-modal id="{{ write_review_modal_id }}" append-to-body {% if has_form_feedback %}open{% endif %} class="modal color-scheme color-scheme--{{ settings.default_color_scheme.id }}" style="--reviews-star-color: {{ star_color }};">
   <div class="prose">
     <p class="h5">comparte tus ideas</p>
   </div>
@@ -295,14 +298,17 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
 </x-modal>
 
 <style>
+  {%- comment -%} Merchant-controlled values become CSS variables; everything else reads from the colour scheme. {%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews {
+    --reviews-divider: rgb(var(--text-color) / 0.14);
+    --reviews-muted: rgb(var(--text-color) / 0.6);
+    color: rgb(var(--text-color));
+  }
+
   {%- if section.settings.floating_reviews -%}
     {%- comment -%}
-    Floating mode: this section behaves as its own padded card (like the floating info_panel it typically
-    sits next to) instead of a plain page section, so .section-spacing's generic page-to-page rhythm is
-    zeroed out and replaced with info_panel's own exact card padding formula - same
-    min(2.5rem, var(--container-gutter)), same --container-gutter source, so the two line up when stacked.
-    Left as the normal .section-spacing rhythm when not floating, since then this is just a regular
-    full-width page section like any other.
+    Floating mode: the section is its own padded card (like the floating panels it sits next to), so
+    .section-spacing's page-to-page rhythm is removed and replaced with the card's own inner padding.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .section-spacing {
       padding-block: 0;
@@ -312,11 +318,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       padding: min(2.5rem, var(--container-gutter));
     }
 
-    {%- comment -%}
-    On mobile --container-gutter is small (~10px), so the summary, the controls and the review cards sat
-    too close to the card edges. Give the card a bit more room on all four sides - not double, just the
-    current gutter plus 0.5rem - only below 700px. Matches the same tweak in sections/faq.liquid.
-    {%- endcomment -%}
     @media screen and (max-width: 699px) {
       #shopify-section-{{ section.id }} .reviews {
         padding: calc(var(--container-gutter) + 0.5rem);
@@ -324,373 +325,457 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     }
   {%- endif -%}
 
-  #shopify-section-{{ section.id }} .reviews__summary-row {
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1.5rem;
+  {%- comment -%} ---------- Section reveal on scroll (added by JS, motion-safe only) ---------- {%- endcomment -%}
+  @media (prefers-reduced-motion: no-preference) {
+    #shopify-section-{{ section.id }} .reviews--reveal {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+
+    #shopify-section-{{ section.id }} .reviews--reveal.is-visible {
+      opacity: 1;
+      transform: none;
+      transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  }
+
+  {%- comment -%} ---------- Header ---------- {%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews__header {
     display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__summary-write {
-    flex-shrink: 0;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__summary {
-    text-align: start;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__summary-rating {
-    align-items: center;
-    justify-content: start;
-    column-gap: .75rem;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__summary-average {
-    font-size: var(--text-h2);
-    font-weight: 600;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__stars,
-  #shopify-section-{{ section.id }} .review-card__stars {
-    gap: .125rem;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__summary-label {
-    text-transform: uppercase;
-    font-weight: 600;
-    margin-block-start: .5rem;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__summary-count {
-    color: rgb(var(--text-color) / .6);
-  }
-
-  #shopify-section-{{ section.id }} .reviews__controls {
-    justify-content: start;
-    align-items: center;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 1rem;
-    display: flex;
   }
 
-  {%- comment -%}
-  .reviews__sort keeps .button's height/padding/border-radius (still sized like every other button in the
-  theme), but overrides color/background/border to read from the color scheme's own body text and border
-  variables instead of the Buttons global style - transparent background, border and text following
-  --border-color/--text-color, the same variables already used everywhere else in this section (eg. the
-  divider lines, the muted counts), so it reacts correctly if the merchant changes the section's color
-  scheme. The explicit :hover override below keeps .button's own hover background (a Buttons-scheme color)
-  from re-applying a solid fill on top of this.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .reviews__sort {
-    background: transparent;
-    border-color: rgb(var(--border-color));
-    color: rgb(var(--text-color));
-  }
-
-  #shopify-section-{{ section.id }} .reviews__sort:hover {
-    background: transparent;
-  }
-
-  {%- comment -%}
-  position: relative here (not on .select) is the actual fix: .select ~ svg's own position: absolute
-  (theme.css) was resolving against .reviews__sort - the outer button, which has position: relative from
-  the base .button class - using theme.css's default inset-inline-end formula (meant for a plain input).
-  But .select only fills .button__content's own content box (100% width, inset from .reviews__sort's edge
-  by .button__content's own horizontal padding), so the icon landed outside .select's actual clickable
-  box: visually near the button, but a click there missed the select entirely. Making .button__content the
-  positioned ancestor and pinning the icon's inset-inline-end to 0 (its own padding edge) aligns the icon
-  exactly with .select's real right edge instead.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .reviews__sort .button__content {
-    position: relative;
-    column-gap: .5rem;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__sort .select ~ svg {
-    inset-inline-end: 0;
-  }
-
-  {%- comment -%}
-  The .select itself stays the real clickable/focusable control (native <select>, full width of
-  .button__content) with its own text hidden behind transparent styling - the chevron icon is layered on
-  top of it via .select ~ svg's own existing position: absolute + pointer-events: none (theme.css), which
-  is what lets a click anywhere on the icon fall through to the select underneath.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .reviews__sort .select {
-    width: 100%;
-    height: auto;
-    border: none;
-    padding: 0;
-    padding-inline-end: 1.25rem;
-    background: none;
-    color: inherit;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__count {
-    color: rgb(var(--text-color) / .6);
-    border-block-end: 1px solid rgb(var(--border-color));
-    padding-block-end: 1.5rem;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__list {
-    display: flex;
-    flex-direction: column;
-  }
-
-  #shopify-section-{{ section.id }} .review-card {
-    grid-template-columns: 220px minmax(0, 1fr);
-    gap: 2rem;
-    padding-block: 2rem;
-    border-block-end: 1px solid rgb(var(--border-color));
-    transition: opacity .35s ease, transform .35s ease;
-    display: grid;
-  }
-
-  #shopify-section-{{ section.id }} .review-card:last-child {
-    border-block-end: none;
-  }
-
-  #shopify-section-{{ section.id }} .review-card--revealing {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-
-  #shopify-section-{{ section.id }} .review-card__side {
-    flex-direction: column;
-    gap: 1.25rem;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__reviewer {
-    flex-direction: column;
-    gap: .375rem;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__verified {
-    color: rgb(var(--text-color) / .6);
-    font-size: .875em;
+  #shopify-section-{{ section.id }} .reviews__header--center {
     align-items: center;
-    column-gap: .3em;
-    display: inline-flex;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__verified svg {
-    flex-shrink: 0;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__product-label {
-    text-transform: uppercase;
-    font-weight: 600;
-    margin-block-end: .25rem;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__attributes {
-    flex-direction: column;
-    gap: .75rem;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__attribute {
-    flex-direction: column;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__attribute span {
-    color: rgb(var(--text-color) / .8);
-  }
-
-  #shopify-section-{{ section.id }} .review-card__main {
-    flex-direction: column;
-    gap: 1rem;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__top {
-    justify-content: space-between;
-    align-items: center;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__date {
-    color: rgb(var(--text-color) / .6);
-    font-size: .875em;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__title {
-    font-weight: 600;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__bar {
-    max-width: 22rem;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__bar-question {
-    font-weight: 600;
-    margin-block-end: .75rem;
-  }
-
-  {%- comment -%}
-  Own style, controlled entirely by this section's "Rating bar" settings above - not the theme's global
-  "Progress bar" design (that one stays reserved for the free shipping bar/inventory bar/etc.). Border is
-  fixed at 1px regardless of the configured height; only --bar-height and --bar-indicator-size come from
-  settings, so the outline and the marker both read from the merchant's own review-bar config. The
-  background-image below splits the track into 4 equal segments (3 divider lines at 25/50/75%) purely as
-  decoration - doesn't touch the markup and stays independent of the rating percentage.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .review-card__bar-track {
-    --bar-height: {{ section.settings.review_bar_height }}px;
-    --bar-indicator-size: {{ section.settings.review_bar_indicator_size }}px;
-    --bar-line-color: {% if section.settings.review_bar_border_color != blank %}rgb({{ section.settings.review_bar_border_color.rgb }}){% else %}rgb(var(--border-color)){% endif %};
-    height: var(--bar-height);
-    border: 1px solid var(--bar-line-color);
-    background-color: {% if section.settings.review_bar_background_color != blank %}rgb({{ section.settings.review_bar_background_color.rgb }}){% else %}transparent{% endif %};
-    background-image: linear-gradient(
-      to right,
-      transparent calc(25% - .5px), var(--bar-line-color) calc(25% - .5px), var(--bar-line-color) calc(25% + .5px), transparent calc(25% + .5px),
-      transparent calc(50% - .5px), var(--bar-line-color) calc(50% - .5px), var(--bar-line-color) calc(50% + .5px), transparent calc(50% + .5px),
-      transparent calc(75% - .5px), var(--bar-line-color) calc(75% - .5px), var(--bar-line-color) calc(75% + .5px), transparent calc(75% + .5px)
-    );
-    position: relative;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__bar-fill {
-    height: 100%;
-    background: none;
-    position: relative;
-  }
-
-  {%- comment -%}
-  Positioned against .review-card__bar-fill (not .review-card__bar-track), so the marker sits at the fill's
-  own right edge - which is where the width: {percent}% inline style above already places it - instead of
-  always sitting at the track's fixed right edge regardless of rating.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .review-card__bar-fill::after {
-    content: "";
-    width: var(--bar-indicator-size);
-    height: var(--bar-indicator-size);
-    border-radius: 50%;
-    background: var(--bar-line-color);
-    position: absolute;
-    inset-inline-end: calc(var(--bar-indicator-size) / -2);
-    inset-block-start: 50%;
-    transform: translateY(-50%);
-  }
-
-  #shopify-section-{{ section.id }} .review-card__bar-labels {
-    justify-content: space-between;
-    color: rgb(var(--text-color) / .6);
-    font-size: .875em;
-    margin-block-start: .5rem;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__helpful {
-    align-items: center;
-    gap: .75rem;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__helpful button {
-    padding: .25rem .75rem;
-    border: 1px solid rgb(var(--border-color));
-    border-radius: var(--rounded-full);
-    background: none;
-    cursor: pointer;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__helpful button[aria-pressed="true"] {
-    background: rgb(var(--text-color) / .08);
-  }
-
-  #shopify-section-{{ section.id }} .reviews__load-more {
     text-align: center;
   }
 
-  #shopify-section-{{ section.id }} .review-card[hidden] {
+  #shopify-section-{{ section.id }} .reviews__intro {
+    max-width: 34rem;
+    color: var(--reviews-muted);
+  }
+
+  #shopify-section-{{ section.id }} .reviews__intro > :first-child { margin-block-start: 0; }
+  #shopify-section-{{ section.id }} .reviews__intro > :last-child { margin-block-end: 0; }
+
+  #shopify-section-{{ section.id }} .reviews__summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-block-start: 0.25rem;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__header--center .reviews__summary {
+    align-items: center;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__summary-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    font-size: 0.9375rem;
+    color: var(--reviews-muted);
+  }
+
+  #shopify-section-{{ section.id }} .reviews__summary-score {
+    font-weight: 600;
+    color: rgb(var(--text-color));
+  }
+
+  #shopify-section-{{ section.id }} .reviews__actions {
+    margin-block-start: 0.5rem;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__write {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat;
+    color: inherit;
+    font: inherit;
+    font-size: 0.875rem;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__write:hover {
+    opacity: 0.6;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__write:focus-visible {
+    outline: 2px solid var(--reviews-star-color);
+    outline-offset: 4px;
+  }
+
+  {%- comment -%} ---------- Stars (colour comes only from --reviews-star-color) ---------- {%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews-stars {
+    display: inline-flex;
+    gap: 2px;
+    line-height: 0;
+  }
+
+  #shopify-section-{{ section.id }} .reviews-stars .icon {
+    width: 13px;
+    height: auto;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__summary .reviews-stars .icon {
+    width: 16px;
+  }
+
+  #shopify-section-{{ section.id }} .reviews-stars .icon-star-rating-empty {
+    opacity: 0.32;
+  }
+
+  {%- comment -%} ---------- Toolbar / sort ---------- {%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews__toolbar {
+    display: flex;
+    justify-content: flex-end;
+    padding-block-end: 0.75rem;
+    border-block-end: 1px solid var(--reviews-divider);
+  }
+
+  #shopify-section-{{ section.id }} .reviews__sort {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__sort select {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+    padding: 0.5rem 1.35rem 0.5rem 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 0.875rem;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__sort select:focus-visible {
+    outline: 2px solid var(--reviews-star-color);
+    outline-offset: 3px;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__sort-caret {
+    position: absolute;
+    inset-inline-end: 0;
+    pointer-events: none;
+    color: var(--reviews-muted);
+  }
+
+  {%- comment -%} ---------- Review ---------- {%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: start;
+  }
+
+  #shopify-section-{{ section.id }} .review__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding-block: 2.25rem;
+    border-block-start: 1px solid var(--reviews-divider);
+  }
+
+  #shopify-section-{{ section.id }} .reviews__list > .review:first-child .review__inner {
+    border-block-start: 0;
+    padding-block-start: 0.75rem;
+  }
+
+  #shopify-section-{{ section.id }} .review__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  #shopify-section-{{ section.id }} .review__date {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--reviews-muted);
+  }
+
+  #shopify-section-{{ section.id }} .review__title {
+    font-weight: 600;
+    font-size: 1.0625rem;
+    line-height: 1.35;
+  }
+
+  #shopify-section-{{ section.id }} .review__body {
+    color: rgb(var(--text-color) / 0.82);
+    line-height: 1.65;
+  }
+
+  #shopify-section-{{ section.id }} .review__body > :first-child { margin-block-start: 0; }
+  #shopify-section-{{ section.id }} .review__body > :last-child { margin-block-end: 0; }
+  #shopify-section-{{ section.id }} .review__body > * + * { margin-block-start: 0.75rem; }
+
+  #shopify-section-{{ section.id }} .review__attrs {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--reviews-muted);
+  }
+
+  #shopify-section-{{ section.id }} .review__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    margin-block-start: 0.25rem;
+    font-size: 0.875rem;
+  }
+
+  #shopify-section-{{ section.id }} .review__author {
+    font-weight: 600;
+  }
+
+  #shopify-section-{{ section.id }} .review__verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--reviews-muted);
+  }
+
+  #shopify-section-{{ section.id }} .review__verified .icon {
+    width: 12px;
+    color: var(--reviews-star-color);
+  }
+
+  #shopify-section-{{ section.id }} .review__product {
+    color: var(--reviews-muted);
+  }
+
+  {%- comment -%} ---------- Optional rating bar ---------- {%- endcomment -%}
+  #shopify-section-{{ section.id }} .review__bar {
+    max-width: 22rem;
+    margin-block: 0.25rem;
+  }
+
+  #shopify-section-{{ section.id }} .review__bar-question {
+    font-size: 0.9375rem;
+    margin-block-end: 0.6rem;
+    color: rgb(var(--text-color) / 0.75);
+  }
+
+  #shopify-section-{{ section.id }} .review__bar-track {
+    --bar-height: {{ section.settings.review_bar_height }}px;
+    --bar-indicator: {{ section.settings.review_bar_indicator_size }}px;
+    --bar-color: {% if section.settings.review_bar_border_color != blank %}rgb({{ section.settings.review_bar_border_color.rgb }}){% else %}rgb(var(--text-color)){% endif %};
+    position: relative;
+    height: var(--bar-height);
+    border-radius: var(--rounded-full);
+    background: {% if section.settings.review_bar_background_color != blank %}rgb({{ section.settings.review_bar_background_color.rgb }}){% else %}rgb(var(--text-color) / 0.12){% endif %};
+  }
+
+  #shopify-section-{{ section.id }} .review__bar-fill {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    border-radius: inherit;
+    background: var(--bar-color);
+  }
+
+  #shopify-section-{{ section.id }} .review__bar-fill::after {
+    content: "";
+    position: absolute;
+    inset-inline-end: calc(var(--bar-indicator) / -2);
+    inset-block-start: 50%;
+    width: var(--bar-indicator);
+    height: var(--bar-indicator);
+    border-radius: 50%;
+    background: var(--bar-color);
+    transform: translateY(-50%);
+  }
+
+  #shopify-section-{{ section.id }} .review__bar-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-block-start: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--reviews-muted);
+  }
+
+  {%- comment -%} ---------- Collapsible extra reviews (progressive enhancement: styling only takes effect once JS sets data-collapsible) ---------- {%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews[data-collapsible="true"] .review--extra {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  #shopify-section-{{ section.id }} .reviews[data-collapsible="true"] .review--extra > .review__inner {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #shopify-section-{{ section.id }} .reviews[data-collapsible="true"][data-expanded="true"] .review--extra {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    #shopify-section-{{ section.id }} .reviews[data-collapsible="true"] .review--extra {
+      transform: translateY(-4px);
+      transition: grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.5s;
+    }
+
+    #shopify-section-{{ section.id }} .reviews[data-collapsible="true"][data-expanded="true"] .review--extra {
+      transform: none;
+      transition: grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.45s ease 0.05s, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s;
+    }
+  }
+
+  {%- comment -%} ---------- "Ver más" toggle ---------- {%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews__more {
+    display: flex;
+    justify-content: center;
+    padding-block-start: 0.5rem;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__more-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.9375rem;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__more-label {
+    padding-block-end: 2px;
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    transition: background-size 0.3s ease;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__more-arrow {
+    display: none;
+    transition: transform 0.3s ease;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__more-toggle[aria-expanded="false"] .reviews__more-arrow--more,
+  #shopify-section-{{ section.id }} .reviews__more-toggle[aria-expanded="true"] .reviews__more-arrow--less {
+    display: inline-block;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__more-text--less {
     display: none;
   }
 
-  @media screen and (max-width: 749px) {
-    #shopify-section-{{ section.id }} .review-card {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 1.25rem;
+  #shopify-section-{{ section.id }} .reviews__more-toggle[aria-expanded="true"] .reviews__more-text--more {
+    display: none;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__more-toggle[aria-expanded="true"] .reviews__more-text--less {
+    display: inline;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__more-toggle:focus-visible {
+    outline: 2px solid var(--reviews-star-color);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__more-toggle:active {
+    opacity: 0.7;
+  }
+
+  @media (pointer: fine) {
+    #shopify-section-{{ section.id }} .reviews__more-toggle:hover .reviews__more-label {
+      background-size: 100% 1px;
     }
 
-    #shopify-section-{{ section.id }} .review-card__main {
-      order: 1;
+    #shopify-section-{{ section.id }} .reviews__more-toggle:hover .reviews__more-arrow--more {
+      transform: translateX(3px);
     }
 
-    #shopify-section-{{ section.id }} .review-card__side {
-      order: 2;
+    #shopify-section-{{ section.id }} .reviews__more-toggle:hover .reviews__more-arrow--less {
+      transform: translateY(-3px);
     }
   }
 
-  #shopify-section-{{ section.id }} .review-form__required-note {
-    color: rgb(var(--text-color) / .6);
-    font-size: .875em;
+  {%- comment -%}
+  Write-a-review form. Scoped to the modal's own id, not #shopify-section-… : <x-modal append-to-body>
+  moves the dialog to <body> while open, so a section-scoped selector would stop matching exactly when
+  the form is visible. --reviews-star-color is re-declared on the modal element for the same reason.
+  {%- endcomment -%}
+  #{{ write_review_modal_id }} .review-form__required-note {
+    color: rgb(var(--text-color) / 0.6);
+    font-size: 0.875em;
     margin-block-end: 1.5rem;
   }
 
-  #shopify-section-{{ section.id }} .review-form__rating {
+  #{{ write_review_modal_id }} .review-form__rating {
     border: 0;
     padding: 0;
     margin: 0 0 1.5rem;
   }
 
-  #shopify-section-{{ section.id }} .review-form__rating-label {
+  #{{ write_review_modal_id }} .review-form__rating-label {
     font-weight: 600;
     display: block;
-    margin-block-end: .75rem;
+    margin-block-end: 0.75rem;
   }
 
   {%- comment -%}
-  Standard CSS-only star picker: radio+label pairs in descending (5..1) DOM order inside a dir: rtl
-  container, so they still display ascending left-to-right while ~ (general sibling, "comes after in the
-  DOM") ends up matching the hovered/checked star and every star visually to its left. Each radio is
-  visually hidden (not display: none, so it stays focusable) and its own label carries the visible star.
+  CSS-only star picker: radio+label pairs in descending (5..1) DOM order inside a dir: rtl container, so
+  they display ascending left-to-right while ~ still matches the hovered/checked star and every star to
+  its left. Each radio is visually hidden (not display:none) so it stays focusable.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .review-form__star-picker {
+  #{{ write_review_modal_id }} .review-form__star-picker {
     direction: rtl;
     display: inline-flex;
   }
 
-  #shopify-section-{{ section.id }} .review-form__star-picker input {
+  #{{ write_review_modal_id }} .review-form__star-picker input {
     width: 1px;
     height: 1px;
     opacity: 0;
     position: absolute;
   }
 
-  #shopify-section-{{ section.id }} .review-form__star-picker label {
-    padding: 0 .15rem;
+  #{{ write_review_modal_id }} .review-form__star-picker label {
+    padding: 0 0.15rem;
     cursor: pointer;
     display: inline-flex;
   }
 
-  #shopify-section-{{ section.id }} .review-form__star-picker label svg {
+  #{{ write_review_modal_id }} .review-form__star-picker label svg {
     fill: none;
-    stroke: rgb(var(--text-color) / .4);
-    transition: fill .15s ease, stroke .15s ease;
+    stroke: rgb(var(--text-color) / 0.35);
+    transition: fill 0.15s ease, stroke 0.15s ease;
   }
 
-  #shopify-section-{{ section.id }} .review-form__star-picker input:checked ~ label svg,
-  #shopify-section-{{ section.id }} .review-form__star-picker label:hover svg,
-  #shopify-section-{{ section.id }} .review-form__star-picker label:hover ~ label svg {
-    fill: rgb(var(--text-color));
-    stroke: rgb(var(--text-color));
+  #{{ write_review_modal_id }} .review-form__star-picker input:checked ~ label svg,
+  #{{ write_review_modal_id }} .review-form__star-picker label:hover svg,
+  #{{ write_review_modal_id }} .review-form__star-picker label:hover ~ label svg {
+    fill: var(--reviews-star-color);
+    stroke: var(--reviews-star-color);
   }
 
-  #shopify-section-{{ section.id }} .review-form__star-picker input:focus-visible + label svg {
-    outline: 2px solid rgb(var(--text-color));
+  #{{ write_review_modal_id }} .review-form__star-picker input:focus-visible + label svg {
+    outline: 2px solid var(--reviews-star-color);
     outline-offset: 2px;
   }
 
-  #shopify-section-{{ section.id }} .review-form__submit {
+  #{{ write_review_modal_id }} .review-form__submit {
     text-align: end;
   }
 </style>
@@ -701,113 +786,99 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     if (!root) return;
 
     var list = root.querySelector('[data-reviews-list]');
-    var cards = list ? Array.prototype.slice.call(list.querySelectorAll('.review-card')) : [];
+    var toggle = root.querySelector('[data-reviews-toggle]');
     var sortSelect = root.querySelector('[data-reviews-sort]');
-    var loadMoreButton = root.querySelector('.reviews__load-more-button');
-    var initialCount = 3;
-    var pageSize = 5;
-    var visibleCount = initialCount;
+    var initialCount = {{ initial_count }};
+    var motionOK = window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
 
-    {%- comment -%}
-    Fades + slides in only the cards a "Ver más" click actually newly reveals (not the initial batch, not a
-    sort change - those would look odd re-animating on every interaction). The card is unhidden first, then
-    the "revealing" class (opacity/translateY starting state) is added and forced to reflow before removing
-    it next frame, so the browser has a real starting frame to transition away from instead of jumping.
-    {%- endcomment -%}
-    function revealCard(card) {
-      card.hidden = false;
-      card.classList.add('review-card--revealing');
-      void card.offsetWidth;
-      requestAnimationFrame(function () {
-        card.classList.remove('review-card--revealing');
+    function cards() {
+      return list ? Array.prototype.slice.call(list.querySelectorAll('.review')) : [];
+    }
+
+    var originalOrder = cards();
+    var collapsible = !!list && originalOrder.length > initialCount;
+
+    {%- comment -%} Re-flags which cards are "extra" from the live DOM order, so it stays correct after sorting. {%- endcomment -%}
+    function markExtra() {
+      cards().forEach(function (card, index) {
+        card.classList.toggle('review--extra', index >= initialCount);
       });
     }
 
-    {%- comment -%}
-    Re-queries the list on every call instead of reusing the "cards" array above, so it always reflects
-    whatever order sorting last put the cards in - "cards" itself is never reassigned, only the live DOM
-    order is (via appendChild in applySort below).
-    {%- endcomment -%}
-    function updateVisibility(animateReveal) {
-      var currentCards = list ? Array.prototype.slice.call(list.querySelectorAll('.review-card')) : [];
-
-      currentCards.forEach(function (card, index) {
-        var shouldBeVisible = index < visibleCount;
-
-        if (shouldBeVisible && card.hidden) {
-          if (animateReveal) {
-            revealCard(card);
-          } else {
-            card.hidden = false;
-          }
-        } else if (!shouldBeVisible) {
-          card.hidden = true;
-          card.classList.remove('review-card--revealing');
-        }
-      });
-
-      if (loadMoreButton) {
-        loadMoreButton.hidden = visibleCount >= currentCards.length;
-      }
+    function setExpanded(expanded) {
+      root.setAttribute('data-expanded', expanded ? 'true' : 'false');
+      if (toggle) toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
     }
 
-    {%- comment -%}
-    Shared by the "change" listener below and the initial call further down, so the page-load order (best
-    rating first, by default) is produced by the exact same logic a manual sort change uses - not a
-    separate one-off sort.
-    {%- endcomment -%}
-    function applySort(value, resetVisibleCount) {
-      var sortedCards = cards.slice();
+    function applySort(value) {
+      if (!list) return;
+
+      var sorted = originalOrder.slice();
 
       if (value === 'rating_desc') {
-        sortedCards.sort(function (a, b) { return b.getAttribute('data-rating') - a.getAttribute('data-rating'); });
+        sorted.sort(function (a, b) {
+          return (b.dataset.rating - a.dataset.rating) || (a.dataset.index - b.dataset.index);
+        });
       } else if (value === 'rating_asc') {
-        sortedCards.sort(function (a, b) { return a.getAttribute('data-rating') - b.getAttribute('data-rating'); });
-      } else {
-        sortedCards.sort(function (a, b) { return a.getAttribute('data-index') - b.getAttribute('data-index'); });
+        sorted.sort(function (a, b) {
+          return (a.dataset.rating - b.dataset.rating) || (a.dataset.index - b.dataset.index);
+        });
       }
+      // 'featured' keeps the merchant's block order (originalOrder).
 
-      sortedCards.forEach(function (card) { list.appendChild(card); });
+      sorted.forEach(function (card) { list.appendChild(card); });
 
-      if (resetVisibleCount) {
-        // Sorting re-applies before the reveal count, same as a fresh page load: back to the first 3 of
-        // the newly sorted order, not whatever count "Ver más" had already reached.
-        visibleCount = initialCount;
+      if (collapsible) {
+        markExtra();
+        setExpanded(false);
       }
-
-      updateVisibility();
     }
 
-    if (loadMoreButton) {
-      loadMoreButton.addEventListener('click', function () {
-        var totalCards = list ? list.querySelectorAll('.review-card').length : 0;
-        visibleCount = Math.min(visibleCount + pageSize, totalCards);
-        updateVisibility(true);
-      });
+    if (collapsible) {
+      root.setAttribute('data-collapsible', 'true');
+      markExtra();
+      setExpanded(false);
+
+      if (toggle) {
+        toggle.hidden = false;
+        toggle.addEventListener('click', function () {
+          var willExpand = root.getAttribute('data-expanded') !== 'true';
+          setExpanded(willExpand);
+
+          if (!willExpand && list.getBoundingClientRect().top < 0) {
+            list.scrollIntoView({ behavior: motionOK ? 'smooth' : 'auto', block: 'start' });
+          }
+        });
+      }
     }
 
     if (sortSelect) {
-      sortSelect.addEventListener('change', function () {
-        applySort(sortSelect.value, true);
-      });
+      sortSelect.addEventListener('change', function () { applySort(sortSelect.value); });
     }
 
-    // Best-rated first on load, same as selecting "Mejor calificación" manually - reuses applySort instead
-    // of relying on the cards' own render order matching the select's default value.
-    applySort(sortSelect ? sortSelect.value : 'rating_desc', false);
-
-    root.querySelectorAll('[data-reviews-helpful]').forEach(function (group) {
-      var label = group.querySelector('[data-reviews-helpful-label]');
-      var buttons = Array.prototype.slice.call(group.querySelectorAll('[data-reviews-helpful-button]'));
-
-      buttons.forEach(function (button) {
-        button.addEventListener('click', function () {
-          buttons.forEach(function (otherButton) { otherButton.setAttribute('aria-pressed', 'false'); });
-          button.setAttribute('aria-pressed', 'true');
-          if (label) label.textContent = '¡Gracias por tu opinión!';
-        });
-      });
+    {%- comment -%} Theme editor: reveal a collapsed review when the merchant selects its block. {%- endcomment -%}
+    document.addEventListener('shopify:block:select', function (event) {
+      if (collapsible && root.contains(event.target)) setExpanded(true);
     });
+
+    {%- comment -%} Soft one-time reveal of the whole section as it enters the viewport. {%- endcomment -%}
+    if (motionOK && 'IntersectionObserver' in window) {
+      root.classList.add('reviews--reveal');
+
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            root.classList.add('is-visible');
+            observer.disconnect();
+          }
+        });
+      }, { rootMargin: '0px 0px -10% 0px' });
+
+      observer.observe(root);
+
+      // Safety net: if the observer never fires (edge layouts), show the section anyway.
+      setTimeout(function () { root.classList.add('is-visible'); }, 1200);
+    }
   })();
 </script>
 
@@ -827,10 +898,104 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       "default": "scheme-1"
     },
     {
+      "type": "header",
+      "content": "Encabezado"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Texto superior"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Título",
+      "default": "Reseñas"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "Tamaño del título",
+      "options": [
+        { "value": "h2", "label": "Extra grande" },
+        { "value": "h3", "label": "Grande" },
+        { "value": "h4", "label": "Mediano" },
+        { "value": "h5", "label": "Pequeño" },
+        { "value": "h6", "label": "Extra pequeño" }
+      ],
+      "default": "h4"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "intro",
+      "label": "Introducción",
+      "info": "Texto breve opcional bajo el título."
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Alineación del encabezado",
+      "options": [
+        { "value": "center", "label": "Centrado" },
+        { "value": "start", "label": "Izquierda" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Reseñas"
+    },
+    {
+      "type": "color",
+      "id": "star_color",
+      "label": "Color de las estrellas",
+      "info": "Independiente del color de texto del esquema de color.",
+      "default": "#404040"
+    },
+    {
+      "type": "range",
+      "id": "initial_count",
+      "min": 1,
+      "max": 12,
+      "step": 1,
+      "label": "Reseñas visibles al inicio",
+      "info": "Las demás se revelan con el botón “Ver más”.",
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sort",
+      "label": "Mostrar selector de orden",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Mostrar la fecha",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Mostrar el nombre del autor",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_extra_details",
+      "label": "Mostrar detalles adicionales",
+      "info": "Atributos (tipo de piel, etc.), barra de valoración y producto reseñado. Desactivado para un diseño más limpio.",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Diseño"
+    },
+    {
       "type": "checkbox",
       "id": "floating_reviews",
-      "label": "Floating Reviews",
-      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "label": "Reseñas flotantes",
+      "info": "Añade márgenes alrededor de la sección (inferior y laterales), usando el margen lateral global de la tienda.",
       "default": false
     },
     {
@@ -840,18 +1005,18 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       "max": 30,
       "step": 2,
       "unit": "px",
-      "label": "Corner radius",
+      "label": "Radio de las esquinas",
       "default": 0,
       "visible_if": "{{ section.settings.floating_reviews }}"
     },
     {
       "type": "paragraph",
-      "content": "Reviews shown below are \"Review\" blocks you add/edit/reorder here - nothing is pulled from an external app. Only the first 5 are shown initially; visitors reveal 5 more at a time with the \"Ver más\" button. \"Escribir una reseña\" opens a form that emails the submission to the shop's customer email (same as the Contact form); add a matching block once you decide to approve it."
+      "content": "Cada reseña es un bloque “Review” que agregas y ordenas aquí; no se conecta con ninguna app externa. “Escribir una reseña” abre un formulario que envía el texto al correo de la tienda (igual que el formulario de contacto)."
     },
     {
       "type": "header",
       "content": "Rating bar",
-      "info": "Style of each review's optional rating bar (the \"Rating bar\" settings on a Review block)."
+      "info": "Estilo de la barra opcional de cada reseña. Solo se muestra con “Mostrar detalles adicionales” activado."
     },
     {
       "type": "range",
@@ -860,20 +1025,23 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       "max": 20,
       "step": 1,
       "unit": "px",
-      "label": "Bar height",
-      "default": 4
+      "label": "Alto de la barra",
+      "default": 4,
+      "visible_if": "{{ section.settings.show_extra_details }}"
     },
     {
       "type": "color",
       "id": "review_bar_border_color",
-      "label": "Border & indicator color",
-      "default": "#4a4a4a"
+      "label": "Color de barra e indicador",
+      "default": "#4a4a4a",
+      "visible_if": "{{ section.settings.show_extra_details }}"
     },
     {
       "type": "color",
       "id": "review_bar_background_color",
-      "label": "Background color",
-      "info": "Leave blank for a transparent background."
+      "label": "Color de fondo",
+      "info": "Déjalo vacío para un fondo transparente.",
+      "visible_if": "{{ section.settings.show_extra_details }}"
     },
     {
       "type": "range",
@@ -882,8 +1050,9 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       "max": 30,
       "step": 1,
       "unit": "px",
-      "label": "Indicator size",
-      "default": 12
+      "label": "Tamaño del indicador",
+      "default": 12,
+      "visible_if": "{{ section.settings.show_extra_details }}"
     }
   ],
   "blocks": [
