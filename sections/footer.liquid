@@ -56,6 +56,14 @@
   #shopify-section-{{ section.id }} .footer__aside:has(+ .footer__copyright) {
     padding-block-end: 0;
   }
+
+  {%- comment -%} On mobile the copyright line and its custom text are always centered, regardless of the alignment setting. {%- endcomment -%}
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .footer__copyright {
+      justify-content: center !important;
+      text-align: center !important;
+    }
+  }
 </style>
 
 <div class="footer {% if section.settings.floating_footer %}footer--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.floating_footer %}style="border-radius: {{ section.settings.footer_border_radius }}px;"{% endif %}>
