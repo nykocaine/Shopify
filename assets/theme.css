@@ -595,6 +595,12 @@ height-observer {
 .buy-buttons__cta .button__content {
   padding-inline: calc(var(--button-padding-inline) / 2);
   justify-content: space-between;
+  /* Once button-content attaches its shadow root (first "add to cart" click) the host becomes
+     display: grid !important. On a grid, justify-content: space-between above stops the single
+     implicit column from stretching, so the ::part(content) row collapses to content width and the
+     label + price snap back together. An explicit full-width column keeps it spanning the button in
+     that state; it's inert while the host is still display: flex (pre-shadow). */
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* button-content (theme.js) only attaches its shadow root the first time aria-busy toggles (ie. the
