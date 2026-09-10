@@ -134,6 +134,20 @@ independently of the colour scheme's text colour. All motion is gated behind
             endfor
 
             assign review_label = 'general.rating.info' | t: rating_value: block.settings.rating, rating_max: 5
+
+            assign has_product = false
+            if show_details and block.settings.product_name != blank
+              assign has_product = true
+            endif
+
+            assign show_footer = false
+            if show_author and block.settings.reviewer_name != blank
+              assign show_footer = true
+            elsif block.settings.verified_buyer
+              assign show_footer = true
+            elsif has_product
+              assign show_footer = true
+            endif
           -%}
 
           <li class="review{% if is_extra %} review--extra{% endif %}" data-rating="{{ block.settings.rating }}" data-index="{{ forloop.index }}" {{ block.shopify_attributes }}>
@@ -177,7 +191,7 @@ independently of the colour scheme's text colour. All motion is gated behind
                 {%- endif -%}
               {%- endif -%}
 
-              {%- if show_author or block.settings.verified_buyer or show_details and block.settings.product_name != blank -%}
+              {%- if show_footer -%}
                 <p class="review__footer">
                   {%- if show_author and block.settings.reviewer_name != blank -%}
                     <span class="review__author">{{ block.settings.reviewer_name }}</span>
@@ -187,7 +201,7 @@ independently of the colour scheme's text colour. All motion is gated behind
                     <span class="review__verified">{%- render 'icon' with 'success-checkmark' -%}Compra verificada</span>
                   {%- endif -%}
 
-                  {%- if show_details and block.settings.product_name != blank -%}
+                  {%- if has_product -%}
                     {%- if block.settings.product_url != blank -%}
                       <a class="review__product link" href="{{ block.settings.product_url }}">{{ block.settings.product_name }}</a>
                     {%- else -%}
