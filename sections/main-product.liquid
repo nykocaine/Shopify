@@ -131,14 +131,14 @@
      The gap today is a collapsed margin: the title block-item's own margin-block-end
      (-.5rem, from theme.css [data-block-type="title"]) against the next block-item's
      margin-block-start (--product-block-item-margin). Instead of touching either shared
-     value, we zero the title's bottom margin and give the following element half of the
-     previously-visible gap: (--product-block-item-margin - .5rem) / 2. */
+     value, we zero the title's bottom margin and give the following element a fraction of
+     the previously-visible gap: (--product-block-item-margin - .5rem) / 3. */
   #shopify-section-{{ section.id }} .product-info__block-item[data-block-type="title"] {
     margin-block-end: 0;
   }
 
   #shopify-section-{{ section.id }} .product-info__block-item[data-block-type="title"] + * {
-    margin-block-start: calc((var(--product-block-item-margin) - 0.5rem) / 2);
+    margin-block-start: calc((var(--product-block-item-margin) - 0.5rem) / 3);
   }
 
   {%- if section.settings.allow_transparent_header and section.settings.transparent_header_use_primary_colors and product.media.size > 0 -%}
