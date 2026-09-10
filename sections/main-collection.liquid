@@ -49,6 +49,44 @@
       --product-list-column-count: {{ section.settings.products_per_row_desktop }};
     }
   }
+
+  {%- comment -%}
+  "Mobile image as product card" (image block setting): on mobile only, the image promo leaves its own
+  full-width row and becomes a single item inside the product grid. It keeps the grid's column width,
+  gap and — through the theme's existing subgrid (`--product-card-row-count`) — the exact row span /
+  height of a product card, so no arbitrary width/height is set. Desktop is untouched: every rule below
+  lives inside the theme's `max-width: 699px` breakpoint.
+  {%- endcomment -%}
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card {
+      grid-column: span 1;
+      {%- comment -%} Match the product cards' radius rather than the block's own. {%- endcomment -%}
+      border-radius: var(--product-card-border-radius, 0) !important;
+    }
+
+    {%- comment -%} Neutralise the full-width promo's negative-margin row hack (theme.css). {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card,
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card:not(:last-child) {
+      margin-block-end: 0;
+    }
+
+    {%- comment -%}
+    Let the media fill the card surface (the theme already does this for `min-h-full` content boxes;
+    only the mobile promo rule forces it back to `relative`). This removes the empty space below the
+    image and makes its height follow the card, not its own aspect ratio.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card .content-box__background-media {
+      position: absolute !important;
+      inset: 0;
+    }
+
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card .content-box__background-media picture,
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card .content-box__background-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
@@ -345,6 +383,13 @@ on desktop based on the settings
           "id": "mobile_image",
           "label": "t:global.image.mobile_image",
           "info": "t:sections.main_collection.blocks.image.mobile_image_size_recommendation"
+        },
+        {
+          "type": "checkbox",
+          "id": "mobile_as_product_card",
+          "label": "Móvil: mostrar como tarjeta de producto",
+          "info": "En móvil integra este bloque dentro del grid de productos, ocupando exactamente el espacio de una tarjeta de producto (mismo ancho, alto, gap y radio de borde). No afecta al escritorio. Con 3 productos por fila en móvil el bloque queda oculto, igual que ahora.",
+          "default": false
         },
         {
           "type": "color",
