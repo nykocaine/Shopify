@@ -70,6 +70,11 @@
 
         <div class="footer__block-list">
           {%- for block in section.blocks -%}
+            {%- comment -%}
+            Set to true by the branches that actually render a mobile <details> accordion, so the
+            footer__block--accordion-links wrapper class below stays in sync with the real collapse state.
+            {%- endcomment -%}
+            {%- assign block_collapses_on_mobile = false -%}
             {%- capture block_content -%}
               {%- case block.type -%}
                 {%- when '@app' -%}
@@ -136,6 +141,7 @@
                     </div>
 
                     {%- if block.settings.collapse_on_mobile -%}
+                      {%- assign block_collapses_on_mobile = true -%}
                       {%- render 'accordion', title: menu_title, content: menu_content, subheading_title: true, class: 'sm:hidden' -%}
                     {%- endif -%}
                   {%- endif -%}
@@ -150,11 +156,7 @@
                     {%- endcapture -%}
                     {%- assign icon_style = icon_style | strip -%}
 
-                    <div class="footer-social-menu v-stack gap-4.5">
-                      {%- if block.settings.heading != blank -%}
-                        <p class="subheading footer-social-menu__heading">{{ block.settings.heading }}</p>
-                      {%- endif -%}
-
+                    {%- capture social_menu_content -%}
                       <ul class="footer-social-menu__list v-stack gap-2.5 unstyled-list" role="list">
                         {%- for link in social_menu.links -%}
                           {%- liquid
@@ -198,7 +200,29 @@
                           </li>
                         {%- endfor -%}
                       </ul>
+                    {%- endcapture -%}
+
+                    {%- comment -%}
+                    Mirrors the 'links' block: collapse into a <details> accordion on mobile, and gate the
+                    title behind "Show menu title". The accordion is only used when there is a heading to
+                    label it - otherwise the list stays visible on mobile like before.
+                    {%- endcomment -%}
+                    {%- assign social_collapse_on_mobile = false -%}
+                    {%- if block.settings.collapse_on_mobile and block.settings.heading != blank -%}
+                      {%- assign social_collapse_on_mobile = true -%}
+                    {%- endif -%}
+
+                    <div class="footer-social-menu v-stack gap-4.5 {% if social_collapse_on_mobile %}sm-max:hidden{% endif %}">
+                      {%- if block.settings.show_menu_title and block.settings.heading != blank -%}
+                        <p class="subheading footer-social-menu__heading">{{ block.settings.heading }}</p>
+                      {%- endif -%}
+
+                      {{- social_menu_content -}}
                     </div>
+
+                    {%- if social_collapse_on_mobile -%}
+                      {%- render 'accordion', title: block.settings.heading, content: social_menu_content, subheading_title: true, class: 'sm:hidden' -%}
+                    {%- endif -%}
                   {%- endif -%}
 
                 {%- when 'newsletter' -%}
@@ -230,7 +254,12 @@
             {%- endcapture -%}
 
             {%- if block_content != blank -%}
-              <div class="footer__block footer__block--{{ block.type | remove_first: '@' }} {% if block.type == 'links' and block.settings.collapse_on_mobile %}footer__block--accordion-links{% endif %}" {{ block.shopify_attributes }}>
+              {%- comment -%}
+              footer__block--accordion-links drives the mobile stacked-accordion spacing. Only the 'links'
+              and 'social_menu' blocks expose a "collapse_on_mobile" setting, so testing the setting alone
+              is enough to catch both without an over-broad OR on block.type.
+              {%- endcomment -%}
+              <div class="footer__block footer__block--{{ block.type | remove_first: '@' }} {% if block.settings.collapse_on_mobile %}footer__block--accordion-links{% endif %}" {{ block.shopify_attributes }}>
                 {{- block_content -}}
               </div>
             {%- endif -%}
