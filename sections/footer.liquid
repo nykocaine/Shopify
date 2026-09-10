@@ -31,6 +31,31 @@
     font-size: var(--text-base);
     line-height: var(--text-line-height);
   }
+
+  {%- comment -%}
+  Copyright / custom-text row: full section width, so left / center / right actually reads against the
+  whole footer. Flex so the "© ..." line and the custom text share one line (wrapping only if tight).
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .footer__copyright {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 0.75rem;
+    row-gap: 0.25rem;
+    width: 100%;
+    padding-block: 1.5rem;
+  }
+
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} .footer__copyright {
+      padding-block: 2.5rem;
+    }
+  }
+
+  {%- comment -%} When the aside row is also present, it keeps its top padding but drops the bottom one so the two rows don't double up. {%- endcomment -%}
+  #shopify-section-{{ section.id }} .footer__aside:has(+ .footer__copyright) {
+    padding-block-end: 0;
+  }
 </style>
 
 <div class="footer {% if section.settings.floating_footer %}footer--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.floating_footer %}style="border-radius: {{ section.settings.footer_border_radius }}px;"{% endif %}>
@@ -310,44 +335,55 @@
         {%- render 'social-media' -%}
       {%- endif -%}
 
-      {%- if section.settings.show_copyright or section.settings.footer_bottom_text != blank or section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+      {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+        <ul class="h-stack gap-4 wrap unstyled-list">
+          {%- for type in shop.enabled_payment_types -%}
+            <li>{{- type | payment_type_svg_tag -}}</li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    {%- endcapture -%}
+
+    {%- comment -%}
+    Copyright + custom text: their own full-width row below the aside, so the alignment control spans the
+    whole footer instead of just the width of the copyright text. Both sit on one line (flex row) and wrap
+    only if there isn't room.
+    {%- endcomment -%}
+    {%- capture footer_copyright_content -%}
+      {%- if section.settings.show_copyright or section.settings.footer_bottom_text != blank -%}
         {%- liquid
           assign bottom_text_align = section.settings.footer_bottom_text_alignment | default: 'center'
           case bottom_text_align
             when 'left'
-              assign bottom_text_justify = 'start'
+              assign bottom_text_justify = 'flex-start'
             when 'right'
-              assign bottom_text_justify = 'end'
+              assign bottom_text_justify = 'flex-end'
             else
               assign bottom_text_justify = 'center'
           endcase
         -%}
-        <div class="v-stack gap-3" style="text-align: {{ bottom_text_align }}; justify-items: {{ bottom_text_justify }};">
+        <div class="footer__copyright" style="justify-content: {{ bottom_text_justify }}; text-align: {{ bottom_text_align }};">
           {%- if section.settings.show_copyright -%}
-            <p class="text-sm">© {{ 'now' | date: '%Y' }} - {{ shop.name }}</p>
+            <span class="text-sm">© {{ 'now' | date: '%Y' }} - {{ shop.name }}</span>
           {%- endif -%}
 
           {%- if section.settings.footer_bottom_text != blank -%}
-            <p class="text-sm">{{ section.settings.footer_bottom_text }}</p>
-          {%- endif -%}
-
-          {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
-            <ul class="h-stack gap-4 wrap unstyled-list">
-              {%- for type in shop.enabled_payment_types -%}
-                <li>{{- type | payment_type_svg_tag -}}</li>
-              {%- endfor -%}
-            </ul>
+            <span class="text-sm">{{ section.settings.footer_bottom_text }}</span>
           {%- endif -%}
         </div>
       {%- endif -%}
     {%- endcapture -%}
 
-    {%- if footer_aside_content != blank -%}
+    {%- if footer_aside_content != blank or footer_copyright_content != blank -%}
       <hr class="separator full-bleed">
 
-      <div class="footer__aside">
-        {{- footer_aside_content -}}
-      </div>
+      {%- if footer_aside_content != blank -%}
+        <div class="footer__aside">
+          {{- footer_aside_content -}}
+        </div>
+      {%- endif -%}
+
+      {{- footer_copyright_content -}}
     {%- endif -%}
     </div>
   </div>
