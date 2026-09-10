@@ -165,7 +165,13 @@ based on your desired layout (and remove most of the settings associated), and t
       -%}
     {%- endif -%}
 
-    <a href="{{ product.url }}" class="product-card__media">
+    {%- comment -%}
+    Round the image on its own (all four corners, incl. the bottom): the card's border-radius +
+    overflow: hidden only rounds the outer card, so with the info below the image its bottom corners
+    stayed square. .product-card__media already has overflow: hidden, so matching its radius to the
+    card's is enough. Falls back to 0 when no radius is configured.
+    {%- endcomment -%}
+    <a href="{{ product.url }}" class="product-card__media" style="border-radius: var(--product-card-border-radius, 0);">
       {%- if product.media.size > 0 -%}
         {%- liquid
           assign sizes = sizes | default: '100vw'
