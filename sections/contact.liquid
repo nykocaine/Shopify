@@ -130,7 +130,9 @@
       <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_contact %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_contact %} style="border-end-start-radius: {{ section.settings.contact_border_radius }}px; border-end-end-radius: {{ section.settings.contact_border_radius }}px; overflow: hidden;"{% endif %}>
         <div class="section-spacing">
           <div class="container">
-            <div class="section-stack max-w-md mx-auto">
+            {%- comment -%} Left-aligned: max-width kept for readable line length, but pinned to the start
+            edge (no mx-auto) so the heading, text, form and button all hug the left. {%- endcomment -%}
+            <div class="section-stack max-w-md">
               {{- section_header -}}
               {{- section_main_content -}}
             </div>
