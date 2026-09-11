@@ -3849,7 +3849,11 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 .floating-size-selector__button {
   --button-background: var(--button-text-primary);
   --button-text-color: var(--button-background-primary);
-  --button-border-color: var(--border-color);
+  /* Same rule every other solid button follows (.button in this file): border color comes only
+     from the scheme's own "Border" setting (--button-scheme-border-color), transparent otherwise
+     - never the general --border-color, which always resolves to something (an auto-computed
+     tint when the scheme has no "Border" color set) instead of truly no border. */
+  --button-border-color: var(--button-scheme-border-color, 0 0 0 / 0);
   --button-padding-inline: 0px;
   transition: color .2s ease-in-out, background-color .2s ease-in-out, border-color .2s ease-in-out;
 }
