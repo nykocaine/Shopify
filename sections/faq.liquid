@@ -60,36 +60,25 @@
 
     <style>
       {%- comment -%}
-      padding-block matches --container-gutter (the same token .section-split__column's own base rule
-      already uses for padding-inline, theme.css) instead of the footer's fixed 2.8rem/4.8rem rhythm this
-      used to copy - that larger fixed value left more empty space above/below the content than on its
-      sides, reading as vertically centered inside the column rather than pinned to the top.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .section-split__column,
-      #shopify-section-{{ section.id }} .section-spacing {
-        padding-block: var(--container-gutter);
-      }
-
-      {%- comment -%}
-      On mobile --container-gutter is small (~10px), so the floating card's content (both the title/
-      subtitle/paragraph column and the questions column) sat too close to the card edges. Give it a bit
-      more room on all four sides - not double, just the current gutter plus 0.5rem - only below 700px.
+      All four sides equal, and the same formula at every breakpoint (this used to be
+      padding-block: var(--container-gutter) on desktop with a bigger mobile-only override on all
+      four sides - so the sides always matched each other, but desktop and mobile didn't match one
+      another). On mobile --container-gutter is small (~10px), so gutter + 0.5rem everywhere keeps
+      the floating card's content (both the title/subtitle/paragraph column and the questions
+      column) comfortably off the card edges on every screen size, not just below 700px.
       Split layout: .section-split__column owns every side. Stacked layout: .section-spacing owns the
       block padding, .container owns the inline padding.
       {%- endcomment -%}
-      @media screen and (max-width: 699px) {
-        #shopify-section-{{ section.id }} .section-split__column {
-          padding-block: calc(var(--container-gutter) + 0.5rem);
-          padding-inline: calc(var(--container-gutter) + 0.5rem);
-        }
+      #shopify-section-{{ section.id }} .section-split__column {
+        padding: calc(var(--container-gutter) + 0.5rem);
+      }
 
-        #shopify-section-{{ section.id }} .section-spacing {
-          padding-block: calc(var(--container-gutter) + 0.5rem);
-        }
+      #shopify-section-{{ section.id }} .section-spacing {
+        padding-block: calc(var(--container-gutter) + 0.5rem);
+      }
 
-        #shopify-section-{{ section.id }} .section-spacing .container {
-          padding-inline: calc(var(--container-gutter) + 0.5rem);
-        }
+      #shopify-section-{{ section.id }} .section-spacing .container {
+        padding-inline: calc(var(--container-gutter) + 0.5rem);
       }
 
       {%- comment -%}
