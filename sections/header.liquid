@@ -45,6 +45,16 @@
     {%- endif -%}
   }
 
+  {%- comment -%}
+  Same lateral bump as footer/reviews/faq - only the sides (header-padding-block is left alone,
+  it's already driven by the separate "header_height_padding" setting). --header-padding-inline
+  is already var(--container-gutter) at every breakpoint (no existing mobile/desktop mismatch to
+  fix here), so this just gives it the same +0.5rem extra room used everywhere else.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .header {
+    --header-padding-inline: calc(var(--container-gutter) + 0.5rem);
+  }
+
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} {
       {%- case section.settings.desktop_layout -%}
