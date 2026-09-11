@@ -33,6 +33,16 @@
   }
 
   {%- comment -%}
+  Lateral padding: on top of the container's own side margin, give the footer content extra
+  inline padding equal to half the site's container gutter, so the sides read with noticeably
+  more room than the rest of the page - same on mobile and desktop, since both just scale off
+  --container-gutter.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .footer__content {
+    padding-inline: calc(var(--container-gutter) * 0.5);
+  }
+
+  {%- comment -%}
   Copyright / custom-text row: full section width, so left / center / right actually reads against the
   whole footer. Flex so the "© ..." line and the custom text share one line (wrapping only if tight).
   {%- endcomment -%}
