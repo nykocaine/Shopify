@@ -21,6 +21,31 @@
   }
 
   {%- comment -%}
+  Compact mobile row for the "Collapse on mobile" social menu (see the social_menu case above):
+  same links as the desktop list, laid out horizontally and centered instead of stacked, with
+  the network name hidden the accessible way (still readable by screen readers, just not shown)
+  since the icon alone carries it visually here.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .footer-social-menu--compact .footer-social-menu__list {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .footer-social-menu--compact .footer-social-menu__text {
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    position: absolute;
+    overflow: hidden;
+  }
+
+  {%- comment -%}
   Vertical padding: same container-gutter + 0.5rem formula as sections/reviews.liquid and
   sections/faq.liquid, same on mobile and desktop, replacing this section's own fixed 2.8rem.
   {%- endcomment -%}
@@ -243,15 +268,12 @@
                     {%- endcapture -%}
 
                     {%- comment -%}
-                    Mirrors the 'links' block: collapse into a <details> accordion on mobile, and gate the
-                    title behind "Show menu title". The accordion is only used when there is a heading to
-                    label it - otherwise the list stays visible on mobile like before.
+                    Unlike the 'links' block, "Collapse on mobile" here isn't a <details> accordion - hiding
+                    social icons behind a tap defeats the point of showing them. Instead, on mobile it swaps
+                    the title + vertical icon/text list for a compact, centered, icon-only row (no title, no
+                    network names).
                     {%- endcomment -%}
-                    {%- assign social_collapse_on_mobile = false -%}
-                    {%- if block.settings.collapse_on_mobile and block.settings.heading != blank -%}
-                      {%- assign social_collapse_on_mobile = true -%}
-                      {%- assign block_collapses_on_mobile = true -%}
-                    {%- endif -%}
+                    {%- assign social_collapse_on_mobile = block.settings.collapse_on_mobile -%}
 
                     <div class="footer-social-menu v-stack gap-4.5 {% if social_collapse_on_mobile %}sm-max:hidden{% endif %}">
                       {%- if block.settings.show_menu_title and block.settings.heading != blank -%}
@@ -262,7 +284,9 @@
                     </div>
 
                     {%- if social_collapse_on_mobile -%}
-                      {%- render 'accordion', title: block.settings.heading, content: social_menu_content, subheading_title: true, class: 'sm:hidden' -%}
+                      <div class="footer-social-menu--compact sm:hidden">
+                        {{- social_menu_content -}}
+                      </div>
                     {%- endif -%}
                   {%- endif -%}
 
