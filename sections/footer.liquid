@@ -73,22 +73,6 @@
   }
 
   {%- comment -%}
-  Newsletter: drop the outer box border - keep only the thin divider .newsletter-input-group already
-  puts between the email field and the submit button. Also force the button label's color to
-  --input-text-color, the color the input's own background (--input-background) is specifically
-  designed to contrast with (same pair .input already uses in theme.css), instead of letting it
-  inherit the footer's general text color, which isn't guaranteed to read well against
-  --input-background if a merchant sets them close to each other.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .newsletter-input-group {
-    border: none;
-  }
-
-  #shopify-section-{{ section.id }} .newsletter-input-group .link {
-    color: rgb(var(--input-text-color));
-  }
-
-  {%- comment -%}
   Copyright / custom-text row: full section width, so left/right actually reads against the whole
   footer. Fixed layout now - copyright pinned start, custom text pinned end, same on mobile and
   desktop (no longer driven by an alignment setting) - muted via opacity, and the same
