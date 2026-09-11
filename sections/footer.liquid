@@ -22,12 +22,20 @@
 
   {%- comment -%}
   Compact mobile row for the "Collapse on mobile" social menu (see the social_menu case above):
-  same links as the desktop list, laid out horizontally and centered instead of stacked, with
-  the network name hidden the accessible way (still readable by screen readers, just not shown)
-  since the icon alone carries it visually here.
+  same links as the desktop list, laid out horizontally instead of stacked, with the network
+  name hidden the accessible way (still readable by screen readers, just not shown) since the
+  icon alone carries it visually here. Spans the full block-list width (like a full-width
+  accordion block would) so justify-content: space-between can spread the icons edge to edge
+  across the whole section instead of just its own grid column.
   {%- endcomment -%}
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .footer__block--social_menu:has(.footer-social-menu--compact) {
+      grid-column: 1 / -1;
+    }
+  }
+
   #shopify-section-{{ section.id }} .footer-social-menu--compact .footer-social-menu__list {
-    justify-content: center;
+    justify-content: space-between;
     flex-wrap: wrap;
     gap: 1rem 1.5rem;
     display: flex;
