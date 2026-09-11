@@ -73,6 +73,22 @@
   }
 
   {%- comment -%}
+  Newsletter: drop the outer box border - keep only the thin divider .newsletter-input-group already
+  puts between the email field and the submit button. Also force the button label's color to
+  --input-text-color, the color the input's own background (--input-background) is specifically
+  designed to contrast with (same pair .input already uses in theme.css), instead of letting it
+  inherit the footer's general text color, which isn't guaranteed to read well against
+  --input-background if a merchant sets them close to each other.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .newsletter-input-group {
+    border: none;
+  }
+
+  #shopify-section-{{ section.id }} .newsletter-input-group .link {
+    color: rgb(var(--input-text-color));
+  }
+
+  {%- comment -%}
   Copyright / custom-text row: full section width, so left / center / right actually reads against the
   whole footer. Flex so the "© ..." line and the custom text share one line (wrapping only if tight).
   {%- endcomment -%}
@@ -641,7 +657,7 @@
           "type": "checkbox",
           "id": "collapse_on_mobile",
           "label": "Colapsar en móvil",
-          "info": "En móvil, muestra el menú dentro de un acordeón desplegable (usa el título como etiqueta).",
+          "info": "En móvil, muestra solo los iconos en una fila horizontal, sin título ni nombres de red.",
           "default": true
         },
         {
