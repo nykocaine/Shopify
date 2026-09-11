@@ -3533,6 +3533,17 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Product card price (context: 'card', body_text/heading styles - see snippets/price-list.liquid):
+   never bold, and the same color/opacity as .product-subtitle above (.7 alpha), explicitly, rather
+   than relying on inheritance for the weight and a dimmer .6 alpha from .text-subdued. */
+.product-card__price {
+  font-weight: var(--text-font-weight);
+}
+
+.product-card__price--subdued {
+  color: rgb(var(--text-color) / .7);
+}
+
 /* Product cards should only ever inherit the Body Text typeface, never Heading/Subheading - the
    "Product card style" setting (product-card.liquid) still picks ".subheading"/".heading" for the
    title/vendor/swatch "+N more" label depending on merchant choice, purely for their font-size;

@@ -18,6 +18,14 @@ Render a list of price for a product, variant or line item.
       assign unit_price_classes = 'subheading text-subdued'
 
     when 'card'
+      {%- comment -%}
+      body_text/heading: never bold, and the same color/opacity as the card's own subtitle
+      (.product-subtitle in theme.css, .7 alpha) via .product-card__price(--subdued) - instead of
+      silently inheriting whatever weight is ambient (body_text/heading don't otherwise reset it)
+      and the slightly dimmer .6 alpha from .text-subdued. subheading is left alone: it
+      deliberately shares the configurable subheading weight/tracking with the vendor line and
+      title in that style, not an accident to fix.
+      {%- endcomment -%}
       case settings.product_card_style
         when 'subheading'
           assign regular_price_classes = 'subheading text-subdued'
@@ -26,16 +34,16 @@ Render a list of price for a product, variant or line item.
           assign unit_price_classes = 'subheading text-subdued'
 
         when 'body_text'
-          assign regular_price_classes = 'text-sm text-subdued'
-          assign on_sale_price_classes = 'text-sm text-on-sale'
-          assign compare_at_price_classes = 'text-sm text-subdued line-through'
-          assign unit_price_classes = 'text-sm text-subdued'
+          assign regular_price_classes = 'text-sm product-card__price product-card__price--subdued'
+          assign on_sale_price_classes = 'text-sm text-on-sale product-card__price'
+          assign compare_at_price_classes = 'text-sm product-card__price product-card__price--subdued line-through'
+          assign unit_price_classes = 'text-sm product-card__price product-card__price--subdued'
 
         when 'heading'
-          assign regular_price_classes = 'text-subdued'
-          assign on_sale_price_classes = 'text-on-sale'
-          assign compare_at_price_classes = 'text-subdued line-through'
-          assign unit_price_classes = 'text-subdued'
+          assign regular_price_classes = 'product-card__price product-card__price--subdued'
+          assign on_sale_price_classes = 'text-on-sale product-card__price'
+          assign compare_at_price_classes = 'product-card__price product-card__price--subdued line-through'
+          assign unit_price_classes = 'product-card__price product-card__price--subdued'
       endcase
 
     when 'line_item'
