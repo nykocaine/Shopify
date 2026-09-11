@@ -318,19 +318,15 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       padding-block: 0;
     }
 
-    #shopify-section-{{ section.id }} .reviews {
-      padding: min(2.5rem, var(--container-gutter));
-    }
-
     {%- comment -%}
-    On mobile --container-gutter is small (~10px), so the summary, the controls and the review cards sat
-    too close to the card edges. Give the card a bit more room on all four sides - not double, just the
-    current gutter plus 0.5rem - only below 700px. Matches the same tweak in sections/faq.liquid.
+    All four sides equal, and the same formula at every breakpoint (not just min(2.5rem,
+    var(--container-gutter)) on desktop with a bigger mobile-only override): on mobile
+    --container-gutter is small (~10px), so the summary, the controls and the review cards sat
+    too close to the card edges there. Using gutter + 0.5rem everywhere keeps all four sides
+    matching top/bottom/left/right, on every screen size. Matches the same tweak in sections/faq.liquid.
     {%- endcomment -%}
-    @media screen and (max-width: 699px) {
-      #shopify-section-{{ section.id }} .reviews {
-        padding: calc(var(--container-gutter) + 0.5rem);
-      }
+    #shopify-section-{{ section.id }} .reviews {
+      padding: calc(var(--container-gutter) + 0.5rem);
     }
   {%- endif -%}
 
