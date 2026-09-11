@@ -89,36 +89,27 @@
   }
 
   {%- comment -%}
-  Copyright / custom-text row: full section width, so left / center / right actually reads against the
-  whole footer. Flex so the "© ..." line and the custom text share one line (wrapping only if tight).
+  Copyright / custom-text row: full section width, so left/right actually reads against the whole
+  footer. Fixed layout now - copyright pinned start, custom text pinned end, same on mobile and
+  desktop (no longer driven by an alignment setting) - muted via opacity, and the same
+  container-gutter + 0.5rem vertical padding as .footer__content (see above) instead of its own
+  fixed 1.5rem/2.5rem.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .footer__copyright {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
+    justify-content: space-between;
     column-gap: 0.75rem;
     row-gap: 0.25rem;
     width: 100%;
-    padding-block: 1.5rem;
-  }
-
-  @media screen and (min-width: 1000px) {
-    #shopify-section-{{ section.id }} .footer__copyright {
-      padding-block: 2.5rem;
-    }
+    padding-block: calc(var(--container-gutter) + 0.5rem);
+    opacity: 0.4;
   }
 
   {%- comment -%} When the aside row is also present, it keeps its top padding but drops the bottom one so the two rows don't double up. {%- endcomment -%}
   #shopify-section-{{ section.id }} .footer__aside:has(+ .footer__copyright) {
     padding-block-end: 0;
-  }
-
-  {%- comment -%} On mobile the copyright line and its custom text are always centered, regardless of the alignment setting. {%- endcomment -%}
-  @media screen and (max-width: 699px) {
-    #shopify-section-{{ section.id }} .footer__copyright {
-      justify-content: center !important;
-      text-align: center !important;
-    }
   }
 </style>
 
@@ -408,24 +399,14 @@
     {%- endcapture -%}
 
     {%- comment -%}
-    Copyright + custom text: their own full-width row below the aside, so the alignment control spans the
-    whole footer instead of just the width of the copyright text. Both sit on one line (flex row) and wrap
-    only if there isn't room.
+    Copyright + custom text: their own full-width row below the aside, so it spans the whole footer
+    instead of just the width of the copyright text. Copyright pinned start, custom text pinned end
+    (see .footer__copyright in the <style> above) - both sit on one line (flex row) and wrap only if
+    there isn't room.
     {%- endcomment -%}
     {%- capture footer_copyright_content -%}
       {%- if section.settings.show_copyright or section.settings.footer_bottom_text != blank -%}
-        {%- liquid
-          assign bottom_text_align = section.settings.footer_bottom_text_alignment | default: 'center'
-          case bottom_text_align
-            when 'left'
-              assign bottom_text_justify = 'flex-start'
-            when 'right'
-              assign bottom_text_justify = 'flex-end'
-            else
-              assign bottom_text_justify = 'center'
-          endcase
-        -%}
-        <div class="footer__copyright" style="justify-content: {{ bottom_text_justify }}; text-align: {{ bottom_text_align }};">
+        <div class="footer__copyright">
           {%- if section.settings.show_copyright -%}
             <span class="text-sm">© {{ 'now' | date: '%Y' }} - {{ shop.name }}</span>
           {%- endif -%}
@@ -507,17 +488,6 @@
       "id": "footer_bottom_text",
       "label": "Custom text",
       "info": "Shown in the bottom bar, next to the copyright line."
-    },
-    {
-      "type": "select",
-      "id": "footer_bottom_text_alignment",
-      "label": "Copyright & custom text alignment",
-      "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "center", "label": "Center" },
-        { "value": "right", "label": "Right" }
-      ],
-      "default": "center"
     },
     {
       "type": "header",
