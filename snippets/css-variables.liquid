@@ -487,6 +487,8 @@ note that this may have impact on different places.
 
       {%- if settings.global_border_color != blank and settings.global_border_color != 'rgba(0,0,0,0)' -%}
         --border-color: {{ settings.global_border_color.rgb }};
+      {%- elsif color_scheme.settings.border_color != blank and color_scheme.settings.border_color != 'rgba(0,0,0,0)' -%}
+        --border-color: {{ color_scheme.settings.border_color.rgb }};
       {%- elsif color_scheme.settings.background_gradient != blank -%}
         --border-color: {{ color_scheme.settings.text_color.rgb }} / 0.1;
       {%- elsif color_scheme.settings.background == 'rgba(0,0,0,0)' -%}
@@ -496,9 +498,13 @@ note that this may have impact on different places.
         --border-color: {{ border_color.rgb }};
       {%- endif -%}
 
-      {%- if color_scheme.settings.border_color != blank and color_scheme.settings.border_color != 'rgba(0,0,0,0)' -%}
-        --button-scheme-border-color: {{ color_scheme.settings.border_color.rgb }};
-      {%- endif -%}
+      {%- comment -%}
+      --button-scheme-border-color is intentionally never set from color_scheme.settings.border_color
+      anymore: that "Border" scheme color now only drives --border-color (general dividers/cards)
+      above, not button borders. .button and .floating-size-selector__button both read
+      --button-scheme-border-color with a transparent fallback (theme.css), so leaving it unset
+      keeps every solid button borderless regardless of what "Border" is set to.
+      {%- endcomment -%}
 
       /* Subheading colors */
       {%- liquid
