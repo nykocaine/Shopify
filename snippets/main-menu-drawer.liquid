@@ -109,14 +109,23 @@ mobile, and for desktop on "drawer" mode.
             {%- endif -%}
 
             {%- if shop.customer_accounts_enabled -%}
-              <shopify-account menu="{{ section.settings.customer_account_menu }}">
-                <div slot="signed-out-avatar">
+              {%- comment -%}
+              Same as the header account link (sections/header.liquid): signed in keeps
+              <shopify-account> for its account sheet; signed out skips it and links straight to
+              the login page, since <shopify-account>'s own click always opens its account sheet
+              in place with no way to make it navigate directly instead.
+              {%- endcomment -%}
+              {%- if customer -%}
+                {%- comment -%} Signed-in avatar is the component's own native rendering - no slot content to provide, same as before this change. {%- endcomment -%}
+                <shopify-account menu="{{ section.settings.customer_account_menu }}"></shopify-account>
+              {%- else -%}
+                <a href="{{ routes.account_login_url }}">
                   <div class="h-stack gap-2 5">
                     {%- render 'icon' with 'account', mobile_width: 16, width: section.settings.desktop_icon_size -%}
                     <span class="subheading">{{- 'header.general.account' | t -}}</span>
                   </div>
-                </div>
-              </shopify-account>
+                </a>
+              {%- endif -%}
             {%- endif -%}
           </div>
         </div>

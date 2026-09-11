@@ -358,8 +358,18 @@
 
         {%- if shop.customer_accounts_enabled -%}
           <li class="header__account-link md-max:hidden">
-            <shopify-account menu="{{ section.settings.customer_account_menu }}">
-              <div slot="signed-out-avatar" class="tap-area">
+            {%- comment -%}
+            Signed in: keep <shopify-account> (avatar + its account sheet with menu links - useful
+            once there's an actual account to manage). Signed out: skip it entirely and link
+            straight to the login page instead - <shopify-account>'s own signed-out click always
+            opens its account sheet in place, with no attribute to make it navigate directly (see
+            https://shopify.dev/docs/api/storefront-web-components/components/shopify-account).
+            {%- endcomment -%}
+            {%- if customer -%}
+              {%- comment -%} Signed-in avatar is the component's own native rendering - no slot content to provide, same as before this change. {%- endcomment -%}
+              <shopify-account menu="{{ section.settings.customer_account_menu }}"></shopify-account>
+            {%- else -%}
+              <a href="{{ routes.account_login_url }}" class="tap-area">
                 {%- if section.settings.show_icons_text -%}
                   <span class="subheading md-max:hidden">{{ section.settings.account_text }}</span>
                   <span class="md:hidden">
@@ -370,8 +380,8 @@
                   <span class="sr-only">{{ 'header.general.login' | t }}</span>
                   {%- render 'icon' with 'account', mobile_width: 16, width: section.settings.desktop_icon_size -%}
                 {%- endif -%}
-              </div>
-            </shopify-account>
+              </a>
+            {%- endif -%}
           </li>
         {%- endif -%}
 
