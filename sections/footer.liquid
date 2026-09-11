@@ -21,15 +21,22 @@
   }
 
   {%- comment -%}
-  Same padding formula as sections/reviews.liquid and sections/faq.liquid - container-gutter +
-  0.5rem on every side, same on mobile and desktop, instead of this section's own fixed
-  2.8rem block padding plus a separate half-gutter-only inline rule (that combination read
-  bigger and inconsistent with the other floating sections). The container's own inline margin
-  (site-wide gutter, for centering) is untouched, so on top of that this adds the same extra
-  inline room the other sections get, plus matches their block padding.
+  Vertical padding: same container-gutter + 0.5rem formula as sections/reviews.liquid and
+  sections/faq.liquid, same on mobile and desktop, replacing this section's own fixed 2.8rem.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .footer__content {
-    padding: calc(var(--container-gutter) + 0.5rem);
+    padding-block: calc(var(--container-gutter) + 0.5rem);
+  }
+
+  {%- comment -%}
+  Lateral padding: .footer__content sits inside .footer > .container, which already insets it
+  from the card's edges via its own margin (the site-wide gutter). Adding a second, separate
+  padding layer here (as a previous version of this rule did) stacked on top of that margin and
+  visibly doubled the side spacing. Instead, bump that same margin layer by the same +0.5rem
+  the other sections use, so there's only ever one layer of side spacing.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .footer > .container {
+    --container-gutter-context: calc(var(--container-gutter) + 0.5rem);
   }
 
   {%- comment -%}
