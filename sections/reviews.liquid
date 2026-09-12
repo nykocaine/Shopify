@@ -202,6 +202,12 @@ to the first 5 of the newly sorted order.
                     </div>
                   {%- endif -%}
 
+                  {%- if block.settings.image != blank -%}
+                    <div class="review-card__image">
+                      {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: '120px', widths: '120,240,360' -}}
+                    </div>
+                  {%- endif -%}
+
                   {%- if block.settings.bar_question != blank -%}
                     <div class="review-card__bar">
                       <p class="review-card__bar-question">{{ block.settings.bar_question }}</p>
@@ -570,6 +576,17 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
 
   #shopify-section-{{ section.id }} .review-card__title {
     font-weight: 600;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__image {
+    width: 7.5rem;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__image img {
+    border-radius: 8px;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
   }
 
   #shopify-section-{{ section.id }} .review-card__bar {
@@ -946,6 +963,15 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
           "id": "body",
           "label": "Review",
           "default": "<p>Escribí acá lo que dijo el cliente.</p>"
+        },
+        {
+          "type": "header",
+          "content": "Photo (optional)"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Customer photo"
         },
         {
           "type": "header",
