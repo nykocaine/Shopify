@@ -227,7 +227,7 @@ to the first 5 of the newly sorted order.
           </div>
         {%- endif -%}
 
-        {%- if review_blocks.size > 3 -%}
+        {%- if review_blocks.size > 1 -%}
           <div class="reviews__load-more">
             {%- render 'button', content: 'Ver más', type: 'button', style: 'outline', class: 'reviews__load-more-button' -%}
           </div>
@@ -710,7 +710,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     var cards = list ? Array.prototype.slice.call(list.querySelectorAll('.review-card')) : [];
     var sortSelect = root.querySelector('[data-reviews-sort]');
     var loadMoreButton = root.querySelector('.reviews__load-more-button');
-    var initialCount = 3;
+    var initialCount = 1;
     var pageSize = 5;
     var visibleCount = initialCount;
 
@@ -776,8 +776,8 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       sortedCards.forEach(function (card) { list.appendChild(card); });
 
       if (resetVisibleCount) {
-        // Sorting re-applies before the reveal count, same as a fresh page load: back to the first 3 of
-        // the newly sorted order, not whatever count "Ver más" had already reached.
+        // Sorting re-applies before the reveal count, same as a fresh page load: back to the first
+        // initialCount of the newly sorted order, not whatever count "Ver más" had already reached.
         visibleCount = initialCount;
       }
 
