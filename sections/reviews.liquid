@@ -98,7 +98,7 @@ to the first 5 of the newly sorted order.
               <div class="review-card" data-rating="{{ block.settings.rating }}" data-index="{{ forloop.index }}" {{ block.shopify_attributes }}>
                 <div class="review-card__side">
                   <div class="review-card__reviewer">
-                    <strong class="review-card__name">{{ block.settings.reviewer_name }}</strong>
+                    <span class="review-card__name">{{ block.settings.reviewer_name }}</span>
 
                     {%- if block.settings.verified_buyer -%}
                       <span class="review-card__verified">
@@ -160,8 +160,8 @@ to the first 5 of the newly sorted order.
 
                         {%- if attr_label != blank -%}
                           <div class="review-card__attribute">
-                            <strong>{{ attr_label }}</strong>
-                            <span>{{ attr_value }}</span>
+                            <span class="review-card__attribute-label">{{ attr_label }}</span>
+                            <span class="review-card__attribute-value">{{ attr_value }}</span>
                           </div>
                         {%- endif -%}
                       {%- endfor -%}
@@ -538,7 +538,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
 
   #shopify-section-{{ section.id }} .review-card__product-label {
     text-transform: uppercase;
-    font-weight: 600;
     margin-block-end: .25rem;
   }
 
@@ -553,7 +552,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     display: flex;
   }
 
-  #shopify-section-{{ section.id }} .review-card__attribute span {
+  #shopify-section-{{ section.id }} .review-card__attribute-value {
     color: rgb(var(--text-color) / .8);
   }
 
@@ -574,10 +573,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     font-size: .875em;
   }
 
-  #shopify-section-{{ section.id }} .review-card__title {
-    font-weight: 600;
-  }
-
   #shopify-section-{{ section.id }} .review-card__image {
     width: 7.5rem;
   }
@@ -594,7 +589,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   }
 
   #shopify-section-{{ section.id }} .review-card__bar-question {
-    font-weight: 600;
     margin-block-end: .75rem;
   }
 
@@ -689,7 +683,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   }
 
   #shopify-section-{{ section.id }} .review-form__rating-label {
-    font-weight: 600;
     display: block;
     margin-block-end: .75rem;
   }
