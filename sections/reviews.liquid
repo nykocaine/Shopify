@@ -349,22 +349,22 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   }
 
   {%- comment -%}
-  The big number's height always matches the stars + "Basado en" column beside it: align-items:
-  stretch above makes .reviews__summary-average's box exactly as tall as that column (the taller
-  sibling), container-type: size turns that box into a query container for its own height, and
-  the inner span's font-size: 100cqh scales the numeral to fill it - so it stays right whatever
-  the star icon size or count text size end up being, instead of a fixed font-size that only
-  happens to match today's sizes.
+  container-type: size + font-size: 100cqh was tried here to auto-scale the number to the stars +
+  "Basado en" column's exact height, but container-type: size also applies layout containment -
+  .reviews__summary-average lost its normal flex-item width/height in that row (nothing outside a
+  size container can size it from its content anymore) and the number rendered oversized, on top
+  of the column beside it instead of next to it. align-items: stretch above already matches its
+  box height to the column; a plain large font-size (vertically centered in that box) gets the
+  same "big number beside the column" look reliably, without the containment side effects.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__summary-average {
-    container-type: size;
     justify-content: start;
     align-items: center;
     display: flex;
   }
 
   #shopify-section-{{ section.id }} .reviews__summary-average-number {
-    font-size: 100cqh;
+    font-size: var(--text-h1);
     font-weight: 600;
     line-height: 1;
   }
