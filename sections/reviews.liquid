@@ -325,8 +325,13 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     }
   {%- endif -%}
 
+  {%- comment -%}
+  Rating block + "Escribir una reseña" button centered together as a group, on both desktop and
+  mobile - not spread to opposite edges. Mobile stacks the button below the rating block instead
+  of beside it, still centered.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__summary-row {
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     flex-wrap: wrap;
     gap: 1.5rem;
@@ -335,6 +340,12 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
 
   #shopify-section-{{ section.id }} .reviews__summary-write {
     flex-shrink: 0;
+  }
+
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .reviews__summary-row {
+      flex-direction: column;
+    }
   }
 
   #shopify-section-{{ section.id }} .reviews__summary {
