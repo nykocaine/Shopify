@@ -47,26 +47,28 @@ to the first 5 of the newly sorted order.
             <div class="reviews__summary-rating">
               <span class="reviews__summary-average">{{ average_rating }}</span>
 
-              <span class="reviews__stars" role="img" aria-label="{{ 'general.rating.info' | t: rating_value: average_rating, rating_max: 5 }}">
-                {%- for i in (1..5) -%}
-                  {%- liquid
-                    assign half_threshold = i | minus: 0.5
+              <div class="reviews__summary-stars-column">
+                <span class="reviews__stars" role="img" aria-label="{{ 'general.rating.info' | t: rating_value: average_rating, rating_max: 5 }}">
+                  {%- for i in (1..5) -%}
+                    {%- liquid
+                      assign half_threshold = i | minus: 0.5
 
-                    if review_count == 0
-                      render 'icon' with 'star-rating-empty'
-                    elsif average_rating >= i
-                      render 'icon' with 'star-rating'
-                    elsif average_rating >= half_threshold
-                      render 'icon' with 'star-rating-half'
-                    else
-                      render 'icon' with 'star-rating-empty'
-                    endif
-                  -%}
-                {%- endfor -%}
-              </span>
+                      if review_count == 0
+                        render 'icon' with 'star-rating-empty'
+                      elsif average_rating >= i
+                        render 'icon' with 'star-rating'
+                      elsif average_rating >= half_threshold
+                        render 'icon' with 'star-rating-half'
+                      else
+                        render 'icon' with 'star-rating-empty'
+                      endif
+                    -%}
+                  {%- endfor -%}
+                </span>
+
+                <p class="reviews__summary-count">Basado en {{ review_count }} reseña{% if review_count != 1 %}s{% endif %}</p>
+              </div>
             </div>
-
-            <p class="reviews__summary-count">Basado en {{ review_count }} reseña{% if review_count != 1 %}s{% endif %}</p>
           </div>
 
           <div class="reviews__summary-write">
@@ -351,6 +353,16 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     font-weight: 600;
   }
 
+  {%- comment -%}
+  Stars + "Basado en X reseñas" stacked as their own column, sharing the row with the big average
+  number beside them (not sitting under the whole row, number included).
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews__summary-stars-column {
+    row-gap: .5rem;
+    display: flex;
+    flex-direction: column;
+  }
+
   #shopify-section-{{ section.id }} .reviews__stars,
   #shopify-section-{{ section.id }} .review-card__stars {
     gap: .125rem;
@@ -359,7 +371,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
 
   #shopify-section-{{ section.id }} .reviews__summary-count {
     color: rgb(var(--text-color) / .6);
-    margin-block-start: .5rem;
   }
 
   #shopify-section-{{ section.id }} .reviews__controls {
