@@ -66,12 +66,11 @@ to the first 5 of the newly sorted order.
               </span>
             </div>
 
-            <p class="reviews__summary-label subheading">Calificación promedio</p>
             <p class="reviews__summary-count">Basado en {{ review_count }} reseña{% if review_count != 1 %}s{% endif %}</p>
           </div>
 
           <div class="reviews__summary-write">
-            {%- render 'button', content: 'Escribir una reseña', style: 'outline', aria_controls: write_review_modal_id -%}
+            {%- render 'button', content: 'Escribir una reseña', aria_controls: write_review_modal_id -%}
           </div>
         </div>
 
@@ -358,14 +357,9 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     display: flex;
   }
 
-  #shopify-section-{{ section.id }} .reviews__summary-label {
-    text-transform: uppercase;
-    font-weight: 600;
-    margin-block-start: .5rem;
-  }
-
   #shopify-section-{{ section.id }} .reviews__summary-count {
     color: rgb(var(--text-color) / .6);
+    margin-block-start: .5rem;
   }
 
   #shopify-section-{{ section.id }} .reviews__controls {
