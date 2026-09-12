@@ -415,6 +415,20 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   }
 
   {%- comment -%}
+  Full width of the section (respecting its own inline padding, same as every other element in
+  here), instead of shrinking to fit the "Mejor calificación" text. .button__content's
+  justify-content switches from the base .button's centered content to space-between so the label
+  and chevron read naturally at each end of the now much wider bar.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews__sort {
+    width: 100%;
+  }
+
+  #shopify-section-{{ section.id }} .reviews__sort .button__content {
+    justify-content: space-between;
+  }
+
+  {%- comment -%}
   .reviews__sort keeps .button's height/padding/border-radius (still sized like every other button in the
   theme), but overrides color/background/border to read from the color scheme's own body text and border
   variables instead of the Buttons global style - transparent background, border and text following
