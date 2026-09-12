@@ -1,7 +1,7 @@
 {%- doc -%}
 A reviews section modeled visually on the Okendo reviews widget (rating summary, a sort control, review
-cards with reviewer/product/attribute info, an attribute bar, and helpful voting), but built natively
-with theme blocks instead of depending on the Okendo app.
+cards with reviewer/product/attribute info and an attribute bar), but built natively with theme blocks
+instead of depending on the Okendo app.
 
 Reviews are not stored anywhere outside the theme: each review shown on the storefront is a "Review"
 block that the merchant adds/edits/reorders from the theme editor, exactly like the FAQ block. Only the
@@ -215,12 +215,6 @@ to the first 5 of the newly sorted order.
                       </div>
                     </div>
                   {%- endif -%}
-
-                  <div class="review-card__helpful" data-reviews-helpful>
-                    <span data-reviews-helpful-label>¿Te resultó útil?</span>
-                    <button type="button" data-reviews-helpful-button="yes">Sí</button>
-                    <button type="button" data-reviews-helpful-button="no">No</button>
-                  </div>
                 </div>
               </div>
             {%- endfor -%}
@@ -595,24 +589,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     display: flex;
   }
 
-  #shopify-section-{{ section.id }} .review-card__helpful {
-    align-items: center;
-    gap: .75rem;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__helpful button {
-    padding: .25rem .75rem;
-    border: 1px solid rgb(var(--border-color));
-    border-radius: var(--rounded-full);
-    background: none;
-    cursor: pointer;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__helpful button[aria-pressed="true"] {
-    background: rgb(var(--text-color) / .08);
-  }
-
   #shopify-section-{{ section.id }} .reviews__load-more {
     text-align: center;
   }
@@ -801,19 +777,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     // Best-rated first on load, same as selecting "Mejor calificación" manually - reuses applySort instead
     // of relying on the cards' own render order matching the select's default value.
     applySort(sortSelect ? sortSelect.value : 'rating_desc', false);
-
-    root.querySelectorAll('[data-reviews-helpful]').forEach(function (group) {
-      var label = group.querySelector('[data-reviews-helpful-label]');
-      var buttons = Array.prototype.slice.call(group.querySelectorAll('[data-reviews-helpful-button]'));
-
-      buttons.forEach(function (button) {
-        button.addEventListener('click', function () {
-          buttons.forEach(function (otherButton) { otherButton.setAttribute('aria-pressed', 'false'); });
-          button.setAttribute('aria-pressed', 'true');
-          if (label) label.textContent = '¡Gracias por tu opinión!';
-        });
-      });
-    });
   })();
 </script>
 
