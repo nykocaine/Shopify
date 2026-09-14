@@ -87,21 +87,18 @@
 
   <style>
     {%- comment -%}
-    Same padding as sections/reviews.liquid - container-gutter + 0.5rem on all four sides, same on
-    mobile and desktop - instead of the global "Section spacing" setting this section normally
-    uses. Excludes .section-split__column--image: that column keeps its own bleed/flushed image
-    padding, which isn't "section spacing" and shouldn't follow this rhythm.
+    Same vertical rhythm as sections/reviews.liquid - container-gutter + 0.5rem, same on mobile
+    and desktop - instead of the global "Section spacing" setting this section normally uses.
+    Sides are left alone (.container's own margin, or .section-split__column's own
+    padding-inline already handle those) - excludes .section-split__column--image, which keeps
+    its own bleed/flushed image padding regardless.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .section-split__column:not(.section-split__column--image) {
-      padding: calc(var(--container-gutter) + 0.5rem);
+      padding-block: calc(var(--container-gutter) + 0.5rem);
     }
 
     #shopify-section-{{ section.id }} .section-spacing {
       padding-block: calc(var(--container-gutter) + 0.5rem);
-    }
-
-    #shopify-section-{{ section.id }} .section-spacing .container {
-      padding-inline: calc(var(--container-gutter) + 0.5rem);
     }
   </style>
 

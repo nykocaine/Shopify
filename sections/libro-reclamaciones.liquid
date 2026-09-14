@@ -176,15 +176,13 @@
 
 <style>
   {%- comment -%}
-  Same padding as sections/reviews.liquid - container-gutter + 0.5rem on all four sides, same on
-  mobile and desktop - instead of the global "Section spacing" setting this section normally uses.
+  Same vertical rhythm as sections/reviews.liquid - container-gutter + 0.5rem, same on mobile and
+  desktop - instead of the global "Section spacing" setting this section normally uses. Sides are
+  left alone: .container's own margin already handles those, and adding padding-inline here on
+  top of that margin would double up the lateral space instead of matching it.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .section-spacing {
     padding-block: calc(var(--container-gutter) + 0.5rem);
-  }
-
-  #shopify-section-{{ section.id }} .section-spacing .container {
-    padding-inline: calc(var(--container-gutter) + 0.5rem);
   }
 </style>
 
