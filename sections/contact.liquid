@@ -89,15 +89,25 @@
     {%- comment -%}
     Same padding as sections/reviews.liquid - container-gutter + 0.5rem on all four sides, same on
     mobile and desktop - instead of the global "Section spacing" setting this section normally
-    uses. Put directly on .section-spacing itself (not on the nested .container) so it's one plain
-    padding: on one element, on top of whatever .container's own margin already does - same as
-    every other floating section in the theme. Excludes .section-split__column--image: that column
-    keeps its own bleed/flushed image padding, which isn't "section spacing" and shouldn't follow
-    this rhythm.
+    uses. Put on .section-spacing itself (not on the nested .container). Excludes
+    .section-split__column--image: that column keeps its own bleed/flushed image padding, which
+    isn't "section spacing" and shouldn't follow this rhythm.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .section-split__column:not(.section-split__column--image),
     #shopify-section-{{ section.id }} .section-spacing {
       padding: calc(var(--container-gutter) + 0.5rem);
+    }
+
+    {%- comment -%}
+    .container (nested inside .section-spacing) still carries its own margin-inline
+    (--container-gutter-context) for the site-wide gutter - stacked on top of the padding above,
+    that doubled up the left/right inset, most visible on the left here specifically since this
+    layout is pinned to the start edge (no mx-auto - see the comment further down), not centered.
+    Zeroing just the gutter part of that margin formula leaves .section-spacing's own padding as
+    the only source of side space.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .section-spacing .container {
+      --container-gutter-context: 0px;
     }
   </style>
 

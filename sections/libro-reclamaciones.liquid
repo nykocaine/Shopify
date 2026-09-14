@@ -185,6 +185,16 @@
   #shopify-section-{{ section.id }} .section-spacing {
     padding: calc(var(--container-gutter) + 0.5rem);
   }
+
+  {%- comment -%}
+  .container (nested inside .section-spacing) still carries its own margin-inline
+  (--container-gutter-context) for the site-wide gutter - stacked on top of the padding above,
+  that doubles up the left/right inset. Zeroing just the gutter part of that margin formula
+  leaves .section-spacing's own padding as the only source of side space.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .section-spacing .container {
+    --container-gutter-context: 0px;
+  }
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_libro_reclamaciones %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_libro_reclamaciones %} style="border-end-start-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; border-end-end-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; overflow: hidden;"{% endif %}>
