@@ -178,21 +178,12 @@
   {%- comment -%}
   Same padding as sections/reviews.liquid - container-gutter + 0.5rem on all four sides, same on
   mobile and desktop - instead of the global "Section spacing" setting this section normally uses.
-  .container also carries its own margin-inline (--container-gutter-context), both for the gutter
-  AND for centering the container once the viewport exceeds --container-max-width. Adding
-  padding-inline on top of that margin would double the side space, but zeroing the margin
-  outright would also kill the max-width centering. Zeroing only --container-gutter-context (the
-  gutter part of that margin formula) removes the gutter contribution while leaving the centering
-  math (50% - max-width / 2) intact, so padding-inline below becomes the only source of gutter
-  space.
+  Put directly on .section-spacing itself (not on the nested .container) so it's one plain
+  padding: on one element, on top of whatever .container's own margin already does - same as
+  every other floating section in the theme.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .section-spacing {
-    padding-block: calc(var(--container-gutter) + 0.5rem);
-  }
-
-  #shopify-section-{{ section.id }} .section-spacing .container {
-    --container-gutter-context: 0px;
-    padding-inline: calc(var(--container-gutter) + 0.5rem);
+    padding: calc(var(--container-gutter) + 0.5rem);
   }
 </style>
 
