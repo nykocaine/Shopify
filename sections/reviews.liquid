@@ -366,22 +366,25 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   }
 
   {%- comment -%}
-  container-type: size + font-size: 100cqh was tried here to auto-scale the number to the stars +
-  "Basado en" column's exact height, but container-type: size also applies layout containment -
-  .reviews__summary-average lost its normal flex-item width/height in that row (nothing outside a
-  size container can size it from its content anymore) and the number rendered oversized, on top
-  of the column beside it instead of next to it. align-items: stretch above already matches its
-  box height to the column; a plain large font-size (vertically centered in that box) gets the
-  same "big number beside the column" look reliably, without the containment side effects.
+  container-type: size + font-size: 100cqh scales the number to fill the exact height of the
+  stars + "Basado en" column beside it (align-items: stretch above matches this box's height to
+  that column, the taller sibling). The first attempt at this left width: auto, and
+  container-type: size's containment can't derive a size from content on either axis - with no
+  explicit width, the box collapsed to 0 and the now-huge number overflowed on top of the column
+  instead of sitting next to it. flex-shrink: 0 + an explicit width (roomy enough for "10.0", the
+  widest realistic rating) gives containment a real box on both axes to work with.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__summary-average {
+    container-type: size;
+    width: 3.5rem;
+    flex-shrink: 0;
     justify-content: start;
     align-items: center;
     display: flex;
   }
 
   #shopify-section-{{ section.id }} .reviews__summary-average-number {
-    font-size: var(--text-h1);
+    font-size: 100cqh;
     font-weight: 600;
     line-height: 1;
   }
