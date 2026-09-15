@@ -1,14 +1,4 @@
 <style>
-  {%- comment -%}
-  Sizes the broken-screen illustration relative to viewport (like the old giant "404" number used to),
-  capped so it never gets absurdly large on wide screens.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .not-found-icon {
-    width: min(9rem, 26vw);
-    height: auto;
-    color: rgb(var(--text-color) / .4);
-  }
-
   #shopify-section-{{ section.id }} .not-found-heading {
     color: #ffffff;
   }
@@ -30,15 +20,6 @@
     {%- endif -%}
 
     <div class="empty-state">
-      {%- comment -%} Decorative "broken screen" illustration - no text content, so aria-hidden. {%- endcomment -%}
-      <svg class="not-found-icon" aria-hidden="true" focusable="false" viewBox="0 0 160 140" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="20" y="15" width="120" height="80" rx="10"/>
-        <path d="M75 95v15M55 110h50"/>
-        <path d="M95 55 60 25M95 55 30 40M95 55 35 75M95 55 70 90M95 55 120 30M95 55 125 70M95 55 100 87"/>
-        <path d="m89 49 9-7 4 12-11 3z"/>
-        <path d="m24 108 8-6M132 100l7 7M118 108l5 9"/>
-      </svg>
-
       {%- if section.settings.heading != blank -%}
         <h1 class="not-found-heading {{ section.settings.heading_size }}">{{ section.settings.heading }}</h1>
       {%- endif -%}
