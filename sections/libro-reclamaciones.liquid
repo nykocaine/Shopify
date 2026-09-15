@@ -38,12 +38,26 @@
 {%- endcapture -%}
 
 {%- capture section_main_content -%}
-  <div class="rc-aviso prose">
-    <p><strong>{{ 'libro_reclamaciones.aviso.title' | t }}</strong></p>
-    {{- provider_summary -}}
-    {{- section.settings.response_deadline_text -}}
-    {{- section.settings.retention_notice -}}
-    <p>{{ 'libro_reclamaciones.aviso.reclamo_vs_queja' | t }}</p>
+  <div class="rc-aviso v-stack gap-4">
+    <p class="subheading">{{ 'libro_reclamaciones.aviso.title' | t }}</p>
+
+    <div class="rc-aviso__provider prose text-subdued text-sm">
+      {{- provider_summary -}}
+    </div>
+
+    {%- if section.settings.response_deadline_text != blank -%}
+      <div class="prose text-sm">
+        {{- section.settings.response_deadline_text -}}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.retention_notice != blank -%}
+      <div class="prose text-subdued text-sm">
+        {{- section.settings.retention_notice -}}
+      </div>
+    {%- endif -%}
+
+    <p class="text-subdued text-sm">{{ 'libro_reclamaciones.aviso.reclamo_vs_queja' | t }}</p>
   </div>
 
   {%- assign posted_successfully = false -%}
@@ -162,9 +176,12 @@
         <p>{{ 'libro_reclamaciones.confirmation.date_label' | t }}: <strong data-rc-date></strong></p>
       </div>
 
-      <div class="rc-aviso prose">
-        <p><strong>{{ 'libro_reclamaciones.aviso.title' | t }}</strong></p>
-        {{- provider_summary -}}
+      <div class="rc-aviso v-stack gap-2">
+        <p class="subheading">{{ 'libro_reclamaciones.aviso.title' | t }}</p>
+
+        <div class="rc-aviso__provider prose text-subdued text-sm">
+          {{- provider_summary -}}
+        </div>
       </div>
 
       <div class="print:hidden">
@@ -194,6 +211,29 @@
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .section-spacing .container {
     --container-gutter-context: 0px;
+  }
+
+  {%- comment -%}
+  On desktop, hug the start edge (matches sections/contact.liquid's own left-pinned layout)
+  instead of sitting centered in the middle of a wide page - .section-stack's mx-auto is only
+  meant to keep it centered on narrower/mobile screens where there's no room for it to read as
+  "off to one side" anyway.
+  {%- endcomment -%}
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} .section-stack.mx-auto {
+      margin-inline: 0;
+    }
+  }
+
+  {%- comment -%}
+  Legal notice block (previously a white boxed card - see assets/libro-reclamaciones.css): now
+  plain text, so it needs its own rhythm instead of the flat p { margin: 0 } that worked for a
+  tightly packed card. The business-details lines (name/RUC/address/email) stay tight as one
+  group; everything else (title, deadline text, retention notice, reclamo-vs-queja line) gets
+  proper spacing from .rc-aviso's own v-stack gap in the markup.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .rc-aviso__provider p {
+    margin: 0;
   }
 </style>
 
