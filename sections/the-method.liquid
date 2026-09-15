@@ -330,6 +330,15 @@
 </div>
 
 {% stylesheet %}
+  {%- comment -%}
+  Same top/bottom padding formula as footer.liquid, reviews.liquid and faq.liquid (container-gutter
+  + 0.5rem, same on every breakpoint), replacing .section-spacing's own larger inter-section value -
+  this is a floating card's internal padding, not the gap between sections.
+  {%- endcomment -%}
+  .container.section-spacing {
+    padding-block: calc(var(--container-gutter) + 0.5rem);
+  }
+
   .the-method {
     --the-method-gap: var(--container-gutter, 1.5rem);
     display: grid;
@@ -372,7 +381,6 @@
     display: grid;
     gap: var(--the-method-gap);
     max-width: 40rem;
-    margin-inline: auto;
   }
 
   .the-method__panel[hidden] {
