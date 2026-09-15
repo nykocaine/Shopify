@@ -366,9 +366,13 @@
         margin-block-start: calc(var(--section-vertical-spacing) / 2);
       }
 
+      {%- comment -%}
+      Mobile-only: no top gutter at all, so the header sits flush against the gallery card (matched
+      by zeroing the gallery frame's own top corners below, instead of the usual full section gap).
+      {%- endcomment -%}
       @media screen and (max-width: 999px) {
         #shopify-section-{{ section.id }} > div {
-          margin-block-start: var(--section-vertical-spacing);
+          margin-block-start: 0;
         }
       }
     {%- endunless -%}
@@ -458,6 +462,19 @@
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-info-frame {
         padding: calc(var(--container-gutter) / 2);
+      }
+
+      {%- comment -%}
+      Mobile-only: square off the gallery's top corners so it sits flush under the header (which now
+      has zero gap above, per the margin removed above), keeping the bottom corners rounded. Also
+      squares the inner .product-gallery__carousel-frame (product-gallery.liquid), which otherwise
+      clips its own content to the full gallery_border_radius and would show rounded corners peeking
+      through the now-square outer frame.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery-frame,
+      #shopify-section-{{ section.id }} .product-gallery__carousel-frame {
+        border-start-start-radius: 0;
+        border-start-end-radius: 0;
       }
 
       {%- if product.media.size > 0 and section.settings.product_height_mobile > 0 -%}
