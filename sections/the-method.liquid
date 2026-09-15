@@ -330,6 +330,26 @@
 </div>
 
 {% stylesheet %}
+  {%- if section.settings.floating_the_method -%}
+    {%- comment -%}
+    .section-floating--block-end (set on the outer color-scheme div alongside .section-floating,
+    below) only ever adds a bottom margin - by design, every floating section in the theme adds its
+    own top margin on top of that (see main-product.liquid for the same convention). Without it, the
+    card's top edge sits flush against whatever precedes it: the .container's own .section-spacing
+    padding only adds room *inside* the card, between its rounded top edge and the heading - it does
+    not separate the card from the header/previous section above it.
+    {%- endcomment -%}
+    .color-scheme.section-floating {
+      margin-block-start: calc(var(--section-vertical-spacing) / 2);
+    }
+
+    @media screen and (max-width: 999px) {
+      .color-scheme.section-floating {
+        margin-block-start: var(--section-vertical-spacing);
+      }
+    }
+  {%- endif -%}
+
   .the-method {
     --the-method-gap: var(--container-gutter, 1.5rem);
     display: grid;
