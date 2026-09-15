@@ -1,6 +1,24 @@
+<style>
+  {%- comment -%}
+  Pushes the title below the giant "404" background number (.empty-state:before, theme.css) instead
+  of overlapping its center: half of that pseudo-element's own font-size (min(22rem, 40vw)) plus a
+  small gap, so the gap scales with the number the same way its size does. align-self: start (instead
+  of the grid's default center) makes the margin an unambiguous offset from the top of the content
+  box rather than shifting a centered item by half the margin.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .empty-state > .prose {
+    align-self: start;
+    margin-block-start: calc(min(11rem, 20vw) + 1.5rem);
+  }
+</style>
+
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_not_found %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_not_found %} style="border-end-start-radius: {{ section.settings.not_found_border_radius }}px; border-end-end-radius: {{ section.settings.not_found_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="container">
-    <div class="empty-state" data-background-text="404"></div>
+    <div class="empty-state" data-background-text="404">
+      <div class="prose prose-justify-center">
+        <h1 class="h4">{{ '404.general.title' | t }}</h1>
+      </div>
+    </div>
   </div>
 </div>
 
