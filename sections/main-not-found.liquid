@@ -1,5 +1,26 @@
 <style>
   {%- comment -%}
+  Fills the full viewport height (not just whatever the icon/heading need), so the color-scheme
+  background covers the page top to bottom regardless of content length. svh (not vh) so mobile
+  browser toolbars don't leave a gap at the bottom when they're expanded.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} > div {
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+  }
+
+  #shopify-section-{{ section.id }} .container,
+  #shopify-section-{{ section.id }} .empty-state {
+    width: 100%;
+  }
+
+  #shopify-section-{{ section.id }} .empty-state {
+    padding-block: 3rem;
+    gap: 1.5rem;
+  }
+
+  {%- comment -%}
   Sizes the broken-screen illustration relative to viewport (like the old giant "404" number used to),
   capped so it never gets absurdly large on wide screens.
   {%- endcomment -%}
@@ -7,6 +28,10 @@
     width: min(9rem, 26vw);
     height: auto;
     color: rgb(var(--text-color) / .4);
+  }
+
+  #shopify-section-{{ section.id }} .not-found-heading {
+    color: #ffffff;
   }
 </style>
 
@@ -21,6 +46,10 @@
         <path d="m89 49 9-7 4 12-11 3z"/>
         <path d="m24 108 8-6M132 100l7 7M118 108l5 9"/>
       </svg>
+
+      {%- if section.settings.heading != blank -%}
+        <h1 class="not-found-heading {{ section.settings.heading_size }}">{{ section.settings.heading }}</h1>
+      {%- endif -%}
     </div>
   </div>
 </div>
@@ -54,6 +83,34 @@
       "label": "Corner radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_not_found }}"
+    },
+    {
+      "type": "header",
+      "content": "t:global.text.text"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "t:global.text.heading",
+      "default": "Page not found"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "t:global.text.size",
+      "options": [
+        { "value": "display-xl", "label": "Display XL" },
+        { "value": "display-l", "label": "Display L" },
+        { "value": "display-m", "label": "Display M" },
+        { "value": "h1", "label": "XX-Large" },
+        { "value": "h2", "label": "X-Large" },
+        { "value": "h3", "label": "Large" },
+        { "value": "h4", "label": "Medium" },
+        { "value": "h5", "label": "Small" },
+        { "value": "h6", "label": "X-Small" },
+        { "value": "h7", "label": "XX-Small" }
+      ],
+      "default": "h3"
     }
   ]
 }
