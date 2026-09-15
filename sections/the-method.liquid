@@ -330,18 +330,24 @@
 </div>
 
 {% stylesheet %}
-  {%- comment -%}
-  Same padding formula as footer.liquid, reviews.liquid and faq.liquid (container-gutter + 0.5rem,
-  same on every breakpoint) - a floating card's own internal padding, not the gap between sections
-  (.section-spacing's larger value, meant for that, is dropped here). Equal on all 4 sides: .container
-  normally gives the sides a MARGIN instead (centering trick, --container-gutter-context, no +0.5rem),
-  which reads as a different, smaller side gutter than the top/bottom padding - margin-inline: 0 here
-  removes that so padding is the only thing spacing every side, at the same value.
-  {%- endcomment -%}
-  .container.section-spacing {
-    margin-inline: 0;
-    padding: calc(var(--container-gutter) + 0.5rem);
-  }
+  {%- if section.settings.floating_the_method -%}
+    {%- comment -%}
+    Same mechanism as sections/reviews.liquid's floating_reviews branch: this section becomes its own
+    padded card, so .section-spacing's generic page-to-page rhythm (padding-block only) and .container's
+    side gutter (a MARGIN, not padding, and without the +0.5rem below - a different value from a
+    different mechanism than the top/bottom spacing) are both zeroed out, and replaced with a single
+    padding, equal on all 4 sides, on the actual content wrapper (.the-method - the same role .reviews
+    plays there).
+    {%- endcomment -%}
+    .container.section-spacing {
+      margin-inline: 0;
+      padding-block: 0;
+    }
+
+    .the-method {
+      padding: calc(var(--container-gutter) + 0.5rem);
+    }
+  {%- endif -%}
 
   .the-method {
     --the-method-gap: var(--container-gutter, 1.5rem);
