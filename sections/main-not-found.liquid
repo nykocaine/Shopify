@@ -1,31 +1,26 @@
 <style>
   {%- comment -%}
-  Pushes the title below the giant "404" background number (.empty-state:before, theme.css) instead
-  of overlapping its center: half of that pseudo-element's own font-size (min(22rem, 40vw)) plus a
-  small gap, so the gap scales with the number the same way its size does. align-self: start (instead
-  of the grid's default center) makes the margin an unambiguous offset from the top of the content
-  box rather than shifting a centered item by half the margin.
+  Sizes the broken-screen illustration relative to viewport (like the old giant "404" number used to),
+  capped so it never gets absurdly large on wide screens.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .empty-state > .prose {
-    align-self: start;
-    margin-block-start: calc(min(11rem, 20vw) + 8rem);
-  }
-
-  {%- comment -%}
-  Same color as the "404" background number: .empty-state:before (theme.css) is the theme's regular
-  text color at 10% opacity, so this matches it directly instead of guessing a similar gray.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .empty-state h1 {
-    color: rgb(var(--text-color) / .1);
+  #shopify-section-{{ section.id }} .not-found-icon {
+    width: min(9rem, 26vw);
+    height: auto;
+    color: rgb(var(--text-color) / .4);
   }
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_not_found %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_not_found %} style="border-end-start-radius: {{ section.settings.not_found_border_radius }}px; border-end-end-radius: {{ section.settings.not_found_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="container">
-    <div class="empty-state" data-background-text="404">
-      <div class="prose prose-justify-center">
-        <h1 class="h4">{{ '404.general.title' | t }}</h1>
-      </div>
+    <div class="empty-state">
+      {%- comment -%} Decorative "broken screen" illustration - no text content, so aria-hidden. {%- endcomment -%}
+      <svg class="not-found-icon" aria-hidden="true" focusable="false" viewBox="0 0 160 140" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="20" y="15" width="120" height="80" rx="10"/>
+        <path d="M75 95v15M55 110h50"/>
+        <path d="M95 55 60 25M95 55 30 40M95 55 35 75M95 55 70 90M95 55 120 30M95 55 125 70M95 55 100 87"/>
+        <path d="m89 49 9-7 4 12-11 3z"/>
+        <path d="m24 108 8-6M132 100l7 7M118 108l5 9"/>
+      </svg>
     </div>
   </div>
 </div>
