@@ -1,26 +1,5 @@
 <style>
   {%- comment -%}
-  Fills the full viewport height (not just whatever the icon/heading need), so the color-scheme
-  background covers the page top to bottom regardless of content length. svh (not vh) so mobile
-  browser toolbars don't leave a gap at the bottom when they're expanded.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} > div {
-    min-height: 100svh;
-    display: flex;
-    align-items: center;
-  }
-
-  #shopify-section-{{ section.id }} .container,
-  #shopify-section-{{ section.id }} .empty-state {
-    width: 100%;
-  }
-
-  #shopify-section-{{ section.id }} .empty-state {
-    padding-block: 3rem;
-    gap: 1.5rem;
-  }
-
-  {%- comment -%}
   Sizes the broken-screen illustration relative to viewport (like the old giant "404" number used to),
   capped so it never gets absurdly large on wide screens.
   {%- endcomment -%}
@@ -35,8 +14,21 @@
   }
 </style>
 
+{%- liquid
+  assign background_media = section.settings.background_video
+  if background_media == blank
+    assign background_media = section.settings.background_image
+  endif
+-%}
+
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_not_found %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_not_found %} style="border-end-start-radius: {{ section.settings.not_found_border_radius }}px; border-end-end-radius: {{ section.settings.not_found_border_radius }}px; overflow: hidden;"{% endif %}>
-  <div class="container">
+  <div class="content-box min-h-screen">
+    {%- if background_media != blank -%}
+      <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.overlay_color.rgb }} / {{ section.settings.overlay_opacity | divided_by: 100.0 }}">
+        {%- render 'media', media: background_media, autoplay: true, loop: true, muted: true, preload: true -%}
+      </div>
+    {%- endif -%}
+
     <div class="empty-state">
       {%- comment -%} Decorative "broken screen" illustration - no text content, so aria-hidden. {%- endcomment -%}
       <svg class="not-found-icon" aria-hidden="true" focusable="false" viewBox="0 0 160 140" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -83,6 +75,37 @@
       "label": "Corner radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_not_found }}"
+    },
+    {
+      "type": "header",
+      "content": "t:global.image.background_image"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "t:global.image.background_image"
+    },
+    {
+      "type": "video",
+      "id": "background_video",
+      "label": "t:global.video.video",
+      "info": "Takes priority over the background image when set."
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "t:global.colors.image_overlay_color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "t:global.colors.image_overlay_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 20
     },
     {
       "type": "header",
