@@ -466,15 +466,23 @@
 
       {%- comment -%}
       Mobile-only: square off the gallery's top corners so it sits flush under the header (which now
-      has zero gap above, per the margin removed above), keeping the bottom corners rounded. Also
-      squares the inner .product-gallery__carousel-frame (product-gallery.liquid), which otherwise
-      clips its own content to the full gallery_border_radius and would show rounded corners peeking
-      through the now-square outer frame.
+      has zero gap above, per the margin removed above), keeping the bottom corners rounded.
       {%- endcomment -%}
-      #shopify-section-{{ section.id }} .product-gallery-frame,
-      #shopify-section-{{ section.id }} .product-gallery__carousel-frame {
+      #shopify-section-{{ section.id }} .product-gallery-frame {
         border-start-start-radius: 0;
         border-start-end-radius: 0;
+      }
+
+      {%- comment -%}
+      Same, for the inner .product-gallery__carousel-frame (product-gallery.liquid): its own <style>
+      block renders later in the page than this one (it's emitted where the snippet is included,
+      further down the section), so at equal specificity its border-radius shorthand (both top
+      corners included) would otherwise win the cascade and override the rule above. !important
+      forces this one to win regardless of source order.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery__carousel-frame {
+        border-start-start-radius: 0 !important;
+        border-start-end-radius: 0 !important;
       }
 
       {%- if product.media.size > 0 and section.settings.product_height_mobile > 0 -%}
