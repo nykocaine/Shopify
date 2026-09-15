@@ -16,6 +16,13 @@
         --overlay: {{ section.settings.overlay_color.rgb }} / {{ section.settings.overlay_opacity | divided_by: 100.0 }};
         --collection-list-grid: {% if section.settings.stack_on_mobile %}auto-flow / minmax(0, 1fr){% else %}auto / auto-flow 78vw{% endif %};
         --collection-list-gap: {% if section.settings.column_spacing == 'none' %}0px{% elsif section.settings.column_spacing == 'sm' %}calc(var(--container-gutter) / 2){% elsif section.settings.column_spacing == 'md' %}var(--container-gutter){% elsif section.settings.column_spacing == 'lg' %}calc(var(--container-gutter) * 1.5){% endif %};
+        {%- comment -%}
+        Collection cards (blocks/collection-card.liquid) inherit the same corner radius this
+        section already uses for its own floating card (list_collections_border_radius) - same
+        pattern product cards use for --product-card-border-radius, just sourced from this
+        section's own radius instead of a separate per-card setting.
+        {%- endcomment -%}
+        --collection-card-border-radius: {{ section.settings.list_collections_border_radius }}px;
       }
 
       @media screen and (min-width: 700px) {

@@ -44,7 +44,7 @@
   {%- endcapture -%}
   
   {%- if section.settings.content_position == 'inside' -%}
-    <div class="content-box min-h-{{ section.settings.image_size }} overflow-clip group">
+    <div class="content-box min-h-{{ section.settings.image_size }} overflow-clip group" style="border-radius: var(--collection-card-border-radius, 0);">
       <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }};">
         {{- image -}}
       </div>
@@ -55,7 +55,7 @@
     </div>
   {%- else -%}
     <div class="v-stack group gap-4 sm:gap-5">
-      <div class="content-box min-h-{{ section.settings.image_size }} overflow-clip">
+      <div class="content-box min-h-{{ section.settings.image_size }} overflow-clip" style="border-radius: var(--collection-card-border-radius, 0);">
         <div class="content-box__background-media">
           {{- image -}}
         </div>
