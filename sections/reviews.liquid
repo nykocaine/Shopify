@@ -297,13 +297,29 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   endif
 -%}
 
-<x-modal id="{{ write_review_modal_id }}" append-to-body {% if has_form_feedback %}open{% endif %} class="modal color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
+<x-modal id="{{ write_review_modal_id }}" append-to-body {% if has_form_feedback %}open{% endif %} class="modal modal--lg modal--write-review color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
   <div class="prose">
     <p class="h5">comparte tus ideas</p>
   </div>
 
   {{- review_form_content -}}
 </x-modal>
+
+<style>
+  {%- comment -%}
+  append-to-body (above) moves this modal out to <body> at runtime, outside
+  #shopify-section-{{ section.id }} - so this is scoped by the modal's own id instead, which stays
+  valid wherever it ends up in the DOM. Border radius matches this section's own floating card
+  radius (section.settings.reviews_border_radius, used for the floating card's own style="" a bit
+  down below) instead of the theme-wide modal default, so the popup reads as part of this section.
+  modal--lg (theme.css) gives it a wider, more usable content column instead of the base .modal's
+  30rem cap, which read cramped for a form this long (star picker, title, review body, name/email).
+  {%- endcomment -%}
+  #{{ write_review_modal_id }}.modal--write-review::part(content) {
+    border-radius: {{ section.settings.reviews_border_radius }}px;
+    overflow: hidden;
+  }
+</style>
 
 <style>
   {%- if section.settings.floating_reviews -%}
