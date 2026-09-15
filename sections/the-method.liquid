@@ -331,12 +331,16 @@
 
 {% stylesheet %}
   {%- comment -%}
-  Same top/bottom padding formula as footer.liquid, reviews.liquid and faq.liquid (container-gutter
-  + 0.5rem, same on every breakpoint), replacing .section-spacing's own larger inter-section value -
-  this is a floating card's internal padding, not the gap between sections.
+  Same padding formula as footer.liquid, reviews.liquid and faq.liquid (container-gutter + 0.5rem,
+  same on every breakpoint) - a floating card's own internal padding, not the gap between sections
+  (.section-spacing's larger value, meant for that, is dropped here). Equal on all 4 sides: .container
+  normally gives the sides a MARGIN instead (centering trick, --container-gutter-context, no +0.5rem),
+  which reads as a different, smaller side gutter than the top/bottom padding - margin-inline: 0 here
+  removes that so padding is the only thing spacing every side, at the same value.
   {%- endcomment -%}
   .container.section-spacing {
-    padding-block: calc(var(--container-gutter) + 0.5rem);
+    margin-inline: 0;
+    padding: calc(var(--container-gutter) + 0.5rem);
   }
 
   .the-method {
