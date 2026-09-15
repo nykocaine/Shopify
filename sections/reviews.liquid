@@ -382,9 +382,24 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     }
   }
 
+  {%- comment -%}
+  Mobile: switch to a single-column grid instead of a flex column. grid-template-columns:
+  minmax(0, max-content) sizes that one column to whatever its widest child needs (almost always
+  .reviews__summary, with the big number + stars + "Basado en"); grid's own default
+  justify-items: stretch then makes every other child - here just the button's wrapper - fill
+  that same column width instead of shrinking to its own label's width. .button below fills that
+  wrapper in turn, so the visible button always matches .reviews__summary's width exactly,
+  whatever that ends up being.
+  {%- endcomment -%}
   @media screen and (max-width: 699px) {
     #shopify-section-{{ section.id }} .reviews__summary-row {
-      flex-direction: column;
+      grid-template-columns: minmax(0, max-content);
+      justify-content: center;
+      display: grid;
+    }
+
+    #shopify-section-{{ section.id }} .reviews__summary-write .button {
+      width: 100%;
     }
   }
 
