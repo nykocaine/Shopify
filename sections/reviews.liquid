@@ -91,8 +91,6 @@ to the first 5 of the newly sorted order.
             </div>
           </div>
 
-          <p class="reviews__count">{{ review_blocks.size }} reseña{% if review_blocks.size != 1 %}s{% endif %}</p>
-
           <div class="reviews__list" data-reviews-list>
             {%- for block in review_blocks -%}
               <div class="review-card" data-rating="{{ block.settings.rating }}" data-index="{{ forloop.index }}" {{ block.shopify_attributes }}>
@@ -498,12 +496,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     padding-inline-end: 1.25rem;
     background: none;
     color: inherit;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__count {
-    color: rgb(var(--text-color) / .6);
-    border-block-end: 1px solid rgb(var(--border-color));
-    padding-block-end: 1.5rem;
   }
 
   #shopify-section-{{ section.id }} .reviews__list {
