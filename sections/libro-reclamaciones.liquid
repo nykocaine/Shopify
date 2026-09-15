@@ -41,7 +41,7 @@
   <div class="rc-aviso v-stack gap-4">
     <p class="subheading">{{ 'libro_reclamaciones.aviso.title' | t }}</p>
 
-    <div class="rc-aviso__provider prose text-subdued text-sm">
+    <div class="rc-aviso__provider prose">
       {{- provider_summary -}}
     </div>
 
@@ -179,7 +179,7 @@
       <div class="rc-aviso v-stack gap-2">
         <p class="subheading">{{ 'libro_reclamaciones.aviso.title' | t }}</p>
 
-        <div class="rc-aviso__provider prose text-subdued text-sm">
+        <div class="rc-aviso__provider prose">
           {{- provider_summary -}}
         </div>
       </div>
@@ -214,24 +214,16 @@
   }
 
   {%- comment -%}
-  On desktop, hug the start edge (matches sections/contact.liquid's own left-pinned layout)
-  instead of sitting centered in the middle of a wide page - .section-stack's mx-auto is only
-  meant to keep it centered on narrower/mobile screens where there's no room for it to read as
-  "off to one side" anyway.
-  {%- endcomment -%}
-  @media screen and (min-width: 1000px) {
-    #shopify-section-{{ section.id }} .section-stack.mx-auto {
-      margin-inline: 0;
-    }
-  }
-
-  {%- comment -%}
   Legal notice block (previously a white boxed card - see assets/libro-reclamaciones.css): now
   plain text, so it needs its own rhythm instead of the flat p { margin: 0 } that worked for a
   tightly packed card. The business-details lines (name/RUC/address/email) stay tight as one
   group; everything else (title, deadline text, retention notice, reclamo-vs-queja line) gets
   proper spacing from .rc-aviso's own v-stack gap in the markup.
   {%- endcomment -%}
+  #shopify-section-{{ section.id }} .rc-aviso__provider {
+    opacity: .4;
+  }
+
   #shopify-section-{{ section.id }} .rc-aviso__provider p {
     margin: 0;
   }
@@ -240,7 +232,7 @@
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_libro_reclamaciones %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_libro_reclamaciones %} style="border-end-start-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; border-end-end-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div class="container">
-      <div class="section-stack max-w-lg mx-auto">
+      <div class="section-stack">
         {{- section_header -}}
         {{- section_main_content -}}
       </div>
