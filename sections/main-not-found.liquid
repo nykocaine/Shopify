@@ -8,7 +8,15 @@
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .empty-state > .prose {
     align-self: start;
-    margin-block-start: calc(min(11rem, 20vw) + 1.5rem);
+    margin-block-start: calc(min(11rem, 20vw) + 4rem);
+  }
+
+  {%- comment -%}
+  Same color as the "404" background number: .empty-state:before (theme.css) is the theme's regular
+  text color at 10% opacity, so this matches it directly instead of guessing a similar gray.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .empty-state h1 {
+    color: rgb(var(--text-color) / .1);
   }
 </style>
 
