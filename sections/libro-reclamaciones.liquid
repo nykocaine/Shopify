@@ -18,10 +18,10 @@
 {% endcomment %}
 
 {%- capture provider_summary -%}
-  <p>{{ 'libro_reclamaciones.aviso.provider_label' | t }}: {{ section.settings.provider_business_name }}</p>
-  <p>RUC: {{ section.settings.provider_ruc }}</p>
-  <p>{{ 'libro_reclamaciones.aviso.address_label' | t }}: {{ section.settings.provider_address }}</p>
-  <p>{{ 'libro_reclamaciones.aviso.email_label' | t }}: {{ section.settings.provider_email }}</p>
+  <p><strong>{{ 'libro_reclamaciones.aviso.provider_label' | t }}:</strong> {{ section.settings.provider_business_name }}</p>
+  <p><strong>RUC:</strong> {{ section.settings.provider_ruc }}</p>
+  <p><strong>{{ 'libro_reclamaciones.aviso.address_label' | t }}:</strong> {{ section.settings.provider_address }}</p>
+  <p><strong>{{ 'libro_reclamaciones.aviso.email_label' | t }}:</strong> {{ section.settings.provider_email }}</p>
 {%- endcapture -%}
 
 {%- capture section_header -%}
@@ -38,7 +38,7 @@
 {%- endcapture -%}
 
 {%- capture section_main_content -%}
-  <div class="rc-aviso v-stack gap-6">
+  <div class="rc-aviso v-stack gap-4">
     <p class="subheading">{{ 'libro_reclamaciones.aviso.title' | t }}</p>
 
     <div class="rc-aviso__columns grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
@@ -46,7 +46,7 @@
         {{- provider_summary -}}
       </div>
 
-      <div class="v-stack gap-4">
+      <div class="rc-aviso__notes v-stack gap-4 text-subdued">
         {%- if section.settings.response_deadline_text != blank -%}
           <div class="prose">
             {{- section.settings.response_deadline_text -}}
@@ -54,12 +54,12 @@
         {%- endif -%}
 
         {%- if section.settings.retention_notice != blank -%}
-          <div class="prose text-subdued">
+          <div class="prose">
             {{- section.settings.retention_notice -}}
           </div>
         {%- endif -%}
 
-        <p class="text-subdued">{{ 'libro_reclamaciones.aviso.reclamo_vs_queja' | t }}</p>
+        <p>{{ 'libro_reclamaciones.aviso.reclamo_vs_queja' | t }}</p>
       </div>
     </div>
   </div>
@@ -218,13 +218,26 @@
   Legal notice block (previously a white boxed card - see assets/libro-reclamaciones.css): now
   plain text, so it needs its own rhythm instead of the flat p { margin: 0 } that worked for a
   tightly packed card. The business-details lines (name/RUC/address/email) stay tight as one
-  group; everything else (title, deadline text, retention notice, reclamo-vs-queja line) gets
-  proper spacing from .rc-aviso's own v-stack gap in the markup. Business details and the
-  deadline/retention/reclamo-vs-queja copy sit side by side in two columns on desktop (single
-  column on mobile) via .rc-aviso__columns.
+  group, each getting a little breathing room instead of a hard 0; everything else (title,
+  deadline text, retention notice, reclamo-vs-queja line) gets proper spacing from .rc-aviso's
+  own v-stack gap in the markup. Business details and the deadline/retention/reclamo-vs-queja
+  copy sit side by side in two columns on desktop (single column on mobile) via
+  .rc-aviso__columns, with a vertical rule between them on desktop so the two groups read as
+  distinct blocks instead of a single run of text.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .rc-aviso__provider p {
-    margin: 0;
+    margin: 0 0 .375rem;
+  }
+
+  #shopify-section-{{ section.id }} .rc-aviso__provider p:last-child {
+    margin-block-end: 0;
+  }
+
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .rc-aviso__notes {
+      border-inline-start: 1px solid rgb(var(--border-color));
+      padding-inline-start: 2rem;
+    }
   }
 </style>
 
