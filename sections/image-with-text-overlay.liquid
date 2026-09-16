@@ -1,6 +1,6 @@
-<div {% if section.settings.allow_transparent_header %}allow-transparent-header{% endif %} class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_image_overlay %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_image_overlay %} style="border-end-start-radius: {{ section.settings.image_overlay_border_radius }}px; border-end-end-radius: {{ section.settings.image_overlay_border_radius }}px; overflow: hidden;"{% endif %}>
+<div {% if section.settings.allow_transparent_header %}allow-transparent-header{% endif %} class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_image_overlay %} section-floating section-floating--block-end{% endif %}">
   <div class="content-box min-h-{{ section.settings.image_size }}">
-    <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.overlay_color.rgb }} / {{ section.settings.overlay_opacity | divided_by: 100.0 }}">
+    <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.overlay_color.rgb }} / {{ section.settings.overlay_opacity | divided_by: 100.0 }};{% if section.settings.floating_image_overlay %} border-end-start-radius: {{ section.settings.image_overlay_border_radius }}px; border-end-end-radius: {{ section.settings.image_overlay_border_radius }}px; overflow: hidden;{% endif %}">
       {%- liquid
         if section.settings.image != blank
           render 'media' with section.settings.image, mobile_media: section.settings.mobile_image, preload: true
