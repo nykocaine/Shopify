@@ -6,9 +6,9 @@
   #shopify-section-{{ section.id }} .not-found-blur {
     position: absolute;
     inset: 0;
-    background: rgb(var(--page-overlay));
-    -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
-    backdrop-filter: blur(var(--dialog-backdrop-blur));
+    background: rgb(var(--not-found-blur-color));
+    -webkit-backdrop-filter: blur(var(--not-found-blur-intensity));
+    backdrop-filter: blur(var(--not-found-blur-intensity));
     pointer-events: none;
   }
 </style>
@@ -24,12 +24,12 @@
   <div class="content-box min-h-screen">
     {%- if background_media != blank -%}
       <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.overlay_color.rgb }} / {{ section.settings.overlay_opacity | divided_by: 100.0 }}">
-        {%- render 'media', media: background_media, autoplay: true, loop: true, muted: true, preload: true -%}
+        {%- render 'media', media: background_media, autoplay: true, playsinline: true, loop: true, muted: true, preload: true -%}
       </div>
     {%- endif -%}
 
     {%- if section.settings.enable_blur_effect -%}
-      <div class="not-found-blur"></div>
+      <div class="not-found-blur" style="--not-found-blur-intensity: {{ section.settings.blur_intensity }}px; --not-found-blur-color: {{ section.settings.blur_color.rgb }} / {{ section.settings.blur_opacity | divided_by: 100.0 }};"></div>
     {%- endif -%}
 
     <div class="empty-state">
@@ -78,8 +78,37 @@
       "type": "checkbox",
       "id": "enable_blur_effect",
       "label": "Enable blur effect",
-      "info": "Applies a blur effect over the whole section, using the same blur and color settings as the store's dialogs (Theme settings > Appearance > Dialogs).",
+      "info": "Applies a blur effect over the whole section (same style used for dialog backdrops).",
       "default": false
+    },
+    {
+      "type": "range",
+      "id": "blur_intensity",
+      "label": "Blur intensity",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 6,
+      "visible_if": "{{ section.settings.enable_blur_effect }}"
+    },
+    {
+      "type": "color",
+      "id": "blur_color",
+      "label": "Blur color",
+      "default": "#000000",
+      "visible_if": "{{ section.settings.enable_blur_effect }}"
+    },
+    {
+      "type": "range",
+      "id": "blur_opacity",
+      "label": "Blur color opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 40,
+      "visible_if": "{{ section.settings.enable_blur_effect }}"
     },
     {
       "type": "header",
