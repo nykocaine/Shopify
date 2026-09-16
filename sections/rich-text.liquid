@@ -13,6 +13,30 @@
     assign second_column = ''
   -%}
 
+  {%- if section.settings.floating_rich_text -%}
+    <style>
+      {%- comment -%}
+      Same mechanism as sections/reviews.liquid's floating_reviews branch (and sections/the-method.liquid):
+      this section becomes its own padded card, so .section-spacing's generic page-to-page rhythm
+      (padding-block only) and .container's side gutter (a MARGIN, not padding, and without the
+      +0.5rem below - a different value from a different mechanism than the top/bottom spacing) are
+      both zeroed out, and replaced with a single padding, equal on all 4 sides, on the actual content
+      wrapper (.rich-text - the same role .reviews/.the-method play in those sections). Scoped with
+      #shopify-section-{{ section.id }} (a plain <style> tag, not {% stylesheet %} - the latter is
+      deduplicated per section TYPE, not scoped per instance, so bare .container/.section-spacing
+      selectors there would leak into every other section using those same theme-wide classes).
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .container.section-spacing {
+        margin-inline: 0;
+        padding-block: 0;
+      }
+
+      #shopify-section-{{ section.id }} .rich-text {
+        padding: calc(var(--container-gutter) + 0.5rem);
+      }
+    </style>
+  {%- endif -%}
+
   <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_rich_text %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_rich_text %} style="border-radius: {{ section.settings.rich_text_border_radius }}px; overflow: hidden;"{% endif %}>
     <div class="container section-spacing">
       <div class="rich-text justify-items-{{ section.settings.text_alignment | replace: 'left', 'start' | replace: 'right', 'end' }}">
