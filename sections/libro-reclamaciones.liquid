@@ -202,10 +202,11 @@
   mobile and desktop - instead of the global "Section spacing" setting this section normally uses.
   Put directly on .section-spacing itself (not on the nested .container) so it's one plain
   padding: on one element, on top of whatever .container's own margin already does - same as
-  every other floating section in the theme.
+  every other floating section in the theme. Top padding is doubled vs. the other three sides.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .section-spacing {
     padding: calc(var(--container-gutter) + 0.5rem);
+    padding-block-start: calc((var(--container-gutter) + 0.5rem) * 2);
   }
 
   {%- comment -%}
