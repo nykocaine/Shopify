@@ -19,30 +19,15 @@ Render a list of price for a product, variant or line item.
 
     when 'card'
       {%- comment -%}
-      Regular price matches the card title's color (full opacity), same as the on-sale price
-      already did. body_text/heading still use .product-card__price for the non-bold weight
-      instead of silently inheriting whatever weight is ambient. The compare-at (struck-through)
-      and unit price stay subdued, since they're secondary information.
+      The price always uses the body_text look (small, regular weight) and the card title's
+      color (full opacity) regardless of the card's own product_card_style (body_text/heading/
+      subheading), so it never inherits the title's bold/tracked/uppercase treatment. The
+      compare-at (struck-through) and unit price stay subdued, since they're secondary information.
       {%- endcomment -%}
-      case settings.product_card_style
-        when 'subheading'
-          assign regular_price_classes = 'subheading'
-          assign on_sale_price_classes = 'subheading text-on-sale'
-          assign compare_at_price_classes = 'subheading text-subdued line-through'
-          assign unit_price_classes = 'subheading text-subdued'
-
-        when 'body_text'
-          assign regular_price_classes = 'text-sm product-card__price'
-          assign on_sale_price_classes = 'text-sm text-on-sale product-card__price'
-          assign compare_at_price_classes = 'text-sm product-card__price product-card__price--subdued line-through'
-          assign unit_price_classes = 'text-sm product-card__price product-card__price--subdued'
-
-        when 'heading'
-          assign regular_price_classes = 'product-card__price'
-          assign on_sale_price_classes = 'text-on-sale product-card__price'
-          assign compare_at_price_classes = 'product-card__price product-card__price--subdued line-through'
-          assign unit_price_classes = 'product-card__price product-card__price--subdued'
-      endcase
+      assign regular_price_classes = 'text-sm product-card__price'
+      assign on_sale_price_classes = 'text-sm text-on-sale product-card__price'
+      assign compare_at_price_classes = 'text-sm product-card__price product-card__price--subdued line-through'
+      assign unit_price_classes = 'text-sm product-card__price product-card__price--subdued'
 
     when 'line_item'
       assign regular_price_classes = 'subheading text-subdued'
