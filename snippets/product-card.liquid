@@ -378,7 +378,8 @@ based on your desired layout (and remove most of the settings associated), and t
                 {{- product.title -}}
               </a>
               {%- if product.metafields.custom.subtitle -%}
-                <div class="product-subtitle text-base">{{ product.metafields.custom.subtitle }}</div>
+                {%- comment -%} Full-opacity body text color, unlike .product-subtitle's own muted .7 alpha (kept for the rating row text elsewhere) {%- endcomment -%}
+                <div class="product-subtitle text-base" style="color: rgb(var(--text-color))">{{ product.metafields.custom.subtitle }}</div>
               {%- endif -%}
             </div>
 
