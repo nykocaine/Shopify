@@ -109,15 +109,13 @@
   }
 
   {%- comment -%}
-  "Same row as blocks" big-logo option: on mobile the block-list grid is only 2 columns, so a
-  block left alone in one column would sit next to blank empty space rather than looking
-  intentional. Give it the full row instead and center the (still small, px-capped) logo in it.
+  "Same row as blocks" big-logo option: full row on mobile (like the "Full width" layout), so the
+  image (set to 100% width there - see the scrolling_logo case above) actually spans the section
+  instead of being capped to one half of the 2-column block-list grid.
   {%- endcomment -%}
   @media screen and (max-width: 699px) {
     #shopify-section-{{ section.id }} .footer__block--scrolling_logo {
       grid-column: 1 / -1;
-      justify-content: center;
-      display: flex;
     }
   }
 </style>
@@ -191,10 +189,14 @@
                   rows rendered separately via the scrolling_logo capture above the block loop.
                   {%- endcomment -%}
                   {%- if block.settings.layout == 'inline' and block.settings.image != blank -%}
-                    {%- capture sizes -%}{{ block.settings.inline_image_width }}px{%- endcapture -%}
-                    {%- capture widths -%}{{ block.settings.inline_image_width }}, {{ block.settings.inline_image_width | times: 2 | at_most: block.settings.image.width }}{%- endcapture -%}
-                    {%- comment -%} capped with vw so it can never balloon to the full row width on narrow phones, regardless of the configured px width {%- endcomment -%}
-                    {%- capture style -%}--image-max-width: min({{ block.settings.inline_image_width }}px, 50vw){%- endcapture -%}
+                    {%- capture sizes -%}(max-width: 699px) 100vw, {{ block.settings.inline_image_width }}px{%- endcapture -%}
+                    {%- capture widths -%}400, 800, 1200, 1600, {{ block.settings.inline_image_width | times: 2 | at_most: block.settings.image.width }}{%- endcapture -%}
+                    {%- comment -%}
+                    Full width on mobile (matches the "Full width" layout look, since the block already
+                    spans the whole row there - see .footer__block--scrolling_logo below), but only the
+                    configured px width on desktop where it sits inline next to the other blocks.
+                    {%- endcomment -%}
+                    {%- capture style -%}--image-mobile-max-width: 100%; --image-max-width: {{ block.settings.inline_image_width }}px;{%- endcapture -%}
                     {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: sizes: sizes, widths: widths, style: style, class: 'constrained-image' -}}
                   {%- endif -%}
 
