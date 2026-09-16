@@ -142,7 +142,7 @@ based on your desired layout (and remove most of the settings associated), and t
   endunless
 -%}
 
-<product-card class="{{ product_card_classes }} color-scheme color-scheme--{{ color_scheme.id }}" {% if reveal and settings.stagger_products %}reveal-on-scroll="true"{% endif %} handle="{{ product.handle | escape }}" style="border-radius: var(--product-card-border-radius, 0); overflow: hidden;">
+<product-card class="{{ product_card_classes }} color-scheme color-scheme--{{ color_scheme.id }}" {% if reveal and settings.stagger_products %}reveal-on-scroll="true"{% endif %} handle="{{ product.handle | escape }}">
   {%- comment -%}
   --------------------------------------------------------------------------------------------------------------------
   PRODUCT MEDIA
@@ -166,10 +166,8 @@ based on your desired layout (and remove most of the settings associated), and t
     {%- endif -%}
 
     {%- comment -%}
-    Round the image on its own (all four corners, incl. the bottom): the card's border-radius +
-    overflow: hidden only rounds the outer card, so with the info below the image its bottom corners
-    stayed square. .product-card__media already has overflow: hidden, so matching its radius to the
-    card's is enough. Falls back to 0 when no radius is configured.
+    Only the image is rounded, not the whole card - .product-card__media already has overflow:
+    hidden, so giving it its own radius is enough. Falls back to 0 when no radius is configured.
     {%- endcomment -%}
     <a href="{{ product.url }}" class="product-card__media" style="border-radius: var(--product-card-border-radius, 0);">
       {%- if product.media.size > 0 -%}
