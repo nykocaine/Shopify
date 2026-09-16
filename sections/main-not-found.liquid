@@ -2,6 +2,15 @@
   #shopify-section-{{ section.id }} .not-found-heading {
     color: #ffffff;
   }
+
+  #shopify-section-{{ section.id }} .not-found-blur {
+    position: absolute;
+    inset: 0;
+    background: rgb(var(--page-overlay));
+    -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
+    backdrop-filter: blur(var(--dialog-backdrop-blur));
+    pointer-events: none;
+  }
 </style>
 
 {%- liquid
@@ -17,6 +26,10 @@
       <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.overlay_color.rgb }} / {{ section.settings.overlay_opacity | divided_by: 100.0 }}">
         {%- render 'media', media: background_media, autoplay: true, loop: true, muted: true, preload: true -%}
       </div>
+    {%- endif -%}
+
+    {%- if section.settings.enable_blur_effect -%}
+      <div class="not-found-blur"></div>
     {%- endif -%}
 
     <div class="empty-state">
@@ -56,6 +69,17 @@
       "label": "Corner radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_not_found }}"
+    },
+    {
+      "type": "header",
+      "content": "Blur effect"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_blur_effect",
+      "label": "Enable blur effect",
+      "info": "Applies a blur effect over the whole section, using the same blur and color settings as the store's dialogs (Theme settings > Appearance > Dialogs).",
+      "default": false
     },
     {
       "type": "header",
