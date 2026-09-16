@@ -28,6 +28,19 @@
     }
 
     var submitButton = form.querySelector('button[type="submit"]');
+    var submitHint = form.querySelector('.rc-submit-hint');
+
+    if (submitButton) {
+      var updateSubmitState = function () {
+        var isValid = form.checkValidity();
+        submitButton.disabled = !isValid;
+        if (submitHint) submitHint.hidden = isValid;
+      };
+
+      form.addEventListener('input', updateSubmitState);
+      form.addEventListener('change', updateSubmitState);
+      updateSubmitState();
+    }
 
     form.addEventListener('submit', function () {
       var now = new Date();
