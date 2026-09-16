@@ -51,6 +51,13 @@
     flex-shrink: 0;
   }
 
+  {%- comment -%}
+  There's no dedicated "chevron-left" icon, so the prev button reuses chevron-right flipped. This
+  `transform` composes with (doesn't fight) the `direction_aware` icon param's own `scale: -1` in RTL
+  (assets/theme.css `[dir="rtl"] .icon--direction-aware`) - `scale` and `transform` are separate CSS
+  properties that both apply, so the two horizontal flips cancel out in RTL, correctly leaving the
+  icon pointing the same way "next" does there.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .featured-product-list__scroll-controls carousel-prev-button .icon-chevron-right {
     transform: scaleX(-1);
   }
@@ -121,7 +128,16 @@
         -%}
 
         <product-list id="{{ product_list_id }}" cell-selector=".product-card, .product-list__promo" class="product-list {{ product_list_class }}" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;">
-          {%- capture sizes -%}(max-width: 699px) calc(100vw / {{ section.settings.products_per_row_mobile }} - 40px), (max-width: 999px) calc(100vw / {{ 3 | at_most: section.settings.products_per_row_desktop }} - 64px), calc((100vw - 96px) / {{ section.settings.products_per_row_desktop }}){%- endcapture -%}
+          {%- comment -%} Tablet divisor matches --product-list-column-count: 2 at the 700px breakpoint above, not products_per_row_desktop - keep in sync with that rule. {%- endcomment -%}
+          {%- capture sizes -%}(max-width: 699px) calc(100vw / {{ section.settings.products_per_row_mobile }} - 40px), (max-width: 999px) calc(100vw / 2 - 64px), calc((100vw - 96px) / {{ section.settings.products_per_row_desktop }}){%- endcapture -%}
+
+          {%- comment -%}
+          Tracks the card's actual visual position in the grid (products AND promo blocks both occupy a
+          cell), not just its index within product_list - product-card.liquid's own `position` param
+          (which drives eager- vs lazy-loading its image) would otherwise undercount whenever a promo
+          block is inserted before it.
+          {%- endcomment -%}
+          {%- assign visual_position = 0 -%}
 
           {%- for product in section.settings.product_list -%}
             {%- for block in section.blocks -%}
@@ -129,10 +145,12 @@
                 {%- continue -%}
               {%- endif -%}
 
+              {%- assign visual_position = visual_position | plus: 1 -%}
               {%- render 'featured-product-list-promo', block: block, section: section -%}
             {%- endfor -%}
 
-            {%- render 'product-card', product: product, reveal: true, sizes: sizes, position: forloop.index -%}
+            {%- assign visual_position = visual_position | plus: 1 -%}
+            {%- render 'product-card', product: product, reveal: true, sizes: sizes, position: visual_position -%}
           {%- else -%}
             {%- for i in (1..4) -%}
               {%- render 'product-card-placeholder', loop_index: i -%}
@@ -140,11 +158,14 @@
           {%- endfor -%}
 
           {%- comment -%}
-          A block whose position is beyond the total number of products has no matching product to be inserted
-          before, so it would never render. We treat any such block as "show at the end" instead.
+          A block whose position is outside the 1..product_list.size range the main loop above matches
+          against (beyond the last product, or - defensively, since a migrated/hand-edited template JSON
+          could carry an out-of-range value the schema's min wouldn't otherwise allow - zero or negative)
+          has no matching product to be inserted before, so it would never render there. We treat any such
+          block as "show at the end" instead.
           {%- endcomment -%}
           {%- for block in section.blocks -%}
-            {%- if block.settings.position <= section.settings.product_list.size -%}
+            {%- if block.settings.position >= 1 and block.settings.position <= section.settings.product_list.size -%}
               {%- continue -%}
             {%- endif -%}
 
@@ -160,14 +181,14 @@
               <carousel-prev-button aria-controls="{{ product_list_id }}">
                 <button disabled class="circle-button circle-button--outline">
                   <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
-                  {%- render 'icon' with 'chevron-right', width: 8 -%}
+                  {%- render 'icon' with 'chevron-right', direction_aware: true, width: 8 -%}
                 </button>
               </carousel-prev-button>
 
               <carousel-next-button aria-controls="{{ product_list_id }}">
                 <button class="circle-button circle-button--outline">
                   <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
-                  {%- render 'icon' with 'chevron-right', width: 8 -%}
+                  {%- render 'icon' with 'chevron-right', direction_aware: true, width: 8 -%}
                 </button>
               </carousel-next-button>
             </div>
