@@ -107,6 +107,19 @@
     grid-column: 1 / -1;
     justify-content: center;
   }
+
+  {%- comment -%}
+  "Same row as blocks" big-logo option: on mobile the block-list grid is only 2 columns, so a
+  block left alone in one column would sit next to blank empty space rather than looking
+  intentional. Give it the full row instead and center the (still small, px-capped) logo in it.
+  {%- endcomment -%}
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .footer__block--scrolling_logo {
+      grid-column: 1 / -1;
+      justify-content: center;
+      display: flex;
+    }
+  }
 </style>
 
 <div class="footer {% if section.settings.floating_footer %}footer--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.floating_footer %}style="border-radius: {{ section.settings.footer_border_radius }}px;"{% endif %}>
@@ -180,7 +193,8 @@
                   {%- if block.settings.layout == 'inline' and block.settings.image != blank -%}
                     {%- capture sizes -%}{{ block.settings.inline_image_width }}px{%- endcapture -%}
                     {%- capture widths -%}{{ block.settings.inline_image_width }}, {{ block.settings.inline_image_width | times: 2 | at_most: block.settings.image.width }}{%- endcapture -%}
-                    {%- capture style -%}--image-max-width: {{ block.settings.inline_image_width }}px{%- endcapture -%}
+                    {%- comment -%} capped with vw so it can never balloon to the full row width on narrow phones, regardless of the configured px width {%- endcomment -%}
+                    {%- capture style -%}--image-max-width: min({{ block.settings.inline_image_width }}px, 50vw){%- endcapture -%}
                     {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: sizes: sizes, widths: widths, style: style, class: 'constrained-image' -}}
                   {%- endif -%}
 
