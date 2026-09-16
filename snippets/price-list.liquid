@@ -18,13 +18,11 @@ Render a list of price for a product, variant or line item.
       assign unit_price_classes = 'subheading text-subdued'
 
     when 'card'
-      {%- comment -%}
-      The price always uses the body_text look (regular weight, same text-base size as the card's
-      .product-subtitle) and the card title's color (full opacity) regardless of the card's own
-      product_card_style (body_text/heading/subheading), so it never inherits the title's
-      bold/tracked/uppercase treatment. The compare-at (struck-through) and unit price stay
-      subdued, since they're secondary information.
-      {%- endcomment -%}
+      # The price always uses the body_text look (regular weight, same text-base size as the
+      # card's .product-subtitle) and the card title's color (full opacity) regardless of the
+      # card's own product_card_style (body_text/heading/subheading), so it never inherits the
+      # title's bold/tracked/uppercase treatment. The compare-at (struck-through) and unit price
+      # stay subdued, since they're secondary information.
       assign regular_price_classes = 'text-base product-card__price'
       assign on_sale_price_classes = 'text-base text-on-sale product-card__price'
       assign compare_at_price_classes = 'text-base product-card__price product-card__price--subdued line-through'
