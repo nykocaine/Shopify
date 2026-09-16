@@ -29,21 +29,25 @@
     <div class="prose prose-justify-start">
       {%- render 'subheading', content: section.settings.subheading -%}
       {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.heading_size, html_tag: 'h1' -%}
-
-      <div class="max-w-md">
-        {{- section.settings.content -}}
-      </div>
     </div>
   </div>
 {%- endcapture -%}
 
 {%- capture section_main_content -%}
   <div class="rc-aviso v-stack gap-4">
-    <p class="subheading">{{ 'libro_reclamaciones.aviso.title' | t }}</p>
-
     <div class="rc-aviso__columns grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
-      <div class="rc-aviso__provider prose">
-        {{- provider_summary -}}
+      <div class="rc-aviso__left v-stack gap-4">
+        {%- if section.settings.content != blank -%}
+          <div class="prose">
+            {{- section.settings.content -}}
+          </div>
+        {%- endif -%}
+
+        <p class="subheading">{{ 'libro_reclamaciones.aviso.title' | t }}</p>
+
+        <div class="rc-aviso__provider prose">
+          {{- provider_summary -}}
+        </div>
       </div>
 
       <div class="rc-aviso__notes v-stack gap-4 text-subdued">
