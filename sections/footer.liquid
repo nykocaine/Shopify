@@ -116,7 +116,7 @@
     {%- capture scrolling_logo -%}
       {%- assign logo_image = scrolling_logo_block.settings.image -%}
 
-      {%- if logo_image != blank -%}
+      {%- if logo_image != blank and scrolling_logo_block.settings.layout != 'inline' -%}
         {%- if scrolling_logo_block.settings.layout == 'full_width' -%}
           <div class="footer__big-logo footer__big-logo--full" {{ scrolling_logo_block.shopify_attributes }}>
             {{- logo_image | image_url: width: logo_image.width | image_tag: loading: 'lazy', widths: '200,400,600,800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200' -}}
@@ -169,6 +169,19 @@
                     {%- else -%}
                       {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: sizes: sizes, widths: widths, style: style, class: 'constrained-image' -}}
                     {%- endif -%}
+                  {%- endif -%}
+
+                {%- when 'scrolling_logo' -%}
+                  {%- comment -%}
+                  Only the "inline" layout renders here, as a normal grid/flex block alongside the
+                  other footer blocks (e.g. newsletter). "Scrolling" and "full_width" stay full-bleed
+                  rows rendered separately via the scrolling_logo capture above the block loop.
+                  {%- endcomment -%}
+                  {%- if block.settings.layout == 'inline' and block.settings.image != blank -%}
+                    {%- capture sizes -%}{{ block.settings.inline_image_width }}px{%- endcapture -%}
+                    {%- capture widths -%}{{ block.settings.inline_image_width }}, {{ block.settings.inline_image_width | times: 2 | at_most: block.settings.image.width }}{%- endcapture -%}
+                    {%- capture style -%}--image-max-width: {{ block.settings.inline_image_width }}px{%- endcapture -%}
+                    {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: sizes: sizes, widths: widths, style: style, class: 'constrained-image' -}}
                   {%- endif -%}
 
                 {%- when 'text' -%}
@@ -716,6 +729,10 @@
             {
               "value": "full_width",
               "label": "t:sections.footer.blocks.scrolling_logo.layout_options.full_width"
+            },
+            {
+              "value": "inline",
+              "label": "t:sections.footer.blocks.scrolling_logo.layout_options.inline"
             }
           ],
           "default": "scrolling"
@@ -734,7 +751,7 @@
           "unit": "%",
           "label": "t:global.image.width",
           "default": 45,
-          "visible_if": "{{ block.settings.layout != 'full_width' }}"
+          "visible_if": "{{ block.settings.layout == 'scrolling' }}"
         },
         {
           "type": "range",
@@ -744,7 +761,18 @@
           "unit": "%",
           "label": "t:global.image.mobile_width",
           "default": 65,
-          "visible_if": "{{ block.settings.layout != 'full_width' }}"
+          "visible_if": "{{ block.settings.layout == 'scrolling' }}"
+        },
+        {
+          "type": "range",
+          "id": "inline_image_width",
+          "min": 50,
+          "max": 300,
+          "step": 10,
+          "unit": "px",
+          "label": "t:global.image.width",
+          "default": 150,
+          "visible_if": "{{ block.settings.layout == 'inline' }}"
         }
       ]
     }
