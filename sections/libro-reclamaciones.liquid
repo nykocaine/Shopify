@@ -63,6 +63,7 @@
   {%- assign posted_successfully = false -%}
 
   {%- comment -%} render tags cannot apply filters inline, so every translated label is pre-computed here (same pattern as sections/contact.liquid). {%- endcomment -%}
+  {%- assign request_type_legend_label = 'libro_reclamaciones.form.request_type_legend' | t -%}
   {%- assign request_type_reclamo_label = 'libro_reclamaciones.form.request_type_reclamo' | t -%}
   {%- assign request_type_queja_label = 'libro_reclamaciones.form.request_type_queja' | t -%}
   {%- assign name_label = 'libro_reclamaciones.form.name' | t -%}
@@ -101,19 +102,15 @@
       <input type="hidden" id="rc-code" name="contact[Código de Reclamación]" value="">
       <input type="hidden" id="rc-datetime" name="contact[Fecha y hora de registro]" value="">
 
-      <fieldset class="v-stack gap-3">
-        <legend class="text-subdued">{{ 'libro_reclamaciones.form.request_type_legend' | t }}</legend>
-
-        <div class="h-stack gap-6" style="flex-wrap: wrap;">
-          {%- render 'checkbox', type: 'radio', name: 'contact[Tipo de solicitud]', value: request_type_reclamo_label, label: request_type_reclamo_label, required: true, id_prefix: 'reclamo' -%}
-          {%- render 'checkbox', type: 'radio', name: 'contact[Tipo de solicitud]', value: request_type_queja_label, label: request_type_queja_label, required: true, id_prefix: 'queja' -%}
-        </div>
+      <div class="v-stack gap-3">
+        {%- assign request_type_options = request_type_reclamo_label | append: ',' | append: request_type_queja_label | split: ',' -%}
+        {%- render 'select', option_values: request_type_options, show_empty_value: true, name: 'contact[Tipo de solicitud]', label: request_type_legend_label, required: true -%}
 
         <p class="text-xs text-subdued">
           <strong>{{ request_type_reclamo_label }}:</strong> {{ 'libro_reclamaciones.form.request_type_reclamo_info' | t }}<br>
           <strong>{{ request_type_queja_label }}:</strong> {{ 'libro_reclamaciones.form.request_type_queja_info' | t }}
         </p>
-      </fieldset>
+      </div>
 
       <div class="fieldset">
         <div class="fieldset-row">

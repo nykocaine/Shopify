@@ -40,14 +40,14 @@
       if (codeField) codeField.value = code;
       if (dateField) dateField.value = now.toISOString();
 
-      var checkedType = form.querySelector('input[name="contact[Tipo de solicitud]"]:checked');
+      var typeField = form.querySelector('[name="contact[Tipo de solicitud]"]');
 
       try {
         sessionStorage.setItem(
           STORAGE_KEY,
           JSON.stringify({
             code: code,
-            type: checkedType ? checkedType.value : '',
+            type: typeField ? typeField.value : '',
             date: now.toISOString()
           })
         );
