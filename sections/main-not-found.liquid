@@ -13,6 +13,10 @@
     }
   }
 
+  #shopify-section-{{ section.id }} .empty-state {
+    padding-block: var(--container-gutter);
+  }
+
   #shopify-section-{{ section.id }} .not-found-blur {
     grid-area: full-start / full-start / full-end / full-end;
     position: absolute;
@@ -34,7 +38,7 @@
 -%}
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_not_found %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_not_found %} style="border-end-start-radius: {{ section.settings.not_found_border_radius }}px; border-end-end-radius: {{ section.settings.not_found_border_radius }}px; overflow: hidden;"{% endif %}>
-  <div class="content-box">
+  <div class="content-box min-h-screen">
     {%- if background_media != blank -%}
       <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.overlay_color.rgb }} / {{ section.settings.overlay_opacity | divided_by: 100.0 }}">
         {%- render 'media', media: background_media, autoplay: true, playsinline: true, loop: true, muted: true, preload: true -%}
