@@ -21,6 +21,18 @@
   else
     assign mobile_button_hover_background = mobile_scheme.settings.primary_button_background | color_darken: 12
   endif
+
+  # Same background-match check snippets/css-variables.liquid uses to collapse padding between two
+  # consecutive sections that share a background - used here to decide whether cart__right should
+  # drop its own padding (no point keeping it once there's no background contrast left between the
+  # card and the section around it).
+  assign main_scheme_background_hash = section.settings.color_scheme.settings.background_gradient | default: section.settings.color_scheme.settings.background | md5
+  assign mobile_scheme_background_hash = mobile_scheme.settings.background_gradient | default: mobile_scheme.settings.background | md5
+  assign mobile_scheme_matches_section_background = false
+
+  if main_scheme_background_hash == mobile_scheme_background_hash
+    assign mobile_scheme_matches_section_background = true
+  endif
 -%}
 
 {%- capture mobile_border_color -%}
@@ -117,16 +129,14 @@
 
       {%- if mobile_scheme_matches_section_background -%}
         {%- comment -%}
-        Cancels exactly .section-spacing's own inline padding (the only remaining inline inset
-        between .cart__right and the outer section wrapper's edge - .container's gutter is already
-        zeroed above and .max-w-2xl never constrains at mobile widths), so the card stretches flush
-        to the section's own edges instead of floating inside it - there's no background contrast
-        left to justify a visible card boundary once the two schemes share the same background.
+        Only cart__right's own padding is removed here - .section-spacing's padding (the section's
+        own interior margin) is never touched, so the card still sits inset from the section's
+        edges exactly like everything else in it. There's just no reason for cart__right to keep
+        its own extra padding on top of that once there's no background contrast left between the
+        card and the section around it to justify a visible card boundary.
         {%- endcomment -%}
-        margin-inline: calc(-1 * (var(--container-gutter) + 0.5rem));
         padding-inline: 0;
       {%- endif -%}
-
     }
   }
 
