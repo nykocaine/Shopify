@@ -91,11 +91,13 @@
     mobile and desktop - instead of the global "Section spacing" setting this section normally
     uses. Put on .section-spacing itself (not on the nested .container). Excludes
     .section-split__column--image: that column keeps its own bleed/flushed image padding, which
-    isn't "section spacing" and shouldn't follow this rhythm.
+    isn't "section spacing" and shouldn't follow this rhythm. Top padding is tripled vs. the other
+    three sides, same as sections/libro-reclamaciones.liquid.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .section-split__column:not(.section-split__column--image),
     #shopify-section-{{ section.id }} .section-spacing {
       padding: calc(var(--container-gutter) + 0.5rem);
+      padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
     }
 
     {%- comment -%}
