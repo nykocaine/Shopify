@@ -358,8 +358,20 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
                     endif
 
                     if section.settings.show_checkout_button
-                      assign button_content = 'cart.general.checkout' | t
-                      render 'button', content: button_content, type: 'submit', name: 'checkout'
+                      assign checkout_button_label = 'cart.general.checkout' | t
+
+                      if settings.currency_code_enabled
+                        assign checkout_button_price = cart.total_price | money_with_currency
+                      else
+                        assign checkout_button_price = cart.total_price | money
+                      endif
+
+                      # Two separate flex children (label/price) instead of one concatenated string, same
+                      # technique as the product page's buy button (snippets/buy-buttons.liquid) - reusing
+                      # its buy-buttons__cta class/CSS (assets/theme.css) to pin them to opposite ends of
+                      # the button instead of centering them.
+                      assign button_content = '<span>' | append: checkout_button_label | append: '</span><span>' | append: checkout_button_price | append: '</span>'
+                      render 'button', content: button_content, type: 'submit', name: 'checkout', class: 'buy-buttons__cta'
                     endif
                   -%}
                 </div>
