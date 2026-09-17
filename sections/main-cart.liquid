@@ -1,3 +1,44 @@
+{%- liquid
+  # Precomputed here (not inline in the <style> block below) because .cart__right's mobile color
+  # scheme override needs to re-derive several CSS custom properties using the exact same formulas
+  # as the global per-scheme block in snippets/css-variables.liquid - those formulas involve
+  # multi-branch logic and a color_mix filter that read more clearly as their own assignments.
+  assign mobile_scheme = section.settings.cart_summary_color_scheme_mobile
+
+  assign mobile_subheading_has_background = true
+  assign mobile_subheading_has_border = true
+
+  if mobile_scheme.settings.subheading_background == blank or mobile_scheme.settings.subheading_background == 'rgba(0,0,0,0)' or mobile_scheme.settings.subheading_background == mobile_scheme.settings.background
+    assign mobile_subheading_has_background = false
+  endif
+
+  if mobile_scheme.settings.subheading_border_color == blank or mobile_scheme.settings.subheading_border_color == 'rgba(0,0,0,0)'
+    assign mobile_subheading_has_border = false
+  endif
+
+  if mobile_scheme.settings.primary_button_hover_background != blank
+    assign mobile_button_hover_background = mobile_scheme.settings.primary_button_hover_background
+  else
+    assign mobile_button_hover_background = mobile_scheme.settings.primary_button_background | color_darken: 12
+  endif
+-%}
+
+{%- capture mobile_border_color -%}
+  {%- if settings.global_border_color != blank and settings.global_border_color != 'rgba(0,0,0,0)' -%}
+    {{- settings.global_border_color.rgb -}}
+  {%- elsif mobile_scheme.settings.border_color != blank and mobile_scheme.settings.border_color != 'rgba(0,0,0,0)' -%}
+    {{- mobile_scheme.settings.border_color.rgb -}}
+  {%- elsif mobile_scheme.settings.background_gradient != blank -%}
+    {{- mobile_scheme.settings.text_color.rgb -}} / 0.1
+  {%- elsif mobile_scheme.settings.background == 'rgba(0,0,0,0)' -%}
+    {{- mobile_scheme.settings.text_color.rgb -}} / 0.6
+  {%- else -%}
+    {%- assign mobile_border_color_mix = mobile_scheme.settings.text_color | color_mix: mobile_scheme.settings.background, 10 -%}
+    {{- mobile_border_color_mix.rgb -}}
+  {%- endif -%}
+{%- endcapture -%}
+{%- assign mobile_border_color = mobile_border_color | strip -%}
+
 <style>
   {%- comment -%}
   Same interior padding as sections/libro-reclamaciones.liquid - container-gutter + 0.5rem on all
@@ -39,21 +80,40 @@
   }
 
   {%- comment -%}
-  The solid color-scheme card is a desktop-only treatment (matches .cart's own 1000px breakpoint,
-  where it sits beside the items as a distinct column). Below that, cart__right stacks under the
-  items in normal flow, so it reverts to a plain block with a divider line instead of a floating
-  sticky card - background/radius/padding/sticky positioning are neutralized here, not removed
-  from the markup, since they're still needed at 1000px and up.
+  The sticky positioning is a desktop-only treatment (matches .cart's own 1000px breakpoint, where
+  cart__right sits beside the items as a distinct column) - below that, it stacks under the items
+  in normal flow instead, so sticky is neutralized back to static. It still keeps its own solid
+  color-scheme card look on mobile, just from a separate, independently configurable color scheme
+  (cart_summary_color_scheme_mobile) instead of cart_summary_color_scheme's desktop one.
+
+  The color-scheme--[id] classes are generated once, globally, and aren't breakpoint-aware, so
+  which one applies can't be swapped by viewport width through the class name alone - the only way
+  to give this element a different scheme on mobile without JS is to re-declare the CSS custom
+  properties it actually reads, scoped to this element and this media query, using
+  cart_summary_color_scheme_mobile as the source. See the liquid block above this style tag for
+  the values re-derived here (mirroring snippets/css-variables.liquid's per-scheme block).
   {%- endcomment -%}
   @media screen and (max-width: 999px) {
     #shopify-section-{{ section.id }} .cart__right {
-      background: none;
-      color: inherit;
-      border-radius: 0;
-      padding: 0;
       position: static;
-      border-block-start: 1px solid rgb(var(--border-color));
-      padding-block-start: 1.5rem;
+
+      --accent: {{ mobile_scheme.settings.primary_button_background.rgb }};
+      --background: {% if mobile_scheme.settings.background == 'rgba(0,0,0,0)' %}0 0 0 / 0{% else %}{{ mobile_scheme.settings.background.rgb }}{% endif %};
+      --background-gradient: {{ mobile_scheme.settings.background_gradient }};
+      --text-color: {{ mobile_scheme.settings.text_color.rgb }};
+      --border-color: {{ mobile_border_color }};
+      --subheading-background: {% if mobile_subheading_has_background %}{{ mobile_scheme.settings.subheading_background.rgb }}{% else %}0 0 0 / 0.0{% endif %};
+      --subheading-border: {% if mobile_subheading_has_border %}1px solid rgb({{ mobile_scheme.settings.subheading_border_color.rgb }}){% else %}none{% endif %};
+      --subheading-text-color: {{ mobile_scheme.settings.subheading_text_color.rgb }};
+      --subheading-has-padding: {% if mobile_subheading_has_border or mobile_subheading_has_background %}1{% else %}0{% endif %};
+      --button-background-primary: {{ mobile_scheme.settings.primary_button_background.rgb }};
+      --button-text-primary: {{ mobile_scheme.settings.primary_button_text_color.rgb }};
+      --button-hover-background: {{ mobile_button_hover_background.rgb }};
+      --input-background: {% if mobile_scheme.settings.input_background == 'rgba(0,0,0,0)' %}0 0 0 / 0{% else %}{{ mobile_scheme.settings.input_background.rgb }}{% endif %};
+      --input-text-color: {{ mobile_scheme.settings.input_text_color.rgb }};
+      {%- if mobile_scheme.settings.input_border_color != blank and mobile_scheme.settings.input_border_color != 'rgba(0,0,0,0)' -%}
+        --input-border-color: rgb({{ mobile_scheme.settings.input_border_color.rgb }});
+      {%- endif -%}
     }
   }
 
@@ -71,7 +131,13 @@
   }
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_cart %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_cart %} style="border-end-start-radius: {{ section.settings.cart_border_radius }}px; border-end-end-radius: {{ section.settings.cart_border_radius }}px; overflow: hidden;"{% endif %}>
+{%- comment -%}
+No overflow: hidden on the floating wrapper here (unlike other floating sections that clip a
+full-bleed background image/video): this section has no such background, and .cart__right is
+position: sticky - any overflow other than visible on an ancestor breaks that stickiness. The
+corner radius below still rounds the box's own background fine without it.
+{%- endcomment -%}
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_cart %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_cart %} style="border-end-start-radius: {{ section.settings.cart_border_radius }}px; border-end-end-radius: {{ section.settings.cart_border_radius }}px;"{% endif %}>
   <div class="section-spacing">
     <div class="container">
       <div class="max-w-2xl mx-auto">
@@ -310,6 +376,12 @@
       "type": "color_scheme",
       "id": "cart_summary_color_scheme",
       "label": "Order summary color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "color_scheme",
+      "id": "cart_summary_color_scheme_mobile",
+      "label": "Order summary color scheme (mobile)",
       "default": "scheme-1"
     },
     {
