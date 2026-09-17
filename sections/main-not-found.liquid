@@ -1,6 +1,16 @@
 <style>
   #shopify-section-{{ section.id }} .not-found-heading {
-    color: #ffffff;
+    color: rgb(var(--text-color) / .6);
+  }
+
+  #shopify-section-{{ section.id }} .content-box {
+    min-height: {{ section.settings.mobile_height }}svh;
+  }
+
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .content-box {
+      min-height: {{ section.settings.desktop_height }}svh;
+    }
   }
 
   #shopify-section-{{ section.id }} .not-found-blur {
@@ -24,7 +34,7 @@
 -%}
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_not_found %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_not_found %} style="border-end-start-radius: {{ section.settings.not_found_border_radius }}px; border-end-end-radius: {{ section.settings.not_found_border_radius }}px; overflow: hidden;"{% endif %}>
-  <div class="content-box min-h-screen">
+  <div class="content-box">
     {%- if background_media != blank -%}
       <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.overlay_color.rgb }} / {{ section.settings.overlay_opacity | divided_by: 100.0 }}">
         {%- render 'media', media: background_media, autoplay: true, playsinline: true, loop: true, muted: true, preload: true -%}
@@ -72,6 +82,26 @@
       "label": "Corner radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_not_found }}"
+    },
+    {
+      "type": "range",
+      "id": "mobile_height",
+      "label": "Mobile height (% of window)",
+      "min": 30,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "desktop_height",
+      "label": "Desktop height (% of window)",
+      "min": 30,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
     },
     {
       "type": "header",
