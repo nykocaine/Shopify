@@ -1,16 +1,24 @@
 <style>
   {%- comment -%}
-  Matches footer's own fixed top/bottom rhythm (.footer__content in theme.css: 2.8rem mobile,
-  4.8rem from 1000px) instead of the global "Section spacing" setting this section normally uses.
+  Same interior padding as sections/libro-reclamaciones.liquid - container-gutter + 0.5rem on all
+  four sides, same on mobile and desktop, top tripled - instead of the global "Section spacing"
+  setting this section normally uses. Put directly on .section-spacing itself (not on the nested
+  .container) so it's one plain padding: on one element, on top of whatever .container's own
+  margin already does - same as every other floating section in the theme.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .section-spacing {
-    padding-block: 2.8rem;
+    padding: calc(var(--container-gutter) + 0.5rem);
+    padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
   }
 
-  @media screen and (min-width: 1000px) {
-    #shopify-section-{{ section.id }} .section-spacing {
-      padding-block: 4.8rem;
-    }
+  {%- comment -%}
+  .container (nested inside .section-spacing) still carries its own margin-inline
+  (--container-gutter-context) for the site-wide gutter - stacked on top of the padding above,
+  that doubles up the left/right inset. Zeroing just the gutter part of that margin formula
+  leaves .section-spacing's own padding as the only source of side space.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .section-spacing .container {
+    --container-gutter-context: 0px;
   }
 
   {%- comment -%}
