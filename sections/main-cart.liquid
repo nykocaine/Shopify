@@ -21,6 +21,18 @@
   else
     assign mobile_button_hover_background = mobile_scheme.settings.primary_button_background | color_darken: 12
   endif
+
+  # Same background-match check snippets/css-variables.liquid uses to collapse padding between two
+  # consecutive sections that share a background - used here to decide whether the mobile order
+  # summary should go full-bleed (no point keeping a visible card boundary when its background is
+  # identical to the section's own, since there's nothing to visually separate).
+  assign main_scheme_background_hash = section.settings.color_scheme.settings.background_gradient | default: section.settings.color_scheme.settings.background | md5
+  assign mobile_scheme_background_hash = mobile_scheme.settings.background_gradient | default: mobile_scheme.settings.background | md5
+  assign mobile_scheme_matches_section_background = false
+
+  if main_scheme_background_hash == mobile_scheme_background_hash
+    assign mobile_scheme_matches_section_background = true
+  endif
 -%}
 
 {%- capture mobile_border_color -%}
@@ -113,6 +125,18 @@
       --input-text-color: {{ mobile_scheme.settings.input_text_color.rgb }};
       {%- if mobile_scheme.settings.input_border_color != blank and mobile_scheme.settings.input_border_color != 'rgba(0,0,0,0)' -%}
         --input-border-color: rgb({{ mobile_scheme.settings.input_border_color.rgb }});
+      {%- endif -%}
+
+      {%- if mobile_scheme_matches_section_background -%}
+        {%- comment -%}
+        Cancels exactly .section-spacing's own inline padding (the only remaining inline inset
+        between .cart__right and the outer section wrapper's edge - .container's gutter is already
+        zeroed above and .max-w-2xl never constrains at mobile widths), so the card stretches flush
+        to the section's own edges instead of floating inside it - there's no background contrast
+        left to justify a visible card boundary once the two schemes share the same background.
+        {%- endcomment -%}
+        margin-inline: calc(-1 * (var(--container-gutter) + 0.5rem));
+        padding-inline: 0;
       {%- endif -%}
     }
   }
