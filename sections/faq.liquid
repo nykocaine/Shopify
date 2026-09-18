@@ -254,6 +254,19 @@
         display: block;
       }
 
+      {%- comment -%}
+      .section-header only declares an explicit track for its first child (grid-template-columns:
+      minmax(0, 1fr)) - a second child like ours falls into an implicit column sized by
+      grid-auto-columns: auto, which has no safe minimum and can force the row (and the page) wider
+      than the viewport once there are enough category tabs. Redeclaring both tracks with
+      minmax(0, ...) here keeps that overflow-safe without touching the shared rule itself.
+      {%- endcomment -%}
+      @media screen and (min-width: 700px) {
+        #shopify-section-{{ section.id }} .section-header {
+          grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
+        }
+      }
+
       #shopify-section-{{ section.id }} .faq--full-width {
         margin-block-start: var(--section-stack-row-gap);
       }
