@@ -245,9 +245,9 @@
       title block, so .section-header's own existing responsive grid (theme.css) puts the title and
       the categories side by side from 700px on and stacks them on mobile - no layout CSS of our own
       needed for that part (the "only on desktop" requirement comes for free from that shared rule).
-      Questions render in their own block below the header, with the same vertical rhythm
-      .section-stack normally provides (--section-stack-row-gap) but without its own
-      "max-width: 50rem" cap on .faq, since these need to span the section's full width instead.
+      Questions render in their own block below the header (.faq, unchanged from the rest of the
+      file), without .section-stack's own "max-width: 50rem" cap, since these need to span the
+      section's full width instead.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__categories {
         min-width: 0;
@@ -265,10 +265,6 @@
         #shopify-section-{{ section.id }} .section-header {
           grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
         }
-      }
-
-      #shopify-section-{{ section.id }} .faq--full-width {
-        margin-block-start: var(--section-stack-row-gap);
       }
 
       {%- comment -%}
