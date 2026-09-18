@@ -207,8 +207,15 @@
       as .section-spacing .container above - matching its own padding-block - restated explicitly
       here (same selector shape/specificity, declared after it) so it stays correct even if that
       rule's value ever changes independently of this one.
+
+      .container's own global rule (theme.css) also sets margin-inline-start/end to center itself
+      once its parent is wider than --container-max-width - real margin, invisible on narrow
+      viewports but very much there on wide desktop screens. That fights the "full section width"
+      requirement, so it's zeroed out here: the padding-inline above is the only inset now, margin
+      stays 0 on every breakpoint.
       {%- endcomment -%}
-      #shopify-section-{{ section.id }} .section-spacing .faq__container {
+      #shopify-section-{{ section.id }} .faq__container {
+        margin-inline: 0;
         padding-inline: calc(var(--container-gutter) + 0.5rem);
       }
 
