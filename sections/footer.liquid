@@ -97,10 +97,6 @@
     opacity: 0.4;
   }
 
-  #shopify-section-{{ section.id }} .footer__copyright-text {
-    font-weight: var(--text-font-bold-weight, 700);
-  }
-
   {%- comment -%} When the aside row is also present, it keeps its top padding but drops the bottom one so the two rows don't double up. {%- endcomment -%}
   #shopify-section-{{ section.id }} .footer__aside:has(+ .footer__copyright) {
     padding-block-end: 0;
@@ -443,7 +439,7 @@
       {%- if section.settings.show_copyright or section.settings.footer_bottom_text != blank -%}
         <div class="footer__copyright">
           {%- if section.settings.show_copyright -%}
-            <span class="text-sm footer__copyright-text">© {{ 'now' | date: '%Y' }} - {{ shop.name }}</span>
+            <span class="text-sm">© {{ 'now' | date: '%Y' }} - {{ shop.name }}</span>
           {%- endif -%}
 
           {%- if section.settings.footer_bottom_text != blank -%}
