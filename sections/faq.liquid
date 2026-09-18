@@ -350,20 +350,18 @@
       (reviews, blog-posts) use - instead of .section-split or .section-stack's own narrower max-width.
       {%- endcomment -%}
       <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_faq %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_faq %} style="border-radius: {{ section.settings.faq_border_radius }}px; overflow: hidden;"{% endif %}>
-        <div class="section-spacing">
-          <div class="container faq__container">
-            {{- section_header -}}
+        <div class="container faq__container">
+          {{- section_header -}}
 
-            <div class="faq faq--full-width">
-              {%- if faq_leading_questions != blank -%}
-                <div class="faq-block__list">
-                  {{- faq_leading_questions -}}
-                </div>
-              {%- endif -%}
-
-              <div class="faq__panels">
-                {{- faq_category_panels -}}
+          <div class="faq faq--full-width">
+            {%- if faq_leading_questions != blank -%}
+              <div class="faq-block__list">
+                {{- faq_leading_questions -}}
               </div>
+            {%- endif -%}
+
+            <div class="faq__panels">
+              {{- faq_category_panels -}}
             </div>
           </div>
         </div>
