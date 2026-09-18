@@ -1,21 +1,4 @@
 {%- if section.blocks.size > 0 -%}
-    {%- capture section_header -%}
-      {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank or section.settings.button_text != blank -%}
-        <div class="section-header">
-          <div class="prose {% if section.settings.layout == 'stacked' %}prose-justify-center{% endif %}">
-            {%- render 'subheading', content: section.settings.subheading -%}
-            {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.title_tag, html_tag: 'h2' -%}
-
-            <div class="max-w-sm">
-              {{- section.settings.content -}}
-            </div>
-
-            {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style -%}
-          </div>
-        </div>
-      {%- endif -%}
-    {%- endcapture -%}
-
     {%- liquid
       assign has_categories = false
       for category_block in section.blocks
@@ -26,28 +9,85 @@
       endfor
     -%}
 
-    {%- capture section_content -%}
-      <div class="faq">
-        {%- if has_categories -%}
-          {%- comment -%}
-          Interactive categories: questions before the first titled category (if any) are always
-          shown, so nothing a merchant already wrote gets hidden by adding categories later. Each
-          category becomes a tab button (x-tabs, theme.js) and its questions become an external
-          panel matched purely by aria-controls/id - same technique main-search.liquid uses for its
-          resource-type tabs - so desktop can place categories and panels side by side while mobile
-          stacks them, from one shared markup.
-          {%- endcomment -%}
+    {%- comment -%}
+    Interactive categories: questions before the first titled category (if any) are always shown,
+    so nothing a merchant already wrote gets hidden by adding categories later. Each category
+    becomes a tab button (x-tabs, theme.js) and its questions become an external panel matched
+    purely by aria-controls/id - same technique main-search.liquid uses for its resource-type tabs.
+    The tab buttons live inside the section header itself (as a ".section-header__controls" sibling
+    of the title block - the same slot other sections use for carousel prev/next controls), so on
+    desktop the title and the categories share one row for free via .section-header's own existing
+    responsive grid (theme.css), and on mobile they stack like any other section header control.
+    {%- endcomment -%}
+    {%- if has_categories -%}
+      {%- capture faq_leading_questions -%}
+        {%- liquid
+          assign reached_first_category = false
 
-          {%- capture faq_leading_questions -%}
-            {%- liquid
-              assign reached_first_category = false
+          for block in section.blocks
+            if block.type == 'category' and block.settings.title != blank
+              assign reached_first_category = true
+            endif
 
-              for block in section.blocks
-                if block.type == 'category' and block.settings.title != blank
-                  assign reached_first_category = true
+            if block.type == 'question' and reached_first_category == false
+              assign use_secondary_background = false
+
+              if section.settings.accordion_style == 'background' and section.settings.color_scheme.settings.background_gradient != blank or section.settings.color_scheme.settings.background != section.settings.color_scheme.settings.secondary_background
+                assign use_secondary_background = true
+              endif
+
+              if block.settings.question != blank and block.settings.answer != blank
+                if section.settings.question_style == 'subheading'
+                  render 'accordion', title: block.settings.question, content: block.settings.answer, prose_content: true, subheading_title: true, icon: block.settings.icon, custom_icon: block.settings.custom_icon, icon_width: block.settings.icon_width, mobile_icon_width: block.settings.mobile_icon_width, use_secondary_background: use_secondary_background, toggle_icon: 'accordion-plus', block: block
+                else
+                  render 'accordion', title: block.settings.question, content: block.settings.answer, prose_content: true, icon: block.settings.icon, custom_icon: block.settings.custom_icon, icon_width: block.settings.icon_width, mobile_icon_width: block.settings.mobile_icon_width, use_secondary_background: use_secondary_background, toggle_icon: 'accordion-plus', block: block
                 endif
+              endif
+            endif
+          endfor
+        -%}
+      {%- endcapture -%}
 
-                if block.type == 'question' and reached_first_category == false
+      {%- capture faq_category_tabs -%}
+        {%- assign panel_index = -1 -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'category' and block.settings.title != blank -%}
+            {%- assign panel_index = panel_index | plus: 1 -%}
+            <button
+              type="button"
+              slot="tab"
+              class="faq__category-tab"
+              aria-controls="faq-panel-{{ section.id }}-{{ panel_index }}"
+              aria-selected="{% if panel_index == 0 %}true{% else %}false{% endif %}"
+              {{ block.shopify_attributes }}
+            >
+              {%- if block.settings.custom_icon != blank -%}
+                {%- render 'icon', image: block.settings.custom_icon, width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width, class: 'faq__category-tab-icon' -%}
+              {%- elsif block.settings.icon != 'none' -%}
+                {%- render 'icon' with block.settings.icon, width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width, class: 'faq__category-tab-icon' -%}
+              {%- endif -%}
+              <span class="h6">{{ block.settings.title }}</span>
+            </button>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endcapture -%}
+
+      {%- capture faq_category_panels -%}
+        {%- assign panel_index = -1 -%}
+        {%- assign panel_open = false -%}
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'category' -%}
+              {%- if block.settings.title != blank -%}
+                {%- if panel_open -%}</div>{%- endif -%}
+                {%- assign panel_index = panel_index | plus: 1 -%}
+                {%- assign panel_open = true -%}
+                <div id="faq-panel-{{ section.id }}-{{ panel_index }}" class="faq__panel faq-block__list" {% if panel_index > 0 %}hidden{% endif %}>
+              {%- endif -%}
+
+            {%- when 'question' -%}
+              {%- if panel_open -%}
+                {%- liquid
                   assign use_secondary_background = false
 
                   if section.settings.accordion_style == 'background' and section.settings.color_scheme.settings.background_gradient != blank or section.settings.color_scheme.settings.background != section.settings.color_scheme.settings.secondary_background
@@ -61,156 +101,79 @@
                       render 'accordion', title: block.settings.question, content: block.settings.answer, prose_content: true, icon: block.settings.icon, custom_icon: block.settings.custom_icon, icon_width: block.settings.icon_width, mobile_icon_width: block.settings.mobile_icon_width, use_secondary_background: use_secondary_background, toggle_icon: 'accordion-plus', block: block
                     endif
                   endif
-                endif
-              endfor
-            -%}
-          {%- endcapture -%}
+                -%}
+              {%- endif -%}
+          {%- endcase -%}
+        {%- endfor -%}
+        {%- if panel_open -%}</div>{%- endif -%}
+      {%- endcapture -%}
+    {%- endif -%}
 
-          {%- if faq_leading_questions != blank -%}
-            <div class="faq-block__list">
-              {{- faq_leading_questions -}}
+    {%- capture section_header -%}
+      {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank or section.settings.button_text != blank or has_categories -%}
+        <div class="section-header">
+          {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank or section.settings.button_text != blank -%}
+            <div class="prose {% if section.settings.layout == 'stacked' and has_categories == false %}prose-justify-center{% endif %}">
+              {%- render 'subheading', content: section.settings.subheading -%}
+              {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.title_tag, html_tag: 'h2' -%}
+
+              <div class="max-w-sm">
+                {{- section.settings.content -}}
+              </div>
+
+              {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style -%}
             </div>
           {%- endif -%}
 
-          {%- capture faq_category_tabs -%}
-            {%- assign panel_index = -1 -%}
-            {%- for block in section.blocks -%}
-              {%- if block.type == 'category' and block.settings.title != blank -%}
-                {%- assign panel_index = panel_index | plus: 1 -%}
-                <button
-                  type="button"
-                  slot="tab"
-                  class="faq__category-tab"
-                  aria-controls="faq-panel-{{ section.id }}-{{ panel_index }}"
-                  aria-selected="{% if panel_index == 0 %}true{% else %}false{% endif %}"
-                  {{ block.shopify_attributes }}
-                >
-                  {%- if block.settings.custom_icon != blank -%}
-                    {%- render 'icon', image: block.settings.custom_icon, width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width, class: 'faq__category-tab-icon' -%}
-                  {%- elsif block.settings.icon != 'none' -%}
-                    {%- render 'icon' with block.settings.icon, width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width, class: 'faq__category-tab-icon' -%}
-                  {%- endif -%}
-                  <span class="h6">{{ block.settings.title }}</span>
-                </button>
-              {%- endif -%}
-            {%- endfor -%}
-          {%- endcapture -%}
-
-          {%- capture faq_category_panels -%}
-            {%- assign panel_index = -1 -%}
-            {%- assign panel_open = false -%}
-            {%- for block in section.blocks -%}
-              {%- case block.type -%}
-                {%- when 'category' -%}
-                  {%- if block.settings.title != blank -%}
-                    {%- if panel_open -%}</div>{%- endif -%}
-                    {%- assign panel_index = panel_index | plus: 1 -%}
-                    {%- assign panel_open = true -%}
-                    <div id="faq-panel-{{ section.id }}-{{ panel_index }}" class="faq__panel faq-block__list" {% if panel_index > 0 %}hidden{% endif %}>
-                  {%- endif -%}
-
-                {%- when 'question' -%}
-                  {%- if panel_open -%}
-                    {%- liquid
-                      assign use_secondary_background = false
-
-                      if section.settings.accordion_style == 'background' and section.settings.color_scheme.settings.background_gradient != blank or section.settings.color_scheme.settings.background != section.settings.color_scheme.settings.secondary_background
-                        assign use_secondary_background = true
-                      endif
-
-                      if block.settings.question != blank and block.settings.answer != blank
-                        if section.settings.question_style == 'subheading'
-                          render 'accordion', title: block.settings.question, content: block.settings.answer, prose_content: true, subheading_title: true, icon: block.settings.icon, custom_icon: block.settings.custom_icon, icon_width: block.settings.icon_width, mobile_icon_width: block.settings.mobile_icon_width, use_secondary_background: use_secondary_background, toggle_icon: 'accordion-plus', block: block
-                        else
-                          render 'accordion', title: block.settings.question, content: block.settings.answer, prose_content: true, icon: block.settings.icon, custom_icon: block.settings.custom_icon, icon_width: block.settings.icon_width, mobile_icon_width: block.settings.mobile_icon_width, use_secondary_background: use_secondary_background, toggle_icon: 'accordion-plus', block: block
-                        endif
-                      endif
-                    -%}
-                  {%- endif -%}
-              {%- endcase -%}
-            {%- endfor -%}
-            {%- if panel_open -%}</div>{%- endif -%}
-          {%- endcapture -%}
-
-          <div class="faq__interactive">
-            <x-tabs class="faq__categories">
+          {%- if has_categories -%}
+            <x-tabs class="section-header__controls faq__categories">
               <template shadowrootmode="open">
                 <slot part="tablist" role="tablist" name="tab"></slot>
               </template>
               {{- faq_category_tabs -}}
             </x-tabs>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    {%- endcapture -%}
 
-            <div class="faq__panels">
-              {{- faq_category_panels -}}
-            </div>
-          </div>
+    {%- capture section_content -%}
+      <div class="faq">
+        <div class="faq__content faq-block__list">
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when 'category' -%}
+                {%- if block.settings.title != blank -%}
+                  <div class="faq__category">
+                    {%- if block.settings.custom_icon != blank -%}
+                      {%- render 'icon', image: block.settings.custom_icon, width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width -%}
+                    {%- elsif block.settings.icon != 'none' -%}
+                      {%- render 'icon' with block.settings.icon, width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width -%}
+                    {%- endif -%}
 
-          <script>
-            (function () {
-              if (!window.Shopify || !Shopify.designMode) return;
+                    <p class="h6 text-start" {{ block.shopify_attributes }}>{{ block.settings.title }}</p>
+                  </div>
+                {%- endif -%}
 
-              var root = document.getElementById('shopify-section-{{ section.id }}');
-              if (!root) return;
+              {%- when 'question' -%}
+                {%- liquid
+                  assign use_secondary_background = false
 
-              var tabs = root.querySelector('.faq__categories');
-              if (!tabs) return;
+                  if section.settings.accordion_style == 'background' and section.settings.color_scheme.settings.background_gradient != blank or section.settings.color_scheme.settings.background != section.settings.color_scheme.settings.secondary_background
+                    assign use_secondary_background = true
+                  endif
 
-              {%- comment -%}
-              Selecting a question block that lives inside a currently-hidden category panel only
-              opens its accordion (accordion-disclosure's own shopify:block:select handler) - it
-              never reaches x-tabs, since the panel is a sibling of x-tabs, not a slotted child.
-              Without this, the merchant would see nothing change in the editor preview.
-              {%- endcomment -%}
-              root.addEventListener('shopify:block:select', function (event) {
-                var panel = event.target.closest('.faq__panel');
-                if (!panel || !panel.id) return;
-
-                var button = tabs.querySelector('[aria-controls="' + panel.id + '"]');
-                if (!button) return;
-
-                var buttons = Array.prototype.slice.call(tabs.querySelectorAll('[slot="tab"]'));
-                var index = buttons.indexOf(button);
-                if (index > -1) tabs.selectedIndex = index;
-              });
-            })();
-          </script>
-        {%- else -%}
-          <div class="faq__content faq-block__list">
-            {%- for block in section.blocks -%}
-              {%- case block.type -%}
-                {%- when 'category' -%}
-                  {%- if block.settings.title != blank -%}
-                    <div class="faq__category">
-                      {%- if block.settings.custom_icon != blank -%}
-                        {%- render 'icon', image: block.settings.custom_icon, width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width -%}
-                      {%- elsif block.settings.icon != 'none' -%}
-                        {%- render 'icon' with block.settings.icon, width: block.settings.icon_width, mobile_width: block.settings.mobile_icon_width -%}
-                      {%- endif -%}
-
-                      <p class="h6 text-start" {{ block.shopify_attributes }}>{{ block.settings.title }}</p>
-                    </div>
-                  {%- endif -%}
-
-                {%- when 'question' -%}
-                  {%- liquid
-                    assign use_secondary_background = false
-
-                    if section.settings.accordion_style == 'background' and section.settings.color_scheme.settings.background_gradient != blank or section.settings.color_scheme.settings.background != section.settings.color_scheme.settings.secondary_background
-                      assign use_secondary_background = true
+                  if block.settings.question != blank and block.settings.answer != blank
+                    if section.settings.question_style == 'subheading'
+                      render 'accordion', title: block.settings.question, content: block.settings.answer, prose_content: true, subheading_title: true, icon: block.settings.icon, custom_icon: block.settings.custom_icon, icon_width: block.settings.icon_width, mobile_icon_width: block.settings.mobile_icon_width, use_secondary_background: use_secondary_background, toggle_icon: 'accordion-plus', block: block
+                    else
+                      render 'accordion', title: block.settings.question, content: block.settings.answer, prose_content: true, icon: block.settings.icon, custom_icon: block.settings.custom_icon, icon_width: block.settings.icon_width, mobile_icon_width: block.settings.mobile_icon_width, use_secondary_background: use_secondary_background, toggle_icon: 'accordion-plus', block: block
                     endif
-
-                    if block.settings.question != blank and block.settings.answer != blank
-                      if section.settings.question_style == 'subheading'
-                        render 'accordion', title: block.settings.question, content: block.settings.answer, prose_content: true, subheading_title: true, icon: block.settings.icon, custom_icon: block.settings.custom_icon, icon_width: block.settings.icon_width, mobile_icon_width: block.settings.mobile_icon_width, use_secondary_background: use_secondary_background, toggle_icon: 'accordion-plus', block: block
-                      else
-                        render 'accordion', title: block.settings.question, content: block.settings.answer, prose_content: true, icon: block.settings.icon, custom_icon: block.settings.custom_icon, icon_width: block.settings.icon_width, mobile_icon_width: block.settings.mobile_icon_width, use_secondary_background: use_secondary_background, toggle_icon: 'accordion-plus', block: block
-                      endif
-                    endif
-                  -%}
-              {%- endcase -%}
-            {%- endfor -%}
-          </div>
-        {%- endif -%}
+                  endif
+                -%}
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
 
         {%- render 'faq-accordion-group' -%}
       </div>
@@ -278,20 +241,21 @@
       }
 
       {%- comment -%}
-      Categories menu: mobile stacks categories above the active category's questions (single grid
-      column, source order does the stacking - no explicit rows needed). Desktop places them side by
-      side. min-width: 0 on both column tracks stops either side's own content (the scrolling tab
-      row, long question text) from forcing the grid - and the page - wider than the viewport.
+      Categories menu: lives inside .section-header as a ".section-header__controls" sibling of the
+      title block, so .section-header's own existing responsive grid (theme.css) puts the title and
+      the categories side by side from 700px on and stacks them on mobile - no layout CSS of our own
+      needed for that part (the "only on desktop" requirement comes for free from that shared rule).
+      Questions render in their own block below the header, with the same vertical rhythm
+      .section-stack normally provides (--section-stack-row-gap) but without its own
+      "max-width: 50rem" cap on .faq, since these need to span the section's full width instead.
       {%- endcomment -%}
-      #shopify-section-{{ section.id }} .faq__interactive {
-        gap: calc(var(--container-gutter) * 1.5);
-        min-width: 0;
-        display: grid;
-      }
-
       #shopify-section-{{ section.id }} .faq__categories {
         min-width: 0;
         display: block;
+      }
+
+      #shopify-section-{{ section.id }} .faq--full-width {
+        margin-block-start: var(--section-stack-row-gap);
       }
 
       {%- comment -%}
@@ -349,25 +313,68 @@
         flex: none;
       }
 
-      #shopify-section-{{ section.id }} .faq__panels {
-        min-width: 0;
-      }
-
-      @media screen and (min-width: 700px) {
-        #shopify-section-{{ section.id }} .faq__interactive {
-          grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
-          align-items: start;
-        }
-
-        #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
-          flex-direction: column;
-          align-items: stretch;
-          overflow-x: visible;
-        }
-      }
     </style>
 
-    {%- if section.settings.layout == 'split' -%}
+    {%- if has_categories -%}
+      {%- comment -%}
+      Categories replace the split/stacked "Layout" setting entirely: the title+categories row and
+      the full-width questions block below it are the same shape either way, so there is no
+      meaningful "split" (title in one column, content in another) left once content must span the
+      full width. Reuses .section-spacing/.container - the same full-width wrapper other sections
+      (reviews, blog-posts) use - instead of .section-split or .section-stack's own narrower max-width.
+      {%- endcomment -%}
+      <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_faq %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_faq %} style="border-radius: {{ section.settings.faq_border_radius }}px; overflow: hidden;"{% endif %}>
+        <div class="section-spacing">
+          <div class="container">
+            {{- section_header -}}
+
+            <div class="faq faq--full-width">
+              {%- if faq_leading_questions != blank -%}
+                <div class="faq-block__list">
+                  {{- faq_leading_questions -}}
+                </div>
+              {%- endif -%}
+
+              <div class="faq__panels">
+                {{- faq_category_panels -}}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <script>
+          (function () {
+            if (!window.Shopify || !Shopify.designMode) return;
+
+            var root = document.getElementById('shopify-section-{{ section.id }}');
+            if (!root) return;
+
+            var tabs = root.querySelector('.faq__categories');
+            if (!tabs) return;
+
+            {%- comment -%}
+            Selecting a question block that lives inside a currently-hidden category panel only
+            opens its accordion (accordion-disclosure's own shopify:block:select handler) - it
+            never reaches x-tabs, since the panel is a sibling of x-tabs, not a slotted child.
+            Without this, the merchant would see nothing change in the editor preview.
+            {%- endcomment -%}
+            root.addEventListener('shopify:block:select', function (event) {
+              var panel = event.target.closest('.faq__panel');
+              if (!panel || !panel.id) return;
+
+              var button = tabs.querySelector('[aria-controls="' + panel.id + '"]');
+              if (!button) return;
+
+              var buttons = Array.prototype.slice.call(tabs.querySelectorAll('[slot="tab"]'));
+              var index = buttons.indexOf(button);
+              if (index > -1) tabs.selectedIndex = index;
+            });
+          })();
+        </script>
+
+        {%- render 'faq-accordion-group' -%}
+      </div>
+    {%- elsif section.settings.layout == 'split' -%}
       <div class="section-split color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_faq %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_faq %} style="border-radius: {{ section.settings.faq_border_radius }}px; overflow: hidden;"{% endif %}>
         <div class="section-split__column">
           {{- section_header -}}
