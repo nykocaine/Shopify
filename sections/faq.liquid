@@ -231,6 +231,31 @@
       }
 
       {%- comment -%}
+      When this section is the very first one on the page - right under the sticky header bar,
+      same "first section" signal .shopify-section:first-child uses sitewide - the top corners of
+      the floating card visually clash with the header above it, and the standard top padding reads
+      too tight against it. Top corners flatten to square (bottom corners keep the Corner radius
+      setting - overflow: hidden on the same element clips to whatever the resulting mixed radius
+      ends up being, no extra work needed there) and the top padding triples, same technique
+      contact.liquid/libro-reclamaciones.liquid use elsewhere - applied only in this position here.
+      !important is needed because Corner radius is set as an inline style (higher specificity than
+      any external rule regardless of selector).
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }}:first-child .section-floating {
+        border-start-start-radius: 0 !important;
+        border-start-end-radius: 0 !important;
+      }
+
+      #shopify-section-{{ section.id }}:first-child .faq__container {
+        padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
+      }
+
+      #shopify-section-{{ section.id }}:first-child .section-split__column:not(.section-split__column--image),
+      #shopify-section-{{ section.id }}:first-child .section-spacing {
+        padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
+      }
+
+      {%- comment -%}
       Same override product-card.liquid already applies to itself (theme.css, ".product-card .subheading,
       .product-card .heading"): forces the typeface itself (family/weight/style/letter-spacing/casing)
       back to Body Text, without touching font-size. The title ('heading' snippet, style: title_tag) never
