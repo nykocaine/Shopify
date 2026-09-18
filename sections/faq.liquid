@@ -346,8 +346,8 @@
       Categories replace the split/stacked "Layout" setting entirely: the title+categories row and
       the full-width questions block below it are the same shape either way, so there is no
       meaningful "split" (title in one column, content in another) left once content must span the
-      full width. Reuses .section-spacing/.container - the same full-width wrapper other sections
-      (reviews, blog-posts) use - instead of .section-split or .section-stack's own narrower max-width.
+      full width. Uses .container (own padding/margin overrides above) directly, without
+      .section-spacing's block padding or .section-split/.section-stack's narrower max-width.
       {%- endcomment -%}
       <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_faq %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_faq %} style="border-radius: {{ section.settings.faq_border_radius }}px; overflow: hidden;"{% endif %}>
         <div class="container faq__container">
