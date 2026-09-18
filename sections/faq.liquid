@@ -313,31 +313,36 @@
 
       #shopify-section-{{ section.id }} .faq__category-tab {
         white-space: nowrap;
-        color: rgb(var(--text-color) / .6);
+        color: rgb(var(--text-color) / .5);
         background: none;
-        border: 1px solid rgb(var(--border-color));
+        border: 1px solid rgb(var(--text-color) / .3);
         border-radius: 999px;
         align-items: center;
         gap: .5rem;
         padding: .625rem 1.125rem;
-        transition: color .2s ease, background-color .2s ease, border-color .2s ease;
+        transition: color .2s ease, border-color .2s ease;
         display: inline-flex;
         flex: none;
       }
 
       #shopify-section-{{ section.id }} .faq__category-tab:hover {
-        color: rgb(var(--text-color));
-        border-color: rgb(var(--text-color) / .3);
+        color: rgb(var(--text-color) / .8);
+        border-color: rgb(var(--text-color) / .5);
       }
 
       #shopify-section-{{ section.id }} .faq__category-tab:focus-visible {
         outline-offset: 2px;
       }
 
+      {%- comment -%}
+      Always an outline button - font color and border both come from the body text color, never a
+      filled background, even when active (only the opacity step changes: muted when inactive, full
+      strength when selected).
+      {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"] {
-        color: rgb(var(--background));
-        background: rgb(var(--accent));
-        border-color: rgb(var(--accent));
+        color: rgb(var(--text-color));
+        background: none;
+        border-color: rgb(var(--text-color));
       }
 
       #shopify-section-{{ section.id }} .faq__category-tab-icon {
