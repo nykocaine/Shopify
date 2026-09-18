@@ -203,6 +203,18 @@
       }
 
       {%- comment -%}
+      The categories layout (.faq__container, below) needs its content to actually reach the
+      section's full width - .section-spacing .container's own padding-inline above (the "interior"
+      lateral padding that keeps floating cards off their own edges) would undo that, so this
+      overrides it back to 0 specifically for that container. Same selector shape/specificity as the
+      rule above, declared after it, so it wins without touching that rule for the split/stacked
+      layouts that still rely on it.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .section-spacing .faq__container {
+        padding-inline: 0;
+      }
+
+      {%- comment -%}
       Same override product-card.liquid already applies to itself (theme.css, ".product-card .subheading,
       .product-card .heading"): forces the typeface itself (family/weight/style/letter-spacing/casing)
       back to Body Text, without touching font-size. The title ('heading' snippet, style: title_tag) never
@@ -334,7 +346,7 @@
       {%- endcomment -%}
       <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_faq %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_faq %} style="border-radius: {{ section.settings.faq_border_radius }}px; overflow: hidden;"{% endif %}>
         <div class="section-spacing">
-          <div class="container">
+          <div class="container faq__container">
             {{- section_header -}}
 
             <div class="faq faq--full-width">
