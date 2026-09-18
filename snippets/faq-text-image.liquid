@@ -1,0 +1,30 @@
+{%- doc -%}
+Renders a FAQ "Text with image" block: optional title (existing heading system), rich text, and an
+optional image. Two columns (text | image) on desktop when an image is set, single column with the
+image below the text on mobile - stacked, full width, on every breakpoint when there's no image.
+
+@param {object} block - the "text_image" block to render
+@param {number} [faq_border_radius] - the section's own corner radius (Corner radius setting), applied to the image so it matches the section's rounded corners
+{%- enddoc -%}
+
+{%- if block.settings.title != blank or block.settings.text != blank or block.settings.image != blank -%}
+  <div class="faq__text-image {% if block.settings.image != blank %}faq__text-image--with-image{% endif %}" {{ block.shopify_attributes }}>
+    {%- if block.settings.title != blank or block.settings.text != blank -%}
+      <div class="faq__text-image-content prose">
+        {%- if block.settings.title != blank -%}
+          {%- render 'heading', content: block.settings.title, style: 'h5', html_tag: 'h3' -%}
+        {%- endif -%}
+
+        {%- if block.settings.text != blank -%}
+          {{- block.settings.text -}}
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if block.settings.image != blank -%}
+      <div class="faq__text-image-media" style="border-radius: {{ faq_border_radius | default: 0 }}px;">
+        {%- render 'media', media: block.settings.image, sizes: '(max-width: 699px) 100vw, 50vw' -%}
+      </div>
+    {%- endif -%}
+  </div>
+{%- endif -%}
