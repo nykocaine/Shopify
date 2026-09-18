@@ -126,27 +126,25 @@
   }
 
   {%- comment -%}
-  Desktop layout: theme.css lays out .footer__block-list as a wrapping flex row with per-block max
-  widths (see .footer__block / .footer__block--links / .footer__block--social_menu in theme.css).
-  With 4 blocks that only fits 3 per row at most desktop widths, and at in-between widths (just
-  above the 700px mobile breakpoint) one block unpredictably wraps down to its own row. Forcing a
-  real 4-column grid here instead keeps all 4 blocks on one row and lets them shrink together as
-  the viewport narrows, instead of one dropping to a second line.
+  Desktop layout: theme.css lays out .footer__block-list as a flex row that wraps (flex-wrap: wrap)
+  and gives .footer__block--links / .footer__block--social_menu flex-shrink: 0 (never shrink). With
+  4 blocks, once their natural/max widths no longer all fit on one line, the non-shrinking blocks
+  hold their ground and something else gets pushed to a second row instead - the "one menu drops
+  down" behaviour. Switching to flex-wrap: nowrap and letting every block shrink (min-width: 0, so
+  their content can wrap onto multiple lines instead) keeps all 4 on a single row at any desktop
+  width, while still sizing each block to its own content (via max-width) rather than forcing equal
+  columns.
   {%- endcomment -%}
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .footer__block-list {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      column-gap: 3rem;
-      display: grid;
+      flex-wrap: nowrap;
     }
 
     #shopify-section-{{ section.id }} .footer__block,
     #shopify-section-{{ section.id }} .footer__block--links,
-    #shopify-section-{{ section.id }} .footer__block--social_menu,
-    #shopify-section-{{ section.id }} .footer__block--newsletter,
-    #shopify-section-{{ section.id }} .footer__block--text {
-      grid-column: auto;
-      max-width: none;
+    #shopify-section-{{ section.id }} .footer__block--social_menu {
+      flex-shrink: 1;
+      min-width: 0;
     }
   }
 </style>
