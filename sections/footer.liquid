@@ -124,6 +124,31 @@
       grid-column: 1 / -1;
     }
   }
+
+  {%- comment -%}
+  Desktop layout: theme.css lays out .footer__block-list as a wrapping flex row with per-block max
+  widths (see .footer__block / .footer__block--links / .footer__block--social_menu in theme.css).
+  With 4 blocks that only fits 3 per row at most desktop widths, and at in-between widths (just
+  above the 700px mobile breakpoint) one block unpredictably wraps down to its own row. Forcing a
+  real 4-column grid here instead keeps all 4 blocks on one row and lets them shrink together as
+  the viewport narrows, instead of one dropping to a second line.
+  {%- endcomment -%}
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .footer__block-list {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      column-gap: 3rem;
+      display: grid;
+    }
+
+    #shopify-section-{{ section.id }} .footer__block,
+    #shopify-section-{{ section.id }} .footer__block--links,
+    #shopify-section-{{ section.id }} .footer__block--social_menu,
+    #shopify-section-{{ section.id }} .footer__block--newsletter,
+    #shopify-section-{{ section.id }} .footer__block--text {
+      grid-column: auto;
+      max-width: none;
+    }
+  }
 </style>
 
 <div class="footer {% if section.settings.floating_footer %}footer--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.floating_footer %}style="border-radius: {{ section.settings.footer_border_radius }}px;"{% endif %}>
