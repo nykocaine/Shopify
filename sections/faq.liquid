@@ -203,15 +203,13 @@
       }
 
       {%- comment -%}
-      The categories layout (.faq__container, below) needs its content to actually reach the
-      section's full width - .section-spacing .container's own padding-inline above (the "interior"
-      lateral padding that keeps floating cards off their own edges) would undo that, so this
-      overrides it back to 0 specifically for that container. Same selector shape/specificity as the
-      rule above, declared after it, so it wins without touching that rule for the split/stacked
-      layouts that still rely on it.
+      The categories layout's own container (.faq__container, below) keeps the same lateral padding
+      as .section-spacing .container above - matching its own padding-block - restated explicitly
+      here (same selector shape/specificity, declared after it) so it stays correct even if that
+      rule's value ever changes independently of this one.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .section-spacing .faq__container {
-        padding-inline: 0;
+        padding-inline: calc(var(--container-gutter) + 0.5rem);
       }
 
       {%- comment -%}
