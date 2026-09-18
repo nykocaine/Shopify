@@ -231,6 +231,15 @@
       }
 
       {%- comment -%}
+      Same gap .section-header already uses between the title and the categories row (row-gap:
+      1.8rem, theme.css) - repeated here between the header (title+categories) and the questions
+      below it, on mobile and desktop alike.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .faq--full-width {
+        margin-block-start: 1.8rem;
+      }
+
+      {%- comment -%}
       When this section is the very first one on the page - right under the sticky header bar,
       same "first section" signal .shopify-section:first-child uses sitewide - the top corners of
       the floating card visually clash with the header above it, and the standard top padding reads
