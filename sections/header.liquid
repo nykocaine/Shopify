@@ -1,5 +1,10 @@
 {%- liquid
   assign open_dropdown_menu_in_sidebar = false
+  assign is_faq_page = false
+
+  if template.suffix == 'faq'
+    assign is_faq_page = true
+  endif
 
   if section.settings.show_country_selector and localization.available_countries.size > 1
     assign show_country_selector = true
@@ -142,6 +147,21 @@
     font-style: var(--text-font-style);
     font-weight: var(--text-font-weight);
   }
+
+  {%- if is_faq_page -%}
+    /* FAQ page only: navigation/secondary-nav markup is skipped below, so the grid
+       only ever has a "logo" area left. Force it to a single full-width column
+       (overriding the mobile/desktop --header-grid set above) and center the logo
+       within it, so centering is relative to the header's full width rather than
+       whatever space happened to be left over. */
+    #shopify-section-{{ section.id }} {
+      --header-grid: "logo" / minmax(0, 1fr) !important;
+    }
+
+    #shopify-section-{{ section.id }} .header__logo {
+      justify-self: center !important;
+    }
+  {%- endif -%}
 </style>
 
 <height-observer variable="header">
@@ -187,7 +207,7 @@
     {%- assign menu = section.settings.menu -%}
     {%- assign sidebar_menu = section.settings.sidebar_menu -%}
 
-    {%- if menu.links.size > 0 or sidebar_menu.links.size > 0 -%}
+    {%- if is_faq_page == false and (menu.links.size > 0 or sidebar_menu.links.size > 0) -%}
       {%- liquid
         assign primary_nav_extra_classes = ''
 
@@ -323,6 +343,7 @@
     --------------------------------------------------------------------------------------------------------------------
     {%- endcomment -%}
 
+    {%- unless is_faq_page -%}
     <nav class="header__secondary-nav" aria-label="{{ 'header.general.secondary_navigation' | t | escape }}">
       <ul class="contents unstyled-list">
         {%- if show_country_selector or show_locale_selector -%}
@@ -475,8 +496,8 @@
 
     {%- assign primary_menu = section.settings.drawer_menu | default: section.settings.menu -%}
 
-    {%- render 'main-menu-drawer', 
-      primary_menu: primary_menu, 
+    {%- render 'main-menu-drawer',
+      primary_menu: primary_menu,
       secondary_menu: section.settings.secondary_menu,
       show_nested_menu_indicator: section.settings.drawer_show_nested_menu_indicator,
       show_country_selector: show_country_selector,
@@ -490,18 +511,19 @@
     ------------------------------------------------------------------------------------------------------------------
     SIDEBAR MENU FOR DROPDOWN ITEM
 
-    This is a special mode that can be enabled by setting the desktop layout to "logo center, navigation inline" and 
+    This is a special mode that can be enabled by setting the desktop layout to "logo center, navigation inline" and
     the dropdown menu style to "sidebar". When configured like this, the dropdown menu will open in a lateral sidebar
     -----------------------------------------------------------------------------------------------------------------
     {%- endcomment -%}
 
     {%- if open_dropdown_menu_in_sidebar -%}
-      {%- render 'main-menu-dropdown-sidebar', 
-        primary_menu: section.settings.menu, 
+      {%- render 'main-menu-dropdown-sidebar',
+        primary_menu: section.settings.menu,
         secondary_menu: section.settings.secondary_menu,
         color_scheme: section.settings.color_scheme
       -%}
     {%- endif -%}
+    {%- endunless -%}
   </x-header>
 </height-observer>
 
