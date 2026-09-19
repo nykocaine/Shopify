@@ -207,8 +207,12 @@
 
     {%- assign menu = section.settings.menu -%}
     {%- assign sidebar_menu = section.settings.sidebar_menu -%}
+    {%- assign has_menu_links = false -%}
+    {%- if menu.links.size > 0 or sidebar_menu.links.size > 0 -%}
+      {%- assign has_menu_links = true -%}
+    {%- endif -%}
 
-    {%- if header_logo_only == false and (menu.links.size > 0 or sidebar_menu.links.size > 0) -%}
+    {%- if header_logo_only == false and has_menu_links -%}
       {%- liquid
         assign primary_nav_extra_classes = ''
 
