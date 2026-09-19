@@ -24,7 +24,7 @@
   }
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_blog %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_blog %} style="border-end-start-radius: {{ section.settings.blog_border_radius }}px; border-end-end-radius: {{ section.settings.blog_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="container">
     {%- if blog.articles_count == 0 -%}
       <div class="empty-state">
@@ -193,6 +193,24 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_blog",
+      "label": "Floating",
+      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "blog_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_blog }}"
     },
     {
       "type": "checkbox",
