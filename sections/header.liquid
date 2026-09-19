@@ -161,6 +161,13 @@
     #shopify-section-{{ section.id }} .header__logo {
       justify-self: center !important;
     }
+
+    /* Overrides "enable_sticky" (and floating_header's position:relative) for this
+       page only: the header should scroll away with the page instead of staying
+       pinned to the top. */
+    #shopify-section-{{ section.id }} {
+      position: static !important;
+    }
   {%- endif -%}
 </style>
 
