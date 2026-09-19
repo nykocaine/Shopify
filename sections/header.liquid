@@ -2,7 +2,7 @@
   assign open_dropdown_menu_in_sidebar = false
   assign header_logo_only = false
 
-  if template.suffix == 'faq' or section.settings.show_logo_only
+  if template.suffix == 'faq'
     assign header_logo_only = true
   endif
 
@@ -149,12 +149,11 @@
   }
 
   {%- if header_logo_only -%}
-    /* Logo-only mode (auto on the FAQ template, or forced via "show_logo_only"):
-       navigation/secondary-nav markup is skipped below, so the grid only ever has
-       a "logo" area left. Force it to a single full-width column (overriding the
-       mobile/desktop --header-grid set above) and center the logo within it, so
-       centering is relative to the header's full width rather than whatever space
-       happened to be left over. */
+    /* FAQ page only: navigation/secondary-nav markup is skipped below, so the grid
+       only ever has a "logo" area left. Force it to a single full-width column
+       (overriding the mobile/desktop --header-grid set above) and center the logo
+       within it, so centering is relative to the header's full width rather than
+       whatever space happened to be left over. */
     #shopify-section-{{ section.id }} {
       --header-grid: "logo" / minmax(0, 1fr) !important;
     }
@@ -680,13 +679,6 @@
       "unit": "px",
       "label": "Relleno del header",
       "default": 10
-    },
-    {
-      "type": "checkbox",
-      "id": "show_logo_only",
-      "label": "Mostrar únicamente el logo (ocultar menú, carrito y demás)",
-      "info": "Oculta el menú, carrito, cuenta, búsqueda y selectores, dejando solo el logo centrado. Se activa automáticamente en la página de FAQ; actívalo aquí manualmente si necesitas forzarlo (afecta a todas las páginas donde se muestre este header mientras esté activado).",
-      "default": false
     },
     {
       "type": "header",
