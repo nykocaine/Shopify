@@ -8,6 +8,9 @@ password page and the newsletter popup.
   form is rendered more than once on a page
 @param {string} [value] - an optional prefilled value for the email input (e.g. customer.email)
 @param {string} [button_label] - an optional override for the submit button label (defaults to "Subscribe")
+@param {string} [button_icon] - an optional icon name to show on the submit button (see snippets/icon.liquid)
+@param {boolean} [hide_button_label] - if true, visually hides the button label (still read by screen readers)
+  and shows only the icon - requires button_icon to be set, otherwise the button would have no visible content
 @param {boolean} [remember_success_locally] - if true, sets a "theme:popup-filled" local storage flag on a
   successful submission (used by the newsletter popup so it doesn't show again)
 @param {boolean} [show_discount] - if true (and discount_code is set), shows the configured discount code with a
@@ -70,7 +73,16 @@ password page and the newsletter popup.
       {%- unless button_label -%}
         {%- assign button_label = 'general.newsletter.subscribe' | t -%}
       {%- endunless -%}
-      {%- render 'button', type: 'submit', content: button_label, style: 'link' -%}
+
+      {%- capture button_content -%}
+        {%- if hide_button_label and button_icon != blank -%}
+          <span class="sr-only">{{ button_label }}</span>
+        {%- else -%}
+          {{- button_label -}}
+        {%- endif -%}
+      {%- endcapture -%}
+
+      {%- render 'button', type: 'submit', content: button_content, style: 'link', icon: button_icon -%}
     </div>
   {%- endif -%}
 {%- endform -%}
