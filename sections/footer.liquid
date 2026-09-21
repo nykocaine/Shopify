@@ -53,10 +53,14 @@
     overflow: hidden;
   }
 
-  @media screen and (min-width: 700px) {
-    #shopify-section-{{ section.id }} .footer-social-menu__icon-wrap {
-      display: none;
-    }
+  {%- comment -%}
+  Icons only ever show in the mobile-only compact row (.footer-social-menu--compact, icon-only by
+  design - see the comment on the social_menu case above). The regular list (.footer-social-menu,
+  not --compact) never shows its icons, on any breakpoint - including on mobile when "Collapse on
+  mobile" is off and the compact row doesn't exist at all, so the regular list is all there is.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .footer-social-menu .footer-social-menu__icon-wrap {
+    display: none;
   }
 
   {%- comment -%}
