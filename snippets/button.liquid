@@ -116,7 +116,17 @@ itself (or the link), and remove it once finished. The theme will automatically 
 {%- if content != blank -%}
   {%- capture button_content -%}
     {%- if style == 'link' -%}
-      {{- content -}}
+      {%- if icon != blank -%}
+        {%- if icon_position == 'before_text' -%}
+          {%- render 'icon' with icon -%}
+          {{- content -}}
+        {%- else -%}
+          {{- content -}}
+          {%- render 'icon' with icon -%}
+        {%- endif -%}
+      {%- else -%}
+        {{- content -}}
+      {%- endif -%}
     {%- else -%}
       {% if icon != blank %}
         <button-content class="button__content">
