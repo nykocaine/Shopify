@@ -1,8 +1,4 @@
 <style>
-  #shopify-section-{{ section.id }} .not-found-heading {
-    color: rgb(var(--text-color) / .1);
-  }
-
   #shopify-section-{{ section.id }} .content-box {
     min-height: {{ section.settings.mobile_height }}svh;
   }
@@ -16,42 +12,13 @@
   #shopify-section-{{ section.id }} .empty-state {
     padding-block: var(--container-gutter);
   }
-
-  #shopify-section-{{ section.id }} .not-found-blur {
-    grid-area: full-start / full-start / full-end / full-end;
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    background: rgb(var(--not-found-blur-color));
-    -webkit-backdrop-filter: blur(var(--not-found-blur-intensity));
-    backdrop-filter: blur(var(--not-found-blur-intensity));
-    pointer-events: none;
-  }
 </style>
 
-{%- liquid
-  assign background_media = section.settings.background_video
-  if background_media == blank
-    assign background_media = section.settings.background_image
-  endif
--%}
-
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_not_found %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_not_found %} style="border-end-start-radius: {{ section.settings.not_found_border_radius }}px; border-end-end-radius: {{ section.settings.not_found_border_radius }}px; overflow: hidden;"{% endif %}>
-  <div class="content-box min-h-screen">
-    {%- if background_media != blank -%}
-      <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.overlay_color.rgb }} / {{ section.settings.overlay_opacity | divided_by: 100.0 }}">
-        {%- render 'media', media: background_media, autoplay: true, playsinline: true, loop: true, muted: true, preload: true -%}
-      </div>
-    {%- endif -%}
-
-    {%- if section.settings.enable_blur_effect -%}
-      <div class="not-found-blur" style="--not-found-blur-intensity: {{ section.settings.blur_intensity }}px; --not-found-blur-color: {{ section.settings.blur_color.rgb }} / {{ section.settings.blur_opacity | divided_by: 100.0 }};"></div>
-    {%- endif -%}
-
+  <div class="content-box">
     <div class="empty-state">
       {%- if section.settings.heading != blank -%}
-        <h1 class="not-found-heading {{ section.settings.heading_size }}">{{ section.settings.heading }}</h1>
+        <h1 class="{{ section.settings.heading_size }}">{{ section.settings.heading }}</h1>
       {%- endif -%}
     </div>
   </div>
@@ -72,8 +39,8 @@
     {
       "type": "checkbox",
       "id": "floating_not_found",
-      "label": "Floating 404",
-      "info": "Adds margins around the section (bottom and sides only), using the store's global side margin.",
+      "label": "t:sections.main_not_found.floating_not_found",
+      "info": "t:sections.main_not_found.floating_not_found_info",
       "default": false
     },
     {
@@ -83,14 +50,14 @@
       "max": 30,
       "step": 2,
       "unit": "px",
-      "label": "Corner radius",
+      "label": "t:sections.main_not_found.not_found_border_radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_not_found }}"
     },
     {
       "type": "range",
       "id": "mobile_height",
-      "label": "Mobile height (% of window)",
+      "label": "t:sections.main_not_found.mobile_height",
       "min": 30,
       "max": 100,
       "step": 5,
@@ -100,83 +67,12 @@
     {
       "type": "range",
       "id": "desktop_height",
-      "label": "Desktop height (% of window)",
+      "label": "t:sections.main_not_found.desktop_height",
       "min": 30,
       "max": 100,
       "step": 5,
       "unit": "%",
       "default": 100
-    },
-    {
-      "type": "header",
-      "content": "Blur effect"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_blur_effect",
-      "label": "Enable blur effect",
-      "info": "Applies a blur effect over the whole section (same style used for dialog backdrops).",
-      "default": false
-    },
-    {
-      "type": "range",
-      "id": "blur_intensity",
-      "label": "Blur intensity",
-      "min": 0,
-      "max": 20,
-      "step": 1,
-      "unit": "px",
-      "default": 6,
-      "visible_if": "{{ section.settings.enable_blur_effect }}"
-    },
-    {
-      "type": "color",
-      "id": "blur_color",
-      "label": "Blur color",
-      "default": "#000000",
-      "visible_if": "{{ section.settings.enable_blur_effect }}"
-    },
-    {
-      "type": "range",
-      "id": "blur_opacity",
-      "label": "Blur color opacity",
-      "min": 0,
-      "max": 100,
-      "step": 5,
-      "unit": "%",
-      "default": 40,
-      "visible_if": "{{ section.settings.enable_blur_effect }}"
-    },
-    {
-      "type": "header",
-      "content": "t:global.image.background_image"
-    },
-    {
-      "type": "image_picker",
-      "id": "background_image",
-      "label": "t:global.image.background_image"
-    },
-    {
-      "type": "video",
-      "id": "background_video",
-      "label": "t:global.video.video",
-      "info": "Takes priority over the background image when set."
-    },
-    {
-      "type": "color",
-      "id": "overlay_color",
-      "label": "t:global.colors.image_overlay_color",
-      "default": "#000000"
-    },
-    {
-      "type": "range",
-      "id": "overlay_opacity",
-      "label": "t:global.colors.image_overlay_opacity",
-      "min": 0,
-      "max": 100,
-      "step": 5,
-      "unit": "%",
-      "default": 20
     },
     {
       "type": "header",
