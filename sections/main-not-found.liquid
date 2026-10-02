@@ -16,9 +16,14 @@
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_not_found %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_not_found %} style="border-end-start-radius: {{ section.settings.not_found_border_radius }}px; border-end-end-radius: {{ section.settings.not_found_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="content-box">
-    <div class="empty-state">
+    <div class="empty-state v-stack gap-6 justify-items-center">
       {%- if section.settings.heading != blank -%}
         <h1 class="{{ section.settings.heading_size }}">{{ section.settings.heading }}</h1>
+      {%- endif -%}
+
+      {%- if section.settings.button_text != blank -%}
+        {%- assign button_link = section.settings.button_link | default: routes.root_url -%}
+        {%- render 'button', content: section.settings.button_text, href: button_link -%}
       {%- endif -%}
     </div>
   </div>
@@ -101,6 +106,18 @@
         { "value": "h7", "label": "XX-Small" }
       ],
       "default": "h3"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "t:global.text.button_text",
+      "default": "Back to home page"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:sections.main_not_found.button_link",
+      "info": "t:sections.main_not_found.button_link_info"
     }
   ]
 }
