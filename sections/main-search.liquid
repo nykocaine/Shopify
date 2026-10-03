@@ -47,11 +47,15 @@
     <div class="container">
       <div class="empty-state">
         <div class="prose prose-justify-center">
+          {%- if section.settings.search_heading != blank -%}
+            <h1 class="{{ section.settings.search_heading_size }}">{{ section.settings.search_heading }}</h1>
+          {%- endif -%}
+
           {%- if search.performed -%}
             <p>{{ 'search.general.no_results' | t: terms: search.terms }}</p>
           {%- endif -%}
 
-          <form class="max-w-xs" action="{{ routes.search_url }}" method="get" role="search">
+          <form class="max-w-xs md:max-w-md" action="{{ routes.search_url }}" method="get" role="search">
             <label for="search-page-input-empty" class="sr-only">{{ 'search.general.search_placeholder' | t }}</label>
             <input id="search-page-input-empty" type="search" name="q" class="search-form__input input" placeholder="{{ 'search.general.search_placeholder' | t }}" autocomplete="off" autocorrect="off">
           </form>
@@ -68,9 +72,13 @@
 
     <div class="container section-spacing section-spacing--tight">
       <div class="prose prose-justify-center">
+        {%- if section.settings.search_heading != blank -%}
+          <h1 class="{{ section.settings.search_heading_size }}">{{ section.settings.search_heading }}</h1>
+        {%- endif -%}
+
         <p>{{ 'search.results_count' | t: count: search.results_count }}</p>
-        
-        <form class="max-w-xs" action="{{ routes.search_url }}" method="get" role="search">
+
+        <form class="max-w-xs md:max-w-md" action="{{ routes.search_url }}" method="get" role="search">
           <label for="search-page-input-results" class="sr-only">{{ 'search.general.search_placeholder' | t }}</label>
           <input id="search-page-input-results" type="search" name="q" value="{{ search.terms }}" class="search-form__input input" placeholder="{{ 'search.general.search_placeholder' | t }}" autocomplete="off" autocorrect="off">
         </form>
@@ -231,8 +239,8 @@ on desktop based on the settings
     {
       "type": "checkbox",
       "id": "floating_search",
-      "label": "Floating Search",
-      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "label": "t:sections.main_search.floating_search",
+      "info": "t:sections.main_search.floating_search_info",
       "default": false
     },
     {
@@ -242,9 +250,37 @@ on desktop based on the settings
       "max": 30,
       "step": 2,
       "unit": "px",
-      "label": "Corner radius",
+      "label": "t:sections.main_search.search_border_radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_search }}"
+    },
+    {
+      "type": "header",
+      "content": "t:global.text.text"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "search_heading",
+      "label": "t:global.text.heading",
+      "info": "t:sections.main_search.search_heading_info"
+    },
+    {
+      "type": "select",
+      "id": "search_heading_size",
+      "label": "t:global.text.size",
+      "options": [
+        { "value": "display-xl", "label": "Display XL" },
+        { "value": "display-l", "label": "Display L" },
+        { "value": "display-m", "label": "Display M" },
+        { "value": "h1", "label": "XX-Large" },
+        { "value": "h2", "label": "X-Large" },
+        { "value": "h3", "label": "Large" },
+        { "value": "h4", "label": "Medium" },
+        { "value": "h5", "label": "Small" },
+        { "value": "h6", "label": "X-Small" },
+        { "value": "h7", "label": "XX-Small" }
+      ],
+      "default": "h3"
     },
     {
       "type": "header",
