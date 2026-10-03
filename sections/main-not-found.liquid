@@ -9,8 +9,16 @@
     }
   }
 
+  {%- comment -%}
+  .empty-state centers its items on the cross axis via place-items: center (theme.css), but with
+  the heading + button now stacked as two rows (via .v-stack, added for the button), the block axis
+  is governed by align-content instead - and .v-stack sets that to "start", pinning both rows to the
+  top of this tall section instead of centering them as a group. Overriding it back to "center" here
+  is what actually centers the content vertically.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .empty-state {
     padding-block: var(--container-gutter);
+    align-content: center;
   }
 </style>
 
