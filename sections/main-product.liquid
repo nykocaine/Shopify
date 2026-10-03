@@ -240,6 +240,17 @@
     }
   {%- endif -%}
 
+  {%- comment -%}
+  Block 1's own inner padding - same formula/container-gutter-based system already used for the
+  floating card padding in sections/reviews.liquid and sections/faq.liquid (--container-gutter + .5rem,
+  identical at every breakpoint, no merchant setting). Unconditional (not gated by floating_product)
+  since .product-info-frame has no padding of its own outside that branch otherwise - see "No rule for
+  .product-info-frame on purpose" above.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .product-info-frame {
+    padding: calc(var(--container-gutter) + 0.5rem);
+  }
+
   {%- if section.settings.floating_product -%}
     {%- comment -%}
     Shared by both the mobile (product_height_mobile) and desktop (product_height_desktop) branches below:
@@ -432,10 +443,6 @@
       overflow: hidden;
     }
 
-    #shopify-section-{{ section.id }} .product-info-frame {
-      padding: var(--container-gutter);
-    }
-
     {%- comment -%}
     .container's own centering margin would otherwise inset both cards a second time on top of the
     .section-floating margin, leaving them inset from the floating boundary instead of touching it — on every
@@ -454,14 +461,6 @@
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-gallery-frame {
         --distance-to-bleed: 0;
-      }
-
-      {%- comment -%}
-      Mobile-only: halve the whole padding (all four sides) so it stays even top/bottom = left/right,
-      just tighter than on desktop.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .product-info-frame {
-        padding: calc(var(--container-gutter) / 2);
       }
 
       {%- comment -%}
