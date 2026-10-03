@@ -43,12 +43,12 @@
 
   {%- comment -%}
   .empty-state's theme.css default (padding-block: 7.5rem) is a fixed value that doesn't scale with
-  the store's side-margin setting, unlike the gutter-based inner padding used on the other floating
-  sections (main-not-found, password) - so inside a floating card here it reads inconsistent with
-  those. Tying it to --container-gutter instead matches that same pattern.
+  the store's side-margin setting. container-gutter + 0.5rem is the actual established formula for
+  this (same one used by sections/reviews.liquid, sections/faq.liquid and the footer), not plain
+  --container-gutter alone, which reads noticeably tighter/under-padded by comparison.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .empty-state {
-    padding-block: var(--container-gutter);
+    padding-block: calc(var(--container-gutter) + 0.5rem);
   }
 </style>
 
