@@ -1,3 +1,20 @@
+{%- if section.settings.floating_gift_card -%}
+  <style>
+    {%- comment -%}
+    Floating mode: .section-split__column already pads itself with real padding (not margin, unlike
+    main-search's .container), just not with this formula - matching the main-search/faq.liquid/
+    reviews.liquid treatment: inline and bottom at calc(var(--container-gutter) + 0.5rem), top
+    tripled. The image column stays untouched (section-split__column--flushed forces padding: 0
+    !important, so it keeps bleeding to the card's edges).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .section-split__column.align-self-stretch {
+      padding-inline: calc(var(--container-gutter) + 0.5rem);
+      padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
+      padding-block-end: calc(var(--container-gutter) + 0.5rem);
+    }
+  </style>
+{%- endif -%}
+
 <div class="color-scheme color-scheme--{{ section.settings.content_color_scheme.id }}{% if section.settings.floating_gift_card %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_gift_card %} style="border-end-start-radius: {{ section.settings.gift_card_border_radius }}px; border-end-end-radius: {{ section.settings.gift_card_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-split sm:min-h-fill">
     <div class="section-split__column section-split__column--image section-split__column--flushed">
