@@ -41,15 +41,41 @@
     }
   }
 
-  {%- comment -%}
-  .empty-state's theme.css default (padding-block: 7.5rem) is a fixed value that doesn't scale with
-  the store's side-margin setting. container-gutter + 0.5rem is the actual established formula for
-  this (same one used by sections/reviews.liquid, sections/faq.liquid and the footer), not plain
-  --container-gutter alone, which reads noticeably tighter/under-padded by comparison.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .empty-state {
-    padding-block: calc(var(--container-gutter) + 0.5rem);
-  }
+  {%- if section.settings.floating_search -%}
+    {%- comment -%}
+    Floating mode: this section becomes its own rounded card, so it needs a real inner inset on all
+    four sides - same calc(var(--container-gutter) + 0.5rem) formula as sections/faq.liquid and
+    sections/reviews.liquid, at every breakpoint.
+
+    The catch is that nothing here was padded to begin with: .container (theme.css) insets itself
+    with margin-inline, not padding, so the card's own edges stay bare and the margin just shifts
+    content inward from outside the card. Zeroing that margin and replacing it with padding-inline
+    is what actually gives the card an interior - same swap faq.liquid documents on .faq__container.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .container {
+      margin-inline: 0;
+      padding-inline: calc(var(--container-gutter) + 0.5rem);
+    }
+
+    #shopify-section-{{ section.id }} .section-spacing {
+      padding-block: calc(var(--container-gutter) + 0.5rem);
+    }
+
+    {%- comment -%}
+    The results view has no .container of its own - the toolbar and the grid carry their own
+    padding-inline: var(--container-gutter) (theme.css), half a rem short of the card formula - and
+    .collection's padding-block-end is a generic page rhythm value, not a card inset, so the grid
+    and pagination run into the card's rounded bottom edge.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .collection__toolbar,
+    #shopify-section-{{ section.id }} .collection__results {
+      padding-inline: calc(var(--container-gutter) + 0.5rem);
+    }
+
+    #shopify-section-{{ section.id }} .collection {
+      padding-block-end: calc(var(--container-gutter) + 0.5rem);
+    }
+  {%- endif -%}
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_search %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_search %} style="border-end-start-radius: {{ section.settings.search_border_radius }}px; border-end-end-radius: {{ section.settings.search_border_radius }}px; overflow: hidden;"{% endif %}>
