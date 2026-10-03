@@ -267,19 +267,17 @@
   {%- endif -%}
 
   {%- comment -%}
-  Block 1's own inner padding, non-floating mode only: .product-info-frame has no padding of its own at
-  all outside the floating_product branch below (see "No rule for .product-info-frame on purpose" further
-  up - that comment is about display, not padding, which simply never had a rule here before). Reuses the
-  same container-gutter-based formula as the floating card padding in sections/reviews.liquid and
-  sections/faq.liquid (--container-gutter + .5rem) instead of introducing a new one. The floating_product
-  branch below keeps its own pre-existing padding pair untouched, so this never changes behaviour that
-  already worked.
+  Block 1's own inner padding, every mode and breakpoint alike: same container-gutter-based formula as
+  the floating card padding in sections/reviews.liquid and sections/faq.liquid (--container-gutter +
+  .5rem), and matches the "+ .5rem" extra this file already adds to block 3's own inset further up, so
+  both cards read with the same amount of inner breathing room in floating mode. Unconditional (not
+  gated by floating_product) on purpose: outside that branch .product-info-frame previously had no
+  padding at all, and inside it this replaces the plain var(--container-gutter)/half-on-mobile pair with
+  this same, single value instead - see the floating_product branch below, which no longer repeats it.
   {%- endcomment -%}
-  {%- unless section.settings.floating_product -%}
-    #shopify-section-{{ section.id }} .product-info-frame {
-      padding: calc(var(--container-gutter) + 0.5rem);
-    }
-  {%- endunless -%}
+  #shopify-section-{{ section.id }} .product-info-frame {
+    padding: calc(var(--container-gutter) + 0.5rem);
+  }
 
   {%- if section.settings.floating_product -%}
     {%- comment -%}
@@ -473,10 +471,6 @@
       overflow: hidden;
     }
 
-    #shopify-section-{{ section.id }} .product-info-frame {
-      padding: var(--container-gutter);
-    }
-
     {%- comment -%}
     .container's own centering margin would otherwise inset both cards a second time on top of the
     .section-floating margin, leaving them inset from the floating boundary instead of touching it — on every
@@ -516,14 +510,6 @@
       #shopify-section-{{ section.id }} .product-gallery__carousel-frame {
         border-start-start-radius: 0 !important;
         border-start-end-radius: 0 !important;
-      }
-
-      {%- comment -%}
-      Mobile-only: halve the whole padding (all four sides) so it stays even top/bottom = left/right,
-      just tighter than on desktop.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .product-info-frame {
-        padding: calc(var(--container-gutter) / 2);
       }
 
       {%- if product.media.size > 0 and section.settings.product_height_mobile > 0 -%}
