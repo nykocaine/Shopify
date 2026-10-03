@@ -52,27 +52,32 @@
 {%- assign mobile_border_color = mobile_border_color | strip -%}
 
 <style>
-  {%- comment -%}
-  Same interior padding as sections/libro-reclamaciones.liquid - container-gutter + 0.5rem on all
-  four sides, same on mobile and desktop, top tripled - instead of the global "Section spacing"
-  setting this section normally uses. Put directly on .section-spacing itself (not on the nested
-  .container) so it's one plain padding: on one element, on top of whatever .container's own
-  margin already does - same as every other floating section in the theme.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .section-spacing {
-    padding: calc(var(--container-gutter) + 0.5rem);
-    padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
-  }
+  {%- if section.settings.floating_cart -%}
+    {%- comment -%}
+    Same interior padding as sections/libro-reclamaciones.liquid, sections/faq.liquid and the other
+    floating sections (main-search, main-gift-card, main-not-found) - container-gutter + 0.5rem on
+    all four sides, same on mobile and desktop, top tripled - instead of the global "Section spacing"
+    setting this section normally uses. Scoped to floating_cart: this formula exists to inset content
+    from a rounded floating card's own edges, so it has no reason to apply when the section isn't a
+    card at all (default/non-floating), where the theme's normal section-spacing rhythm is correct.
+    Put directly on .section-spacing itself (not on the nested .container) so it's one plain padding:
+    on one element, on top of whatever .container's own margin already does.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .section-spacing {
+      padding: calc(var(--container-gutter) + 0.5rem);
+      padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
+    }
 
-  {%- comment -%}
-  .container (nested inside .section-spacing) still carries its own margin-inline
-  (--container-gutter-context) for the site-wide gutter - stacked on top of the padding above,
-  that doubles up the left/right inset. Zeroing just the gutter part of that margin formula
-  leaves .section-spacing's own padding as the only source of side space.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .section-spacing .container {
-    --container-gutter-context: 0px;
-  }
+    {%- comment -%}
+    .container (nested inside .section-spacing) still carries its own margin-inline
+    (--container-gutter-context) for the site-wide gutter - stacked on top of the padding above,
+    that doubles up the left/right inset. Zeroing just the gutter part of that margin formula
+    leaves .section-spacing's own padding as the only source of side space.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .section-spacing .container {
+      --container-gutter-context: 0px;
+    }
+  {%- endif -%}
 
   {%- comment -%}
   cart__right is now a solid color-scheme box (order summary card) instead of a bordered outline,
