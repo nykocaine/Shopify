@@ -273,7 +273,13 @@ corner radius below still rounds the box's own background fine without it.
 
                             <div class="h-stack justify-between gap-4">
                               <span class="medium">{{ 'cart.general.total' | t }}</span>
-                              <span class="medium">{{- cart.total_price | money_with_currency -}}</span>
+                              <span class="medium">
+                                {%- if settings.currency_code_enabled -%}
+                                  {{- cart.total_price | money_with_currency -}}
+                                {%- else -%}
+                                  {{- cart.total_price | money -}}
+                                {%- endif -%}
+                              </span>
                             </div>
 
                             {%- if block.settings.show_shipping_text -%}
@@ -333,7 +339,7 @@ corner radius below still rounds the box's own background fine without it.
                         {%- render 'button', type: 'submit', content: checkout_button_content, name: 'checkout', stretch: true, form: 'cart-main-form', block: block, class: 'buy-buttons__cta' -%}
 
                       {%- when 'terms_of_service' -%}
-                        <div class="checkbox-control">
+                        <div class="checkbox-control" {{ block.shopify_attributes }}>
                           <input id="main-cart-terms-of-service" type="checkbox" class="checkbox" required form="cart-main-form" value="1">
           
                           {%- if shop.terms_of_service == blank -%}
@@ -345,7 +351,7 @@ corner radius below still rounds the box's own background fine without it.
 
                       {%- when 'payment_methods' -%}
                         {%- if shop.enabled_payment_types.size > 0 -%}
-                          <div class="v-stack justify-items-center gap-2">
+                          <div class="v-stack justify-items-center gap-2" {{ block.shopify_attributes }}>
                             <span class="subheading text-subdued">{{ 'cart.general.we_accept' | t }}</span>
         
                             <ul class="h-stack gap-2 unstyled-list">
@@ -382,8 +388,8 @@ corner radius below still rounds the box's own background fine without it.
     {
       "type": "checkbox",
       "id": "floating_cart",
-      "label": "Floating Cart",
-      "info": "Adds margins around the cart (bottom and sides), using the store's global side margin.",
+      "label": "t:sections.main_cart.floating_cart",
+      "info": "t:sections.main_cart.floating_cart_info",
       "default": false
     },
     {
@@ -393,7 +399,7 @@ corner radius below still rounds the box's own background fine without it.
       "max": 30,
       "step": 2,
       "unit": "px",
-      "label": "Corner radius",
+      "label": "t:sections.main_cart.cart_border_radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_cart }}"
     },
@@ -412,13 +418,13 @@ corner radius below still rounds the box's own background fine without it.
     {
       "type": "color_scheme",
       "id": "cart_summary_color_scheme",
-      "label": "Order summary color scheme",
+      "label": "t:sections.main_cart.cart_summary_color_scheme",
       "default": "scheme-1"
     },
     {
       "type": "color_scheme",
       "id": "cart_summary_color_scheme_mobile",
-      "label": "Order summary color scheme (mobile)",
+      "label": "t:sections.main_cart.cart_summary_color_scheme_mobile",
       "default": "scheme-1"
     },
     {
@@ -428,7 +434,7 @@ corner radius below still rounds the box's own background fine without it.
       "max": 30,
       "step": 2,
       "unit": "px",
-      "label": "Order summary corner radius",
+      "label": "t:sections.main_cart.cart_summary_border_radius",
       "default": 16
     }
   ],
