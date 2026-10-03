@@ -589,6 +589,41 @@
     {%- comment -%} Gallery crop-to-fill rules - self-scoped to whichever breakpoint has a fixed height, emitted once. {%- endcomment -%}
     {{ product_gallery_fill_css }}
   {%- endif -%}
+
+  {%- if use_first_image_column and section.settings.join_image_gallery -%}
+    {%- comment -%}
+    Desktop-only: merges the static first-image card (block 2) into the gallery card (block 3) right
+    next to it, leaving the info card (block 1) untouched. Deliberately placed after both branches
+    above (outside the floating_product if) so it always wins the cascade on
+    .product-gallery-frame/.product-first-image-frame's border-radius, regardless of whether
+    floating_product's own border-radius rule (which sets all 4 corners) ran above it or not.
+
+    Closing the gap: --product-column-gap is a single value shared by every column pair in the row
+    (CSS grid's gap has no per-pair variant), so zeroing it would also close the gap before the info
+    card. Instead we pull the gallery frame left by exactly that amount via a negative margin - same
+    bleed technique already used above for .product-gallery - which closes only this one gap and
+    leaves the gallery/info gap and radius exactly as configured.
+
+    Radius: only the two touching corners are squared (first-image's end side, gallery's start side).
+    Every other corner - first-image's outer start side, gallery's end side toward the info gap, and
+    both top/bottom - keeps whatever product_border_radius/gallery_border_radius already set.
+    {%- endcomment -%}
+    @media screen and (min-width: 1000px) {
+      #shopify-section-{{ section.id }} .product-gallery-frame {
+        margin-inline-start: calc(-1 * var(--product-column-gap));
+      }
+
+      #shopify-section-{{ section.id }} .product-first-image-frame {
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery-frame {
+        border-start-start-radius: 0;
+        border-end-start-radius: 0;
+      }
+    }
+  {%- endif -%}
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}>
@@ -821,6 +856,14 @@
       "label": "Show first image as its own column (desktop)",
       "info": "Adds a static third column on desktop showing the product's first image, next to the gallery carousel and the info. When on, the three columns are equal width and \"Media width\" has no effect. Turn off for a plain 2-column gallery + info split.",
       "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "join_image_gallery",
+      "label": "Unir foto fija y galería (desktop)",
+      "info": "Elimina el espacio entre la foto fija y la galería y une sus bordes, dejando el redondeado solo en las esquinas exteriores del conjunto. Solo afecta a desktop; en mobile y tablet no cambia nada.",
+      "default": false,
+      "visible_if": "{{ section.settings.desktop_show_first_image_column }}"
     },
     {
       "type": "range",
