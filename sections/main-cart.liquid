@@ -52,28 +52,31 @@
 {%- assign mobile_border_color = mobile_border_color | strip -%}
 
 <style>
+  {%- comment -%}
+  Matches the header's own lateral inset exactly: --header-padding-inline (sections/header.liquid)
+  is calc(var(--container-gutter) + 0.5rem), applied unconditionally there (not gated behind
+  Floating Header) - so the cart's content needs that same live, responsive value at every
+  breakpoint, on every page, floating or not, to stay lined up with the logo/cart icon above it.
+  Bumping --container-gutter-context (the input .container's own margin formula reads) instead of
+  overriding margin-inline directly only touches the gutter component, not the separate max-width
+  centering term already baked into that formula.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .section-spacing .container {
+    --container-gutter-context: calc(var(--container-gutter) + 0.5rem);
+  }
+
   {%- if section.settings.floating_cart -%}
     {%- comment -%}
-    Fixed padding, computed directly from the container_gutter setting (not the --container-gutter
-    CSS custom property, which steps up at 700px and again at 1399px - on this section specifically,
-    that stacks with .cart's own 1000px breakpoint, where the grid goes 1-column to 2-column and
-    cart__right becomes sticky, so the padding step and the layout reflow landed close enough
-    together to read as the padding itself growing. Computing one rem number in Liquid instead keeps
-    it constant across every screen width - same on mobile and desktop, top tripled.
+    Floating mode additionally turns the section into its own card: the margin-based inset above is
+    replaced with real padding directly on .section-spacing (same live formula, so it keeps matching
+    the header at every breakpoint), top tripled - same treatment as sections/faq.liquid,
+    sections/reviews.liquid, main-search, main-gift-card and main-not-found.
     {%- endcomment -%}
-    {%- assign cart_card_padding = settings.container_gutter | plus: 0.5 -%}
-
     #shopify-section-{{ section.id }} .section-spacing {
-      padding: {{ cart_card_padding }}rem;
-      padding-block-start: {{ cart_card_padding | times: 3 }}rem;
+      padding: calc(var(--container-gutter) + 0.5rem);
+      padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
     }
 
-    {%- comment -%}
-    .container (nested inside .section-spacing) still carries its own margin-inline
-    (--container-gutter-context) for the site-wide gutter - stacked on top of the padding above,
-    that doubles up the left/right inset. Zeroing just the gutter part of that margin formula
-    leaves .section-spacing's own padding as the only source of side space.
-    {%- endcomment -%}
     #shopify-section-{{ section.id }} .section-spacing .container {
       --container-gutter-context: 0px;
     }
