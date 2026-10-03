@@ -12,6 +12,20 @@
       padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
       padding-block-end: calc(var(--container-gutter) + 0.5rem);
     }
+
+    {%- comment -%}
+    Below 1000px theme.css stacks the two columns (.section-split only switches to its 2-column grid
+    at min-width: 1000px) and gives the stacked :last-child (this content column) its own
+    padding-block-start: var(--section-stack-row-gap) - a fixed theme value, not this card's gutter
+    formula. The rule above already wins there on specificity (ID selector vs. theme.css's bare
+    class), but restating it explicitly removes any doubt that the tripled top padding actually
+    applies on mobile, not just desktop.
+    {%- endcomment -%}
+    @media screen and (max-width: 999px) {
+      #shopify-section-{{ section.id }} .section-split__column.align-self-stretch {
+        padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
+      }
+    }
   </style>
 {%- endif -%}
 
