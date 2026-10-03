@@ -48,9 +48,9 @@ This component is used to show the product gallery (used in product page and fea
   {%- capture bar_css -%}
     #shopify-section-{{ section.id }} .product-gallery__controls-floating .product-gallery__top-bar {
       margin-inline: 0;
-      padding-inline: calc(var(--container-gutter) + 0.5rem);
+      padding-inline: var(--container-gutter);
       position: absolute;
-      inset-block-start: calc(1rem + 0.5rem);
+      inset-block-start: 1rem;
       inset-inline: 0;
       z-index: 1;
     }
@@ -154,18 +154,16 @@ This component is used to show the product gallery (used in product page and fea
     {%- comment -%}
     Unconditional (not nested in a breakpoint media query, unlike the rest of this block) so the buttons
     show on mobile too, not just desktop - same inline/block inset as .product-gallery__top-bar
-    (padding-inline/inset-block-start, both in bar_css above), mirrored to the bottom, so it reads as one
-    consistent alignment with the bar and with .product-zoom-button below. The "+ 0.5rem" on each axis is
-    the same container-gutter-based padding system already used in sections/reviews.liquid and
-    sections/faq.liquid for their own floating card padding, reused here as the inset's extra margin from
-    the frame's true edge rather than a separate ad-hoc value. Bare SVGs, no .circle-button background:
-    .product-gallery__nav-button below resets the <button> itself, with no padding of its own so its
-    icon's actual edge lines up with the bar's, instead of sitting further in.
+    (padding-inline: var(--container-gutter), inset-block-start: 1rem, both in bar_css above), mirrored to
+    the bottom, so it reads as one consistent alignment with the bar and with .product-zoom-button below.
+    Bare SVGs, no .circle-button background: .product-gallery__nav-button below resets the <button> itself,
+    with no padding of its own so its icon's actual edge lines up with the bar's, instead of sitting
+    further in.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .product-gallery__nav-buttons {
       position: absolute;
-      inset-inline-start: calc(var(--container-gutter) + 0.5rem);
-      inset-block-end: calc(1rem + 0.5rem);
+      inset-inline-start: var(--container-gutter);
+      inset-block-end: 1rem;
       align-items: center;
       color: rgb(var(--text-color));
     }
@@ -210,11 +208,9 @@ This component is used to show the product gallery (used in product page and fea
   .product-zoom-button (theme.css) inherits currentColor and has a negative inset-inline-end meant to
   slightly overhang a card's edge - here it sits inside the gallery's own overflow: hidden, so that
   negative offset clips it off-center instead. Uses the same inline/block inset as .product-gallery__top-bar
-  and .product-gallery__nav-buttons (both above) mirrored to the bottom corner, instead of theme.css's own
-  8px/-12px offsets, so all three corner controls (bar, nav buttons, zoom) share one alignment - including
-  the same "+ 0.5rem" container-gutter-based padding already used for the floating card padding in
-  sections/reviews.liquid and sections/faq.liquid, reused here rather than introducing a separate value or
-  a new setting.
+  (padding-inline: var(--container-gutter), inset-block-start: 1rem, bar_css above) mirrored to the bottom
+  corner, instead of theme.css's own 8px/-12px offsets, so all three corner controls (bar, nav buttons,
+  zoom) share one alignment.
 
   Defaults to the theme's normal text color and switches to white via .is-dark-image, the same "!dark"
   alt-text tag and <carousel-caption> (assets/theme.js) sync the caption/counter already use - toggled on
@@ -223,8 +219,8 @@ This component is used to show the product gallery (used in product page and fea
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-zoom-button {
     color: rgb(var(--text-color));
-    inset-inline-end: calc(var(--container-gutter) + 0.5rem);
-    inset-block-end: calc(1rem + 0.5rem);
+    inset-inline-end: var(--container-gutter);
+    inset-block-end: 1rem;
   }
 
   #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-zoom-button {
