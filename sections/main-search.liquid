@@ -40,6 +40,16 @@
       --blog-post-list-grid: auto / repeat(4, minmax(0, 1fr));
     }
   }
+
+  {%- comment -%}
+  .empty-state's theme.css default (padding-block: 7.5rem) is a fixed value that doesn't scale with
+  the store's side-margin setting, unlike the gutter-based inner padding used on the other floating
+  sections (main-not-found, password) - so inside a floating card here it reads inconsistent with
+  those. Tying it to --container-gutter instead matches that same pattern.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .empty-state {
+    padding-block: var(--container-gutter);
+  }
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_search %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_search %} style="border-end-start-radius: {{ section.settings.search_border_radius }}px; border-end-end-radius: {{ section.settings.search_border_radius }}px; overflow: hidden;"{% endif %}>
