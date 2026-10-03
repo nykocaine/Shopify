@@ -48,7 +48,7 @@
               {%- assign gift_card_initial_value = gift_card.initial_value | money -%}
             {% endif %}
 
-            <p class="h1">{{ gift_card_balance }}</p>
+            <h1 class="h1">{{ gift_card_balance }}</h1>
             
             {%- if gift_card.balance != gift_card.initial_value -%}
               <p class="subheading">{{ 'gift_card.issued.out_of_html' | t: initial_value: gift_card_initial_value }}</p>
@@ -68,8 +68,14 @@
                 {%- render 'button', content: button_content -%}
               </copy-button>
 
+              {%- comment -%}
+              Hand-rolled instead of render 'button' because it needs onclick="window.print()",
+              which that snippet doesn't accept - but it still needs to replicate the same
+              button_animation branching the snippet does internally (theme.css/button.liquid),
+              rather than hardcoding the "rotation" variant regardless of what the merchant picked.
+              {%- endcomment -%}
               <button type="button" class="button button--outline" style="--button-text-color: var(--button-background-primary)" onclick="window.print()">
-                <button-content class="button__content" rotated-text="{{ 'gift_card.general.print' | t | escape }}">
+                <button-content class="button__content" {% if settings.button_animation == 'rotation' %}rotated-text="{{ 'gift_card.general.print' | t | escape_once }}"{% elsif settings.button_animation == 'up' %}up-text="{{ 'gift_card.general.print' | t | escape_once }}"{% elsif settings.button_animation == 'glowing' %}glowing{% elsif settings.button_animation == 'marquee' %}marquee{% endif %}>
                   {{ 'gift_card.general.print' | t }}
                 </button-content>
               </button>
@@ -122,8 +128,8 @@
     {
       "type": "checkbox",
       "id": "floating_gift_card",
-      "label": "Floating Gift Card",
-      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "label": "t:sections.main_gift_card.floating_gift_card",
+      "info": "t:sections.main_gift_card.floating_gift_card_info",
       "default": false
     },
     {
@@ -133,7 +139,7 @@
       "max": 30,
       "step": 2,
       "unit": "px",
-      "label": "Corner radius",
+      "label": "t:sections.main_gift_card.gift_card_border_radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_gift_card }}"
     },
