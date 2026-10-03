@@ -171,8 +171,12 @@ corner radius below still rounds the box's own background fine without it.
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_cart %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_cart %} style="border-end-start-radius: {{ section.settings.cart_border_radius }}px; border-end-end-radius: {{ section.settings.cart_border_radius }}px;"{% endif %}>
   <div class="section-spacing">
     <div class="container">
-      <div class="max-w-2xl mx-auto">
       {%- if cart.empty? -%}
+        {%- comment -%}
+        max-w-2xl mx-auto kept here (empty-state only): a short centered message reads better
+        narrow, matching every other empty-state in the theme (password, 404, search).
+        {%- endcomment -%}
+        <div class="max-w-2xl mx-auto">
           <div class="empty-state">
             <div class="prose prose-justify-center">
               <h1 class="h3">{{ 'cart.general.title' | t }}</h1>
@@ -182,7 +186,14 @@ corner radius below still rounds the box's own background fine without it.
               {%- render 'button', content: button_content, href: settings.cart_empty_cart_link -%}
             </div>
           </div>
-        {%- else -%}
+        </div>
+      {%- else -%}
+        {%- comment -%}
+        No max-w-2xl mx-auto here (unlike the empty-state above): the 2-column cart grid
+        (items + order summary) is meant to use the full width of .container, same as
+        sections/faq.liquid's content - capping and centering it left dead space on both sides
+        on wide screens instead of the content reaching the card's own padded edges.
+        {%- endcomment -%}
           <div class="v-stack gap-6 sm:gap-12">
             <div class="cart">
               <div class="cart__left">
@@ -403,7 +414,6 @@ corner radius below still rounds the box's own background fine without it.
             </div>
           </div>
         {%- endif -%}
-      </div>
     </div>
   </div>
 </div>
