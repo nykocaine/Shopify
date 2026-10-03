@@ -14,16 +14,22 @@
     }
 
     {%- comment -%}
-    Below 1000px theme.css stacks the two columns (.section-split only switches to its 2-column grid
-    at min-width: 1000px) and gives the stacked :last-child (this content column) its own
-    padding-block-start: var(--section-stack-row-gap) - a fixed theme value, not this card's gutter
-    formula. The rule above already wins there on specificity (ID selector vs. theme.css's bare
-    class), but restating it explicitly removes any doubt that the tripled top padding actually
-    applies on mobile, not just desktop.
+    Below 1000px the two columns stack (.section-split only becomes a 2-column grid at min-width:
+    1000px) and the image column lands on top - flush against the card's own top edge, since
+    section-split__column--flushed forces padding: 0 !important on it. So the tripled top inset
+    can't live on a column here the way it does on desktop; it goes on the card itself, which pushes
+    the image down from the top edge without having to fight that !important.
+
+    The content column then only needs the regular card gap between the image and the text, not
+    another tripled one - otherwise the image/text gap would dwarf everything else.
     {%- endcomment -%}
     @media screen and (max-width: 999px) {
-      #shopify-section-{{ section.id }} .section-split__column.align-self-stretch {
+      #shopify-section-{{ section.id }} .section-floating {
         padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
+      }
+
+      #shopify-section-{{ section.id }} .section-split__column.align-self-stretch {
+        padding-block-start: calc(var(--container-gutter) + 0.5rem);
       }
     }
   </style>
