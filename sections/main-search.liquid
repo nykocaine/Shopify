@@ -58,23 +58,24 @@
     }
 
     {%- comment -%}
-    Block (vertical) padding kept to plain --container-gutter, without the same +0.5rem bump as the
-    inline sides - this card reads tall very quickly once top+bottom padding stack with the
-    search bar, the results count and the grid's own internal row-gaps, so the block axis is kept
-    tighter on purpose while the inline sides keep the full faq.liquid/reviews.liquid formula.
+    Block (vertical) padding matches the same calc(var(--container-gutter) + 0.5rem) formula as the
+    inline sides - bottom exactly, top tripled (same technique as sections/faq.liquid's :first-child
+    rule) so the card's content clears the search icon/heading area at the top with real breathing
+    room instead of the same tight inset used everywhere else.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .section-spacing {
-      padding-block: var(--container-gutter);
+      padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
+      padding-block-end: calc(var(--container-gutter) + 0.5rem);
     }
 
     {%- comment -%}
     .empty-state's theme.css default (padding-block: 7.5rem) is a fixed, non-gutter-aware value -
-    inside a floating card it towers over the section-spacing block padding above, so the two states
-    (no results vs. results) read like two different card sizes. Matching it here keeps both states
-    consistent.
+    replaced here with the same top-tripled/bottom-normal formula as .section-spacing above, so both
+    card states (no results vs. results) read as the same card size.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .empty-state {
-      padding-block: var(--container-gutter);
+      padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
+      padding-block-end: calc(var(--container-gutter) + 0.5rem);
     }
 
     {%- comment -%}
@@ -89,7 +90,7 @@
     }
 
     #shopify-section-{{ section.id }} .collection {
-      padding-block-end: var(--container-gutter);
+      padding-block-end: calc(var(--container-gutter) + 0.5rem);
     }
   {%- endif -%}
 </style>
