@@ -221,6 +221,33 @@ corner radius below still rounds the box's own background fine without it.
 
                   {%- render 'input', name: 'attributes[dni_ruc_ce]', label: 'DNI / RUC / CE', placeholder: 'DNI / RUC / CE', value: cart.attributes['dni_ruc_ce'], form: 'cart-main-form' -%}
 
+                  {%- comment -%}
+                  Carries the DNI/RUC/CE value into checkout's native "Company" field. checkout[shipping_address][company]
+                  is a Shopify-recognized field name: when the cart form is submitted with a submit button named
+                  "checkout" (see the checkout_button block below), Shopify forwards any checkout[...]-namespaced
+                  fields in that same submission to pre-fill the corresponding checkout field - no app or Plus
+                  checkout.liquid access needed, since this is a real (non-AJAX) form POST, not the cart API.
+
+                  Kept in sync on every keystroke rather than just set once from cart.attributes['dni_ruc_ce'] at
+                  render time, since that server value is only as fresh as the last cart update - without this, a
+                  customer who types a new value and clicks "Checkout" immediately (without the cart saving first)
+                  would have this hidden field still carrying their previous value.
+                  {%- endcomment -%}
+                  <input type="hidden" name="checkout[shipping_address][company]" value="{{ cart.attributes['dni_ruc_ce'] }}" form="cart-main-form" data-dni-checkout-prefill>
+
+                  <script>
+                    (function () {
+                      var source = document.querySelector('[name="attributes[dni_ruc_ce]"]');
+                      var target = document.querySelector('[data-dni-checkout-prefill]');
+
+                      if (source && target) {
+                        source.addEventListener('input', function () {
+                          target.value = source.value;
+                        });
+                      }
+                    })();
+                  </script>
+
                   {%- for block in section.blocks -%}
                     {%- case block.type -%}
                       {%- when '@app' -%}
