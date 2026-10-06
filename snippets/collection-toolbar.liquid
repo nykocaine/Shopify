@@ -10,7 +10,7 @@ access to filters.
   assign desktop_layout_mode = cart.attributes.product_card_desktop_layout | default: 'grid'
 -%}
 
-<div class="collection__toolbar">
+<div class="collection__toolbar{% if section.settings.floating_toolbar %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_toolbar %} style="border-end-start-radius: {{ section.settings.toolbar_border_radius }}px; border-end-end-radius: {{ section.settings.toolbar_border_radius }}px; overflow: hidden;"{% endif %}>
   <span class="subheading sm-max:hidden">{{ 'collection.products_count' | t: count: collection.products_count }}</span>
 
   {%- if section.settings.show_sort_by or section.settings.show_filters and collection.filters.size > 0 or section.settings.quick_links_menu.links.size > 0 -%}

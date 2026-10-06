@@ -196,6 +196,24 @@ on desktop based on the settings
       "default": "scheme-1"
     },
     {
+      "type": "checkbox",
+      "id": "floating_toolbar",
+      "label": "Barra de herramientas flotante",
+      "info": "Agrega márgenes alrededor de la barra de herramientas (abajo y a los lados), usando el margen lateral global de la tienda.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "toolbar_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Radio de esquina",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_toolbar }}"
+    },
+    {
       "type": "range",
       "id": "products_per_page",
       "label": "t:global.faceting.products_per_page",
