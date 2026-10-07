@@ -461,7 +461,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   }
 
   #shopify-section-{{ section.id }} .reviews__controls {
-    justify-content: start;
+    justify-content: end;
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
@@ -469,22 +469,19 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   }
 
   {%- comment -%}
-  .reviews__sort keeps .button's height/padding/border-radius (still sized like every other button in the
-  theme), but overrides color/background/border to read from the color scheme's own body text and border
-  variables instead of the Buttons global style - transparent background, border and text following
-  --border-color/--text-color, the same variables already used everywhere else in this section (eg. the
-  divider lines, the muted counts), so it reacts correctly if the merchant changes the section's color
-  scheme. The explicit :hover override below keeps .button's own hover background (a Buttons-scheme color)
-  from re-applying a solid fill on top of this.
+  .reviews__sort keeps .button's structure (so the select/icon overlay trick below still works), but
+  strips the Buttons global style entirely - no border, no background - so it reads as a plain text
+  link with a chevron instead of a bordered button. color still follows --text-color, same as the
+  rest of this section's text.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__sort {
-    background: transparent;
-    border-color: rgb(var(--text-color));
+    background: none;
+    border: none;
     color: rgb(var(--text-color));
   }
 
   #shopify-section-{{ section.id }} .reviews__sort:hover {
-    background: transparent;
+    background: none;
   }
 
   {%- comment -%}
@@ -500,12 +497,13 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   per spec) - but .select (width: 100%) only fills .button__content's *content* box, which is
   inset from that same edge by that padding. So the icon rendered padding-inline pixels further
   out than .select's real right edge - entirely outside its clickable box, exactly matching "the
-  arrow doesn't work". Moving that inline padding from .button__content onto .reviews__sort itself
-  keeps the same visual button padding, but leaves .button__content's own box padding-free, so
-  .select and the icon's inset-inline-end: 0 now measure against the exact same edge.
+  arrow doesn't work". Moving that inline padding off .button__content onto .reviews__sort itself
+  fixes that regardless of how much padding ends up there - what matters is .button__content's own
+  box staying padding-free, so .select and the icon's inset-inline-end: 0 measure against the exact
+  same edge. Set to 0 here (link look, no button padding) rather than the button default.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__sort {
-    padding-inline: var(--button-padding-inline);
+    padding-inline: 0;
   }
 
   #shopify-section-{{ section.id }} .reviews__sort .button__content {
