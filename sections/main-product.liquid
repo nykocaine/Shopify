@@ -651,6 +651,38 @@
       }
     }
   {%- endif -%}
+
+  {%- if use_first_image_column and section.settings.join_image_info and section.settings.desktop_media_position == 'end' -%}
+    {%- comment -%}
+    Desktop-only, "Image position: right" only: merges the static first-image card (block 2) into the
+    info card (block 1) instead of the gallery. Only possible in this position because that's the only
+    one where the two actually sit next to each other - with "Image position: left" (default), the
+    gallery (block 3) always sits between them in the row (order is only reassigned for "right", further
+    up), so there's no shared edge to close. Independent from join_image_gallery above (a different pair
+    of touching corners/different frame) - both can be on together, closing the image's gap on both
+    sides at once.
+
+    Same negative-margin technique as join_image_gallery above: pulling the first-image frame itself
+    (not product-info-frame) toward the info card, since in this position order the info card renders
+    first and the first-image card right after it - closes only this one gap, leaving the image/gallery
+    side (if join_image_gallery is off) and the info card's own outer radius untouched.
+    {%- endcomment -%}
+    @media screen and (min-width: 1000px) {
+      #shopify-section-{{ section.id }} .product-first-image-frame {
+        margin-inline-start: calc(-1 * var(--product-column-gap));
+      }
+
+      #shopify-section-{{ section.id }} .product-info-frame {
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
+      }
+
+      #shopify-section-{{ section.id }} .product-first-image-frame {
+        border-start-start-radius: 0;
+        border-end-start-radius: 0;
+      }
+    }
+  {%- endif -%}
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}>
@@ -891,6 +923,14 @@
       "info": "Elimina el espacio entre la foto fija y la galería y une sus bordes, dejando el redondeado solo en las esquinas exteriores del conjunto. Solo afecta a desktop; en mobile y tablet no cambia nada.",
       "default": false,
       "visible_if": "{{ section.settings.desktop_show_first_image_column }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "join_image_info",
+      "label": "Unir foto fija y información (desktop)",
+      "info": "Elimina el espacio entre la foto fija y la información, uniendo sus bordes. Solo disponible cuando la imagen está posicionada a la derecha de la galería (abajo), porque es la única posición donde esas dos columnas quedan una junto a la otra. Se puede combinar con \"Unir foto fija y galería\" para unir las tres. Solo afecta a desktop.",
+      "default": false,
+      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.desktop_media_position == 'end' }}"
     },
     {
       "type": "range",
