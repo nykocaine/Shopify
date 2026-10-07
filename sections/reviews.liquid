@@ -45,7 +45,7 @@ to the first 5 of the newly sorted order.
         <div class="reviews__summary-row">
           <div class="reviews__summary">
             <div class="reviews__summary-rating">
-              <span class="reviews__summary-average"><span class="reviews__summary-average-number">{{ average_rating }}</span></span>
+              <span class="reviews__summary-average"><span class="reviews__summary-average-number {{ section.settings.heading_size }}">{{ average_rating }}</span></span>
 
               <div class="reviews__summary-stars-column">
                 <span class="reviews__stars" role="img" aria-label="{{ 'general.rating.info' | t: rating_value: average_rating, rating_max: 5 }}">
@@ -415,27 +415,20 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     display: flex;
   }
 
-  {%- comment -%}
-  container-type: size + font-size: 100cqh scales the number to fill the exact height of the
-  stars + "Basado en" column beside it (align-items: stretch above matches this box's height to
-  that column, the taller sibling). The first attempt at this left width: auto, and
-  container-type: size's containment can't derive a size from content on either axis - with no
-  explicit width, the box collapsed to 0 and the now-huge number overflowed on top of the column
-  instead of sitting next to it. flex-shrink: 0 + an explicit width (roomy enough for "10.0", the
-  widest realistic rating) gives containment a real box on both axes to work with.
-  {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__summary-average {
-    container-type: size;
-    width: 3.85rem;
     flex-shrink: 0;
     justify-content: start;
     align-items: center;
     display: flex;
   }
 
-  {%- comment -%} 110cqh (not 100): a bit bigger than an exact match to the stars + "Basado en" column's height, per request - it overflows that box slightly, centered by align-items: center above. {%- endcomment -%}
+  {%- comment -%}
+  Size comes from the merchant-chosen heading_size class (display-xl/l/m, h1-h7) added on this
+  element in the markup above - font-weight/line-height still overridden here because those same
+  classes also carry the theme's heading font-weight/line-height, and this number is meant to read
+  at normal (body) weight with a tight line-height regardless of which size is picked.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__summary-average-number {
-    font-size: 110cqh;
     font-weight: normal;
     line-height: 1;
   }
@@ -928,6 +921,54 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     {
       "type": "paragraph",
       "content": "Reviews shown below are \"Review\" blocks you add/edit/reorder here - nothing is pulled from an external app. Only the first 5 are shown initially; visitors reveal 5 more at a time with the \"Ver más\" button. \"Escribir una reseña\" opens a form that emails the submission to the shop's customer email (same as the Contact form); add a matching block once you decide to approve it."
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "t:global.text.heading_size",
+      "options": [
+        {
+          "value": "display-xl",
+          "label": "Display XL"
+        },
+        {
+          "value": "display-l",
+          "label": "Display L"
+        },
+        {
+          "value": "display-m",
+          "label": "Display M"
+        },
+        {
+          "value": "h1",
+          "label": "XX-Large"
+        },
+        {
+          "value": "h2",
+          "label": "X-Large"
+        },
+        {
+          "value": "h3",
+          "label": "Large"
+        },
+        {
+          "value": "h4",
+          "label": "Medium"
+        },
+        {
+          "value": "h5",
+          "label": "Small"
+        },
+        {
+          "value": "h6",
+          "label": "X-Small"
+        },
+        {
+          "value": "h7",
+          "label": "XX-Small"
+        }
+      ],
+      "default": "display-m"
     },
     {
       "type": "header",
