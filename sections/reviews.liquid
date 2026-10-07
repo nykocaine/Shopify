@@ -384,14 +384,13 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   }
 
   {%- comment -%}
-  Mobile: switch to a single-column grid instead of a flex column. grid-template-columns:
-  minmax(0, max-content) sizes that one column to whatever its widest child needs (almost always
-  .reviews__summary, with the big number + stars + "Basado en"); grid's own default
-  justify-items: stretch then makes every other child - here just the button's wrapper - fill
-  that same column width instead of shrinking to its own label's width. .button below fills that
-  wrapper in turn, so the visible button always matches .reviews__summary's width exactly,
-  whatever that ends up being. justify-content: start (not center) keeps that column, and so the
-  rating block inside it, flush to the left instead of centered in the row.
+  Mobile: switch to a single-column grid instead of a flex column, sized to .reviews__summary (the
+  only visible child here - see below). justify-content: start keeps that column, and so the rating
+  block inside it, flush to the left instead of centered in the row.
+
+  "Escribir una reseña" is hidden here and only shows above this breakpoint (its default, unhidden
+  state): writing a review opens a long form in a modal, which reads better as a deliberate desktop
+  action than a mobile one for this theme.
   {%- endcomment -%}
   @media screen and (max-width: 699px) {
     #shopify-section-{{ section.id }} .reviews__summary-row {
@@ -400,8 +399,8 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       display: grid;
     }
 
-    #shopify-section-{{ section.id }} .reviews__summary-write .button {
-      width: 100%;
+    #shopify-section-{{ section.id }} .reviews__summary-write {
+      display: none;
     }
   }
 
