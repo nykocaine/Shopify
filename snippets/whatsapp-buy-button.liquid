@@ -22,14 +22,37 @@ independent from the rest of the theme's buttons.
   assign wa_href = 'https://wa.me/' | append: phone_number | append: '?text=' | append: wa_encoded_text
 -%}
 
-{%- render 'button',
-    content: button_text,
-    href: wa_href,
-    external: true,
-    icon: 'whatsapp',
-    style: button_style,
-    background: background_color,
-    text_color: text_color,
-    class: 'whatsapp-buy-button',
-    block: block
--%}
+{%- if button_style == 'link' -%}
+  {%- comment -%}
+  Same "plain text link" treatment as the product description's show-more/less toggle
+  (snippets/product-info.liquid): .link (theme.css) for the underline - its underline is a currentColor
+  gradient, so it automatically follows the faded color below, same as the icon (fill="currentColor" in
+  icon.liquid) - instead of going through snippets/button.liquid, whose own style: 'link' adds
+  .subheading (its own font scale), which isn't wanted here either.
+  {%- endcomment -%}
+  <style>
+    #shopify-section-{{ section.id }} .whatsapp-buy-button--link {
+      color: rgb(var(--text-color) / .5);
+      align-items: center;
+      gap: .375rem;
+      display: inline-flex;
+    }
+  </style>
+
+  <a href="{{ wa_href }}" target="_blank" class="link whatsapp-buy-button whatsapp-buy-button--link" {{ block.shopify_attributes }}>
+    {%- render 'icon' with 'whatsapp' -%}
+    {{- button_text -}}
+  </a>
+{%- else -%}
+  {%- render 'button',
+      content: button_text,
+      href: wa_href,
+      external: true,
+      icon: 'whatsapp',
+      style: button_style,
+      background: background_color,
+      text_color: text_color,
+      class: 'whatsapp-buy-button',
+      block: block
+  -%}
+{%- endif -%}
