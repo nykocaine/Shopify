@@ -7,8 +7,7 @@ independent from the rest of the theme's buttons.
 @param {string} [phone_number] - WhatsApp phone number, international format, no symbols
 @param {string} [message] - base message text (the product name and link are appended automatically)
 @param {string} [button_text] - visible button label
-@param {string} [layout] - "full_width", "inline" or "compact"
-@param {string} [button_style] - "solid" or "outline"
+@param {string} [button_style] - "solid" or "link"
 @param {object} [background_color] - color setting object
 @param {object} [text_color] - color setting object
 @param {object} [block] - block context, for theme editor attributes
@@ -21,16 +20,6 @@ independent from the rest of the theme's buttons.
   endif
   assign wa_encoded_text = wa_text | url_encode
   assign wa_href = 'https://wa.me/' | append: phone_number | append: '?text=' | append: wa_encoded_text
-
-  assign button_size = ''
-  if layout == 'compact'
-    assign button_size = 'sm'
-  endif
-
-  assign stretch_button = false
-  if layout == 'full_width'
-    assign stretch_button = true
-  endif
 -%}
 
 {%- render 'button',
@@ -39,10 +28,8 @@ independent from the rest of the theme's buttons.
     external: true,
     icon: 'whatsapp',
     style: button_style,
-    size: button_size,
     background: background_color,
     text_color: text_color,
-    stretch: stretch_button,
     class: 'whatsapp-buy-button',
     block: block
 -%}
