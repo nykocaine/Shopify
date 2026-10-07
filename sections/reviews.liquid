@@ -621,6 +621,19 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     font-size: .875em;
   }
 
+  {%- comment -%}
+  Matches .review-card__stars' font-size to .review-card__date beside it, then sizes each star icon
+  to 1em (overriding the icon's own fixed pixel width attribute, which CSS wins over) - so the stars
+  render at the same height as the date text next to them instead of each at its own fixed size.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .review-card__stars {
+    font-size: .875em;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__stars .icon {
+    width: 1em;
+  }
+
   #shopify-section-{{ section.id }} .review-card__image {
     width: 7.5rem;
   }
