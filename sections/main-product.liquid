@@ -267,6 +267,61 @@
   {%- endif -%}
 
   {%- comment -%}
+  Mobile only (max-width: 999px), both floating and non-floating: the static first-image card becomes a
+  small overlay pinned to the gallery's own bottom-left corner instead of a separate stacked block.
+  Explicitly placing both frames into the same grid cell (row 1 / column 1) is what makes them overlap -
+  .product's own mobile fallback (theme.css, --product-grid is only set above, inside the min-width:
+  1000px block) is a single auto-flow column, so without this they'd stack as two separate rows instead.
+  .product-gallery-frame, being the larger of the two, is what actually sizes that shared row; the small
+  image just sits inside the same cell on top of it. position: relative + z-index make it paint above the
+  gallery (plain DOM order would otherwise put the gallery - which renders after it in the markup - on
+  top instead).
+  {%- endcomment -%}
+  {%- if use_first_image_column -%}
+    @media screen and (max-width: 999px) {
+      #shopify-section-{{ section.id }} .product-gallery-frame,
+      #shopify-section-{{ section.id }} .product-first-image-frame {
+        grid-row: 1;
+        grid-column: 1;
+      }
+
+      {%- comment -%}
+      Small, pinned to the bottom-left corner - same inset from the edges as the gallery's own controls
+      (--container-gutter + .5rem inline, 1rem + .5rem block, set further up in this same file) so it
+      reads as sharing the gallery's own padding/rhythm instead of a separate, arbitrary one. Same
+      border-radius as the gallery (gallery_border_radius, computed at the top of this file) +
+      overflow: hidden to crop the photo to that shape, matching the desktop version of this same card.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-first-image-frame {
+        position: relative;
+        z-index: 1;
+        align-self: end;
+        justify-self: start;
+        width: 3.5rem;
+        height: 3.5rem;
+        margin-inline-start: calc(var(--container-gutter) + 0.5rem);
+        margin-block-end: calc(1rem + 0.5rem);
+        border-radius: {{ gallery_border_radius }}px;
+        overflow: hidden;
+      }
+
+      {%- comment -%}
+      Moves the prev/next arrows out of the bottom-left corner (now taken by the first-image card above)
+      to sit next to the zoom button instead, both anchored from inset-inline-end and sharing the same
+      inset-block-end as the zoom button so they line up on one row. !important is needed to win over
+      this same file's own unconditional (all breakpoints) nav-buttons rule further up, which also uses
+      !important. The 5rem gap is an estimate of the zoom button's own rendered width (icon + the "Zoom"
+      label, which - unlike desktop - product-gallery.liquid always shows on touch devices) - revisit this
+      value if that label's translation ever renders noticeably wider/narrower than "Zoom" (en/es).
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .product-gallery__nav-buttons {
+        inset-inline-start: auto !important;
+        inset-inline-end: calc(var(--container-gutter) + 0.5rem + 5rem) !important;
+      }
+    }
+  {%- endif -%}
+
+  {%- comment -%}
   Block 1's own inner padding, every mode and breakpoint alike: same container-gutter-based formula as
   the floating card padding in sections/reviews.liquid and sections/faq.liquid (--container-gutter +
   .5rem), and matches the "+ .5rem" extra this file already adds to block 3's own inset further up, so
@@ -769,15 +824,18 @@
           Static first product image, its own card ahead of the gallery - not another slider, not tied to
           variant selection or gallery navigation, always product.media's first actual image
           (first_product_image, filtered to media_type "image"). Only when the merchant opted in
-          (use_first_image_column, computed at the top of this file). Hidden below 1000px (.hidden
-          md:block) so mobile keeps its existing two-card (gallery + info) layout untouched. Reuses the
-          exact same .product-gallery__media wrapper + 'media' snippet the real gallery uses per-slide
-          (product-gallery.liquid), so it inherits the identical sizing/object-fit treatment.
+          (use_first_image_column, computed at the top of this file). Desktop: its own third column,
+          next to the gallery. Below 1000px: a small overlay pinned to the gallery's bottom-left corner
+          instead (styled further up, in this section's own <style> block) - no longer hidden there.
+          Reuses the exact same .product-gallery__media wrapper + 'media' snippet the real gallery uses
+          per-slide (product-gallery.liquid), so it inherits the identical sizing/object-fit treatment.
+          sizes reflects both contexts: the real 33vw-wide desktop column, and the small, fixed mobile
+          overlay (56px = the 3.5rem it's styled at below), instead of assuming the old 100vw everywhere.
           {%- endcomment -%}
           {%- if use_first_image_column -%}
-            <div class="product-first-image-frame hidden md:block">
+            <div class="product-first-image-frame">
               <div class="product-gallery__media" data-media-type="{{ first_product_image.media_type }}">
-                {%- render 'media', product: product, media: first_product_image, sizes: '(min-width: 1000px) 33vw, 100vw', preload: false -%}
+                {%- render 'media', product: product, media: first_product_image, sizes: '(min-width: 1000px) 33vw, 56px', preload: false -%}
               </div>
             </div>
           {%- endif -%}
