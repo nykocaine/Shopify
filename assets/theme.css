@@ -5220,11 +5220,11 @@ table caption {
 }
 
 /* Matches the star icons' size to the rating value/count text beside them (both set in .subheading,
-   font-size: var(--subheading-font-size)) - 1em overrides the icon's own fixed pixel width attribute,
-   which CSS wins over, so each star renders at the same height as that text instead of its own
-   fixed size. */
+   font-size: var(--subheading-font-size)) - overrides the icon's own fixed pixel width attribute,
+   which CSS wins over. .8em (not 1em) because the star glyph itself sits inset within its square
+   viewBox - at 1em it visibly reads taller than the text's own cap-height/x-height. */
 .rating-badge__stars .icon {
-  width: 1em;
+  width: .8em;
 }
 
 .social-media {
