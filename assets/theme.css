@@ -8120,12 +8120,20 @@ shopify-account::part(signed-out-avatar) {
   --product-block-item-margin: 1.25rem;
 }
 
-/* Only the top gap above the WhatsApp block is removed, not the bottom one too - overriding
-   --product-block-item-margin itself (like the overrides above) would change both, since the generic
-   rule above reads that one variable for both margin-block-start and margin-block-end. !important is
-   needed since .product-info__block-list > :not(...)'s own :not()/:nth-child() selector already carries
-   more specificity than a single attribute selector here. */
-.product-info__block-item[data-block-type="whatsapp-button"] {
+/* Closes the gap only between a buy-buttons block and a WhatsApp block that directly follows it - not
+   WhatsApp's margin in general (eg. if some other block ever precedes it instead, it keeps the normal
+   gap), and not buy-buttons' own margin when something else follows it. Adjacent block-item margins
+   collapse (.product-info__block-list is plain block flow, no flex/grid), so the visible gap is
+   whichever of the two is larger - zeroing only one side (eg. just WhatsApp's margin-block-start) still
+   leaves the other side's margin to collapse into the same visible gap, which is why both sides of this
+   one specific adjacency need to be zeroed together. !important is needed since
+   .product-info__block-list > :not(...)'s own :not()/:nth-child() selector already carries more
+   specificity than these attribute selectors. */
+.product-info__block-item[data-block-type="buy-buttons"]:has(+ [data-block-type="whatsapp-button"]) {
+  margin-block-end: 0 !important;
+}
+
+.product-info__block-item[data-block-type="buy-buttons"] + .product-info__block-item[data-block-type="whatsapp-button"] {
   margin-block-start: 0 !important;
 }
 
