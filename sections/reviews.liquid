@@ -461,12 +461,18 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     color: rgb(var(--text-color) / .6);
   }
 
+  {%- comment -%}
+  margin-block-end cancels out .section-stack's own row-gap below this element, so the review cards
+  start flush against the separator line (padding-block-end below) instead of leaving the usual
+  stack gap between the line and the list.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__controls {
     justify-content: end;
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
     padding-block-end: 1.5rem;
+    margin-block-end: calc(var(--section-stack-row-gap) * -1);
     border-block-end: 1px solid rgb(var(--border-color));
     display: flex;
   }
@@ -555,8 +561,13 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     grid-template-columns: 220px minmax(0, 1fr);
     gap: 2rem;
     padding-block: 2rem;
+    border-block-end: 1px solid rgb(var(--border-color));
     transition: opacity .35s ease, transform .35s ease;
     display: grid;
+  }
+
+  #shopify-section-{{ section.id }} .review-card:last-child {
+    border-block-end: none;
   }
 
   #shopify-section-{{ section.id }} .review-card--revealing {
