@@ -81,12 +81,12 @@ to the first 5 of the newly sorted order.
         {%- if review_blocks.size > 0 -%}
           <div class="reviews__controls">
             <div class="reviews__sort button">
-              <label class="sr-only" for="reviews-sort-{{ section.id }}">Ordenar reseñas</label>
+              <label class="sr-only" for="reviews-sort-{{ section.id }}">Sort reviews</label>
               <div class="button__content">
                 <select id="reviews-sort-{{ section.id }}" class="select" data-reviews-sort>
-                  <option value="rating_desc" selected>Mejor calificación</option>
-                  <option value="recent">Más recientes</option>
-                  <option value="rating_asc">Peor calificación</option>
+                  <option value="rating_desc" selected>Highest rated</option>
+                  <option value="recent">Most recent</option>
+                  <option value="rating_asc">Lowest rated</option>
                 </select>
                 {%- render 'icon' with 'chevron-down' -%}
               </div>
@@ -482,6 +482,14 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
 
   #shopify-section-{{ section.id }} .reviews__sort:hover {
     background: none;
+  }
+
+  {%- comment -%}
+  theme.css shifts any .icon inside a hovered button via transform: translateX(4px) - cancelled here
+  so the chevron stays put on hover, since this control no longer looks or behaves like a button.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews__sort:hover .icon {
+    transform: none;
   }
 
   {%- comment -%}
