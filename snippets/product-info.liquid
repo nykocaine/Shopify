@@ -227,7 +227,7 @@ no need to manually pass the section as it is globally available)
                 {%- comment -%}
                 "Show more/less": main_product only (featured-product, quick-buy keep showing the
                 description in full, unchanged) - collapses to data-collapsed-height (px) and reveals
-                an outline button to expand it, but only once JS actually confirms the content
+                a text-link toggle to expand it, but only once JS actually confirms the content
                 overflows that height. The clipping itself is applied by the read-more-text element
                 below, never by this stylesheet alone, so with JS disabled the description always
                 renders in full rather than being silently cut with no way to reveal the rest.
@@ -238,21 +238,24 @@ no need to manually pass the section as it is globally available)
                     transition: max-height .3s ease-in-out;
                   }
 
+                  {%- comment -%}
+                  Plain text link, not a button: reuses .link (theme.css) for the underline - its
+                  underline is a currentColor gradient, so it automatically follows the faded color
+                  below instead of needing a separate color. font-size isn't set at all: the theme's
+                  own base reset (theme.css, "button, input, ... { font-size: 100% }") already makes a
+                  bare <button> inherit its parent's size, which is exactly the inherited size wanted
+                  here. display: block + text-align: end sits it right below the text with no gap,
+                  right-aligned, instead of inline mid-text (simpler and more robust than trying to
+                  flow it into the clamped text's actual last line).
+                  {%- endcomment -%}
                   #shopify-section-{{ section.id }} .product-description-collapsible__toggle {
-                    margin-block-start: var(--product-block-item-margin);
+                    color: rgb(var(--text-color) / .5);
+                    text-align: end;
                     display: none;
                   }
 
                   #shopify-section-{{ section.id }} .product-description-collapsible[data-overflowing] .product-description-collapsible__toggle {
-                    display: inline-flex;
-                  }
-
-                  #shopify-section-{{ section.id }} .product-description-collapsible__toggle .icon {
-                    transition: transform .3s ease-in-out;
-                  }
-
-                  #shopify-section-{{ section.id }} .product-description-collapsible[data-expanded] .product-description-collapsible__toggle .icon {
-                    transform: rotate(180deg);
+                    display: block;
                   }
 
                   #shopify-section-{{ section.id }} .product-description-collapsible__label-less {
@@ -270,21 +273,14 @@ no need to manually pass the section as it is globally available)
 
                 {%- assign description_dom_id = 'ProductDescription-' | append: section.id -%}
 
-                {%- capture toggle_label_content -%}<span class="product-description-collapsible__label-more">{{ 'product.general.show_more' | t }}</span><span class="product-description-collapsible__label-less">{{ 'product.general.show_less' | t }}</span>{%- endcapture -%}
-
                 <read-more-text class="product-description-collapsible" data-collapsed-height="120">
                   <div id="{{ description_dom_id }}" class="prose prose-justify-{{ alignment }} product-description-collapsible__content">
                     {{- product_description -}}
                   </div>
 
-                  {%- render 'button',
-                      content: toggle_label_content,
-                      style: 'outline',
-                      size: 'sm',
-                      icon: 'chevron-down',
-                      class: 'product-description-collapsible__toggle',
-                      aria_controls: description_dom_id
-                  -%}
+                  <button type="button" class="link product-description-collapsible__toggle" aria-controls="{{ description_dom_id }}">
+                    <span class="product-description-collapsible__label-more">{{ 'product.general.show_more' | t }}</span><span class="product-description-collapsible__label-less">{{ 'product.general.show_less' | t }}</span>
+                  </button>
                 </read-more-text>
 
                 {%- comment -%}
