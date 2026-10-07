@@ -5215,7 +5215,16 @@ table caption {
 
 .rating-badge__stars {
   column-gap: .125rem;
+  font-size: var(--subheading-font-size);
   display: flex;
+}
+
+/* Matches the star icons' size to the rating value/count text beside them (both set in .subheading,
+   font-size: var(--subheading-font-size)) - 1em overrides the icon's own fixed pixel width attribute,
+   which CSS wins over, so each star renders at the same height as that text instead of its own
+   fixed size. */
+.rating-badge__stars .icon {
+  width: 1em;
 }
 
 .social-media {
