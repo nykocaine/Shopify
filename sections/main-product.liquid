@@ -512,6 +512,79 @@
         border-start-end-radius: 0 !important;
       }
 
+      {%- comment -%}
+      Mobile-only override of the info card's own color scheme. .color-scheme--{{ id }} classes
+      (snippets/css-variables.liquid) are generated once, globally, for every scheme in the theme's
+      settings - re-declaring the handful of variables an info card's content actually uses (card
+      background, text, borders, subheadings, buttons, inputs), sourced live from
+      product_info_color_scheme_mobile.settings each time this renders, is what lets the mobile scheme
+      win here without touching that shared file or duplicating its full ~40-variable, every-component
+      variant (nav controls, drawers, video controls, etc. - none of which a plain info card uses).
+      Skipped entirely when the mobile scheme is left equal to the desktop one, so there's nothing extra
+      in the page when the setting is untouched.
+      {%- endcomment -%}
+      {%- assign mobile_scheme = section.settings.product_info_color_scheme_mobile -%}
+
+      {%- unless mobile_scheme.id == section.settings.product_info_color_scheme.id -%}
+        #shopify-section-{{ section.id }} .product-info-frame {
+          --accent: {{ mobile_scheme.settings.primary_button_background.rgb }};
+          --background: {% if mobile_scheme.settings.background == 'rgba(0,0,0,0)' %}0 0 0 / 0{% else %}{{ mobile_scheme.settings.background.rgb }}{% endif %};
+          --background-gradient: {{ mobile_scheme.settings.background_gradient }};
+          --background-secondary: {{ mobile_scheme.settings.secondary_background.rgb }};
+          --has-transparent-background: {% if mobile_scheme.settings.background_gradient == blank and mobile_scheme.settings.background == 'rgba(0,0,0,0)' %}1{% else %}0{% endif %};
+          --has-filled-background: {% if mobile_scheme.settings.background_gradient != blank or mobile_scheme.settings.background != 'rgba(0,0,0,0)' %}1{% else %}0{% endif %};
+          --text-color: {{ mobile_scheme.settings.text_color.rgb }};
+
+          {%- if settings.global_border_color != blank and settings.global_border_color != 'rgba(0,0,0,0)' -%}
+            --border-color: {{ settings.global_border_color.rgb }};
+          {%- elsif mobile_scheme.settings.border_color != blank and mobile_scheme.settings.border_color != 'rgba(0,0,0,0)' -%}
+            --border-color: {{ mobile_scheme.settings.border_color.rgb }};
+          {%- elsif mobile_scheme.settings.background_gradient != blank -%}
+            --border-color: {{ mobile_scheme.settings.text_color.rgb }} / 0.1;
+          {%- elsif mobile_scheme.settings.background == 'rgba(0,0,0,0)' -%}
+            --border-color: {{ mobile_scheme.settings.text_color.rgb }} / 0.6;
+          {%- else -%}
+            {%- assign mobile_border_color = mobile_scheme.settings.text_color | color_mix: mobile_scheme.settings.background, 10 -%}
+            --border-color: {{ mobile_border_color.rgb }};
+          {%- endif -%}
+
+          {%- liquid
+            assign mobile_subheading_has_border = true
+            assign mobile_subheading_has_background = true
+
+            if mobile_scheme.settings.subheading_background == blank or mobile_scheme.settings.subheading_background == 'rgba(0,0,0,0)' or mobile_scheme.settings.subheading_background == mobile_scheme.settings.background
+              assign mobile_subheading_has_background = false
+            endif
+
+            if mobile_scheme.settings.subheading_border_color == blank or mobile_scheme.settings.subheading_border_color == 'rgba(0,0,0,0)'
+              assign mobile_subheading_has_border = false
+            endif
+          -%}
+
+          --subheading-background: {% if mobile_subheading_has_background %}{{ mobile_scheme.settings.subheading_background.rgb }}{% else %}0 0 0 / 0.0{% endif %};
+          --subheading-border: {% if mobile_subheading_has_border %}1px solid rgb({{ mobile_scheme.settings.subheading_border_color.rgb }}){% else %}none{% endif %};
+          --subheading-text-color: {{ mobile_scheme.settings.subheading_text_color.rgb }};
+          --subheading-has-padding: {% if mobile_subheading_has_border or mobile_subheading_has_background %}1{% else %}0{% endif %};
+
+          --button-background-primary: {{ mobile_scheme.settings.primary_button_background.rgb }};
+          --button-text-primary: {{ mobile_scheme.settings.primary_button_text_color.rgb }};
+
+          {%- if mobile_scheme.settings.primary_button_hover_background != blank -%}
+            {%- assign mobile_button_hover_background = mobile_scheme.settings.primary_button_hover_background -%}
+          {%- else -%}
+            {%- assign mobile_button_hover_background = mobile_scheme.settings.primary_button_background | color_darken: 12 -%}
+          {%- endif -%}
+          --button-hover-background: {{ mobile_button_hover_background.rgb }};
+
+          --input-background: {% if mobile_scheme.settings.input_background == 'rgba(0,0,0,0)' %}0 0 0 / 0{% else %}{{ mobile_scheme.settings.input_background.rgb }}{% endif %};
+          --input-text-color: {{ mobile_scheme.settings.input_text_color.rgb }};
+
+          {%- if mobile_scheme.settings.input_border_color != blank and mobile_scheme.settings.input_border_color != 'rgba(0,0,0,0)' -%}
+            --input-border-color: rgb({{ mobile_scheme.settings.input_border_color.rgb }});
+          {%- endif -%}
+        }
+      {%- endunless -%}
+
       {%- if product.media.size > 0 and section.settings.product_height_mobile > 0 -%}
         {%- comment -%}
         Mobile stacks gallery and info as two independent blocks (no shared row to stretch across, unlike the
@@ -813,6 +886,14 @@
       "id": "product_info_color_scheme",
       "label": "Info box color scheme",
       "info": "Independent color scheme for the product info card. The gallery keeps using the section's color scheme above.",
+      "default": "scheme-1",
+      "visible_if": "{{ section.settings.floating_product }}"
+    },
+    {
+      "type": "color_scheme",
+      "id": "product_info_color_scheme_mobile",
+      "label": "Info box color scheme (mobile)",
+      "info": "Overrides the scheme above, mobile/tablet only (below 1000px). Leave equal to the one above for no difference.",
       "default": "scheme-1",
       "visible_if": "{{ section.settings.floating_product }}"
     },
