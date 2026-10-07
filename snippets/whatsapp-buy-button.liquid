@@ -26,21 +26,17 @@ independent from the rest of the theme's buttons.
   {%- comment -%}
   Same "plain text link" treatment as the product description's show-more/less toggle
   (snippets/product-info.liquid): .link (theme.css) for the underline - its underline is a currentColor
-  gradient, so it automatically follows the faded color below, same as the icon (fill="currentColor" in
-  icon.liquid) - instead of going through snippets/button.liquid, whose own style: 'link' adds
-  .subheading (its own font scale), which isn't wanted here either.
+  gradient, so it automatically follows the faded color below - instead of going through
+  snippets/button.liquid, whose own style: 'link' adds .subheading (its own font scale) and the
+  WhatsApp icon, neither of which is wanted here.
   {%- endcomment -%}
   <style>
     #shopify-section-{{ section.id }} .whatsapp-buy-button--link {
       color: rgb(var(--text-color) / .5);
-      align-items: center;
-      gap: .375rem;
-      display: inline-flex;
     }
   </style>
 
   <a href="{{ wa_href }}" target="_blank" class="link whatsapp-buy-button whatsapp-buy-button--link" {{ block.shopify_attributes }}>
-    {%- render 'icon' with 'whatsapp' -%}
     {{- button_text -}}
   </a>
 {%- else -%}
