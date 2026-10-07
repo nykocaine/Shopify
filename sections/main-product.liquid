@@ -291,18 +291,27 @@
       reads as sharing the gallery's own padding/rhythm instead of a separate, arbitrary one. Same
       border-radius as the gallery (gallery_border_radius, computed at the top of this file) +
       overflow: hidden to crop the photo to that shape, matching the desktop version of this same card.
+      Fades out (data-hidden, toggled by the script further down based on the carousel's own
+      carousel:settle event) once the gallery has moved past its first slide, instead of permanently
+      overlapping a photo it no longer matches.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-first-image-frame {
         position: relative;
         z-index: 1;
         align-self: end;
         justify-self: start;
-        width: 3.5rem;
-        height: 3.5rem;
+        width: 4.5rem;
+        height: 4.5rem;
         margin-inline-start: calc(var(--container-gutter) + 0.5rem);
         margin-block-end: calc(1rem + 0.5rem);
         border-radius: {{ gallery_border_radius }}px;
         overflow: hidden;
+        transition: opacity .2s ease-in-out;
+      }
+
+      #shopify-section-{{ section.id }} .product-first-image-frame[data-hidden] {
+        opacity: 0;
+        pointer-events: none;
       }
 
       {%- comment -%}
@@ -830,12 +839,12 @@
           Reuses the exact same .product-gallery__media wrapper + 'media' snippet the real gallery uses
           per-slide (product-gallery.liquid), so it inherits the identical sizing/object-fit treatment.
           sizes reflects both contexts: the real 33vw-wide desktop column, and the small, fixed mobile
-          overlay (56px = the 3.5rem it's styled at below), instead of assuming the old 100vw everywhere.
+          overlay (72px = the 4.5rem it's styled at below), instead of assuming the old 100vw everywhere.
           {%- endcomment -%}
           {%- if use_first_image_column -%}
             <div class="product-first-image-frame">
               <div class="product-gallery__media" data-media-type="{{ first_product_image.media_type }}">
-                {%- render 'media', product: product, media: first_product_image, sizes: '(min-width: 1000px) 33vw, 56px', preload: false -%}
+                {%- render 'media', product: product, media: first_product_image, sizes: '(min-width: 1000px) 33vw, 72px', preload: false -%}
               </div>
             </div>
           {%- endif -%}
@@ -862,6 +871,32 @@
                 skip_first_media: use_first_image_column
             -%}
           </div>
+
+          {%- if use_first_image_column -%}
+            {%- comment -%}
+            Hides the mobile overlay card once the gallery has scrolled past its first slide (carousel:settle
+            - fired by <scroll-carousel>, product-gallery.liquid's own carousel wrapper, once a swipe
+            settles - theme.js), instead of leaving it permanently on top of a photo it no longer matches.
+            Desktop is untouched: that CSS lives entirely inside the max-width: 999px block above, so
+            data-hidden has no rule to apply there even if it were ever set. Guarded against double-binding
+            (dataset flag) in case this ever renders more than once for the same carousel.
+            {%- endcomment -%}
+            <script>
+              (function () {
+                var root = document.getElementById('shopify-section-{{ section.id }}');
+                if (!root) return;
+
+                var firstImageFrame = root.querySelector('.product-first-image-frame');
+                var carousel = root.querySelector('.product-gallery-frame scroll-carousel');
+                if (!firstImageFrame || !carousel || carousel.dataset.firstImageSync) return;
+
+                carousel.dataset.firstImageSync = 'true';
+                carousel.addEventListener('carousel:settle', function (event) {
+                  firstImageFrame.toggleAttribute('data-hidden', event.detail.index !== 0);
+                });
+              })();
+            </script>
+          {%- endif -%}
         {%- endif -%}
 
         <div class="product-info-frame{% if section.settings.floating_product %} color-scheme color-scheme--{{ section.settings.product_info_color_scheme.id }}{% endif %}">
