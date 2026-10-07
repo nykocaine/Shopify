@@ -8120,13 +8120,13 @@ shopify-account::part(signed-out-avatar) {
   --product-block-item-margin: 1.25rem;
 }
 
-/* Only the top gap above the WhatsApp block is halved, not the bottom one too - overriding
+/* Only the top gap above the WhatsApp block is removed, not the bottom one too - overriding
    --product-block-item-margin itself (like the overrides above) would change both, since the generic
    rule above reads that one variable for both margin-block-start and margin-block-end. !important is
    needed since .product-info__block-list > :not(...)'s own :not()/:nth-child() selector already carries
    more specificity than a single attribute selector here. */
 .product-info__block-item[data-block-type="whatsapp-button"] {
-  margin-block-start: calc(var(--product-block-item-margin) / 2) !important;
+  margin-block-start: 0 !important;
 }
 
 /* Collapsible text (accordion block) rows on the product page: --accordion-block-padding is global (also used
