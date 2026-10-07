@@ -5193,13 +5193,14 @@ table caption {
   inset-inline-start: calc(50% - (var(--icon-max-width) / 2));
 }
 
-/* Rating block (main-product.liquid "rating" block, side_text setting): text on the left, rating badge
-   pinned to the right on the same row - only rendered when side_text is actually set, so the block
-   keeps its plain rating-only look (no row) when left blank, same as before this setting existed. */
+/* Rating block (main-product.liquid "rating" block, side_text setting): text and rating badge packed
+   together on the same row (not spread to opposite edges) - only rendered when side_text is actually
+   set, so the block keeps its plain rating-only look (no row) when left blank, same as before this
+   setting existed. column-gap matches .rating-badge's own internal gap below instead of a separate,
+   wider value. */
 .product-rating-row {
-  justify-content: space-between;
   align-items: flex-start;
-  column-gap: 1rem;
+  column-gap: .375rem;
   display: flex;
 }
 
