@@ -348,12 +348,13 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   {%- endif -%}
 
   {%- comment -%}
-  Rating block + "Escribir una reseña" button centered together as a group, on both desktop and
-  mobile - not spread to opposite edges. Mobile stacks the button below the rating block instead
-  of beside it, still centered.
+  Rating block flush to the start and "Escribir una reseña" flush to the end, on desktop
+  (space-between). Mobile still stacks the button below the rating block as a centered group (see
+  the max-width: 699px override below), since opposite edges don't apply the same way in a single
+  stacked column.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__summary-row {
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 1.5rem;
@@ -465,20 +466,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     flex-wrap: wrap;
     gap: 1rem;
     display: flex;
-  }
-
-  {%- comment -%}
-  Full width of the section (respecting its own inline padding, same as every other element in
-  here), instead of shrinking to fit the "Mejor calificación" text. .button__content's
-  justify-content switches from the base .button's centered content to space-between so the label
-  and chevron read naturally at each end of the now much wider bar.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .reviews__sort {
-    width: 100%;
-  }
-
-  #shopify-section-{{ section.id }} .reviews__sort .button__content {
-    justify-content: space-between;
   }
 
   {%- comment -%}
