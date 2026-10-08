@@ -710,10 +710,22 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   }
 
   #shopify-section-{{ section.id }} .reviews__load-more {
-    justify-content: center;
+    justify-content: space-between;
     flex-wrap: wrap;
     gap: 1rem;
     display: flex;
+  }
+
+  {%- comment -%}
+  button--outline's default text/border color comes from a --button-text-color set inline by the
+  button snippet (var(--button-background-primary), the Buttons global scheme) - overridden here to
+  the color scheme's own --text-color instead, same variable used for every other text/border in
+  this section, so these two buttons follow the section's scheme like the rest of it does.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews__load-more-button,
+  #shopify-section-{{ section.id }} .reviews__load-less-button {
+    color: rgb(var(--text-color));
+    border-color: rgb(var(--text-color));
   }
 
   #shopify-section-{{ section.id }} .review-card[hidden] {
