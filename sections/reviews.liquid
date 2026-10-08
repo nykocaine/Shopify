@@ -230,7 +230,8 @@ to the first 5 of the newly sorted order.
 
         {%- if review_blocks.size > 1 -%}
           <div class="reviews__load-more">
-            {%- render 'button', content: 'Ver más', type: 'button', class: 'reviews__load-more-button' -%}
+            {%- render 'button', content: 'Ver más', type: 'button', style: 'outline', class: 'reviews__load-more-button' -%}
+            {%- render 'button', content: 'Ver menos', type: 'button', style: 'outline', class: 'reviews__load-less-button' -%}
           </div>
         {%- endif -%}
       </div>
@@ -709,7 +710,10 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   }
 
   #shopify-section-{{ section.id }} .reviews__load-more {
-    text-align: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    display: flex;
   }
 
   #shopify-section-{{ section.id }} .review-card[hidden] {
@@ -804,6 +808,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     var cards = list ? Array.prototype.slice.call(list.querySelectorAll('.review-card')) : [];
     var sortSelect = root.querySelector('[data-reviews-sort]');
     var loadMoreButton = root.querySelector('.reviews__load-more-button');
+    var loadLessButton = root.querySelector('.reviews__load-less-button');
     var initialCount = 1;
     var pageSize = 5;
     var visibleCount = initialCount;
@@ -849,6 +854,15 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       if (loadMoreButton) {
         loadMoreButton.hidden = visibleCount >= currentCards.length;
       }
+
+      {%- comment -%}
+      "Ver menos" only makes sense once "Ver más" has actually expanded past the initial batch -
+      hidden otherwise (including right after a sort reset, which also sets visibleCount back to
+      initialCount).
+      {%- endcomment -%}
+      if (loadLessButton) {
+        loadLessButton.hidden = visibleCount <= initialCount;
+      }
     }
 
     {%- comment -%}
@@ -883,6 +897,13 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
         var totalCards = list ? list.querySelectorAll('.review-card').length : 0;
         visibleCount = Math.min(visibleCount + pageSize, totalCards);
         updateVisibility(true);
+      });
+    }
+
+    if (loadLessButton) {
+      loadLessButton.addEventListener('click', function () {
+        visibleCount = initialCount;
+        updateVisibility(false);
       });
     }
 
