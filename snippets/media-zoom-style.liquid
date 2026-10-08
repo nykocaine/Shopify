@@ -198,6 +198,23 @@ Cancelling it here, only while something inside is expanded, lets the fixed medi
 }
 
 {%- comment -%}
+A `position: fixed` element is normally fixed to the viewport - UNLESS some ancestor between it and
+the page root has a transform/perspective/filter/will-change/contain value other than none, in which
+case it becomes fixed to THAT ancestor's box instead (even an inert `transform: translateY(0px)`
+counts). Some callers wrap their media in an ancestor like that - eg. FAQ's category tab panels get a
+`transform: translateY(0px)` entrance-animation style from their tab-switch JS, which otherwise traps
+the expanded video/image inside that panel's own (scrolled, not full-height) box instead of the
+screen. `*:has()` reaches every ancestor of the one currently expanded item (there is only ever one
+at a time, since is-lightbox-expanded is only added to the active item) and strips any transform it
+might carry only while that item is open - harmless for ancestors that had none to begin with, and
+safe even for ones that did since by the time a visitor manually opens a zoomed item any entrance
+animation on it has long since settled.
+{%- endcomment -%}
+*:has(.is-lightbox-expanded) {
+  transform: none !important;
+}
+
+{%- comment -%}
 Drawer-style framing: the expanded media is centered with padding on every side (same tokens
 .drawer::part(body) uses) instead of filling the screen edge to edge, sized to fit within that padded
 area without cropping, and rounded to match the item's own corners.
