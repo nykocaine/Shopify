@@ -83,7 +83,17 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
       {{- resolved_placeholder | placeholder_svg_tag: 'size-full' -}}
     {%- endif -%}
 
-    {%- if enable_lightbox != false and (video != blank or image != blank) -%}
+    {%- liquid
+      assign show_lightbox_button = false
+
+      if enable_lightbox != false and video != blank
+        assign show_lightbox_button = true
+      elsif enable_lightbox != false and image != blank
+        assign show_lightbox_button = true
+      endif
+    -%}
+
+    {%- if show_lightbox_button -%}
       <open-lightbox-button class="block" aria-controls="{{ resolved_aria_controls_id }}" image-index="{{ lightbox_index | default: 0 }}">
         <button type="button" class="product-zoom-button">
           {%- render 'icon' with 'zoom-plus', width: 16 -%}
