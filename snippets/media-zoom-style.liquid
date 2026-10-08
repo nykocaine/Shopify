@@ -185,6 +185,21 @@ lives outside it entirely.
   z-index: 998;
   position: fixed;
   inset: 0;
+  opacity: 1;
+  transition: opacity .25s ease;
+}
+
+{%- comment -%}
+Open/close animation: snippets/media-zoom-script.liquid removes [hidden] first (so the backdrop/
+buttons/media actually paint), then adds "is-lightbox-visible" one frame later so this rule's opacity
+change is a transition instead of an instant jump - and does the reverse on close, only hiding for
+real once the transition has finished. "is-lightbox-visible" is added to #{{ lightbox_id }} itself
+(reaching the backdrop/close/prev/next below via this descendant selector) AND, separately, directly
+onto whichever video-media/img/.carousel-video-controls is current (see further down) - those live
+outside #{{ lightbox_id }} entirely, so they need the class on themselves to be reachable here.
+{%- endcomment -%}
+#{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__backdrop {
+  opacity: 0;
 }
 
 {%- comment -%}
@@ -231,6 +246,15 @@ area without cropping, and rounded to match the item's own corners.
   max-width: 96vw;
   max-height: 96vh;
   border-radius: {{ resolved_corner_radius }};
+  scale: 1;
+  opacity: 1;
+  transition: scale .25s ease, opacity .25s ease;
+}
+
+#{{ wrapper_id }} video-media.is-lightbox-expanded:not(.is-lightbox-visible),
+#{{ wrapper_id }} img.is-lightbox-expanded:not(.is-lightbox-visible) {
+  scale: .92;
+  opacity: 0;
 }
 
 {%- comment -%}
@@ -295,6 +319,9 @@ collapsed.
   position: fixed;
   inset-block-start: 1rem;
   inset-inline-end: 1rem;
+  opacity: 1;
+  scale: 1;
+  transition: opacity .2s ease, scale .2s ease;
 }
 
 {%- comment -%}
@@ -309,6 +336,16 @@ Overrides circle-button--xl's own --button-size (2.5rem/3rem) so close/prev/next
   position: fixed;
   inset-block-start: 50%;
   translate: 0 -50%;
+  opacity: 1;
+  scale: 1;
+  transition: opacity .2s ease, scale .2s ease;
+}
+
+#{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__close,
+#{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__prev,
+#{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__next {
+  opacity: 0;
+  scale: .8;
 }
 
 #{{ lightbox_id }} .media-lightbox__prev {
@@ -402,5 +439,21 @@ bottom-right corner instead of the screen's.
     inset-inline-start: 50%;
     inset-block-start: 50%;
     translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(var(--lightbox-media-h) / 2 - 100% - 0.75rem);
+  }
+}
+
+{%- comment -%}
+Respect "reduce motion": the open/close still happens (classes still toggle, snippets/
+media-zoom-script.liquid still waits for a transitionend-or-timeout before actually hiding), it just
+happens instantly instead of animated.
+{%- endcomment -%}
+@media (prefers-reduced-motion: reduce) {
+  #{{ lightbox_id }} .media-lightbox__backdrop,
+  #{{ lightbox_id }} .media-lightbox__close,
+  #{{ lightbox_id }} .media-lightbox__prev,
+  #{{ lightbox_id }} .media-lightbox__next,
+  #{{ wrapper_id }} video-media.is-lightbox-expanded,
+  #{{ wrapper_id }} img.is-lightbox-expanded {
+    transition: none;
   }
 }

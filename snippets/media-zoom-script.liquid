@@ -198,9 +198,27 @@ progress bar) are simply skipped when no carousel_id is given.
         };
       }
 
+      // "is-lightbox-visible" is the settled (scale: 1, opacity: 1) state - see the
+      // :not(.is-lightbox-visible) rules in media-zoom-style.liquid for the "entering/exiting"
+      // (scaled down, transparent) one it transitions from/to. Added to the media itself (and its
+      // controls group) directly, since those live outside #{{ lightbox_id }} and so aren't reachable
+      // from a class toggled on the lightbox wrapper alone.
+      function setMediaVisible(media, visible) {
+        if (media.videoMedia) {
+          media.videoMedia.classList.toggle('is-lightbox-visible', visible);
+
+          if (media.controlsGroup) {
+            media.controlsGroup.classList.toggle('is-lightbox-visible', visible);
+          }
+        } else if (media.image) {
+          media.image.classList.toggle('is-lightbox-visible', visible);
+        }
+      }
+
       // continuePlayingWithSound is only passed by next/prev, never the initial open: undefined means
       // "leave it exactly as it already is" - nothing autoplays, so a never-played video expands
-      // paused, matching how it already looked before the lightbox opened.
+      // paused, matching how it already looked before the lightbox opened. Returns the resolved media
+      // object so callers can drive setMediaVisible() on it without looking it up a second time.
       function expandCell(cell, continuePlayingWithSound) {
         var media = getCellMedia(cell);
 
@@ -227,6 +245,8 @@ progress bar) are simply skipped when no carousel_id is given.
         }
 
         activeCell = cell;
+
+        return media;
       }
 
       // Returns whether the collapsed item was an actually-playing video - the caller
@@ -248,19 +268,21 @@ progress bar) are simply skipped when no carousel_id is given.
           }
 
           media.videoMedia.pause();
-          media.videoMedia.classList.remove('is-lightbox-expanded');
+          media.videoMedia.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
 
           if (media.controlsGroup) {
-            media.controlsGroup.classList.remove('is-lightbox-expanded');
+            media.controlsGroup.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
           }
         } else if (media.image) {
-          media.image.classList.remove('is-lightbox-expanded');
+          media.image.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
         }
 
         activeCell = null;
 
         return wasPlaying;
       }
+
+      var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       function openLightbox(index) {
         var cell = cells[index];
@@ -277,27 +299,84 @@ progress bar) are simply skipped when no carousel_id is given.
 
         document.documentElement.style.overflow = 'hidden';
         lightbox.hidden = false;
-        expandCell(cell);
+
+        var media = expandCell(cell);
+
+        // Two rAFs: the first lets the browser actually paint the just-removed [hidden] / just-added
+        // is-lightbox-expanded "entering" state (scaled down, transparent - see media-zoom-style.liquid)
+        // - adding "is-lightbox-visible" in the very same frame would get coalesced into that first
+        // paint instead of transitioning from it. The second rAF is where the settled state actually
+        // gets applied, so the fade/scale-in transition has a real "from" frame to animate out of.
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            lightbox.classList.add('is-lightbox-visible');
+            setMediaVisible(media, true);
+          });
+        });
       }
 
       function closeLightbox() {
         var finalCell = activeCell;
+        var media = finalCell ? getCellMedia(finalCell) : null;
 
-        collapseCell();
-        lightbox.hidden = true;
-        document.documentElement.style.overflow = '';
+        function finish() {
+          collapseCell();
+          lightbox.hidden = true;
+          document.documentElement.style.overflow = '';
 
-        if (carousel) {
-          carousel.addEventListener('carousel:change', scheduleAdvance);
+          if (carousel) {
+            carousel.addEventListener('carousel:change', scheduleAdvance);
 
-          // Catches up the carousel to wherever the visitor ended up navigating inside the lightbox
-          // (next/prev never move the carousel's own scroll position while it's open).
-          if (finalCell && finalCell !== carousel.selectedCell) {
-            carousel.select(cells.indexOf(finalCell), { instant: true });
+            // Catches up the carousel to wherever the visitor ended up navigating inside the lightbox
+            // (next/prev never move the carousel's own scroll position while it's open).
+            if (finalCell && finalCell !== carousel.selectedCell) {
+              carousel.select(cells.indexOf(finalCell), { instant: true });
+            }
+
+            scheduleAdvance();
+          }
+        }
+
+        lightbox.classList.remove('is-lightbox-visible');
+
+        if (media) {
+          setMediaVisible(media, false);
+        }
+
+        if (prefersReducedMotion) {
+          finish();
+          return;
+        }
+
+        // Only actually collapses/hides once the fade/scale-out transition has finished playing, so
+        // the backdrop and media visibly animate away instead of vanishing the instant Close is
+        // clicked. transitionend is scoped to the backdrop specifically (always present, unlike
+        // prev/next); the timeout is a safety net for the rare case it never fires (eg. there was
+        // nothing to transition from because the open animation hadn't settled yet).
+        var backdrop = lightbox.querySelector('.media-lightbox__backdrop');
+        var done = false;
+
+        function onTransitionEnd(event) {
+          if (event.target !== backdrop || done) {
+            return;
           }
 
-          scheduleAdvance();
+          done = true;
+          backdrop.removeEventListener('transitionend', onTransitionEnd);
+          finish();
         }
+
+        backdrop.addEventListener('transitionend', onTransitionEnd);
+
+        setTimeout(function() {
+          if (done) {
+            return;
+          }
+
+          done = true;
+          backdrop.removeEventListener('transitionend', onTransitionEnd);
+          finish();
+        }, 300);
       }
 
       function showRelativeSlide(offset) {
@@ -313,7 +392,12 @@ progress bar) are simply skipped when no carousel_id is given.
         }
 
         var wasPlaying = collapseCell();
-        expandCell(nextCell, wasPlaying ? lightboxSoundOn : undefined);
+        var media = expandCell(nextCell, wasPlaying ? lightboxSoundOn : undefined);
+
+        // No enter animation here, unlike openLightbox - this swaps between two items that are both
+        // already part of the same open lightbox, so the new one should just appear at its settled
+        // state right away instead of re-running the fade/scale-in.
+        setMediaVisible(media, true);
       }
 
       lightboxCloseButton.addEventListener('click', closeLightbox);
