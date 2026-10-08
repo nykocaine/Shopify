@@ -1106,6 +1106,25 @@
                       endcase
                     endif
                   endif
+
+                  # Shared ids for the media-zoom-* snippets (snippets/media-zoom-slide.liquid,
+                  # media-lightbox.liquid, media-zoom-script.liquid, media-zoom-style.liquid) - the
+                  # same ids this carousel has always used, just captured once so both the markup and
+                  # the snippet calls below stay in sync.
+                  assign carousel_wrapper_id = 'carousel-wrapper-' | append: block.id
+                  assign carousel_dom_id = 'carousel-' | append: block.id
+                  assign carousel_lightbox_id = 'media-lightbox-' | append: block.id
+                  assign carousel_controls_slot_id = 'carousel-controls-slot-' | append: block.id
+                  assign carousel_has_multiple_slides = false
+                  assign carousel_relocate_controls = false
+
+                  if carousel_slide_count > 1
+                    assign carousel_has_multiple_slides = true
+                  endif
+
+                  if section.settings.controls_position == 'progress_bar'
+                    assign carousel_relocate_controls = true
+                  endif
                 -%}
 
                 <style>
@@ -1155,414 +1174,22 @@
                     {%- endif -%}
                   }
 
-                  #carousel-{{ block.id }} video-media > img,
-                  #carousel-{{ block.id }} video-media > video {
-                    opacity: 1 !important;
-                  }
-
-                  #carousel-{{ block.id }} video-media > img {
-                    z-index: 1;
-                    transition: opacity .3s ease;
-                  }
-
-                  #carousel-{{ block.id }} video-media > img.carousel-video-poster-hidden {
-                    opacity: 0 !important;
-                    pointer-events: none;
-                  }
-
-                  /* If autoplay is blocked by the browser, the shared video-media component falls back to
-                     the native play button (sets [suspended] + controls) so playback can still be started
-                     manually. Our poster image would otherwise sit on top of it and hide/block taps. */
-                  #carousel-{{ block.id }} video-media[suspended] > img {
-                    opacity: 0 !important;
-                    pointer-events: none;
-                  }
-
-                  #carousel-{{ block.id }} .carousel-video-tap-to-play {
-                    cursor: pointer;
-                  }
-
-                  /* Root cause of controls inheriting Color Scheme colors: .circle-button (theme-wide,
-                     assets/theme.css) paints a scheme-derived tint via its own ::before pseudo-element on
-                     top of whatever background we set, and shifts icon `color` on hover via a separate
-                     scheme-derived color-mix(). Both are killed below for our 3 buttons specifically, the
-                     same way the theme already opts individual variants out via ".circle-button--outline:
-                     before { content: none; }" - reusing that existing pattern rather than patching around
-                     it with extra specificity. From here on, background/border/icon color come exclusively
-                     from the --control-button-* variables (Global > Controls). */
-                  {%- comment -%}
-                    Scoped to #carousel-wrapper-{{ block.id }} (the shared ancestor of both the slide
-                    track and the progress bar row), NOT #carousel-{{ block.id }} (the <product-list>
-                    itself): in "next to the progress bar" mode the controls group is moved outside the
-                    <product-list> entirely (see the script below), so scoping to the narrower ID would
-                    silently stop matching the moment it's relocated.
-                  {%- endcomment -%}
-                  #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle:before,
-                  #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle:before,
-                  #carousel-wrapper-{{ block.id }} .carousel-video-product-link:before {
-                    content: none;
-                  }
-
-                  #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
-                  #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
-                  #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
-                    transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-                  }
-
-                  {%- comment -%}
-                    Base position (top-right, matches "top" layout exactly). Declared before the
-                    device/layout rules below on purpose: the "center" override further down has the same
-                    specificity (#id .class), so it only wins because it comes later in the cascade.
-                  {%- endcomment -%}
-                  #carousel-wrapper-{{ block.id }} .carousel-video-controls {
-                    width: auto;
-                    height: auto;
-                    position: absolute;
-                    inset-block-start: 1rem;
-                    inset-inline-end: 1rem;
-                    z-index: 1;
-                  }
-
-                  {%- comment -%}
-                  Always visible, no hover/tap-to-reveal, no auto-hide: nothing autoplays anymore, so there's
-                  no playing video to hide these behind - the visitor needs to see the play button right away
-                  to know how to start it.
-                  {%- endcomment -%}
-                  #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle,
-                  #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle,
-                  #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
-                    opacity: 1;
-                    pointer-events: auto;
-                  }
-
-                  {%- if section.settings.controls_position == 'progress_bar' -%}
-                    {%- assign desktop_controls_position = section.settings.desktop_controls_position | default: 'top_right' -%}
-
-                    {%- if desktop_controls_position == 'center' -%}
-                      @media screen and (pointer: fine) {
-                        #carousel-wrapper-{{ block.id }} .carousel-video-controls {
-                          inset-block-start: 50%;
-                          inset-inline-end: auto;
-                          inset-inline-start: 50%;
-                          transform: translate(-50%, -50%);
-                        }
-                      }
-                    {%- endif -%}
-
-                    {%- comment -%}
-                    Desktop never moves controls into the slot (see script below), so the slot is always
-                    empty here - hide it outright so it stops taking up gap/space and the progress bar's own
-                    flex-grow fills 100% of the row, exactly like before this layout existed.
-                    {%- endcomment -%}
-                    @media screen and (pointer: fine) {
-                      #carousel-controls-slot-{{ block.id }} {
-                        display: none;
-                      }
-                    }
-
-                    {%- comment -%}
-                    Mobile is the only device that relocates the controls group into the slot (see script
-                    below), so it is the only one that needs to hide it at its original, overlaid-on-video
-                    position and only show it once it is an actual descendant of the slot.
-                    {%- endcomment -%}
-                    @media screen and (pointer: coarse) {
-                      #carousel-wrapper-{{ block.id }} .carousel-video-controls {
-                        display: none;
-                      }
-
-                      #carousel-controls-slot-{{ block.id }} .carousel-video-controls {
-                        display: flex;
-                        position: static;
-                        inset: auto;
-                      }
-                    }
-                  {%- endif -%}
-
-                  @media screen and (pointer: fine) {
-                    #carousel-wrapper-{{ block.id }} .carousel-video-pause-toggle:not([disabled]):hover,
-                    #carousel-wrapper-{{ block.id }} .carousel-video-sound-toggle:not([disabled]):hover,
-                    #carousel-wrapper-{{ block.id }} .carousel-video-product-link:not([disabled]):hover {
-                      background: var(--control-button-hover-background-color, var(--control-button-background-color, #333333));
-                      color: var(--control-button-icon-color, #ffffff);
-                    }
-                  }
-
-                  /* Text mode reuses the theme's body text styling as-is (no independent typography). */
-                  #carousel-wrapper-{{ block.id }} .carousel-video-product-link__text {
-                    font: var(--text-font-style) var(--text-font-weight) var(--text-base) / var(--text-line-height) var(--text-font-family);
-                    text-transform: var(--text-transform);
-                    letter-spacing: var(--text-letter-spacing);
-                    white-space: nowrap;
-                  }
-
-                  {%- if section.settings.controls_position == 'progress_bar' and carousel_slide_count > 1 -%}
-                    {%- comment -%}
-                      Comprar stays hidden in this layout on both devices (same element, same JS, just not
-                      rendered visually). Controls sit on the left, progress bar fills the rest on the
-                      right, on mobile - same two flex children as always, just reordered visually via the
-                      standard flexbox `order` property, not duplicated markup.
-                    {%- endcomment -%}
-                    #carousel-wrapper-{{ block.id }} .carousel-video-product-link {
-                      display: none;
-                    }
-
-                    #carousel-wrapper-{{ block.id }} .progress-bar.grow {
-                      order: 2;
-                    }
-
-                    #carousel-controls-slot-{{ block.id }} {
-                      order: 1;
-                    }
-                  {%- endif -%}
-
-                  {%- comment -%}
-                  This lightbox never moves the video/photo element into itself - it only toggles a class on
-                  the SAME element already sitting in its slide (see the script below). Moving a live,
-                  playing <video> across parents kept surfacing new problems: the browser re-buffering it (so
-                  it looked stuck on a solid color or took a long time to resume), video-media's own [loaded]/
-                  [playing] attributes going stale, and its built-in one-time "click to play" listener firing
-                  a second time and colliding with the move. None of that exists if the element never changes
-                  parent - only its own position/size, via CSS, when .is-lightbox-expanded is toggled.
-
-                  #media-lightbox-{{ block.id }} itself is only used to hide/show the backdrop and the
-                  close/prev/next buttons together via one [hidden] toggle - it carries no styling of its own
-                  beyond the theme's own .contents utility (class="contents" below), which is exactly what
-                  keeps it that way: "zero-height grid item" only holds because every current child
-                  (backdrop, close, prev, next) is position: fixed and so never becomes a real grid item once
-                  hoisted - a future normally-flowing child added here (eg. a slide counter) would become one,
-                  inline underneath the carousel, and reintroduce the same row-gap bug this fixes. Without
-                  .contents at all, showing the wrapper turns IT into that zero-height grid item of
-                  #carousel-wrapper-{{ block.id }} (.v-stack.gap-4), picking up a full row-gap around it that
-                  grows the carousel's height on every open and shrinks it back on close.
-                  display: contents also means it can never gain a stacking context of its own the way
-                  position: fixed would - if it did, the close/prev/next buttons' z-index would only be
-                  compared against their siblings INSIDE that context, never able to outrank
-                  .is-lightbox-expanded media, which lives outside it entirely, no matter how high a z-index
-                  the buttons themselves declare. [hidden] doesn't need its own rule here: theme.css already
-                  sets it to `display: none !important`, which overrides .contents regardless of specificity.
-                  {%- endcomment -%}
-                  #media-lightbox-{{ block.id }} .media-lightbox__backdrop {
-                    background: rgb(var(--background));
-                    z-index: 998;
-                    position: fixed;
-                    inset: 0;
-                  }
-
-                  {%- comment -%}
-                  .content-box > * (theme.css) sets isolation: isolate on .content-box__background-media,
-                  which traps any z-index/position: fixed inside it to compete only within that local
-                  stacking context - it would never be able to render above anything outside .content-box no
-                  matter how high its own z-index is. This is the one ancestor between the video and the top
-                  of the page with that trap (checked .content-box, .snap-start, product-list,
-                  .media-blocks__item and .shopify-section - none of them isolate), so cancelling it here,
-                  only while something inside is expanded, is enough to let the fixed media escape correctly.
-                  {%- endcomment -%}
-                  #shopify-section-{{ section.id }} .content-box__background-media:has(.is-lightbox-expanded) {
-                    isolation: auto;
-                  }
-
-                  {%- comment -%}
-                  Drawer-style framing: the expanded media is centered with padding on every side (same
-                  tokens .drawer::part(body) uses) instead of filling the screen edge to edge, sized to fit
-                  within that padded area without cropping, and rounded to match the carousel's own corners.
-                  {%- endcomment -%}
-                  #shopify-section-{{ section.id }} video-media.is-lightbox-expanded,
-                  #shopify-section-{{ section.id }} img.is-lightbox-expanded {
-                    position: fixed;
-                    z-index: 999;
-                    inset-block-start: 50%;
-                    inset-inline-start: 50%;
-                    translate: -50% -50%;
-                    width: auto;
-                    height: auto;
-                    max-width: 96vw;
-                    max-height: 96vh;
-                    border-radius: var(--media-blocks-corner-radius);
-                  }
-
-                  {%- comment -%}
-                  --lightbox-media-w/h drive both the mobile media box AND the close/prev/next positions
-                  below, so those stay pinned to its actual corners instead of the screen's. Height falls
-                  back to vh, then upgrades to 100dvh where supported (same pattern as .modal--age-verifier
-                  in theme.css) so it's based on the real visible area, not the layout viewport Chrome/Safari
-                  report before their address bar has collapsed.
-                  {%- endcomment -%}
-                  @media screen and (max-width: 999px) {
-                    #shopify-section-{{ section.id }} {
-                      --lightbox-media-w: min(calc(100vw - 2 * var(--container-gutter)), 32rem);
-                      --lightbox-media-h: calc(90vh - 2 * var(--container-gutter));
-                    }
-                  }
-
-                  @supports (height: 100dvh) {
-                    @media screen and (max-width: 999px) {
-                      #shopify-section-{{ section.id }} {
-                        --lightbox-media-h: calc(90dvh - 2 * var(--container-gutter));
-                      }
-                    }
-                  }
-
-                  @media screen and (max-width: 999px) {
-                    #shopify-section-{{ section.id }} video-media.is-lightbox-expanded {
-                      width: var(--lightbox-media-w);
-                      height: var(--lightbox-media-h);
-                    }
-
-                    #shopify-section-{{ section.id }} video-media.is-lightbox-expanded video {
-                      border-radius: inherit;
-                      width: 100%;
-                      height: 100%;
-                      object-fit: cover;
-                    }
-
-                    #shopify-section-{{ section.id }} img.is-lightbox-expanded {
-                      max-width: var(--lightbox-media-w);
-                      max-height: var(--lightbox-media-h);
-                    }
-                  }
-
-                  #shopify-section-{{ section.id }} video-media.is-lightbox-expanded video {
-                    border-radius: inherit;
-                  }
-
-                  #shopify-section-{{ section.id }} img.is-lightbox-expanded {
-                    object-fit: contain;
-                  }
-
-                  #media-lightbox-{{ block.id }} .media-lightbox__close {
-                    background: var(--close-control-background-color, rgb(var(--button-background-primary)));
-                    border: 1px solid var(--close-control-border-color, rgb(var(--border-color)));
-                    color: var(--close-control-icon-color, rgb(var(--button-text-primary)));
-                    width: var(--control-button-size, 1.75rem);
-                    height: var(--control-button-size, 1.75rem);
-                    border-radius: 100%;
-                    z-index: 1000;
-                    place-content: center;
-                    display: grid;
-                    position: fixed;
-                    inset-block-start: 1rem;
-                    inset-inline-end: 1rem;
-                  }
-
-                  {%- comment -%}
-                  Overrides circle-button--xl's own --button-size (2.5rem/3rem) so close/prev/next all match
-                  the same --control-button-size (Theme settings > Global > Controls) the play/pause/sound
-                  buttons already use, instead of each button picking its size from a different scale.
-                  {%- endcomment -%}
-                  #media-lightbox-{{ block.id }} .media-lightbox__prev,
-                  #media-lightbox-{{ block.id }} .media-lightbox__next {
-                    width: var(--control-button-size, 1.75rem);
-                    height: var(--control-button-size, 1.75rem);
-                    z-index: 1000;
-                    position: fixed;
-                    inset-block-start: 50%;
-                    translate: 0 -50%;
-                  }
-
-                  #media-lightbox-{{ block.id }} .media-lightbox__prev {
-                    inset-inline-start: 1rem;
-                  }
-
-                  #media-lightbox-{{ block.id }} .media-lightbox__next {
-                    inset-inline-end: 1rem;
-                  }
-
-                  {%- comment -%}
-                  Mobile only: pins close/prev/next to the media box's own corners (using the same
-                  --lightbox-media-w/h it's sized with) instead of the screen's. Not applied on desktop,
-                  where the media isn't a fixed-size box (aspect-ratio-derived instead, see the rule above)
-                  so there's no fixed edge of its own to pin to.
-
-                  Uses the button's full own width/height (100%), not half (50%), to offset - that lands
-                  the button's edge flush with the anchor point instead of centering the button ON it, so
-                  the 0.75rem below reads as an inward margin that keeps the whole button inside the
-                  media box's rounded corners, instead of straddling the corner half on/half off it.
-                  {%- endcomment -%}
-                  @media screen and (max-width: 999px) {
-                    #media-lightbox-{{ block.id }} .media-lightbox__close {
-                      inset-inline-end: auto;
-                      inset-inline-start: 50%;
-                      inset-block-start: 50%;
-                      translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(var(--lightbox-media-h) / -2 + 0.75rem);
-                    }
-
-                    #media-lightbox-{{ block.id }} .media-lightbox__prev,
-                    #media-lightbox-{{ block.id }} .media-lightbox__next {
-                      inset-inline-start: 50%;
-                      inset-inline-end: auto;
-                    }
-
-                    #media-lightbox-{{ block.id }} .media-lightbox__prev {
-                      translate: calc(var(--lightbox-media-w) / -2 + 0.75rem) -50%;
-                    }
-
-                    #media-lightbox-{{ block.id }} .media-lightbox__next {
-                      translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) -50%;
-                    }
-                  }
-
-                  {%- comment -%}
-                  product-zoom-button (theme.css) inherits currentColor and has a negative inset-inline-end
-                  meant to slightly overhang a card's edge - here it sits inside .content-box's own
-                  overflow: hidden, so that negative offset clips it off-center instead. Pinning both fixes
-                  it for this carousel without touching the shared rule product-gallery still uses as-is.
-                  {%- endcomment -%}
-                  #carousel-wrapper-{{ block.id }} .product-zoom-button {
-                    color: #fff;
-                    inset-inline-end: 1rem;
-                  }
-
-                  {%- comment -%}
-                  product-zoom-button__label (theme.css) starts at width: 0, only revealed on
-                  @media (pointer: fine):hover - on touch devices that hover never fires, so it stays hidden
-                  forever. Showing it always on mobile instead of on hover here.
-                  {%- endcomment -%}
-                  @media screen and (pointer: coarse) {
-                    #carousel-wrapper-{{ block.id }} .product-zoom-button__label {
-                      width: auto;
-                    }
-                  }
-
-                  {%- comment -%}
-                  The video's own sound/pause toggles stay exactly where they are in the DOM (same as the
-                  video itself) - this just switches them from "absolute, relative to their own .content-box"
-                  to "fixed, relative to the viewport" so they land near the bottom-right of the expanded
-                  video instead of the small carousel thumbnail. display: flex overrides the touch +
-                  progress_bar layout's display: none (that rule expects this group to only ever be visible
-                  once relocated into #carousel-controls-slot-{{ block.id }}, which doesn't apply here).
-                  {%- endcomment -%}
-                  #shopify-section-{{ section.id }} .carousel-video-controls.is-lightbox-expanded {
-                    opacity: 1 !important;
-                    pointer-events: auto !important;
-                    display: flex !important;
-                    position: fixed !important;
-                    z-index: 999;
-                    inset-block-end: var(--drawer-body-padding-block, min(2rem, var(--container-gutter)));
-                    inset-inline-end: var(--drawer-body-padding-inline, min(2rem, var(--container-gutter)));
-                    inset-block-start: auto;
-                  }
-
-                  {%- comment -%}
-                  Mobile only: same corner-pinning as close/prev/next above, so this lands inside the video's
-                  own bottom-right corner instead of the screen's (0.75rem inward margin, same as close/prev/
-                  next - using the group's full own width/height to offset, not half, so it's flush inside
-                  the edge instead of straddling it).
-                  {%- endcomment -%}
-                  @media screen and (max-width: 999px) {
-                    #shopify-section-{{ section.id }} .carousel-video-controls.is-lightbox-expanded {
-                      inset-block-end: auto;
-                      inset-inline-end: auto;
-                      inset-inline-start: 50%;
-                      inset-block-start: 50%;
-                      translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(var(--lightbox-media-h) / 2 - 100% - 0.75rem);
-                    }
-                  }
+                  {%- render 'media-zoom-style',
+                    wrapper_id: carousel_wrapper_id,
+                    lightbox_id: carousel_lightbox_id,
+                    section_id: section.id,
+                    corner_radius: 'var(--media-blocks-corner-radius)',
+                    controls_position: section.settings.controls_position,
+                    desktop_controls_position: section.settings.desktop_controls_position,
+                    controls_slot_id: carousel_controls_slot_id,
+                    has_multiple_slides: carousel_has_multiple_slides
+                  -%}
                 </style>
 
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
-                  <div class="v-stack gap-4" id="carousel-wrapper-{{ block.id }}">
+                  <div class="v-stack gap-4" id="{{ carousel_wrapper_id }}">
                     <div style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
-                    <product-list id="carousel-{{ block.id }}" cell-selector=".snap-start" class="scroll-area snap-x">
+                    <product-list id="{{ carousel_dom_id }}" cell-selector=".snap-start" class="scroll-area snap-x">
                       {%- liquid
                         # Matches the order cells actually render in below (only slides with content get one),
                         # so it lines up with the dataSource array the lightbox script builds from
@@ -1584,79 +1211,23 @@
 
                         {%- if slide_image != blank or slide_video != blank or slide_heading != blank or slide_text != blank -%}
                           <div class="snap-start">
-                            <div class="content-box h-full min-h-{{ block.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}" style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
-                              <div class="content-box__background-media {% if slide_video != blank %}carousel-video-tap-to-play{% endif %}">
-                                {%- if slide_video != blank -%}
-                                  {%- render 'media', media: slide_video, autoplay: false, muted: true, controls: false, show_play_button: false, playsinline: true, sizes: '85vw' -%}
-
-                                  {%- capture control_button_style -%}
-                                    width: var(--control-button-size, 1.75rem); height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, #000000); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, #000000); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, #ffffff);
-                                  {%- endcapture -%}
-
-                                  {%- assign show_product_button = false -%}
-
-                                  {%- if block.settings.show_product_button and slide_product != blank -%}
-                                    {%- assign show_product_button = true -%}
-
-                                    {%- capture product_button_style -%}
-                                      height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, #000000); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, #000000); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, #ffffff); {% if block.settings.product_button_type == 'text' %}width: auto; padding-inline: 0.75rem;{% else %}width: var(--control-button-size, 1.75rem);{% endif %}
-                                    {%- endcapture -%}
-                                  {%- endif -%}
-
-                                  <div class="h-stack gap-2 carousel-video-controls">
-                                    {%- if show_product_button -%}
-                                      <a href="{{ slide_product.url }}" class="carousel-video-product-link circle-button" style="{{ product_button_style }}">
-                                        {%- if block.settings.product_button_type == 'text' -%}
-                                          <span class="carousel-video-product-link__text">{{ block.settings.product_button_text | default: slide_product.title }}</span>
-                                        {%- else -%}
-                                          <span class="sr-only">{{ block.settings.product_button_text | default: slide_product.title }}</span>
-                                          {%- render 'icon' with 'cart', width: 14 -%}
-                                        {%- endif -%}
-                                      </a>
-                                    {%- endif -%}
-
-                                    <button type="button" class="carousel-video-sound-toggle circle-button" style="{{ control_button_style }}">
-                                      <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
-                                      {%- render 'icon' with 'volume-off', width: 14, class: 'carousel-video-sound-off-icon' -%}
-                                      {%- render 'icon' with 'volume', width: 14, class: 'carousel-video-sound-icon hidden' -%}
-                                    </button>
-
-                                    <button type="button" class="carousel-video-pause-toggle circle-button" style="{{ control_button_style }}">
-                                      <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
-                                      {%- render 'icon' with 'slideshow-pause', width: 14, class: 'carousel-video-pause-icon hidden' -%}
-                                      {%- render 'icon' with 'slideshow-play', width: 14, class: 'carousel-video-play-icon' -%}
-                                    </button>
-                                  </div>
-                                {%- elsif slide_image != blank -%}
-                                  {%- render 'media' with slide_image, sizes: '85vw', class: 'image-cover' -%}
-                                {%- else -%}
-                                  {{- 'hero-apparel-1' | placeholder_svg_tag: 'size-full' -}}
-                                {%- endif -%}
-
-                                {%- if slide_video != blank or slide_image != blank -%}
-                                  <open-lightbox-button class="block" aria-controls="carousel-{{ block.id }}" image-index="{{ lightbox_slide_index }}">
-                                    <button type="button" class="product-zoom-button">
-                                      {%- render 'icon' with 'zoom-plus', width: 16 -%}
-                                      <span class="product-zoom-button__label">{{ 'product.gallery.zoom' | t }}</span>
-                                    </button>
-                                  </open-lightbox-button>
-                                {%- endif -%}
-                              </div>
-
-                              {%- if slide_heading != blank or slide_text != blank -%}
-                                <div class="place-self-center" style="max-width: 30rem">
-                                  <div class="prose prose-justify-center">
-                                    {%- if slide_heading != blank -%}
-                                      {%- render 'heading', content: slide_heading, style: 'h3', html_tag: 'h3' -%}
-                                    {%- endif -%}
-
-                                    {%- if slide_text != blank -%}
-                                      <div>{{ slide_text }}</div>
-                                    {%- endif -%}
-                                  </div>
-                                </div>
-                              {%- endif -%}
-                            </div>
+                            {%- render 'media-zoom-slide',
+                              video: slide_video,
+                              image: slide_image,
+                              block_size: section.settings.block_size,
+                              mobile_block_size: block.settings.mobile_block_size,
+                              corner_radius: 'var(--media-blocks-corner-radius)',
+                              heading: slide_heading,
+                              text: slide_text,
+                              show_product_button: block.settings.show_product_button,
+                              product: slide_product,
+                              product_button_type: block.settings.product_button_type,
+                              product_button_text: block.settings.product_button_text,
+                              lightbox_id: carousel_lightbox_id,
+                              aria_controls_id: carousel_dom_id,
+                              lightbox_index: lightbox_slide_index,
+                              sizes: '85vw'
+                            -%}
                           </div>
                           {%- assign lightbox_slide_index = lightbox_slide_index | plus: 1 -%}
                         {%- endif -%}
@@ -1664,395 +1235,27 @@
                     </product-list>
                     </div>
 
-                    <div id="media-lightbox-{{ block.id }}" class="contents" hidden>
-                      <div class="media-lightbox__backdrop"></div>
-
-                      <button type="button" class="media-lightbox__close" aria-label="{{ 'general.accessibility.close' | t }}">
-                        {%- render 'icon' with 'close', width: 10 -%}
-                      </button>
-
-                      {%- if carousel_slide_count > 1 -%}
-                        <button type="button" class="media-lightbox__prev circle-button" aria-label="{{ 'general.accessibility.previous' | t }}">
-                          {%- render 'icon' with 'arrow-left', width: 9, direction_aware: true -%}
-                        </button>
-
-                        <button type="button" class="media-lightbox__next circle-button" aria-label="{{ 'general.accessibility.next' | t }}">
-                          {%- render 'icon' with 'arrow-right', width: 9, direction_aware: true -%}
-                        </button>
-                      {%- endif -%}
-                    </div>
+                    {%- render 'media-lightbox', id: carousel_lightbox_id, show_nav: carousel_has_multiple_slides -%}
 
                     {%- if carousel_slide_count > 1 -%}
                       {%- if section.settings.controls_position == 'progress_bar' -%}
                         <div class="h-stack gap-4">
-                          <progress-bar track-scroll-target="carousel-{{ block.id }}" class="progress-bar grow"></progress-bar>
-                          <div class="h-stack gap-2" id="carousel-controls-slot-{{ block.id }}"></div>
+                          <progress-bar track-scroll-target="{{ carousel_dom_id }}" class="progress-bar grow"></progress-bar>
+                          <div class="h-stack gap-2" id="{{ carousel_controls_slot_id }}"></div>
                         </div>
                       {%- else -%}
-                        <progress-bar track-scroll-target="carousel-{{ block.id }}" class="progress-bar w-full"></progress-bar>
+                        <progress-bar track-scroll-target="{{ carousel_dom_id }}" class="progress-bar w-full"></progress-bar>
                       {%- endif -%}
                     {%- endif -%}
 
                     {%- if carousel_slide_count >= 1 -%}
-                      <script>
-                        (function() {
-                          var carousel = document.getElementById('carousel-{{ block.id }}');
-
-                          if (!carousel) {
-                            return;
-                          }
-
-                          customElements.whenDefined('product-list').then(function() {
-                          var isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
-                          var controlsAtProgressBar = {% if section.settings.controls_position == 'progress_bar' %}true{% else %}false{% endif %};
-
-                          // Only mobile relocates the selected slide's controls group into the slot next to
-                          // the progress bar (the exact same DOM node, never cloned; every other slide's
-                          // group is moved back to its own slide - see scheduleAdvance below). Desktop never
-                          // does this: its controls stay overlaid on their own video at all times.
-                          var controlsSlot = (controlsAtProgressBar && isTouchDevice) ? document.getElementById('carousel-controls-slot-{{ block.id }}') : null;
-
-                          // Captured once, up front, while every controls group is still in its original
-                          // slide - NOT re-queried via cell.querySelector() on every scheduleAdvance() call,
-                          // since once a group has been moved into the slot it is no longer a descendant of
-                          // its cell and would silently fail to be found again (leaving stale duplicates
-                          // behind instead of being moved back home).
-                          var controlsEntries = controlsSlot ? carousel.cells.map(function(cell) {
-                            return {
-                              cell: cell,
-                              group: cell.querySelector('.carousel-video-controls'),
-                              home: cell.querySelector('.content-box__background-media')
-                            };
-                          }) : [];
-
-                          // Nothing autoplays anymore, so this only has two jobs left: pause whatever video
-                          // the visitor is swiping away from, and (on mobile, progress-bar layout) relocate
-                          // the newly selected slide's controls group into the slot next to the progress bar.
-                          function scheduleAdvance() {
-                            carousel.cells.forEach(function(cell) {
-                              if (cell !== carousel.selectedCell) {
-                                // Go through the <video-media> wrapper's own pause(), not the raw <video>
-                                // tag directly: the wrapper tracks its own "playing" state and only the
-                                // wrapper's play()/pause() keep that state (and the "loaded" attribute
-                                // driving its CSS) in sync.
-                                var otherVideoMedia = cell.querySelector('video-media');
-                                if (otherVideoMedia) {
-                                  otherVideoMedia.pause();
-                                }
-                              }
-                            });
-
-                            controlsEntries.forEach(function(entry) {
-                              if (!entry.group) {
-                                return;
-                              }
-
-                              if (entry.cell === carousel.selectedCell) {
-                                controlsSlot.appendChild(entry.group);
-                              } else if (entry.home) {
-                                entry.home.appendChild(entry.group);
-                              }
-                            });
-                          }
-
-                          // Tracks the mute-setter of every video in this carousel, so that unmuting one can
-                          // mute every other one (only one video can have sound at a time).
-                          var muteSetters = [];
-
-                          Array.prototype.forEach.call(carousel.querySelectorAll('.content-box__background-media'), function(mediaBox) {
-                            var video = mediaBox.querySelector('video');
-
-                            if (!video) {
-                              return;
-                            }
-
-                            var videoMedia = mediaBox.querySelector('video-media');
-                            var pauseButton = mediaBox.querySelector('.carousel-video-pause-toggle');
-                            var pauseIcon = pauseButton.querySelector('.carousel-video-pause-icon');
-                            var playIcon = pauseButton.querySelector('.carousel-video-play-icon');
-                            var soundButton = mediaBox.querySelector('.carousel-video-sound-toggle');
-                            var poster = mediaBox.querySelector('video-media > img');
-
-                            // pause() goes through video-media's own wrapper (not the native <video>
-                            // directly): it only sets up its internal "playing" tracking (theme.js,
-                            // BaseMedia/_playerTarget) the first time ITS OWN play()/pause() is called, and
-                            // scheduleAdvance()/collapseCell() both call video-media.pause() elsewhere,
-                            // relying on that tracking to know whether there's anything to actually pause -
-                            // bypassing the wrapper here would leave them silently unable to stop a video
-                            // that was only ever started from this button.
-                            //
-                            // Resuming goes one layer deeper, to .player.play() instead of .play(): the
-                            // public play() additionally requires this.offsetParent to be non-null, which is
-                            // always null while is-lightbox-expanded has this at position: fixed - the
-                            // player proxy underneath runs the exact same one-time setup and playback call
-                            // without that extra guard.
-                            function togglePlay() {
-                              if (videoMedia.playing) {
-                                videoMedia.pause();
-                              } else {
-                                videoMedia.player.play();
-
-                                // A tap on play is a real user gesture, so autoplay-with-sound isn't
-                                // blocked here - going through the real button (not video.muted directly)
-                                // keeps its icon and the "mute every other video" behavior in sync.
-                                if (video.muted) {
-                                  soundButton.click();
-                                }
-                              }
-                            }
-
-                            video.addEventListener('playing', function() {
-                              if (poster) {
-                                poster.classList.add('carousel-video-poster-hidden');
-                              }
-
-                              pauseIcon.classList.remove('hidden');
-                              playIcon.classList.add('hidden');
-                            });
-
-                            video.addEventListener('pause', function() {
-                              pauseIcon.classList.add('hidden');
-                              playIcon.classList.remove('hidden');
-                            });
-
-                            pauseButton.addEventListener('click', function(event) {
-                              event.stopPropagation();
-                              togglePlay();
-                            });
-
-                            var soundOffIcon = soundButton.querySelector('.carousel-video-sound-off-icon');
-                            var soundOnIcon = soundButton.querySelector('.carousel-video-sound-icon');
-
-                            function setMuted(muted) {
-                              video.muted = muted;
-                              soundOffIcon.classList.toggle('hidden', !muted);
-                              soundOnIcon.classList.toggle('hidden', muted);
-                            }
-
-                            function toggleSound() {
-                              var wasMuted = video.muted;
-
-                              if (wasMuted) {
-                                muteSetters.forEach(function(otherSetMuted) {
-                                  if (otherSetMuted !== setMuted) {
-                                    otherSetMuted(true);
-                                  }
-                                });
-                              }
-
-                              setMuted(!wasMuted);
-                            }
-
-                            muteSetters.push(setMuted);
-
-                            soundButton.addEventListener('click', toggleSound);
-
-                            // No tap-anywhere-on-the-video handler here on purpose: video-media itself
-                            // (theme.js, VideoMedia#connectedCallback) already attaches its own one-time
-                            // "click starts playback" listener whenever it has no autoplay attribute, which
-                            // is exactly this carousel's case. Adding a second click-to-play listener here
-                            // fired both on the very first tap - two near-simultaneous play() calls on the
-                            // same <video>, which some browsers resolve by aborting the first one, so
-                            // playback never actually started. The dedicated pause/play button below is
-                            // unaffected (it's a sibling of video-media, not a descendant, so it's outside
-                            // that built-in listener's reach) and already covers pause/resume on repeat taps.
-                          });
-
-                          // Only now, after every mediaBox above has its buttons queried and listeners
-                          // attached, is it safe to run scheduleAdvance() for the first time: on mobile with
-                          // "next to the progress bar" active, it moves the initially-selected slide's
-                          // controls group into controlsSlot (desktop never does this - see controlsSlot
-                          // above). Running it any earlier relocated that group out of its mediaBox before
-                          // the loop above reached it, so mediaBox.querySelector('.carousel-video-pause-toggle')
-                          // came back null there, threw on the next line, and aborted the whole forEach -
-                          // leaving every slide after the selected one (and the selected one itself) without
-                          // listeners at all.
-                          carousel.addEventListener('carousel:change', scheduleAdvance);
-                          scheduleAdvance();
-
-                          // Each open-lightbox-button (rendered per slide, image-index matching this exact
-                          // build order) dispatches a bubbling 'lightbox:open', caught here directly (there's
-                          // no <product-gallery> wrapping this carousel to catch it instead). Opening only
-                          // toggles a class on the slide's own real <video-media>/<img> (see
-                          // is-lightbox-expanded in the CSS above) - it's never moved to a different parent,
-                          // which is what previously caused the browser to re-buffer playing videos (showing
-                          // as stuck on a solid color, or slow to resume), video-media's [loaded]/[playing]
-                          // attributes going stale, and its own built-in one-time click-to-play listener
-                          // colliding with the move.
-                          var lightbox = document.getElementById('media-lightbox-{{ block.id }}');
-                          var lightboxCloseButton = lightbox.querySelector('.media-lightbox__close');
-                          var lightboxPrevButton = lightbox.querySelector('.media-lightbox__prev');
-                          var lightboxNextButton = lightbox.querySelector('.media-lightbox__next');
-                          var activeCell = null;
-                          // Whether the video that was just expanded had sound on - carried over to whichever
-                          // video next/prev bring in next, since a freshly encountered slide otherwise always
-                          // starts muted (see the render 'media' call above).
-                          var lightboxSoundOn = false;
-
-                          function getCellMedia(cell) {
-                            var home = cell.querySelector('.content-box__background-media');
-
-                            return {
-                              home: home,
-                              videoMedia: home.querySelector('video-media'),
-                              controlsGroup: home.querySelector('.carousel-video-controls'),
-                              image: home.querySelector('img.image-cover')
-                            };
-                          }
-
-                          // continuePlayingWithSound is only passed by next/prev, never the initial open:
-                          // undefined means "leave it exactly as it already is" - nothing autoplays, so a
-                          // never-played video expands paused, matching how it already looked in the
-                          // carousel.
-                          function expandCell(cell, continuePlayingWithSound) {
-                            var media = getCellMedia(cell);
-
-                            if (media.videoMedia) {
-                              var video = media.videoMedia.querySelector('video');
-                              var wasPlaying = video && !video.paused;
-                              var soundButton = media.controlsGroup ? media.controlsGroup.querySelector('.carousel-video-sound-toggle') : null;
-
-                              // Going through the real button (instead of setting video.muted directly) is
-                              // what keeps its sound-on/sound-off icon and the "mute every other video"
-                              // behavior in sync - both live inside that button's own click handler.
-                              if (video && soundButton && continuePlayingWithSound !== undefined && !video.muted !== continuePlayingWithSound) {
-                                soundButton.click();
-                              }
-
-                              // .player.play() rather than .play() - see togglePlay() above for why (same
-                              // "playing" tracking needed elsewhere, same this.offsetParent guard to skip
-                              // around once is-lightbox-expanded is added below).
-                              if (video && (wasPlaying || continuePlayingWithSound !== undefined)) {
-                                media.videoMedia.player.play();
-                              }
-
-                              media.videoMedia.classList.add('is-lightbox-expanded');
-
-                              if (media.controlsGroup) {
-                                media.controlsGroup.classList.add('is-lightbox-expanded');
-                              }
-                            } else if (media.image) {
-                              media.image.classList.add('is-lightbox-expanded');
-                            }
-
-                            activeCell = cell;
-                          }
-
-                          // Returns whether the collapsed slide was an actually-playing video - the caller
-                          // (showRelativeSlide) uses this to decide whether the next slide should resume
-                          // playing too, so navigating away from a photo (or a video nobody pressed play on)
-                          // never starts the next video on its own.
-                          function collapseCell() {
-                            if (!activeCell) {
-                              return false;
-                            }
-
-                            var media = getCellMedia(activeCell);
-                            var wasPlaying = false;
-
-                            if (media.videoMedia) {
-                              var video = media.videoMedia.querySelector('video');
-
-                              if (video) {
-                                wasPlaying = !video.paused;
-                                lightboxSoundOn = !video.muted;
-                              }
-
-                              media.videoMedia.pause();
-                              media.videoMedia.classList.remove('is-lightbox-expanded');
-
-                              if (media.controlsGroup) {
-                                media.controlsGroup.classList.remove('is-lightbox-expanded');
-                              }
-                            } else if (media.image) {
-                              media.image.classList.remove('is-lightbox-expanded');
-                            }
-
-                            activeCell = null;
-
-                            return wasPlaying;
-                          }
-
-                          function openLightbox(index) {
-                            var cell = carousel.cells[index];
-
-                            if (!cell) {
-                              return;
-                            }
-
-                            // scheduleAdvance() runs on every carousel:change and pauses every non-selected
-                            // cell's video - detaching it for as long as the lightbox is open keeps it from
-                            // pausing the expanded video out from under the visitor if a carousel:change ever
-                            // fired while it's up (nothing should trigger one while the lightbox blocks
-                            // access to the carousel behind it, but this costs nothing to keep as a
-                            // safeguard).
-                            carousel.removeEventListener('carousel:change', scheduleAdvance);
-
-                            document.documentElement.style.overflow = 'hidden';
-                            lightbox.hidden = false;
-                            expandCell(cell);
-                          }
-
-                          function closeLightbox() {
-                            var finalCell = activeCell;
-
-                            collapseCell();
-                            lightbox.hidden = true;
-                            document.documentElement.style.overflow = '';
-                            carousel.addEventListener('carousel:change', scheduleAdvance);
-
-                            // Catches up the carousel to wherever the visitor ended up navigating inside the
-                            // lightbox (next/prev never move the carousel's own scroll position while it's
-                            // open, see showRelativeSlide).
-                            if (finalCell && finalCell !== carousel.selectedCell) {
-                              carousel.select(carousel.cells.indexOf(finalCell), { instant: true });
-                            }
-
-                            scheduleAdvance();
-                          }
-
-                          function showRelativeSlide(offset) {
-                            if (!activeCell) {
-                              return;
-                            }
-
-                            var currentIndex = carousel.cells.indexOf(activeCell);
-                            var nextCell = carousel.cells[currentIndex + offset];
-
-                            if (!nextCell) {
-                              return;
-                            }
-
-                            var wasPlaying = collapseCell();
-                            expandCell(nextCell, wasPlaying ? lightboxSoundOn : undefined);
-                          }
-
-                          lightboxCloseButton.addEventListener('click', closeLightbox);
-
-                          if (lightboxPrevButton) {
-                            lightboxPrevButton.addEventListener('click', function() {
-                              showRelativeSlide(-1);
-                            });
-                          }
-
-                          if (lightboxNextButton) {
-                            lightboxNextButton.addEventListener('click', function() {
-                              showRelativeSlide(1);
-                            });
-                          }
-
-                          document.addEventListener('keydown', function(event) {
-                            if (event.key === 'Escape' && !lightbox.hidden) {
-                              closeLightbox();
-                            }
-                          });
-
-                          carousel.addEventListener('lightbox:open', function(event) {
-                            openLightbox(event.detail.index || 0);
-                          });
-                          });
-                        })();
-                      </script>
+                      {%- render 'media-zoom-script',
+                        wrapper_id: carousel_wrapper_id,
+                        lightbox_id: carousel_lightbox_id,
+                        carousel_id: carousel_dom_id,
+                        controls_slot_id: carousel_controls_slot_id,
+                        relocate_controls: carousel_relocate_controls
+                      -%}
                     {%- endif -%}
                   </div>
                 </div>

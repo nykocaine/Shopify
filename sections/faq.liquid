@@ -45,7 +45,7 @@
                   endif
                 endif
               elsif block.type == 'text_image'
-                render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius
+                render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius, section_id: section.id
               endif
             endif
           endfor
@@ -110,7 +110,7 @@
 
             {%- when 'text_image' -%}
               {%- if panel_open -%}
-                {%- render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius -%}
+                {%- render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius, section_id: section.id -%}
               {%- endif -%}
           {%- endcase -%}
         {%- endfor -%}
@@ -182,7 +182,7 @@
                 -%}
 
               {%- when 'text_image' -%}
-                {%- render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius -%}
+                {%- render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius, section_id: section.id -%}
             {%- endcase -%}
           {%- endfor -%}
         </div>
@@ -406,8 +406,16 @@
         overflow: hidden;
       }
 
-      #shopify-section-{{ section.id }} .faq__text-image-media img,
-      #shopify-section-{{ section.id }} .faq__text-image-media video {
+      {%- comment -%}
+      Direct children only (not a plain descendant selector): the plain image render outputs its
+      <img> directly inside .faq__text-image-media, so this still matches it exactly as before. The
+      video variant (snippets/media-zoom-slide.liquid, shared with Media Blocks' Carousel) instead
+      nests its <video> several levels deep inside its own sized .content-box box - that one must
+      size itself via its own block_size/mobile_block_size setting, so it's deliberately excluded
+      here rather than forced to width:100%/height:auto.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .faq__text-image-media > img,
+      #shopify-section-{{ section.id }} .faq__text-image-media > video {
         width: 100%;
         height: auto;
         display: block;
@@ -1561,7 +1569,7 @@
     },
     {
       "type": "text_image",
-      "name": "Text with image",
+      "name": "Text with image or video",
       "settings": [
         {
           "type": "inline_richtext",
@@ -1575,9 +1583,92 @@
           "default": "<p>Add editorial content, like a longer explanation or a note, inside any category.</p>"
         },
         {
+          "type": "select",
+          "id": "media_type",
+          "label": "Media type",
+          "options": [
+            {
+              "value": "image",
+              "label": "t:global.image.image"
+            },
+            {
+              "value": "video",
+              "label": "t:global.video.video"
+            }
+          ],
+          "default": "image"
+        },
+        {
           "type": "image_picker",
           "id": "image",
-          "label": "t:global.image.image"
+          "label": "t:global.image.image",
+          "visible_if": "{{ block.settings.media_type == 'image' }}"
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "t:global.video.video",
+          "visible_if": "{{ block.settings.media_type == 'video' }}"
+        },
+        {
+          "type": "select",
+          "id": "block_size",
+          "label": "t:sections.media_blocks.block_size",
+          "options": [
+            {
+              "value": "auto",
+              "label": "t:global.sizes.original_image_ratio"
+            },
+            {
+              "value": "sm",
+              "label": "t:global.sizes.small"
+            },
+            {
+              "value": "md",
+              "label": "t:global.sizes.medium"
+            },
+            {
+              "value": "lg",
+              "label": "t:global.sizes.large"
+            },
+            {
+              "value": "fill",
+              "label": "t:global.sizes.fit_screen"
+            }
+          ],
+          "info": "t:global.image.ratio_avoid_cropping_info",
+          "default": "auto",
+          "visible_if": "{{ block.settings.media_type == 'video' }}"
+        },
+        {
+          "type": "select",
+          "id": "mobile_block_size",
+          "label": "Mobile block size",
+          "options": [
+            {
+              "value": "auto",
+              "label": "t:global.sizes.original_image_ratio"
+            },
+            {
+              "value": "sm",
+              "label": "t:global.sizes.small"
+            },
+            {
+              "value": "md",
+              "label": "t:global.sizes.medium"
+            },
+            {
+              "value": "lg",
+              "label": "t:global.sizes.large"
+            },
+            {
+              "value": "fill",
+              "label": "t:global.sizes.fit_screen"
+            }
+          ],
+          "info": "t:global.image.ratio_avoid_cropping_info",
+          "default": "auto",
+          "visible_if": "{{ block.settings.media_type == 'video' }}"
         }
       ]
     }

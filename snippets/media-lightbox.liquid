@@ -1,0 +1,28 @@
+{%- doc -%}
+Renders the lightbox chrome (backdrop + close button, optionally prev/next) used to zoom into a
+media-zoom-slide item. The lightbox never moves the actual media element into itself - it only
+toggles a class on the same video-media/img already sitting in its slide (see the
+".is-lightbox-expanded" rules in snippets/media-zoom-style.liquid and the open/close logic in
+snippets/media-zoom-script.liquid).
+
+@param {string} id - id for this lightbox element
+@param {boolean} [show_nav] - whether to render the prev/next buttons (only meaningful when there is more than one zoomable item to navigate between)
+{%- enddoc -%}
+
+<div id="{{ id }}" class="contents" hidden>
+  <div class="media-lightbox__backdrop"></div>
+
+  <button type="button" class="media-lightbox__close" aria-label="{{ 'general.accessibility.close' | t }}">
+    {%- render 'icon' with 'close', width: 10 -%}
+  </button>
+
+  {%- if show_nav -%}
+    <button type="button" class="media-lightbox__prev circle-button" aria-label="{{ 'general.accessibility.previous' | t }}">
+      {%- render 'icon' with 'arrow-left', width: 9, direction_aware: true -%}
+    </button>
+
+    <button type="button" class="media-lightbox__next circle-button" aria-label="{{ 'general.accessibility.next' | t }}">
+      {%- render 'icon' with 'arrow-right', width: 9, direction_aware: true -%}
+    </button>
+  {%- endif -%}
+</div>

@@ -1,14 +1,35 @@
 {%- doc -%}
-Renders a FAQ "Text with image" block: optional title (existing heading system), rich text, and an
-optional image. Two columns (text | image) on desktop when an image is set, single column with the
-image below the text on mobile - stacked, full width, on every breakpoint when there's no image.
+Renders a FAQ "Text + image/video" block: optional title (existing heading system), rich text, and
+an optional image or video. Two columns (text | media) on desktop when a media is set, single column
+with the media below the text on mobile - stacked, full width, on every breakpoint when there's no
+media. Exactly the same layout/spacing/responsive behavior regardless of which media type is picked.
+
+The video variant reuses Media Blocks' own Carousel block controls (sound/play-pause toggle,
+zoom-to-lightbox) via the shared snippets/media-zoom-slide.liquid, media-lightbox.liquid,
+media-zoom-script.liquid and media-zoom-style.liquid snippets, instead of a separate implementation -
+see sections/media-blocks.liquid's 'carousel' block for the other caller.
 
 @param {object} block - the "text_image" block to render
-@param {number} [faq_border_radius] - the section's own corner radius (Corner radius setting), applied to the image so it matches the section's rounded corners
+@param {number} [faq_border_radius] - the section's own corner radius (Corner radius setting), applied to the media so it matches the section's rounded corners
+@param {string} [section_id] - id of the enclosing section (section.id), needed to scope the video's zoom/lightbox styling the same way the rest of the section's own styles are scoped
 {%- enddoc -%}
 
-{%- if block.settings.title != blank or block.settings.text != blank or block.settings.image != blank -%}
-  <div class="faq__text-image {% if block.settings.image != blank %}faq__text-image--with-image{% endif %}" {{ block.shopify_attributes }}>
+{%- liquid
+  assign has_video = false
+
+  if block.settings.media_type == 'video' and block.settings.video != blank
+    assign has_video = true
+  endif
+
+  assign has_media = false
+
+  if has_video or block.settings.image != blank
+    assign has_media = true
+  endif
+-%}
+
+{%- if block.settings.title != blank or block.settings.text != blank or has_media -%}
+  <div class="faq__text-image {% if has_media %}faq__text-image--with-image{% endif %}" {{ block.shopify_attributes }}>
     {%- if block.settings.title != blank or block.settings.text != blank -%}
       <div class="faq__text-image-content prose">
         {%- if block.settings.title != blank -%}
@@ -21,7 +42,39 @@ image below the text on mobile - stacked, full width, on every breakpoint when t
       </div>
     {%- endif -%}
 
-    {%- if block.settings.image != blank -%}
+    {%- if has_video -%}
+      {%- liquid
+        assign media_corner_radius = faq_border_radius | default: 0 | append: 'px'
+        assign media_wrapper_id = 'faq-text-image-media-' | append: block.id
+        assign media_lightbox_id = 'faq-text-image-lightbox-' | append: block.id
+      -%}
+
+      <div class="faq__text-image-media" id="{{ media_wrapper_id }}">
+        {%- render 'media-zoom-slide',
+          video: block.settings.video,
+          block_size: block.settings.block_size,
+          mobile_block_size: block.settings.mobile_block_size,
+          corner_radius: media_corner_radius,
+          lightbox_id: media_lightbox_id,
+          lightbox_index: 0,
+          as_lightbox_cell: true,
+          sizes: '(max-width: 699px) 100vw, 50vw'
+        -%}
+
+        {%- render 'media-lightbox', id: media_lightbox_id, show_nav: false -%}
+      </div>
+
+      <style>
+        {%- render 'media-zoom-style',
+          wrapper_id: media_wrapper_id,
+          lightbox_id: media_lightbox_id,
+          section_id: section_id,
+          corner_radius: media_corner_radius
+        -%}
+      </style>
+
+      {%- render 'media-zoom-script', wrapper_id: media_wrapper_id, lightbox_id: media_lightbox_id -%}
+    {%- elsif block.settings.image != blank -%}
       <div class="faq__text-image-media" style="border-radius: {{ faq_border_radius | default: 0 }}px;">
         {%- render 'media', media: block.settings.image, sizes: '(max-width: 699px) 100vw, 50vw' -%}
       </div>

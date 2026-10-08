@@ -1,0 +1,344 @@
+{%- doc -%}
+Behavior shared by every "zoomable media" item rendered via snippets/media-zoom-slide.liquid: the
+video sound/play-pause toggle buttons (with cross-video mute sync, so only one video has sound at a
+time) and the zoom-to-lightbox open/close/prev/next logic. This is the Carousel block's own script
+(sections/media-blocks.liquid) generalized so it works whether the media items sit inside a real
+scrolling carousel (<product-list>) or as a single static item (eg. FAQ's "Text + image/video"
+block) - the carousel-only parts (pausing other slides on scroll, relocating controls next to the
+progress bar) are simply skipped when no carousel_id is given.
+
+@param {string} wrapper_id - id of the ancestor element wrapping every media item and the lightbox. Used to scope the mute/pause setup and to catch the bubbling 'lightbox:open' event dispatched by each item's zoom button.
+@param {string} lightbox_id - id of the media-lightbox element (snippets/media-lightbox.liquid)
+@param {string} [carousel_id] - id of the <product-list> element, when the media items sit inside a real scrolling carousel. Omit for a single static media item.
+@param {string} [controls_slot_id] - id of the element the selected slide's controls should be relocated into on touch devices. Only used when relocate_controls is true.
+@param {boolean} [relocate_controls] - whether to relocate controls next to the progress bar on touch devices (carousel-only, see section.settings.controls_position)
+{%- enddoc -%}
+
+<script>
+  (function() {
+    var wrapper = document.getElementById('{{ wrapper_id }}');
+
+    if (!wrapper) {
+      return;
+    }
+
+    customElements.whenDefined('video-media').then(function() {
+      var carousel = {% if carousel_id %}document.getElementById('{{ carousel_id }}'){% else %}null{% endif %};
+      var isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+      var relocateControls = {% if relocate_controls %}true{% else %}false{% endif %};
+      var controlsSlot = (relocateControls && isTouchDevice) ? document.getElementById('{{ controls_slot_id }}') : null;
+
+      // The list of "cells" to pause/relocate/navigate between: a real carousel's own cells when
+      // there is one, otherwise every item carrying the data-media-cell hook (media-zoom-slide.liquid,
+      // as_lightbox_cell: true) directly under the wrapper.
+      var cells = carousel ? carousel.cells : Array.prototype.slice.call(wrapper.querySelectorAll('[data-media-cell]'));
+
+      // Captured once, up front, while every controls group is still in its original cell - NOT
+      // re-queried via cell.querySelector() on every scheduleAdvance() call, since once a group has
+      // been moved into the slot it is no longer a descendant of its cell and would silently fail to
+      // be found again (leaving stale duplicates behind instead of being moved back home).
+      var controlsEntries = controlsSlot ? cells.map(function(cell) {
+        return {
+          cell: cell,
+          group: cell.querySelector('.carousel-video-controls'),
+          home: cell.querySelector('.content-box__background-media')
+        };
+      }) : [];
+
+      // Nothing autoplays, so this only has two jobs: pause whatever video the visitor is swiping
+      // away from, and (on mobile, progress-bar layout) relocate the newly selected slide's controls
+      // group into the slot next to the progress bar. Only relevant when there is an actual carousel.
+      function scheduleAdvance() {
+        cells.forEach(function(cell) {
+          if (cell !== carousel.selectedCell) {
+            // Go through the <video-media> wrapper's own pause(), not the raw <video> tag directly:
+            // the wrapper tracks its own "playing" state and only the wrapper's play()/pause() keep
+            // that state (and the "loaded" attribute driving its CSS) in sync.
+            var otherVideoMedia = cell.querySelector('video-media');
+            if (otherVideoMedia) {
+              otherVideoMedia.pause();
+            }
+          }
+        });
+
+        controlsEntries.forEach(function(entry) {
+          if (!entry.group) {
+            return;
+          }
+
+          if (entry.cell === carousel.selectedCell) {
+            controlsSlot.appendChild(entry.group);
+          } else if (entry.home) {
+            entry.home.appendChild(entry.group);
+          }
+        });
+      }
+
+      // Tracks the mute-setter of every video under this wrapper, so that unmuting one can mute
+      // every other one (only one video can have sound at a time).
+      var muteSetters = [];
+
+      Array.prototype.forEach.call(wrapper.querySelectorAll('.content-box__background-media'), function(mediaBox) {
+        var video = mediaBox.querySelector('video');
+
+        if (!video) {
+          return;
+        }
+
+        var videoMedia = mediaBox.querySelector('video-media');
+        var pauseButton = mediaBox.querySelector('.carousel-video-pause-toggle');
+        var pauseIcon = pauseButton.querySelector('.carousel-video-pause-icon');
+        var playIcon = pauseButton.querySelector('.carousel-video-play-icon');
+        var soundButton = mediaBox.querySelector('.carousel-video-sound-toggle');
+        var poster = mediaBox.querySelector('video-media > img');
+
+        // Resuming goes through .player.play() rather than .play() - the public play() additionally
+        // requires this.offsetParent to be non-null, which is always null while is-lightbox-expanded
+        // has this at position: fixed - the player proxy underneath runs the exact same one-time
+        // setup and playback call without that extra guard.
+        function togglePlay() {
+          if (videoMedia.playing) {
+            videoMedia.pause();
+          } else {
+            videoMedia.player.play();
+
+            // A tap on play is a real user gesture, so autoplay-with-sound isn't blocked here - going
+            // through the real button (not video.muted directly) keeps its icon and the "mute every
+            // other video" behavior in sync.
+            if (video.muted) {
+              soundButton.click();
+            }
+          }
+        }
+
+        video.addEventListener('playing', function() {
+          if (poster) {
+            poster.classList.add('carousel-video-poster-hidden');
+          }
+
+          pauseIcon.classList.remove('hidden');
+          playIcon.classList.add('hidden');
+        });
+
+        video.addEventListener('pause', function() {
+          pauseIcon.classList.add('hidden');
+          playIcon.classList.remove('hidden');
+        });
+
+        pauseButton.addEventListener('click', function(event) {
+          event.stopPropagation();
+          togglePlay();
+        });
+
+        var soundOffIcon = soundButton.querySelector('.carousel-video-sound-off-icon');
+        var soundOnIcon = soundButton.querySelector('.carousel-video-sound-icon');
+
+        function setMuted(muted) {
+          video.muted = muted;
+          soundOffIcon.classList.toggle('hidden', !muted);
+          soundOnIcon.classList.toggle('hidden', muted);
+        }
+
+        function toggleSound() {
+          var wasMuted = video.muted;
+
+          if (wasMuted) {
+            muteSetters.forEach(function(otherSetMuted) {
+              if (otherSetMuted !== setMuted) {
+                otherSetMuted(true);
+              }
+            });
+          }
+
+          setMuted(!wasMuted);
+        }
+
+        muteSetters.push(setMuted);
+
+        soundButton.addEventListener('click', toggleSound);
+
+        // No tap-anywhere-on-the-video handler here on purpose: video-media itself (theme.js,
+        // VideoMedia#connectedCallback) already attaches its own one-time "click starts playback"
+        // listener whenever it has no autoplay attribute, which is exactly this case. Adding a second
+        // click-to-play listener here fired both on the very first tap - two near-simultaneous play()
+        // calls on the same <video>, which some browsers resolve by aborting the first one, so
+        // playback never actually started. The dedicated pause/play button is unaffected (it's a
+        // sibling of video-media, not a descendant) and already covers pause/resume on repeat taps.
+      });
+
+      if (carousel) {
+        // Only now, after every mediaBox above has its buttons queried and listeners attached, is it
+        // safe to run scheduleAdvance() for the first time - running it any earlier relocated a
+        // controls group out of its mediaBox before the loop above reached it.
+        carousel.addEventListener('carousel:change', scheduleAdvance);
+        scheduleAdvance();
+      }
+
+      // Each open-lightbox-button (rendered per item) dispatches a bubbling 'lightbox:open', caught
+      // here on the wrapper. Opening only toggles a class on the item's own real <video-media>/<img>
+      // (see is-lightbox-expanded in media-zoom-style.liquid) - it's never moved to a different
+      // parent, which is what previously caused the browser to re-buffer playing videos.
+      var lightbox = document.getElementById('{{ lightbox_id }}');
+      var lightboxCloseButton = lightbox.querySelector('.media-lightbox__close');
+      var lightboxPrevButton = lightbox.querySelector('.media-lightbox__prev');
+      var lightboxNextButton = lightbox.querySelector('.media-lightbox__next');
+      var activeCell = null;
+      // Whether the video that was just expanded had sound on - carried over to whichever video
+      // next/prev bring in next, since a freshly encountered item otherwise always starts muted.
+      var lightboxSoundOn = false;
+
+      function getCellMedia(cell) {
+        var home = cell.querySelector('.content-box__background-media');
+
+        return {
+          home: home,
+          videoMedia: home.querySelector('video-media'),
+          controlsGroup: home.querySelector('.carousel-video-controls'),
+          image: home.querySelector('img.image-cover')
+        };
+      }
+
+      // continuePlayingWithSound is only passed by next/prev, never the initial open: undefined means
+      // "leave it exactly as it already is" - nothing autoplays, so a never-played video expands
+      // paused, matching how it already looked before the lightbox opened.
+      function expandCell(cell, continuePlayingWithSound) {
+        var media = getCellMedia(cell);
+
+        if (media.videoMedia) {
+          var video = media.videoMedia.querySelector('video');
+          var wasPlaying = video && !video.paused;
+          var soundButton = media.controlsGroup ? media.controlsGroup.querySelector('.carousel-video-sound-toggle') : null;
+
+          if (video && soundButton && continuePlayingWithSound !== undefined && !video.muted !== continuePlayingWithSound) {
+            soundButton.click();
+          }
+
+          if (video && (wasPlaying || continuePlayingWithSound !== undefined)) {
+            media.videoMedia.player.play();
+          }
+
+          media.videoMedia.classList.add('is-lightbox-expanded');
+
+          if (media.controlsGroup) {
+            media.controlsGroup.classList.add('is-lightbox-expanded');
+          }
+        } else if (media.image) {
+          media.image.classList.add('is-lightbox-expanded');
+        }
+
+        activeCell = cell;
+      }
+
+      // Returns whether the collapsed item was an actually-playing video - the caller
+      // (showRelativeSlide) uses this to decide whether the next item should resume playing too.
+      function collapseCell() {
+        if (!activeCell) {
+          return false;
+        }
+
+        var media = getCellMedia(activeCell);
+        var wasPlaying = false;
+
+        if (media.videoMedia) {
+          var video = media.videoMedia.querySelector('video');
+
+          if (video) {
+            wasPlaying = !video.paused;
+            lightboxSoundOn = !video.muted;
+          }
+
+          media.videoMedia.pause();
+          media.videoMedia.classList.remove('is-lightbox-expanded');
+
+          if (media.controlsGroup) {
+            media.controlsGroup.classList.remove('is-lightbox-expanded');
+          }
+        } else if (media.image) {
+          media.image.classList.remove('is-lightbox-expanded');
+        }
+
+        activeCell = null;
+
+        return wasPlaying;
+      }
+
+      function openLightbox(index) {
+        var cell = cells[index];
+
+        if (!cell) {
+          return;
+        }
+
+        if (carousel) {
+          // Detaching this for as long as the lightbox is open keeps it from pausing the expanded
+          // video out from under the visitor if a carousel:change ever fired while it's up.
+          carousel.removeEventListener('carousel:change', scheduleAdvance);
+        }
+
+        document.documentElement.style.overflow = 'hidden';
+        lightbox.hidden = false;
+        expandCell(cell);
+      }
+
+      function closeLightbox() {
+        var finalCell = activeCell;
+
+        collapseCell();
+        lightbox.hidden = true;
+        document.documentElement.style.overflow = '';
+
+        if (carousel) {
+          carousel.addEventListener('carousel:change', scheduleAdvance);
+
+          // Catches up the carousel to wherever the visitor ended up navigating inside the lightbox
+          // (next/prev never move the carousel's own scroll position while it's open).
+          if (finalCell && finalCell !== carousel.selectedCell) {
+            carousel.select(cells.indexOf(finalCell), { instant: true });
+          }
+
+          scheduleAdvance();
+        }
+      }
+
+      function showRelativeSlide(offset) {
+        if (!activeCell) {
+          return;
+        }
+
+        var currentIndex = cells.indexOf(activeCell);
+        var nextCell = cells[currentIndex + offset];
+
+        if (!nextCell) {
+          return;
+        }
+
+        var wasPlaying = collapseCell();
+        expandCell(nextCell, wasPlaying ? lightboxSoundOn : undefined);
+      }
+
+      lightboxCloseButton.addEventListener('click', closeLightbox);
+
+      if (lightboxPrevButton) {
+        lightboxPrevButton.addEventListener('click', function() {
+          showRelativeSlide(-1);
+        });
+      }
+
+      if (lightboxNextButton) {
+        lightboxNextButton.addEventListener('click', function() {
+          showRelativeSlide(1);
+        });
+      }
+
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && !lightbox.hidden) {
+          closeLightbox();
+        }
+      });
+
+      wrapper.addEventListener('lightbox:open', function(event) {
+        openLightbox(event.detail.index || 0);
+      });
+    });
+  })();
+</script>
