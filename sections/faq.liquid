@@ -45,7 +45,7 @@
                   endif
                 endif
               elsif block.type == 'text_image'
-                render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius, section_id: section.id
+                render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius
               endif
             endif
           endfor
@@ -110,7 +110,7 @@
 
             {%- when 'text_image' -%}
               {%- if panel_open -%}
-                {%- render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius, section_id: section.id -%}
+                {%- render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius -%}
               {%- endif -%}
           {%- endcase -%}
         {%- endfor -%}
@@ -182,7 +182,7 @@
                 -%}
 
               {%- when 'text_image' -%}
-                {%- render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius, section_id: section.id -%}
+                {%- render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius -%}
             {%- endcase -%}
           {%- endfor -%}
         </div>

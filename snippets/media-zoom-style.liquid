@@ -7,9 +7,8 @@ zoomable media items (eg. FAQ's "Text + image/video" block).
 
 Must be rendered inside a <style> tag by the caller, once per instance (wrapper_id/lightbox_id pair).
 
-@param {string} wrapper_id - id of the ancestor element wrapping every media item and the lightbox (same id passed to snippets/media-zoom-script.liquid)
+@param {string} wrapper_id - id of the ancestor element wrapping every media item and the lightbox (same id passed to snippets/media-zoom-script.liquid). Also used to scope the lightbox-expanded positioning rules - video-media/img stay descendants of this wrapper in the DOM even once they visually escape to position: fixed, so scoping to it (rather than needing the enclosing section's id) is enough and avoids an extra id having to be threaded through every caller.
 @param {string} lightbox_id - id of the media-lightbox element
-@param {string} section_id - id of the enclosing section (section.id), used to scope the lightbox-expanded positioning rules the same way the rest of the section's own styles are scoped
 @param {string} [corner_radius] - CSS value matching the media item's own border-radius (eg. "var(--media-blocks-corner-radius)" or "12px"), reused so the expanded lightbox media keeps the same rounded corners
 @param {string} [controls_position] - 'top' (default) or 'progress_bar'
 @param {string} [desktop_controls_position] - 'top_right' (default) or 'center', only used when controls_position is 'progress_bar'
@@ -194,7 +193,7 @@ any z-index/position: fixed inside it to compete only within that local stacking
 never be able to render above anything outside .content-box no matter how high its own z-index is.
 Cancelling it here, only while something inside is expanded, lets the fixed media escape correctly.
 {%- endcomment -%}
-#shopify-section-{{ section_id }} .content-box__background-media:has(.is-lightbox-expanded) {
+#{{ wrapper_id }} .content-box__background-media:has(.is-lightbox-expanded) {
   isolation: auto;
 }
 
@@ -203,8 +202,8 @@ Drawer-style framing: the expanded media is centered with padding on every side 
 .drawer::part(body) uses) instead of filling the screen edge to edge, sized to fit within that padded
 area without cropping, and rounded to match the item's own corners.
 {%- endcomment -%}
-#shopify-section-{{ section_id }} video-media.is-lightbox-expanded,
-#shopify-section-{{ section_id }} img.is-lightbox-expanded {
+#{{ wrapper_id }} video-media.is-lightbox-expanded,
+#{{ wrapper_id }} img.is-lightbox-expanded {
   position: fixed;
   z-index: 999;
   inset-block-start: 50%;
@@ -225,7 +224,7 @@ on the real visible area, not the layout viewport Chrome/Safari report before th
 collapsed.
 {%- endcomment -%}
 @media screen and (max-width: 999px) {
-  #shopify-section-{{ section_id }} {
+  #{{ wrapper_id }} {
     --lightbox-media-w: min(calc(100vw - 2 * var(--container-gutter)), 32rem);
     --lightbox-media-h: calc(90vh - 2 * var(--container-gutter));
   }
@@ -233,36 +232,36 @@ collapsed.
 
 @supports (height: 100dvh) {
   @media screen and (max-width: 999px) {
-    #shopify-section-{{ section_id }} {
+    #{{ wrapper_id }} {
       --lightbox-media-h: calc(90dvh - 2 * var(--container-gutter));
     }
   }
 }
 
 @media screen and (max-width: 999px) {
-  #shopify-section-{{ section_id }} video-media.is-lightbox-expanded {
+  #{{ wrapper_id }} video-media.is-lightbox-expanded {
     width: var(--lightbox-media-w);
     height: var(--lightbox-media-h);
   }
 
-  #shopify-section-{{ section_id }} video-media.is-lightbox-expanded video {
+  #{{ wrapper_id }} video-media.is-lightbox-expanded video {
     border-radius: inherit;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
-  #shopify-section-{{ section_id }} img.is-lightbox-expanded {
+  #{{ wrapper_id }} img.is-lightbox-expanded {
     max-width: var(--lightbox-media-w);
     max-height: var(--lightbox-media-h);
   }
 }
 
-#shopify-section-{{ section_id }} video-media.is-lightbox-expanded video {
+#{{ wrapper_id }} video-media.is-lightbox-expanded video {
   border-radius: inherit;
 }
 
-#shopify-section-{{ section_id }} img.is-lightbox-expanded {
+#{{ wrapper_id }} img.is-lightbox-expanded {
   object-fit: contain;
 }
 
@@ -364,7 +363,7 @@ the viewport" so they land near the bottom-right of the expanded video instead o
 display: flex overrides the touch + progress_bar layout's display: none (that rule expects this group
 to only ever be visible once relocated into the controls slot, which doesn't apply here).
 {%- endcomment -%}
-#shopify-section-{{ section_id }} .carousel-video-controls.is-lightbox-expanded {
+#{{ wrapper_id }} .carousel-video-controls.is-lightbox-expanded {
   opacity: 1 !important;
   pointer-events: auto !important;
   display: flex !important;
@@ -380,7 +379,7 @@ Mobile only: same corner-pinning as close/prev/next above, so this lands inside 
 bottom-right corner instead of the screen's.
 {%- endcomment -%}
 @media screen and (max-width: 999px) {
-  #shopify-section-{{ section_id }} .carousel-video-controls.is-lightbox-expanded {
+  #{{ wrapper_id }} .carousel-video-controls.is-lightbox-expanded {
     inset-block-end: auto;
     inset-inline-end: auto;
     inset-inline-start: 50%;
