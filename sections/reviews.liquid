@@ -323,6 +323,12 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
 </style>
 
 <style>
+  {%- comment -%}
+  ============================================================
+  FLOATING MODE / SECTION PADDING
+  ============================================================
+  {%- endcomment -%}
+
   {%- if section.settings.floating_reviews -%}
     {%- comment -%}
     Floating mode: this section behaves as its own padded card (like the floating info_panel it typically
@@ -347,6 +353,12 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       padding: calc(var(--container-gutter) + 0.5rem);
     }
   {%- endif -%}
+
+  {%- comment -%}
+  ============================================================
+  SUMMARY ROW (average rating, stars, count, "Escribir una reseña")
+  ============================================================
+  {%- endcomment -%}
 
   {%- comment -%}
   Rating block flush to the start and "Escribir una reseña" flush to the end, on desktop
@@ -455,6 +467,12 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   }
 
   {%- comment -%}
+  ============================================================
+  CONTROLS / SORT DROPDOWN
+  ============================================================
+  {%- endcomment -%}
+
+  {%- comment -%}
   margin-block-end cancels out .section-stack's own row-gap below this element, so the review cards
   start flush against the separator line (padding-block-end below) instead of leaving the usual
   stack gap between the line and the list.
@@ -544,6 +562,12 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     background: none;
     color: inherit;
   }
+
+  {%- comment -%}
+  ============================================================
+  REVIEW CARDS (list + card layout)
+  ============================================================
+  {%- endcomment -%}
 
   #shopify-section-{{ section.id }} .reviews__list {
     display: flex;
@@ -646,6 +670,12 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     display: block;
   }
 
+  {%- comment -%}
+  ============================================================
+  RATING BAR (review-card__bar*)
+  ============================================================
+  {%- endcomment -%}
+
   #shopify-section-{{ section.id }} .review-card__bar {
     max-width: 22rem;
   }
@@ -709,6 +739,12 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     display: flex;
   }
 
+  {%- comment -%}
+  ============================================================
+  LOAD MORE / LOAD LESS + RESPONSIVE CARD LAYOUT
+  ============================================================
+  {%- endcomment -%}
+
   #shopify-section-{{ section.id }} .reviews__load-more {
     justify-content: space-between;
     flex-wrap: wrap;
@@ -746,6 +782,12 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       order: 2;
     }
   }
+
+  {%- comment -%}
+  ============================================================
+  WRITE REVIEW FORM (modal content)
+  ============================================================
+  {%- endcomment -%}
 
   #shopify-section-{{ section.id }} .review-form__required-note {
     color: rgb(var(--text-color) / .6);

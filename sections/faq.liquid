@@ -193,6 +193,12 @@
 
     <style>
       {%- comment -%}
+      ============================================================
+      LAYOUT & SPACING (padding, container, first-section treatment)
+      ============================================================
+      {%- endcomment -%}
+
+      {%- comment -%}
       All four sides equal, and the same formula at every breakpoint (this used to be
       padding-block: var(--container-gutter) on desktop with a bigger mobile-only override on all
       four sides - so the sides always matched each other, but desktop and mobile didn't match one
@@ -265,26 +271,34 @@
       }
 
       {%- comment -%}
+      ============================================================
+      TYPOGRAPHY OVERRIDES (title, "Text with image or video" title,
+      subheading-style question, accordion question weight)
+      ============================================================
+      {%- endcomment -%}
+
+      {%- comment -%}
       Same override product-card.liquid already applies to itself (theme.css, ".product-card .subheading,
       .product-card .heading"): forces the typeface itself (family/weight/style/letter-spacing/casing)
-      back to Body Text, without touching font-size. The title ('heading' snippet, style: title_tag) never
-      actually renders class ".heading" - title_tag's options are h1-h6/display-xl/l/m, and heading.liquid
-      uses "style" as the class verbatim (theme.css's shared ".heading, .display-xl, ..., .h6" selector is
-      what sets the Heading typeface) - so all of those need covering here, not just ".heading". Also covers
-      the accordion question when "Question style" is set to "Subheading" (.subheading, accordion.liquid's
-      subheading_title). The answer (accordion__content, rendered with prose_content: true) already renders
-      as plain prose/body text and needs no override.
+      back to Body Text, without touching font-size. Covers the "Text with image or video" block's own
+      title (faq-text-image.liquid, style: 'h5') and the accordion question when "Question style" is set
+      to "Subheading" (.subheading, accordion.liquid's subheading_title) - but NOT the section's own main
+      title above (section.settings.title, rendered with balance_text: true, the only place in this
+      section that adds "text-balance" - excluded here so it keeps the Heading typeface instead, matching
+      the "big rating number" in reviews.liquid, which has no such override). The answer
+      (accordion__content, rendered with prose_content: true) already renders as plain prose/body text
+      and needs no override.
       {%- endcomment -%}
-      #shopify-section-{{ section.id }} .heading,
-      #shopify-section-{{ section.id }} .display-xl,
-      #shopify-section-{{ section.id }} .display-l,
-      #shopify-section-{{ section.id }} .display-m,
-      #shopify-section-{{ section.id }} .h1,
-      #shopify-section-{{ section.id }} .h2,
-      #shopify-section-{{ section.id }} .h3,
-      #shopify-section-{{ section.id }} .h4,
-      #shopify-section-{{ section.id }} .h5,
-      #shopify-section-{{ section.id }} .h6,
+      #shopify-section-{{ section.id }} .heading:not(.text-balance),
+      #shopify-section-{{ section.id }} .display-xl:not(.text-balance),
+      #shopify-section-{{ section.id }} .display-l:not(.text-balance),
+      #shopify-section-{{ section.id }} .display-m:not(.text-balance),
+      #shopify-section-{{ section.id }} .h1:not(.text-balance),
+      #shopify-section-{{ section.id }} .h2:not(.text-balance),
+      #shopify-section-{{ section.id }} .h3:not(.text-balance),
+      #shopify-section-{{ section.id }} .h4:not(.text-balance),
+      #shopify-section-{{ section.id }} .h5:not(.text-balance),
+      #shopify-section-{{ section.id }} .h6:not(.text-balance),
       #shopify-section-{{ section.id }} .subheading {
         font-family: var(--text-font-family);
         font-weight: var(--text-font-weight);
@@ -294,13 +308,19 @@
       }
 
       {%- comment -%}
-      .faq-block__list .accordion__summary (theme.css) hardcodes font-weight: 600 on the question directly
-      - independent of the .heading/.subheading typeface classes above, so it stayed bold even with those
-      overridden. This is what actually made the question look heavier than body text.
+      .faq-block__list .accordion__summary (theme.css) hardcodes font-weight: 600 on the question
+      directly, regardless of "Question style" - forced back to the Body Text weight here so the
+      question doesn't read heavier/bolder than the answer text below it.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq-block__list .accordion__summary {
         font-weight: var(--text-font-weight);
       }
+
+      {%- comment -%}
+      ============================================================
+      CATEGORIES (tabs row + tab buttons)
+      ============================================================
+      {%- endcomment -%}
 
       {%- comment -%}
       Categories menu: lives inside .section-header as a ".section-header__controls" sibling of the
@@ -383,6 +403,12 @@
       #shopify-section-{{ section.id }} .faq__category-tab-icon {
         flex: none;
       }
+
+      {%- comment -%}
+      ============================================================
+      "TEXT WITH IMAGE OR VIDEO" BLOCK (faq-text-image.liquid)
+      ============================================================
+      {%- endcomment -%}
 
       {%- comment -%}
       "Text with image" block (faq-text-image.liquid): plain editorial content, not an accordion -
