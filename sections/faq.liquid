@@ -135,7 +135,7 @@
           {%- endif -%}
 
           {%- if has_categories -%}
-            <x-tabs class="section-header__controls faq__categories">
+            <x-tabs class="section-header__controls faq__categories {% if section.settings.category_tab_style == 'filled' %}faq__categories--filled{% endif %}">
               <template shadowrootmode="open">
                 <slot part="tablist" role="tablist" name="tab"></slot>
               </template>
@@ -380,9 +380,17 @@
         flex: none;
       }
 
-      #shopify-section-{{ section.id }} .faq__category-tab:hover {
-        color: rgb(var(--text-color) / .8);
-        border-color: rgb(var(--text-color) / .5);
+      {%- comment -%}
+      Bug fix: wrapped in (pointer: fine) so tapping a tab on touch devices doesn't leave it stuck in
+      this "hover" look until the visitor taps elsewhere (touch has no real hover state, but mobile
+      browsers commonly latch :hover on tap) - matches how every other interactive hover in the theme
+      (eg. .button:hover, theme.css) is already scoped.
+      {%- endcomment -%}
+      @media screen and (pointer: fine) {
+        #shopify-section-{{ section.id }} .faq__category-tab:hover {
+          color: rgb(var(--text-color) / .8);
+          border-color: rgb(var(--text-color) / .5);
+        }
       }
 
       #shopify-section-{{ section.id }} .faq__category-tab:focus-visible {
@@ -390,9 +398,9 @@
       }
 
       {%- comment -%}
-      Always an outline button - font color and border both come from the body text color, never a
-      filled background, even when active (only the opacity step changes: muted when inactive, full
-      strength when selected).
+      Default "Outline" style (section.settings.category_tab_style) - font color and border both come
+      from the body text color, never a filled background, even when active (only the opacity step
+      changes: muted when inactive, full strength when selected).
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"] {
         color: rgb(var(--text-color));
@@ -402,6 +410,36 @@
 
       #shopify-section-{{ section.id }} .faq__category-tab-icon {
         flex: none;
+      }
+
+      {%- comment -%}
+      "Filled" style (section.settings.category_tab_style): reuses the theme's own Buttons color
+      scheme tokens - --button-background-primary/--button-text-primary/--button-hover-background,
+      the exact variables snippets/button.liquid and theme.css's own .button rule already use for
+      every solid button sitewide - instead of introducing new colors. Same muted-when-inactive /
+      full-strength-when-selected pattern the Outline style above already uses, just applied to the
+      fill instead of the border/text. Hover reuses --button-hover-background as-is, the same variable
+      (and the same (pointer: fine) guard) .button:hover already uses in theme.css - no new transition
+      is introduced, color/border-color/background-color simply piggyback on this rule's own existing
+      transition declaration.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .faq__categories--filled .faq__category-tab {
+        color: rgb(var(--button-text-primary));
+        background: rgb(var(--button-background-primary) / .5);
+        border-color: transparent;
+        transition: color .2s ease, border-color .2s ease, background-color .2s ease;
+      }
+
+      #shopify-section-{{ section.id }} .faq__categories--filled .faq__category-tab[aria-selected="true"] {
+        color: rgb(var(--button-text-primary));
+        background: rgb(var(--button-background-primary));
+        border-color: transparent;
+      }
+
+      @media screen and (pointer: fine) {
+        #shopify-section-{{ section.id }} .faq__categories--filled .faq__category-tab:hover {
+          background: rgb(var(--button-hover-background));
+        }
       }
 
       {%- comment -%}
@@ -639,6 +677,27 @@
         }
       ],
       "default": "text"
+    },
+    {
+      "type": "header",
+      "content": "Categories"
+    },
+    {
+      "type": "select",
+      "id": "category_tab_style",
+      "label": "Category tab style",
+      "info": "Only applies when at least one \"Category\" block below has a title.",
+      "options": [
+        {
+          "value": "outline",
+          "label": "Outline"
+        },
+        {
+          "value": "filled",
+          "label": "Filled"
+        }
+      ],
+      "default": "outline"
     },
     {
       "type": "inline_richtext",
