@@ -91,7 +91,7 @@ to the first 5 of the newly sorted order.
           {%- liquid
             assign instagram_image_count = 0
 
-            for i in (1..8)
+            for i in (1..12)
               capture instagram_image_key
                 echo 'image_'
                 echo i
@@ -117,7 +117,7 @@ to the first 5 of the newly sorted order.
               <scroll-carousel id="{{ instagram_carousel_id }}" class="instagram-feed__carousel snap-x scroll-area">
                 {%- assign instagram_slide_index = 0 -%}
 
-                {%- for i in (1..8) -%}
+                {%- for i in (1..12) -%}
                   {%- capture instagram_image_key -%}image_{{ i }}{%- endcapture -%}
                   {%- assign instagram_image = block.settings[instagram_image_key] -%}
 
@@ -176,6 +176,35 @@ to the first 5 of the newly sorted order.
             <style>
               {%- render 'media-zoom-style', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, corner_radius: '16px' -%}
             </style>
+
+            {%- comment -%}
+            Reshuffles the images into a random order on every page load (not persisted - a fresh
+            shuffle each visit). Runs as a plain synchronous script, BEFORE media-zoom-script below:
+            that one captures its own "cells" snapshot inside an async customElements.whenDefined()
+            callback, so this reorder - and the image-index rewrite that keeps each slide's lightbox
+            index matching its new position - has to land first, or the lightbox would open the wrong
+            image for whatever position was clicked.
+            {%- endcomment -%}
+            <script>
+              (function () {
+                var carousel = document.getElementById('{{ instagram_carousel_id }}');
+                if (!carousel) return;
+
+                var cells = Array.prototype.slice.call(carousel.children);
+
+                for (var i = cells.length - 1; i > 0; i--) {
+                  var j = Math.floor(Math.random() * (i + 1));
+                  var swap = cells[i];
+                  cells[i] = cells[j];
+                  cells[j] = swap;
+                }
+
+                cells.forEach(function (cell, index) {
+                  cell.setAttribute('image-index', index);
+                  carousel.appendChild(cell);
+                });
+              })();
+            </script>
 
             {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id -%}
           {%- endif -%}
@@ -1383,7 +1412,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       "settings": [
         {
           "type": "paragraph",
-          "content": "A square-image carousel, shown right below the rating summary above. Add up to 8 images; leave any slot blank to skip it."
+          "content": "A square-image carousel, shown right below the rating summary above. Add up to 12 images; leave any slot blank to skip it. The order shown on the storefront is shuffled randomly each time a visitor loads the page."
         },
         {
           "type": "header",
@@ -1455,6 +1484,42 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
         {
           "type": "image_picker",
           "id": "image_8",
+          "label": "t:global.image.image"
+        },
+        {
+          "type": "header",
+          "content": "Image 9"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_9",
+          "label": "t:global.image.image"
+        },
+        {
+          "type": "header",
+          "content": "Image 10"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_10",
+          "label": "t:global.image.image"
+        },
+        {
+          "type": "header",
+          "content": "Image 11"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_11",
+          "label": "t:global.image.image"
+        },
+        {
+          "type": "header",
+          "content": "Image 12"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_12",
           "label": "t:global.image.image"
         }
       ]
