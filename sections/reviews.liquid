@@ -114,7 +114,7 @@ to the first 5 of the newly sorted order.
 
                   {%- if instagram_image != blank -%}
                     <div class="snap-start">
-                      {{- instagram_image | image_url: width: instagram_image.width | image_tag: loading: 'lazy', sizes: '(min-width: 700px) 25vw, 50vw', widths: '150,300,450,600,750', class: 'instagram-feed__image aspect-square' -}}
+                      {{- instagram_image | image_url: width: instagram_image.width | image_tag: loading: 'lazy', sizes: '(min-width: 700px) 16vw, 33vw', widths: '150,300,450,600', class: 'instagram-feed__image aspect-square' -}}
                     </div>
                   {%- endif -%}
                 {%- endfor -%}
@@ -536,9 +536,16 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   the same horizontal position and inter-element spacing (row-gap) as the summary row/controls/list
   above and below it, and the same outer border-radius as the rest of the section in floating mode
   (set on the color-scheme wrapper, not per-child) - nothing to duplicate here.
+
+  Mobile: grid-template-rows: repeat(2, ...) + grid-auto-flow: column fills 2 rows of a column
+  before moving to the next one, so every group of 6 images (3 columns x 2 rows) tiles the full
+  width as one "page", and any extra images beyond that overflow into further same-shaped pages,
+  scrollable like the rest of this carousel. Desktop drops back to a single row (grid-template-rows
+  reset to its initial "none") at 6 columns.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__carousel {
-    --instagram-feed-columns: 2;
+    --instagram-feed-columns: 3;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
     grid-auto-flow: column;
     grid-auto-columns: calc((100% - (var(--instagram-feed-columns) - 1) * .5rem) / var(--instagram-feed-columns));
     gap: .5rem;
@@ -547,7 +554,8 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
 
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .instagram-feed__carousel {
-      --instagram-feed-columns: 4;
+      --instagram-feed-columns: 6;
+      grid-template-rows: none;
     }
   }
 
