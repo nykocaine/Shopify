@@ -577,15 +577,11 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   above and below it, and the same outer border-radius as the rest of the section in floating mode
   (set on the color-scheme wrapper, not per-child) - nothing to duplicate here.
 
-  Mobile: grid-template-rows: repeat(2, ...) + grid-auto-flow: column fills 2 rows of a column
-  before moving to the next one, so every group of 6 images (3 columns x 2 rows) tiles the full
-  width as one "page", and any extra images beyond that overflow into further same-shaped pages,
-  scrollable like the rest of this carousel. Desktop drops back to a single row (grid-template-rows
-  reset to its initial "none") at 6 columns.
+  Mobile: a single row of 2 columns that tiles the full width - any extra images beyond those 2
+  overflow and scroll horizontally like the rest of this carousel.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__carousel {
-    --instagram-feed-columns: 3;
-    grid-template-rows: repeat(2, minmax(0, 1fr));
+    --instagram-feed-columns: 2;
     grid-auto-flow: column;
     grid-auto-columns: calc((100% - (var(--instagram-feed-columns) - 1) * .5rem) / var(--instagram-feed-columns));
     gap: .5rem;
@@ -595,7 +591,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .instagram-feed__carousel {
       --instagram-feed-columns: 6;
-      grid-template-rows: none;
     }
   }
 
