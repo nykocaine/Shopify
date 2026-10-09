@@ -133,7 +133,15 @@ to the first 5 of the newly sorted order.
                     <open-lightbox-button class="snap-start block" aria-controls="{{ instagram_lightbox_id }}" image-index="{{ instagram_slide_index }}">
                       <div class="content-box__background-media">
                         <button type="button">
-                          {{- instagram_image | image_url: width: instagram_image.width | image_tag: loading: 'lazy', sizes: '(min-width: 700px) 16vw, 33vw', widths: '150,300,450,600', class: 'instagram-feed__image aspect-square image-cover' -}}
+                          {%- comment -%}
+                          sizes/widths are sized for the lightbox's expanded view (up to 96vw, see
+                          media-zoom-style.liquid), not the small grid thumbnail - it's the same img
+                          element in both states (the lightbox only repositions/rescales it via CSS,
+                          never swaps in a different image), so a thumbnail-sized sizes hint here would
+                          have the browser fetch a small srcset candidate that then looks soft/blurry
+                          once expanded full-screen.
+                          {%- endcomment -%}
+                          {{- instagram_image | image_url: width: instagram_image.width | image_tag: loading: 'lazy', sizes: '90vw', widths: '150,300,450,600,900,1200,1500', class: 'instagram-feed__image aspect-square image-cover' -}}
                           <span class="sr-only">{{ 'product.gallery.zoom' | t }}</span>
                         </button>
                       </div>
@@ -166,7 +174,7 @@ to the first 5 of the newly sorted order.
             </div>
 
             <style>
-              {%- render 'media-zoom-style', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, corner_radius: '8px' -%}
+              {%- render 'media-zoom-style', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, corner_radius: '16px' -%}
             </style>
 
             {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id -%}
