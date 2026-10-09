@@ -102,25 +102,49 @@ to the first 5 of the newly sorted order.
               endif
             endfor
 
-            assign instagram_carousel_id = 'instagram-feed-' | append: block.id
+            assign instagram_feed_id = 'instagram-feed-' | append: block.id
+            assign instagram_carousel_id = 'instagram-feed-carousel-' | append: block.id
+            assign instagram_lightbox_id = 'instagram-feed-lightbox-' | append: block.id
+            assign instagram_has_multiple = false
+
+            if instagram_image_count > 1
+              assign instagram_has_multiple = true
+            endif
           -%}
 
           {%- if instagram_image_count > 0 -%}
-            <div class="instagram-feed" {{ block.shopify_attributes }}>
+            <div class="instagram-feed" id="{{ instagram_feed_id }}" {{ block.shopify_attributes }}>
               <scroll-carousel id="{{ instagram_carousel_id }}" class="instagram-feed__carousel snap-x scroll-area">
+                {%- assign instagram_slide_index = 0 -%}
+
                 {%- for i in (1..8) -%}
                   {%- capture instagram_image_key -%}image_{{ i }}{%- endcapture -%}
                   {%- assign instagram_image = block.settings[instagram_image_key] -%}
 
                   {%- if instagram_image != blank -%}
-                    <div class="snap-start">
-                      {{- instagram_image | image_url: width: instagram_image.width | image_tag: loading: 'lazy', sizes: '(min-width: 700px) 16vw, 33vw', widths: '150,300,450,600', class: 'instagram-feed__image aspect-square' -}}
-                    </div>
+                    {%- comment -%}
+                    No separate "zoom" button shown - the button wraps the image itself (instead of
+                    media-zoom-slide.liquid's own visible icon+label button next to it), so the whole
+                    square opens the lightbox on tap. It stays invisible with zero extra CSS: the
+                    theme's global reset already strips any button border/background/padding, and
+                    .content-box__background-media's width/height: 100% (theme.css) sizes it to fill
+                    the square since it's the only direct child, same as a plain img would be.
+                    {%- endcomment -%}
+                    <open-lightbox-button class="snap-start block" aria-controls="{{ instagram_lightbox_id }}" image-index="{{ instagram_slide_index }}">
+                      <div class="content-box__background-media">
+                        <button type="button">
+                          {{- instagram_image | image_url: width: instagram_image.width | image_tag: loading: 'lazy', sizes: '(min-width: 700px) 16vw, 33vw', widths: '150,300,450,600', class: 'instagram-feed__image aspect-square image-cover' -}}
+                          <span class="sr-only">{{ 'product.gallery.zoom' | t }}</span>
+                        </button>
+                      </div>
+                    </open-lightbox-button>
+
+                    {%- assign instagram_slide_index = instagram_slide_index | plus: 1 -%}
                   {%- endif -%}
                 {%- endfor -%}
               </scroll-carousel>
 
-              {%- if instagram_image_count > 1 -%}
+              {%- if instagram_has_multiple -%}
                 <div class="h-stack gap-3 justify-center">
                   <carousel-prev-button aria-controls="{{ instagram_carousel_id }}">
                     <button type="button" class="circle-button circle-button--lg">
@@ -137,7 +161,15 @@ to the first 5 of the newly sorted order.
                   </carousel-next-button>
                 </div>
               {%- endif -%}
+
+              {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple -%}
             </div>
+
+            <style>
+              {%- render 'media-zoom-style', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, corner_radius: '8px' -%}
+            </style>
+
+            {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id -%}
           {%- endif -%}
         {%- endfor -%}
 
