@@ -437,12 +437,11 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
 
   {%- comment -%}
   Size comes from the merchant-chosen heading_size class (display-xl/l/m, h1-h7) added on this
-  element in the markup above - font-weight/line-height still overridden here because those same
-  classes also carry the theme's heading font-weight/line-height, and this number is meant to read
-  at normal (body) weight with a tight line-height regardless of which size is picked.
+  element in the markup above - that class also carries the theme's own Heading font-weight, left as
+  inherited (matches the FAQ title's own weight, sections/faq.liquid). line-height is still overridden
+  here to a tight 1 regardless of which size is picked.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__summary-average-number {
-    font-weight: normal;
     line-height: 1;
   }
 
