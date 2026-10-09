@@ -121,18 +121,28 @@
     {%- capture section_header -%}
       {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank or section.settings.button_text != blank or has_categories -%}
         <div class="section-header">
-          {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank or section.settings.button_text != blank -%}
-            <div class="prose {% if section.settings.layout == 'stacked' and has_categories == false %}prose-justify-center{% endif %}">
-              {%- render 'subheading', content: section.settings.subheading -%}
-              {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.title_tag, html_tag: 'h2' -%}
+          {%- comment -%}
+          With categories, the title/subheading/content/button row is skipped entirely - the tab row
+          becomes .section-header's only child, so it stretches across the full width of the row for
+          free (CSS Grid's own default justify-items: stretch) instead of sharing it with a title
+          column. The tabs themselves are then pushed to the end of that full-width row via
+          ::part(tablist)'s own justify-content below, on both mobile and desktop. Only relevant
+          without categories, where there's nothing else in .section-header to share the row with.
+          {%- endcomment -%}
+          {%- unless has_categories -%}
+            {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank or section.settings.button_text != blank -%}
+              <div class="prose {% if section.settings.layout == 'stacked' %}prose-justify-center{% endif %}">
+                {%- render 'subheading', content: section.settings.subheading -%}
+                {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.title_tag, html_tag: 'h2' -%}
 
-              <div class="max-w-sm">
-                {{- section.settings.content -}}
+                <div class="max-w-sm">
+                  {{- section.settings.content -}}
+                </div>
+
+                {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style -%}
               </div>
-
-              {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style -%}
-            </div>
-          {%- endif -%}
+            {%- endif -%}
+          {%- endunless -%}
 
           {%- if has_categories -%}
             <x-tabs class="section-header__controls faq__categories {% if section.settings.category_tab_style == 'filled' %}faq__categories--filled{% endif %}">
@@ -337,27 +347,18 @@
       }
 
       {%- comment -%}
-      .section-header only declares an explicit track for its first child (grid-template-columns:
-      minmax(0, 1fr)) - a second child like ours falls into an implicit column sized by
-      grid-auto-columns: auto, which has no safe minimum and can force the row (and the page) wider
-      than the viewport once there are enough category tabs. Redeclaring both tracks with
-      minmax(0, ...) here keeps that overflow-safe without touching the shared rule itself.
-      {%- endcomment -%}
-      @media screen and (min-width: 700px) {
-        #shopify-section-{{ section.id }} .section-header {
-          grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
-        }
-      }
-
-      {%- comment -%}
       part="tablist" is the <slot> inside x-tabs' own shadow root (see the <template> below) -
       styling it from here is the same technique .collection__resource-tab-list::part(tablist)
-      already uses in theme.css for the search page's resource tabs.
+      already uses in theme.css for the search page's resource tabs. justify-content: flex-end pushes
+      the tabs to the end of the row (the title/subheading/content/button row is never rendered
+      alongside categories - see section_header above - so this row is always exactly as wide as
+      .section-header itself, on mobile and desktop alike).
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
         scrollbar-width: none;
         gap: .5rem;
         padding-block: .25rem;
+        justify-content: flex-end;
         display: flex;
         overflow-x: auto;
       }
