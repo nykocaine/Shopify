@@ -342,6 +342,7 @@
       section's full width instead.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__categories {
+        width: 100%;
         min-width: 0;
         display: block;
       }
@@ -349,16 +350,16 @@
       {%- comment -%}
       part="tablist" is the <slot> inside x-tabs' own shadow root (see the <template> below) -
       styling it from here is the same technique .collection__resource-tab-list::part(tablist)
-      already uses in theme.css for the search page's resource tabs. justify-content: flex-end pushes
-      the tabs to the end of the row (the title/subheading/content/button row is never rendered
-      alongside categories - see section_header above - so this row is always exactly as wide as
-      .section-header itself, on mobile and desktop alike).
+      already uses in theme.css for the search page's resource tabs. width: 100% makes it span the
+      row's full width (the title/subheading/content/button row is never rendered alongside
+      categories - see section_header above), with the tabs themselves starting from the left edge of
+      it (flex's own default justify-content: flex-start) on both mobile and desktop.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
+        width: 100%;
         scrollbar-width: none;
         gap: .5rem;
         padding-block: .25rem;
-        justify-content: flex-end;
         display: flex;
         overflow-x: auto;
       }
