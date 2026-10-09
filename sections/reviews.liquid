@@ -114,7 +114,7 @@ to the first 5 of the newly sorted order.
 
                   {%- if instagram_image != blank -%}
                     <div class="snap-start">
-                      {{- instagram_image | image_url: width: instagram_image.width | image_tag: loading: 'lazy', sizes: '(min-width: 700px) 16vw, 33vw', widths: '150,300,450,600', class: 'instagram-feed__image aspect-square' -}}
+                      {{- instagram_image | image_url: width: instagram_image.width | image_tag: loading: 'lazy', sizes: '(min-width: 700px) 25vw, 50vw', widths: '150,300,450,600,750', class: 'instagram-feed__image aspect-square' -}}
                     </div>
                   {%- endif -%}
                 {%- endfor -%}
@@ -538,7 +538,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   (set on the color-scheme wrapper, not per-child) - nothing to duplicate here.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__carousel {
-    --instagram-feed-columns: 3;
+    --instagram-feed-columns: 2;
     grid-auto-flow: column;
     grid-auto-columns: calc((100% - (var(--instagram-feed-columns) - 1) * .5rem) / var(--instagram-feed-columns));
     gap: .5rem;
@@ -547,7 +547,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
 
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .instagram-feed__carousel {
-      --instagram-feed-columns: 6;
+      --instagram-feed-columns: 4;
     }
   }
 
