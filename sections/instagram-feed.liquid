@@ -1,0 +1,456 @@
+{%- doc -%}
+A square-media carousel in an Instagram-feed style: each "Media" block is either an image or a
+video (the merchant swaps the type per block from the editor, no code change needed). Extracted
+from sections/reviews.liquid, where this started as a block - the design/behavior (square grid,
+tap-to-open lightbox, random shuffle per page load) is unchanged, just moved into its own section
+so it isn't tied to Reviews.
+
+Image blocks open the lightbox by tapping the photo itself (no visible zoom button - see the
+"no separate zoom button" comment below). Video blocks use snippets/media-zoom-slide.liquid as-is,
+same as FAQ's "Text + image/video" block and Media Blocks' Carousel: tap the video to play it
+inline, or its own small zoom button to open the lightbox - video needs that shared play/pause/
+sound control logic, so it isn't worth re-implementing just to also hide that one button.
+{%- enddoc -%}
+
+{%- liquid
+  assign instagram_media_blocks = section.blocks | where: 'type', 'item'
+  assign instagram_media_count = 0
+
+  for block in instagram_media_blocks
+    assign instagram_block_has_video = false
+
+    if block.settings.media_type == 'video' and block.settings.video != blank
+      assign instagram_block_has_video = true
+    endif
+
+    if instagram_block_has_video or block.settings.image != blank
+      assign instagram_media_count = instagram_media_count | plus: 1
+    endif
+  endfor
+
+  assign instagram_has_multiple = false
+
+  if instagram_media_count > 1
+    assign instagram_has_multiple = true
+  endif
+
+  assign instagram_feed_id = 'instagram-feed-' | append: section.id
+  assign instagram_carousel_id = 'instagram-feed-carousel-' | append: section.id
+  assign instagram_lightbox_id = 'instagram-feed-lightbox-' | append: section.id
+-%}
+
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {{ section.settings.instagram_feed_border_radius }}px; overflow: hidden;"{% endif %}>
+  <div class="section-spacing">
+    <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack">
+      {%- if section.settings.title != blank -%}
+        <div class="prose">
+          {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.title_tag, html_tag: 'h2' -%}
+        </div>
+      {%- endif -%}
+
+      {%- if instagram_media_count > 0 -%}
+        <scroll-carousel id="{{ instagram_carousel_id }}" class="instagram-feed__carousel snap-x scroll-area">
+          {%- assign instagram_slide_index = 0 -%}
+
+          {%- for block in instagram_media_blocks -%}
+            {%- liquid
+              assign instagram_block_has_video = false
+
+              if block.settings.media_type == 'video' and block.settings.video != blank
+                assign instagram_block_has_video = true
+              endif
+            -%}
+
+            {%- if instagram_block_has_video -%}
+              <div class="snap-start" {{ block.shopify_attributes }}>
+                {%- render 'media-zoom-slide',
+                  video: block.settings.video,
+                  corner_radius: '8px',
+                  lightbox_id: instagram_lightbox_id,
+                  lightbox_index: instagram_slide_index,
+                  sizes: '90vw'
+                -%}
+              </div>
+
+              {%- assign instagram_slide_index = instagram_slide_index | plus: 1 -%}
+            {%- elsif block.settings.image != blank -%}
+              {%- comment -%}
+              No separate "zoom" button shown - the button wraps the image itself, so the whole
+              square opens the lightbox on tap. It stays invisible with zero extra CSS: the theme's
+              global reset already strips any button border/background/padding, and
+              .content-box__background-media's width/height: 100% (theme.css) sizes it to fill the
+              square since it's the only direct child, same as a plain img would be.
+              {%- endcomment -%}
+              <open-lightbox-button class="snap-start block" aria-controls="{{ instagram_lightbox_id }}" image-index="{{ instagram_slide_index }}" {{ block.shopify_attributes }}>
+                <div class="content-box__background-media">
+                  <button type="button">
+                    {%- comment -%}
+                    sizes/widths are sized for the lightbox's expanded view (up to 96vw, see
+                    media-zoom-style.liquid), not the small grid thumbnail - it's the same img
+                    element in both states (the lightbox only repositions/rescales it via CSS, never
+                    swaps in a different image), so a thumbnail-sized sizes hint here would have the
+                    browser fetch a small srcset candidate that then looks soft/blurry once expanded
+                    full-screen.
+                    {%- endcomment -%}
+                    {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: '90vw', widths: '150,300,450,600,900,1200,1500', class: 'instagram-feed__image aspect-square image-cover' -}}
+                    <span class="sr-only">{{ 'product.gallery.zoom' | t }}</span>
+                  </button>
+                </div>
+              </open-lightbox-button>
+
+              {%- assign instagram_slide_index = instagram_slide_index | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </scroll-carousel>
+
+        {%- comment -%}
+        Same progress-bar + prev/next pattern as sections/featured-product-list.liquid's own scroll
+        controls (track-scroll-target reads this carousel's live scroll position - the component
+        itself, assets/theme.js, is generic and already works with any scrollable target by id, not
+        just <product-list>). Same show_progress_bar_mobile/desktop toggles and defaults, too.
+        {%- endcomment -%}
+        {%- if section.settings.show_progress_bar_mobile or section.settings.show_progress_bar_desktop -%}
+          <div class="instagram-feed__scroll-controls h-stack gap-4">
+            <progress-bar track-scroll-target="{{ instagram_carousel_id }}" class="progress-bar"></progress-bar>
+
+            <div class="h-stack gap-2">
+              <carousel-prev-button aria-controls="{{ instagram_carousel_id }}">
+                <button disabled class="circle-button circle-button--outline">
+                  <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
+                  {%- render 'icon' with 'chevron-right', direction_aware: true, width: 8 -%}
+                </button>
+              </carousel-prev-button>
+
+              <carousel-next-button aria-controls="{{ instagram_carousel_id }}">
+                <button class="circle-button circle-button--outline">
+                  <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
+                  {%- render 'icon' with 'chevron-right', direction_aware: true, width: 8 -%}
+                </button>
+              </carousel-next-button>
+            </div>
+          </div>
+        {%- endif -%}
+
+        {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple -%}
+
+        <style>
+          {%- render 'media-zoom-style', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, corner_radius: '16px' -%}
+        </style>
+
+        {%- comment -%}
+        Reshuffles the media into a random order on every page load (not persisted - a fresh
+        shuffle each visit). Runs as a plain synchronous script, BEFORE media-zoom-script below: that
+        one captures its own "cells" snapshot inside an async customElements.whenDefined() callback,
+        so this reorder - and the image-index rewrite that keeps each slide's lightbox index
+        matching its new position - has to land first, or the lightbox would open the wrong item for
+        whatever position was clicked. Each cell's open-lightbox-button is either the cell itself
+        (image) or nested inside it (video, rendered by media-zoom-slide.liquid) - checked both ways.
+        {%- endcomment -%}
+        <script>
+          (function () {
+            var carousel = document.getElementById('{{ instagram_carousel_id }}');
+            if (!carousel) return;
+
+            var cells = Array.prototype.slice.call(carousel.children);
+
+            for (var i = cells.length - 1; i > 0; i--) {
+              var j = Math.floor(Math.random() * (i + 1));
+              var swap = cells[i];
+              cells[i] = cells[j];
+              cells[j] = swap;
+            }
+
+            cells.forEach(function (cell, index) {
+              var openButton = cell.tagName === 'OPEN-LIGHTBOX-BUTTON' ? cell : cell.querySelector('open-lightbox-button');
+
+              if (openButton) {
+                openButton.setAttribute('image-index', index);
+              }
+
+              carousel.appendChild(cell);
+            });
+          })();
+        </script>
+
+        {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id -%}
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+<style>
+  {%- comment -%}
+  ============================================================
+  FLOATING MODE / SECTION PADDING
+  ============================================================
+  Same formula as sections/reviews.liquid and sections/faq.liquid: gutter + 0.5rem on every side,
+  at every breakpoint, instead of .section-spacing's generic page-to-page rhythm.
+  {%- endcomment -%}
+  {%- if section.settings.floating_instagram_feed -%}
+    #shopify-section-{{ section.id }} .section-spacing {
+      padding-block: 0;
+    }
+
+    #shopify-section-{{ section.id }} .instagram-feed {
+      padding: calc(var(--container-gutter) + 0.5rem);
+    }
+  {%- endif -%}
+
+  {%- comment -%}
+  ============================================================
+  CAROUSEL GRID
+  ============================================================
+  Mobile: a single row of 2 columns that tiles the full width - any extra items beyond those 2
+  overflow and scroll horizontally. Desktop: 6 columns, same idea.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__carousel {
+    --instagram-feed-columns: 2;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - (var(--instagram-feed-columns) - 1) * .5rem) / var(--instagram-feed-columns));
+    gap: .5rem;
+    display: grid;
+  }
+
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .instagram-feed__carousel {
+      --instagram-feed-columns: 6;
+    }
+  }
+
+  {%- comment -%}
+  object-fit: cover/display: block for the image case come from the theme's global img rule, and
+  the square shape from the existing .aspect-square utility (both in assets/theme.css) - only the
+  width (to fill its grid column) and the corner radius are added here.
+
+  The video case renders through media-zoom-slide.liquid's own .content-box, which isn't square by
+  default (it's built for FAQ/Media Blocks' own configurable-ratio hero blocks) - aspect-ratio: 1
+  here forces it to match the image thumbnails instead of adding a parallel sizing mechanism.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__image {
+    width: 100%;
+    border-radius: 8px;
+  }
+
+  #shopify-section-{{ section.id }} .content-box {
+    aspect-ratio: 1;
+  }
+
+  {%- comment -%}
+  ============================================================
+  SCROLL CONTROLS (progress bar + prev/next, same pattern as sections/featured-product-list.liquid)
+  ============================================================
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__scroll-controls {
+    margin-top: var(--section-vertical-spacing);
+  }
+
+  #shopify-section-{{ section.id }} .instagram-feed__scroll-controls .progress-bar {
+    flex: 1;
+  }
+
+  #shopify-section-{{ section.id }} .instagram-feed__scroll-controls .h-stack {
+    flex-shrink: 0;
+  }
+
+  {%- comment -%}
+  There's no dedicated "chevron-left" icon, so the prev button reuses chevron-right flipped - same
+  trick (and the same reasoning) as sections/featured-product-list.liquid.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__scroll-controls carousel-prev-button .icon-chevron-right {
+    transform: scaleX(-1);
+  }
+
+  {%- unless section.settings.show_progress_bar_mobile -%}
+    @media screen and (max-width: 999px) {
+      #shopify-section-{{ section.id }} .instagram-feed__scroll-controls {
+        display: none;
+      }
+    }
+  {%- endunless -%}
+
+  {%- unless section.settings.show_progress_bar_desktop -%}
+    @media screen and (min-width: 1000px) {
+      #shopify-section-{{ section.id }} .instagram-feed__scroll-controls {
+        display: none;
+      }
+    }
+  {%- endunless -%}
+</style>
+
+{% schema %}
+{
+  "name": "Instagram Feed",
+  "class": "shopify-section--instagram-feed",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "custom.overlay"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:global.colors.scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_instagram_feed",
+      "label": "Floating",
+      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "instagram_feed_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_instagram_feed }}"
+    },
+    {
+      "type": "header",
+      "content": "Title"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "title",
+      "label": "t:global.text.heading"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "t:global.text.heading_size",
+      "options": [
+        {
+          "value": "display-xl",
+          "label": "Display XL"
+        },
+        {
+          "value": "display-l",
+          "label": "Display L"
+        },
+        {
+          "value": "display-m",
+          "label": "Display M"
+        },
+        {
+          "value": "h1",
+          "label": "XX-Large"
+        },
+        {
+          "value": "h2",
+          "label": "X-Large"
+        },
+        {
+          "value": "h3",
+          "label": "Large"
+        },
+        {
+          "value": "h4",
+          "label": "Medium"
+        },
+        {
+          "value": "h5",
+          "label": "Small"
+        },
+        {
+          "value": "h6",
+          "label": "X-Small"
+        },
+        {
+          "value": "h7",
+          "label": "XX-Small"
+        }
+      ],
+      "default": "h3"
+    },
+    {
+      "type": "header",
+      "content": "Scroll controls"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_progress_bar_mobile",
+      "label": "Show scroll controls on mobile",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_progress_bar_desktop",
+      "label": "Show scroll controls on desktop",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Media",
+      "settings": [
+        {
+          "type": "select",
+          "id": "media_type",
+          "label": "Media type",
+          "options": [
+            {
+              "value": "image",
+              "label": "t:global.image.image"
+            },
+            {
+              "value": "video",
+              "label": "t:global.video.video"
+            }
+          ],
+          "default": "image"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:global.image.image",
+          "visible_if": "{{ block.settings.media_type == 'image' }}"
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "t:global.video.video",
+          "visible_if": "{{ block.settings.media_type == 'video' }}"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Instagram Feed",
+      "category": "t:global.categories.trust_social",
+      "blocks": [
+        {
+          "type": "item",
+          "settings": {
+            "media_type": "image"
+          }
+        },
+        {
+          "type": "item",
+          "settings": {
+            "media_type": "image"
+          }
+        },
+        {
+          "type": "item",
+          "settings": {
+            "media_type": "image"
+          }
+        },
+        {
+          "type": "item",
+          "settings": {
+            "media_type": "image"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
