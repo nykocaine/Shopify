@@ -67,13 +67,11 @@ itself (or the link), and remove it once finished. The theme will automatically 
         endif
       endif
 
-      {%- comment -%}
-      --button-border-color covers solid buttons (.button's own border reads that variable directly,
-      theme.css). .button--outline instead hardcodes its border-color straight from --button-text-color
-      (theme.css), ignoring --button-border-color entirely - so for outline, only a plain inline
-      border-color (set here too, winning over that class rule regardless of specificity) actually
-      overrides it.
-      {%- endcomment -%}
+      # --button-border-color covers solid buttons (.button's own border reads that variable directly,
+      # theme.css). .button--outline instead hardcodes its border-color straight from --button-text-color
+      # (theme.css), ignoring --button-border-color entirely - so for outline, only a plain inline
+      # border-color (set here too, winning over that class rule regardless of specificity) actually
+      # overrides it.
       if border_color != blank and border_color != 'rgba(0,0,0,0)'
         echo '--button-border-color: ' | append: border_color.rgb | append: ';'
         echo 'border-color: rgb(' | append: border_color.rgb | append: ');'
