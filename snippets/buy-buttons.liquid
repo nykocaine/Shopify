@@ -9,6 +9,7 @@ This component is used to show the buy buttons
 @param {string} [atc_button_style] - the style of the add to cart button. Can be "solid" or "outline"
 @param {string} [atc_button_background] - the background of the ATC button
 @param {string} [atc_button_text_color] - the color of the ATC button
+@param {string} [atc_button_border_color] - an optional border color for the ATC button
 @param {string} [payment_button_background] - the background of the dynamic payment button
 @param {string} [payment_button_text_color] - the color of the dynamic payment button
 @param {string} [form_id] - if specified, define the form ID linked to this input
@@ -233,11 +234,11 @@ This component is used to show the buy buttons
 
                 {%- if show_new_badge -%}
                   <div class="buy-buttons__new-badge-wrapper grow">
-                    {%- render 'button', content: button_content, type: 'submit', disabled: button_disabled, secondary: show_payment_button, style: atc_button_style, background: atc_button_background, text_color: atc_button_text_color, stretch: true, class: button_content_class -%}
+                    {%- render 'button', content: button_content, type: 'submit', disabled: button_disabled, secondary: show_payment_button, style: atc_button_style, background: atc_button_background, text_color: atc_button_text_color, border_color: atc_button_border_color, stretch: true, class: button_content_class -%}
                     <span class="buy-buttons__new-badge">{{ new_badge_text | default: 'New' }}</span>
                   </div>
                 {%- else -%}
-                  {%- render 'button', content: button_content, type: 'submit', disabled: button_disabled, secondary: show_payment_button, style: atc_button_style, background: atc_button_background, text_color: atc_button_text_color, stretch: true, class: button_content_class -%}
+                  {%- render 'button', content: button_content, type: 'submit', disabled: button_disabled, secondary: show_payment_button, style: atc_button_style, background: atc_button_background, text_color: atc_button_text_color, border_color: atc_button_border_color, stretch: true, class: button_content_class -%}
                 {%- endif -%}
               </div>
 
@@ -275,11 +276,11 @@ This component is used to show the buy buttons
     {%- assign button_content = 'product.general.add_to_cart_button' | t -%}
     {%- if show_new_badge -%}
       <div class="buy-buttons__new-badge-wrapper">
-        {%- render 'button', content: button_content, type: 'submit', background: atc_button_background, text_color: atc_button_text_color, stretch: true -%}
+        {%- render 'button', content: button_content, type: 'submit', background: atc_button_background, text_color: atc_button_text_color, border_color: atc_button_border_color, stretch: true -%}
         <span class="buy-buttons__new-badge">{{ new_badge_text | default: 'New' }}</span>
       </div>
     {%- else -%}
-      {%- render 'button', content: button_content, type: 'submit', background: atc_button_background, text_color: atc_button_text_color, stretch: true -%}
+      {%- render 'button', content: button_content, type: 'submit', background: atc_button_background, text_color: atc_button_text_color, border_color: atc_button_border_color, stretch: true -%}
     {%- endif -%}
 
     {%- if below_button_text != blank -%}
