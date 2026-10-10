@@ -42,7 +42,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {{ section.settings.instagram_feed_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack">
-      {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank -%}
+      {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank or section.settings.show_flower -%}
         <div class="instagram-feed__header">
           {%- if section.settings.title != blank or section.settings.subtitle != blank -%}
             <div class="prose prose--compact">
@@ -58,8 +58,32 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             </div>
           {%- endif -%}
 
-          {%- if section.settings.button_text != blank -%}
-            {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style, class: 'instagram-feed__button' -%}
+          {%- if section.settings.button_text != blank or section.settings.show_flower -%}
+            <div class="instagram-feed__cta">
+              {%- if section.settings.show_flower -%}
+                {%- comment -%}
+                Decorative only (aria-hidden) - the button next to/under it already carries the
+                actual call to action, this is purely a spinning visual accent above it.
+                {%- endcomment -%}
+                <div class="instagram-feed__flower" aria-hidden="true">
+                  <svg viewBox="0 0 100 100" width="32" height="32">
+                    <g fill="{% if section.settings.flower_petal_color != blank %}rgb({{ section.settings.flower_petal_color.rgb }}){% else %}#FF6B9D{% endif %}">
+                      <ellipse cx="50" cy="26" rx="11" ry="20"/>
+                      <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(60 50 50)"/>
+                      <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(120 50 50)"/>
+                      <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(180 50 50)"/>
+                      <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(240 50 50)"/>
+                      <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(300 50 50)"/>
+                    </g>
+                    <circle cx="50" cy="50" r="12" fill="{% if section.settings.flower_center_color != blank %}rgb({{ section.settings.flower_center_color.rgb }}){% else %}#FFD93D{% endif %}"/>
+                  </svg>
+                </div>
+              {%- endif -%}
+
+              {%- if section.settings.button_text != blank -%}
+                {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style, class: 'instagram-feed__button' -%}
+              {%- endif -%}
+            </div>
           {%- endif -%}
         </div>
       {%- endif -%}
@@ -228,14 +252,14 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   ============================================================
   HEADER (title/subtitle + button)
   ============================================================
-  Desktop: title/subtitle and button share the same row, button flush to the end - margin-inline-
-  start: auto on the button itself (not justify-content: space-between on the row), so it still
-  pushes all the way to the end even when there's no title/subtitle and the button is the row's
-  only child (space-between has nothing to "space between" with a single item, so it would land at
-  the start instead). align-items: start (not center) keeps the button aligned with the top of the
-  title instead of the vertical center of the whole title+subtitle block. Mobile: stacked, button
-  below and flush to the start, same align-items: start, still its own natural width instead of
-  filling the row.
+  Desktop: title/subtitle and the flower+button column share the same row, that column flush to
+  the end - margin-inline-start: auto on .instagram-feed__cta itself (not justify-content:
+  space-between on the row), so it still pushes all the way to the end even when there's no
+  title/subtitle and it's the row's only child (space-between has nothing to "space between" with a
+  single item, so it would land at the start instead). align-items: start (not center) keeps it
+  aligned with the top of the title instead of the vertical center of the whole title+subtitle
+  block. Mobile: stacked, below and flush to the start, same align-items: start, still its own
+  natural width instead of filling the row.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__header {
     align-items: start;
@@ -244,8 +268,17 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     display: flex;
   }
 
-  #shopify-section-{{ section.id }} .instagram-feed__button {
+  {%- comment -%}
+  Column, not row: the flower (when shown) stacks above the button, both centered on the same
+  horizontal center so the flower reads as sitting right above the button regardless of which one
+  ends up wider.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__cta {
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
     margin-inline-start: auto;
+    display: flex;
   }
 
   @media screen and (max-width: 699px) {
@@ -254,8 +287,30 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       align-items: start;
     }
 
-    #shopify-section-{{ section.id }} .instagram-feed__button {
+    #shopify-section-{{ section.id }} .instagram-feed__cta {
+      align-items: start;
       margin-inline-start: 0;
+    }
+  }
+
+  {%- comment -%}
+  Spins in place, indefinitely - transform-origin stays centered (the SVG's own default for a
+  square viewBox), so it rotates around its own center rather than orbiting anything. Respects
+  reduced-motion like every other animation in this theme (see eg. snippets/media-zoom-style.liquid).
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__flower svg {
+    animation: instagram-feed-flower-spin 8s linear infinite;
+  }
+
+  @keyframes instagram-feed-flower-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ section.id }} .instagram-feed__flower svg {
+      animation: none;
     }
   }
 
@@ -514,6 +569,31 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       "id": "button_border_color",
       "label": "Button border color",
       "info": "Leave blank for no border."
+    },
+    {
+      "type": "header",
+      "content": "Flower icon"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_flower",
+      "label": "Show spinning flower icon",
+      "info": "A decorative icon shown above the button.",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "flower_petal_color",
+      "label": "Petal color",
+      "default": "#FF6B9D",
+      "visible_if": "{{ section.settings.show_flower }}"
+    },
+    {
+      "type": "color",
+      "id": "flower_center_color",
+      "label": "Center color",
+      "default": "#FFD93D",
+      "visible_if": "{{ section.settings.show_flower }}"
     },
     {
       "type": "header",
