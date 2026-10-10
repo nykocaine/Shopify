@@ -125,6 +125,13 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                         <line x1="50" y1="78" x2="38" y2="95" stroke="{{ icon_secondary }}" stroke-width="4" stroke-linecap="round"/>
                         <circle cx="50" cy="50" r="10" fill="{{ icon_secondary }}"/>
 
+                      {%- when 'smiley' -%}
+                        {%- comment -%} Face circle + two eye dots + a curved smile (quadratic bezier). {%- endcomment -%}
+                        <circle cx="50" cy="50" r="42" fill="{{ icon_primary }}"/>
+                        <circle cx="36" cy="42" r="6" fill="{{ icon_secondary }}"/>
+                        <circle cx="64" cy="42" r="6" fill="{{ icon_secondary }}"/>
+                        <path d="M30 60Q50 80 70 60" fill="none" stroke="{{ icon_secondary }}" stroke-width="6" stroke-linecap="round"/>
+
                       {%- else -%}
                         {%- comment -%} 'droplet' (default): pointed top tapering into a rounded bottom, classic serum-drop silhouette, plus a small shine highlight. {%- endcomment -%}
                         <path d="M50 5C50 5 20 45 20 65A30 30 0 0 0 80 65C80 45 50 5 50 5Z" fill="{{ icon_primary }}"/>
@@ -688,6 +695,10 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         {
           "value": "clover",
           "label": "Clover"
+        },
+        {
+          "value": "smiley",
+          "label": "Smiley face"
         }
       ],
       "default": "droplet",
