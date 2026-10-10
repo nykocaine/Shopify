@@ -14,6 +14,7 @@ This component is used to show the product gallery (used in product page and fea
 @param {number} [thumbnail_border_radius] - if set, rounds the corners of the gallery thumbnails
 @param {string} [class] - extra class applied on the container
 @param {boolean} [skip_first_media] - if set to true, product.media's first item is left out of the gallery entirely (used when it's already shown elsewhere, eg. main-product.liquid's separate first-image card)
+@param {number} [move_to_second_media_id] - if set, this media's id is kept in the gallery but repositioned to the second slide (instead of being removed by skip_first_media) and hidden - itself and its scroll-marker - at desktop widths (min-width: 1000px), where it's shown elsewhere instead (eg. main-product.liquid's separate first-image column)
 @param {object} [section]
 {%- enddoc -%}
 
@@ -30,6 +31,22 @@ This component is used to show the product gallery (used in product page and fea
         {%- endif -%}
       }
     }
+
+  {%- if move_to_second_media_id != blank -%}
+    {%- comment -%}
+    move_to_second_media_id keeps this media (and its scroll-marker, if controls show one per item) in
+    the gallery - unlike skip_first_media, which removes it entirely - so it can sit at the second slide
+    on mobile; desktop hides both here instead, since it's shown elsewhere there (eg. main-product.liquid's
+    separate first-image column). data-media-id on the slide already exists below; scroll-marker buttons
+    (thumbnails/lines/dots further down) carry the same attribute specifically so this can target the
+    right one without relying on any one control type's own markup.
+    {%- endcomment -%}
+    @media screen and (min-width: 1000px) {
+      #shopify-section-{{ section.id }} [data-media-id="{{ move_to_second_media_id }}"] {
+        display: none !important;
+      }
+    }
+  {%- endif -%}
 
   {%- comment -%}
   "bar" (bar_controls below - progress bar + page counter + alt-text caption) is selectable both as
@@ -353,6 +370,45 @@ only way to do it on Shopify right now.
     assign gallery_media = product.media | slice: 1, product.media.size
   endif
 
+  # move_to_second_media_id: repositions that media to index 1 (the second slide) instead of removing it,
+  # keeping every other item in its existing relative order - done here, before the variant-rotation step
+  # below, so rotation (if the moved media isn't itself the variant's default) runs on the already-
+  # reordered array. Only when it isn't already there (move_index 1) and there's more than one media to
+  # begin with - on a single-media product there's nothing to reposition.
+  if move_to_second_media_id != blank and gallery_media.size > 1
+    assign move_index = -1
+
+    for media in gallery_media
+      if media.id == move_to_second_media_id
+        assign move_index = forloop.index0
+        break
+      endif
+    endfor
+
+    if move_index == 0
+      # Currently first: swap with whatever is second, so that item keeps the first slide (unchanged
+      # from skip_first_media's old behavior, which excluded this media and left that one first) and
+      # this media becomes the second.
+      assign first_item = gallery_media | slice: 0, 1
+      assign second_item = gallery_media | slice: 1, 1
+      assign remaining_length = gallery_media.size | minus: 2
+      assign remaining = gallery_media | slice: 2, remaining_length
+      assign gallery_media = second_item | concat: first_item | concat: remaining
+    elsif move_index > 1
+      # Currently somewhere past the second slide: pull it out and reinsert at index 1, shifting
+      # everything that was between index 1 and it down by one - the first slide and everything after
+      # the moved media's old position keep their relative order untouched.
+      assign head = gallery_media | slice: 0, 1
+      assign moved_item = gallery_media | slice: move_index, 1
+      assign middle_length = move_index | minus: 1
+      assign middle = gallery_media | slice: 1, middle_length
+      assign tail_start = move_index | plus: 1
+      assign tail_length = gallery_media.size | minus: tail_start
+      assign tail = gallery_media | slice: tail_start, tail_length
+      assign gallery_media = head | concat: moved_item | concat: middle | concat: tail
+    endif
+  endif
+
   # Rotate gallery_media so default_media (the selected variant's featured media - whichever slide the
   # carousel actually opens on, via .is-initial/ScrollCarousel) becomes its first item, keeping the rest
   # in their original relative order. Without this, the numbers/bar counter and thumbnails order reflect
@@ -566,7 +622,7 @@ only way to do it on Shopify right now.
           <carousel-navigation align-selected aria-controls="{{ product_gallery_carousel_id }}" class="scroll-marker-group scroll-marker-group--thumbnails scroll-area bleed md:unbleed">
             {%- if product != blank -%}
               {%- for media in gallery_media -%}
-                <button type="button" class="scroll-marker" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == effective_default_media %}true{% else %}false{% endif %}" aria-label="{{ 'general.accessibility.go_to_item' | t: index: forloop.index | escape }}">
+                <button type="button" class="scroll-marker" data-media-id="{{ media.id }}" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == effective_default_media %}true{% else %}false{% endif %}" aria-label="{{ 'general.accessibility.go_to_item' | t: index: forloop.index | escape }}">
                   {{- media | image_url: width: media.preview_image.width | image_tag: loading: 'lazy', sizes: '56px', widths: '56,112,168', class: 'object-contain' -}}
 
                   {%- unless media.media_type == 'image' -%}
@@ -599,7 +655,7 @@ only way to do it on Shopify right now.
         <carousel-navigation class="scroll-marker-group scroll-marker-group--lines align-self-center" aria-controls="{{ product_gallery_carousel_id }}">
           {%- if product != blank -%}
             {%- for media in gallery_media -%}
-              <button type="button" class="scroll-marker tap-area tap-area--sm" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == effective_default_media %}true{% else %}false{% endif %}">
+              <button type="button" class="scroll-marker tap-area tap-area--sm" data-media-id="{{ media.id }}" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == effective_default_media %}true{% else %}false{% endif %}">
                 <span class="sr-only">{{ 'general.accessibility.go_to_item' | t: index: forloop.index }}</span>
               </button>
             {%- endfor -%}
@@ -619,7 +675,7 @@ only way to do it on Shopify right now.
         <carousel-navigation class="scroll-marker-group scroll-marker-group--dots align-self-center" aria-controls="{{ product_gallery_carousel_id }}">
           {%- if product != blank -%}
             {%- for media in gallery_media -%}
-              <button type="button" class="scroll-marker tap-area tap-area--sm" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == effective_default_media %}true{% else %}false{% endif %}">
+              <button type="button" class="scroll-marker tap-area tap-area--sm" data-media-id="{{ media.id }}" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == effective_default_media %}true{% else %}false{% endif %}">
                 <span class="sr-only">{{ 'general.accessibility.go_to_item' | t: index: forloop.index }}</span>
               </button>
             {%- endfor -%}
