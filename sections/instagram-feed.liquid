@@ -158,13 +158,17 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
                       {%- when 'badge' -%}
                         {%- comment -%}
-                        Supplied artwork, outer wavy-edged shape only - the user asked for it
-                        "without the R in the middle" (the brown circle + letter-R paths from the
-                        original 4-path SVG, omitted here on purpose). Same ~200x200 canvas as
-                        'blob' above, so the same scale(0.5) + icon_primary swap applies.
+                        Supplied artwork: outer wavy-edged shape + the round center - the user asked
+                        for it "without the R in the middle", so only the letter-R paths from the
+                        original 4-path SVG are omitted here, not the circle behind them. Same
+                        ~200x200 canvas as 'blob' above, so the same scale(0.5) applies; the
+                        hardcoded fills (#FFA400 outer, #A06A37 circle) are swapped for
+                        icon_primary/icon_secondary so it follows the same editable-color convention
+                        as every other icon.
                         {%- endcomment -%}
                         <g transform="scale(0.5)">
                           <path d="M103.316 35.3748L102.698 35.9921C100.538 38.2146 96.9569 38.338 94.6728 36.1773C79.0538 21.1757 52.4461 20.0645 36.3332 34.5722C17.8127 51.2407 17.6275 79.7622 35.2837 96.6776C37.8766 99.147 37.9383 103.283 35.4689 105.876C19.2326 122.73 19.7883 149.584 36.6419 165.821C53.4956 182.057 80.3503 181.501 96.5866 164.648L97.2039 164.03C99.3646 161.808 102.945 161.684 105.229 163.845C120.848 178.847 147.456 179.958 163.569 165.45C182.089 148.782 182.275 120.26 164.618 103.345C162.026 100.876 161.964 96.7393 164.433 94.1465C180.67 77.2928 180.114 50.4381 163.26 34.2018C146.407 17.9655 119.552 18.5211 103.316 35.3748Z" fill="{{ icon_primary }}"/>
+                          <path d="M99.9814 137.91C120.916 137.91 137.887 120.939 137.887 100.005C137.887 79.0704 120.916 62.0996 99.9814 62.0996C79.0469 62.0996 62.0762 79.0704 62.0762 100.005C62.0762 120.939 79.0469 137.91 99.9814 137.91Z" fill="{{ icon_secondary }}"/>
                         </g>
 
                       {%- else -%}
