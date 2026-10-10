@@ -218,22 +218,32 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   ============================================================
   HEADER (title/subtitle + button)
   ============================================================
-  Desktop: title/subtitle and button share the same row, button flush to the end. Mobile: stacked,
-  button below and flush to the start (align-items: start, not stretch, so it stays its own natural
-  width instead of filling the row).
+  Desktop: title/subtitle and button share the same row, button flush to the end - margin-inline-
+  start: auto on the button itself (not justify-content: space-between on the row), so it still
+  pushes all the way to the end even when there's no title/subtitle and the button is the row's
+  only child (space-between has nothing to "space between" with a single item, so it would land at
+  the start instead). Mobile: stacked, button below and flush to the start (align-items: start, not
+  stretch, so it stays its own natural width instead of filling the row).
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__header {
-    justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
     display: flex;
   }
 
+  #shopify-section-{{ section.id }} .instagram-feed__button {
+    margin-inline-start: auto;
+  }
+
   @media screen and (max-width: 699px) {
     #shopify-section-{{ section.id }} .instagram-feed__header {
       flex-direction: column;
       align-items: start;
+    }
+
+    #shopify-section-{{ section.id }} .instagram-feed__button {
+      margin-inline-start: 0;
     }
   }
 
