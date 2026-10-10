@@ -218,8 +218,9 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   ============================================================
   HEADER (title/subtitle + button)
   ============================================================
-  Desktop: button flush to the end, title/subtitle flush to the start. Mobile: stacked, button
-  below - same responsive pattern as sections/reviews.liquid's own summary row.
+  Desktop: title/subtitle and button share the same row, button flush to the end. Mobile: stacked,
+  button below and flush to the start (align-items: start, not stretch, so it stays its own natural
+  width instead of filling the row).
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__header {
     justify-content: space-between;
@@ -232,7 +233,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   @media screen and (max-width: 699px) {
     #shopify-section-{{ section.id }} .instagram-feed__header {
       flex-direction: column;
-      align-items: stretch;
+      align-items: start;
     }
   }
 
