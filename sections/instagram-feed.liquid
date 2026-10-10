@@ -198,30 +198,35 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
   {%- comment -%}
   ============================================================
-  CAROUSEL GRID
+  CAROUSEL LAYOUT
   ============================================================
-  Mobile: a single row of 2 columns that tiles the full width - any extra items beyond those 2
-  overflow and scroll horizontally (clipped by .scroll-area's own overflow: auto hidden). Desktop:
-  6 columns, same idea.
+  Flexbox instead of CSS grid on purpose: a grid's auto-generated columns (grid-auto-columns) were
+  reporting the row's full, un-clipped content width - the sum of every column, intentionally wider
+  than the visible area once there are more items than fit - as this element's own size to the
+  outer .instagram-feed.section-stack grid it sits in, pushing the whole page wider once enough
+  images/videos were added to actually exceed the visible column count. Flex items aren't measured
+  that way: flex: 0 0 <basis> fixes each item's width without ever letting the row's intrinsic
+  content size feed back into the container's own sizing, so .scroll-area's overflow: auto hidden
+  reliably clips the rest instead.
 
-  min-width: 0 + max-width: 100% guard against this grid item (itself a grid item of the outer
-  .instagram-feed.section-stack) reporting its un-clipped content width - the sum of every column,
-  which is intentionally wider than the visible area once there are more items than columns - as
-  its own size upstream, which was pushing the whole page wider once enough images/videos were
-  added to actually trigger the overflow.
+  Mobile: a single row of 2 items that tiles the full width - any extra items beyond those 2
+  overflow and scroll horizontally. Desktop: 6 items, same idea.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__carousel {
-    grid-auto-flow: column;
-    grid-auto-columns: calc((100% - .5rem) / 2);
     gap: .5rem;
     min-width: 0;
     max-width: 100%;
-    display: grid;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
+    flex: 0 0 calc((100% - .5rem) / 2);
+    min-width: 0;
   }
 
   @media screen and (min-width: 700px) {
-    #shopify-section-{{ section.id }} .instagram-feed__carousel {
-      grid-auto-columns: calc((100% - 2.5rem) / 6);
+    #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
+      flex: 0 0 calc((100% - 2.5rem) / 6);
     }
   }
 
