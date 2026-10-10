@@ -42,9 +42,17 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {{ section.settings.instagram_feed_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack">
-      {%- if section.settings.title != blank -%}
+      {%- if section.settings.title != blank or section.settings.subtitle != blank -%}
         <div class="prose">
-          {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.title_tag, html_tag: 'h2' -%}
+          {%- if section.settings.title != blank -%}
+            {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.title_tag, html_tag: 'h2' -%}
+          {%- endif -%}
+
+          {%- if section.settings.subtitle != blank -%}
+            <div class="max-w-sm">
+              {{- section.settings.subtitle -}}
+            </div>
+          {%- endif -%}
         </div>
       {%- endif -%}
 
@@ -389,6 +397,11 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         }
       ],
       "default": "h3"
+    },
+    {
+      "type": "richtext",
+      "id": "subtitle",
+      "label": "t:global.text.subheading"
     },
     {
       "type": "header",
