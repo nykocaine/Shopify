@@ -86,9 +86,11 @@ progress bar) are simply skipped when no carousel_id is given.
         }
 
         var videoMedia = mediaBox.querySelector('video-media');
+        // Optional: snippets/media-zoom-slide.liquid's show_pause_button: false skips rendering this
+        // button entirely (eg. an autoplaying, always-looping video with no manual pause/resume).
         var pauseButton = mediaBox.querySelector('.carousel-video-pause-toggle');
-        var pauseIcon = pauseButton.querySelector('.carousel-video-pause-icon');
-        var playIcon = pauseButton.querySelector('.carousel-video-play-icon');
+        var pauseIcon = pauseButton ? pauseButton.querySelector('.carousel-video-pause-icon') : null;
+        var playIcon = pauseButton ? pauseButton.querySelector('.carousel-video-play-icon') : null;
         var soundButton = mediaBox.querySelector('.carousel-video-sound-toggle');
         var poster = mediaBox.querySelector('video-media > img');
 
@@ -116,19 +118,25 @@ progress bar) are simply skipped when no carousel_id is given.
             poster.classList.add('carousel-video-poster-hidden');
           }
 
-          pauseIcon.classList.remove('hidden');
-          playIcon.classList.add('hidden');
+          if (pauseIcon) {
+            pauseIcon.classList.remove('hidden');
+            playIcon.classList.add('hidden');
+          }
         });
 
         video.addEventListener('pause', function() {
-          pauseIcon.classList.add('hidden');
-          playIcon.classList.remove('hidden');
+          if (pauseIcon) {
+            pauseIcon.classList.add('hidden');
+            playIcon.classList.remove('hidden');
+          }
         });
 
-        pauseButton.addEventListener('click', function(event) {
-          event.stopPropagation();
-          togglePlay();
-        });
+        if (pauseButton) {
+          pauseButton.addEventListener('click', function(event) {
+            event.stopPropagation();
+            togglePlay();
+          });
+        }
 
         var soundOffIcon = soundButton.querySelector('.carousel-video-sound-off-icon');
         var soundOnIcon = soundButton.querySelector('.carousel-video-sound-icon');
@@ -155,7 +163,10 @@ progress bar) are simply skipped when no carousel_id is given.
 
         muteSetters.push(setMuted);
 
-        soundButton.addEventListener('click', toggleSound);
+        soundButton.addEventListener('click', function(event) {
+          event.stopPropagation();
+          toggleSound();
+        });
 
         // No tap-anywhere-on-the-video handler here on purpose: video-media itself (theme.js,
         // VideoMedia#connectedCallback) already attaches its own one-time "click starts playback"
@@ -164,6 +175,24 @@ progress bar) are simply skipped when no carousel_id is given.
         // calls on the same <video>, which some browsers resolve by aborting the first one, so
         // playback never actually started. The dedicated pause/play button is unaffected (it's a
         // sibling of video-media, not a descendant) and already covers pause/resume on repeat taps.
+
+        // Optional: snippets/media-zoom-slide.liquid's reveal_controls_on_tap: true starts the
+        // controls group AND the zoom button hidden (see snippets/media-zoom-style.liquid's
+        // .carousel-video-controls--tap-to-reveal, shared by both) and only reveals them here,
+        // toggled together on tap - meant for an autoplaying video (nothing to "see the play button
+        // right away" for), so nothing permanently sits on top of it. The buttons' own click
+        // handlers above all call event.stopPropagation(), so clicking them doesn't also re-toggle
+        // this (the zoom button is the one exception - opening the lightbox makes this row's own
+        // revealed state moot either way).
+        var tapToRevealControls = mediaBox.querySelectorAll('.carousel-video-controls--tap-to-reveal');
+
+        if (tapToRevealControls.length) {
+          mediaBox.addEventListener('click', function() {
+            tapToRevealControls.forEach(function(el) {
+              el.classList.toggle('is-controls-revealed');
+            });
+          });
+        }
       });
 
       if (carousel) {

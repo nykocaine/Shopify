@@ -89,6 +89,24 @@ Must be rendered inside a <style> tag by the caller, once per instance (wrapper_
   pointer-events: auto;
 }
 
+/* Opt-in via media-zoom-slide.liquid's reveal_controls_on_tap: true (toggled in
+   media-zoom-script.liquid) - the opposite of the always-visible rule above, for an autoplaying
+   video where the controls would otherwise permanently sit on top of it. visibility (not just
+   opacity) is what actually disables the buttons while hidden: it's inherited by the buttons
+   underneath regardless of their own opacity: 1/pointer-events: auto set above, which a plain
+   pointer-events: none on this wrapper alone would NOT override (each descendant's own
+   pointer-events is evaluated independently of an ancestor's). */
+#{{ wrapper_id }} .carousel-video-controls--tap-to-reveal {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .2s ease, visibility .2s ease;
+}
+
+#{{ wrapper_id }} .carousel-video-controls--tap-to-reveal.is-controls-revealed {
+  visibility: visible;
+  opacity: 1;
+}
+
 {%- if resolved_controls_position == 'progress_bar' -%}
   {%- if resolved_desktop_controls_position == 'center' -%}
     @media screen and (pointer: fine) {

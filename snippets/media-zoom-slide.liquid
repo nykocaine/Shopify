@@ -10,6 +10,9 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
 
 @param {object} [video] - the video to render. Takes priority over image when set.
 @param {object} [image] - the image to render when no video is set.
+@param {boolean} [autoplay] - whether the video autoplays, muted and looped, instead of the default tap-to-play (default false - unchanged existing behavior)
+@param {boolean} [show_pause_button] - whether to show the play/pause toggle control (default true)
+@param {boolean} [reveal_controls_on_tap] - whether the sound/pause/product controls start hidden and only reveal when the media itself is tapped, instead of always visible (default false)
 @param {string} [block_size] - desktop block size keyword (auto/sm/md/lg/fill), used as the md:min-h-* class
 @param {string} [mobile_block_size] - mobile block size keyword (auto/sm/md/lg/fill), used as the min-h-* class
 @param {string} [corner_radius] - CSS value for the item's border-radius (eg. "var(--media-blocks-corner-radius)" or "12px")
@@ -37,7 +40,7 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
 <div class="content-box h-full min-h-{{ mobile_block_size }} md:min-h-{{ block_size }}" style="border-radius: {{ corner_radius }}; overflow: hidden;" {% if as_lightbox_cell %}data-media-cell{% endif %}>
   <div class="content-box__background-media {% if video != blank %}carousel-video-tap-to-play{% endif %}">
     {%- if video != blank -%}
-      {%- render 'media', media: video, autoplay: false, muted: true, controls: false, show_play_button: false, playsinline: true, sizes: resolved_sizes -%}
+      {%- render 'media', media: video, autoplay: autoplay, muted: true, controls: false, show_play_button: false, playsinline: true, loop: autoplay, sizes: resolved_sizes -%}
 
       {%- capture control_button_style -%}
         width: var(--control-button-size, 1.75rem); height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, #000000); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, #000000); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, #ffffff);
@@ -53,7 +56,7 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
         {%- endcapture -%}
       {%- endif -%}
 
-      <div class="h-stack gap-2 carousel-video-controls">
+      <div class="h-stack gap-2 carousel-video-controls{% if reveal_controls_on_tap %} carousel-video-controls--tap-to-reveal{% endif %}">
         {%- if resolved_show_product_button -%}
           <a href="{{ product.url }}" class="carousel-video-product-link circle-button" style="{{ product_button_style }}">
             {%- if product_button_type == 'text' -%}
@@ -71,11 +74,13 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
           {%- render 'icon' with 'volume', width: 14, class: 'carousel-video-sound-icon hidden' -%}
         </button>
 
-        <button type="button" class="carousel-video-pause-toggle circle-button" style="{{ control_button_style }}">
-          <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
-          {%- render 'icon' with 'slideshow-pause', width: 14, class: 'carousel-video-pause-icon hidden' -%}
-          {%- render 'icon' with 'slideshow-play', width: 14, class: 'carousel-video-play-icon' -%}
-        </button>
+        {%- unless show_pause_button == false -%}
+          <button type="button" class="carousel-video-pause-toggle circle-button" style="{{ control_button_style }}">
+            <span class="sr-only">{{ 'general.accessibility.toggle_autoplay' | t }}</span>
+            {%- render 'icon' with 'slideshow-pause', width: 14, class: 'carousel-video-pause-icon hidden' -%}
+            {%- render 'icon' with 'slideshow-play', width: 14, class: 'carousel-video-play-icon' -%}
+          </button>
+        {%- endunless -%}
       </div>
     {%- elsif image != blank -%}
       {%- render 'media' with image, sizes: resolved_sizes, class: 'image-cover' -%}
@@ -94,7 +99,7 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
     -%}
 
     {%- if show_lightbox_button -%}
-      <open-lightbox-button class="block" aria-controls="{{ resolved_aria_controls_id }}" image-index="{{ lightbox_index | default: 0 }}">
+      <open-lightbox-button class="block{% if reveal_controls_on_tap %} carousel-video-controls--tap-to-reveal{% endif %}" aria-controls="{{ resolved_aria_controls_id }}" image-index="{{ lightbox_index | default: 0 }}">
         <button type="button" class="product-zoom-button">
           {%- render 'icon' with 'zoom-plus', width: 16 -%}
           <span class="product-zoom-button__label">{{ 'product.gallery.zoom' | t }}</span>

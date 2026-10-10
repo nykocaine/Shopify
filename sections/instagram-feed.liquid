@@ -78,9 +78,19 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             -%}
 
             {%- if instagram_block_has_video -%}
+              {%- comment -%}
+              autoplay: true (muted, looped) instead of the default tap-to-play, matching an
+              Instagram-style feed. show_pause_button: false drops the manual play/pause toggle -
+              nothing to pause/resume since it always plays. reveal_controls_on_tap: true keeps the
+              remaining sound + zoom controls hidden until the video itself is tapped, instead of
+              sitting on top of it permanently.
+              {%- endcomment -%}
               <div class="snap-start" {{ block.shopify_attributes }}>
                 {%- render 'media-zoom-slide',
                   video: block.settings.video,
+                  autoplay: true,
+                  show_pause_button: false,
+                  reveal_controls_on_tap: true,
                   corner_radius: '8px',
                   lightbox_id: instagram_lightbox_id,
                   lightbox_index: instagram_slide_index,
