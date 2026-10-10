@@ -335,9 +335,24 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       align-items: start;
     }
 
+    {%- comment -%}
+    Button + icon share a row here (instead of the icon stacked above the button, like on
+    desktop), button first/flush to the start - order swaps it ahead of the icon in display order
+    without touching the markup (which renders the icon first, so it still stacks above the button
+    on desktop, where flex-direction stays column).
+    {%- endcomment -%}
     #shopify-section-{{ section.id }} .instagram-feed__cta {
-      align-items: start;
+      flex-direction: row;
+      align-items: center;
       margin-inline-start: 0;
+    }
+
+    #shopify-section-{{ section.id }} .instagram-feed__button {
+      order: 1;
+    }
+
+    #shopify-section-{{ section.id }} .instagram-feed__icon {
+      order: 2;
     }
   }
 
