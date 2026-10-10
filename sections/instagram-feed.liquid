@@ -156,6 +156,17 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                           <path d="M167.932 137.828C161.069 129.173 152.976 121.439 144.013 114.934C138.789 111.144 133.155 107.661 128.955 102.744C124.756 97.8276 122.246 90.8108 124.5 84.716C126.548 79.0821 131.977 75.5481 136.843 72.0653C141.709 68.5825 146.625 63.8706 146.779 57.8782C146.881 53.7808 144.577 49.8883 141.452 47.1738C138.328 44.4593 134.487 42.7691 130.697 41.2326C113.949 34.5743 96.1764 30.3745 78.1992 28.8892C69.3386 28.1722 60.3244 28.0697 51.7711 30.3233C43.2178 32.5769 35.0231 37.3401 30.1062 44.7153C11.8217 72.1165 43.0642 105.203 61.5536 123.078C82.2453 143.155 107.393 158.725 134.692 168.046C146.472 172.093 159.788 174.346 170.134 164.922C178.687 157.188 174.129 145.511 167.983 137.828H167.932Z" fill="{{ icon_primary }}"/>
                         </g>
 
+                      {%- when 'badge' -%}
+                        {%- comment -%}
+                        Supplied artwork, outer wavy-edged shape only - the user asked for it
+                        "without the R in the middle" (the brown circle + letter-R paths from the
+                        original 4-path SVG, omitted here on purpose). Same ~200x200 canvas as
+                        'blob' above, so the same scale(0.5) + icon_primary swap applies.
+                        {%- endcomment -%}
+                        <g transform="scale(0.5)">
+                          <path d="M103.316 35.3748L102.698 35.9921C100.538 38.2146 96.9569 38.338 94.6728 36.1773C79.0538 21.1757 52.4461 20.0645 36.3332 34.5722C17.8127 51.2407 17.6275 79.7622 35.2837 96.6776C37.8766 99.147 37.9383 103.283 35.4689 105.876C19.2326 122.73 19.7883 149.584 36.6419 165.821C53.4956 182.057 80.3503 181.501 96.5866 164.648L97.2039 164.03C99.3646 161.808 102.945 161.684 105.229 163.845C120.848 178.847 147.456 179.958 163.569 165.45C182.089 148.782 182.275 120.26 164.618 103.345C162.026 100.876 161.964 96.7393 164.433 94.1465C180.67 77.2928 180.114 50.4381 163.26 34.2018C146.407 17.9655 119.552 18.5211 103.316 35.3748Z" fill="{{ icon_primary }}"/>
+                        </g>
+
                       {%- else -%}
                         {%- comment -%} 'droplet' (default): pointed top tapering into a rounded bottom, classic serum-drop silhouette, plus a small shine highlight. {%- endcomment -%}
                         <path d="M50 5C50 5 20 45 20 65A30 30 0 0 0 80 65C80 45 50 5 50 5Z" fill="{{ icon_primary }}"/>
@@ -752,6 +763,10 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         {
           "value": "blob",
           "label": "Blob"
+        },
+        {
+          "value": "badge",
+          "label": "Badge"
         }
       ],
       "default": "droplet",
