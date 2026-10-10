@@ -60,6 +60,13 @@ itself (or the link), and remove it once finished. The theme will automatically 
       else
         if background != blank and background != 'rgba(0,0,0,0)'
           echo '--button-background: ' | append: background.rgb | append: ';'
+
+          # Without this, :hover (theme.css) still reads --button-hover-background - inherited from
+          # the color scheme, auto-darkened from the SCHEME's own default button background, unrelated
+          # to this custom one - so hovering would flash to that unrelated color. Pinning hover to the
+          # same custom background here means hovering does nothing instead, until/unless a dedicated
+          # hover color param is added.
+          echo '--button-hover-background: ' | append: background.rgb | append: ';'
         endif
 
         if text_color != blank and text_color != 'rgba(0,0,0,0)'
