@@ -196,6 +196,18 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 <style>
   {%- comment -%}
   ============================================================
+  TITLE/SUBTITLE SPACING
+  ============================================================
+  Overrides --prose-default-spacing (set by .prose--compact in the markup above, 1/1.25rem) down to
+  a tighter 0.5rem between the title and subtitle specifically for this section, instead of
+  introducing a parallel spacing scheme.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .prose {
+    --prose-default-spacing: .5rem;
+  }
+
+  {%- comment -%}
+  ============================================================
   FLOATING MODE / SECTION PADDING
   ============================================================
   Same formula as sections/reviews.liquid and sections/faq.liquid: gutter + 0.5rem on every side,
