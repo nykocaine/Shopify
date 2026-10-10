@@ -145,6 +145,17 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                           <ellipse cx="68" cy="46" rx="6" ry="3" transform="rotate(-30 68 46)"/>
                         </g>
 
+                      {%- when 'blob' -%}
+                        {%- comment -%}
+                        Supplied path (user-provided artwork, originally on a ~200x200 canvas with
+                        its own hardcoded fill) - scale(0.5) fits it to this shared 0 0 100 100
+                        viewBox like every other icon, and the hardcoded fill is swapped for
+                        icon_primary so it follows the same editable-color convention as the rest.
+                        {%- endcomment -%}
+                        <g transform="scale(0.5)">
+                          <path d="M167.932 137.828C161.069 129.173 152.976 121.439 144.013 114.934C138.789 111.144 133.155 107.661 128.955 102.744C124.756 97.8276 122.246 90.8108 124.5 84.716C126.548 79.0821 131.977 75.5481 136.843 72.0653C141.709 68.5825 146.625 63.8706 146.779 57.8782C146.881 53.7808 144.577 49.8883 141.452 47.1738C138.328 44.4593 134.487 42.7691 130.697 41.2326C113.949 34.5743 96.1764 30.3745 78.1992 28.8892C69.3386 28.1722 60.3244 28.0697 51.7711 30.3233C43.2178 32.5769 35.0231 37.3401 30.1062 44.7153C11.8217 72.1165 43.0642 105.203 61.5536 123.078C82.2453 143.155 107.393 158.725 134.692 168.046C146.472 172.093 159.788 174.346 170.134 164.922C178.687 157.188 174.129 145.511 167.983 137.828H167.932Z" fill="{{ icon_primary }}"/>
+                        </g>
+
                       {%- else -%}
                         {%- comment -%} 'droplet' (default): pointed top tapering into a rounded bottom, classic serum-drop silhouette, plus a small shine highlight. {%- endcomment -%}
                         <path d="M50 5C50 5 20 45 20 65A30 30 0 0 0 80 65C80 45 50 5 50 5Z" fill="{{ icon_primary }}"/>
@@ -737,6 +748,10 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         {
           "value": "sunglasses",
           "label": "Y2K sunglasses"
+        },
+        {
+          "value": "blob",
+          "label": "Blob"
         }
       ],
       "default": "droplet",
