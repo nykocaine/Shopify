@@ -207,21 +207,6 @@ to the first 5 of the newly sorted order.
                       {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: '120px', widths: '120,240,360' -}}
                     </div>
                   {%- endif -%}
-
-                  {%- if block.settings.bar_question != blank -%}
-                    <div class="review-card__bar">
-                      <p class="review-card__bar-question">{{ block.settings.bar_question }}</p>
-
-                      <div class="review-card__bar-track">
-                        <div class="review-card__bar-fill" style="width: {{ block.settings.bar_value | times: 1.0 | divided_by: 5 | times: 100 }}%;"></div>
-                      </div>
-
-                      <div class="review-card__bar-labels">
-                        <span>{{ block.settings.bar_min_label }}</span>
-                        <span>{{ block.settings.bar_max_label }}</span>
-                      </div>
-                    </div>
-                  {%- endif -%}
                 </div>
               </div>
             {%- endfor -%}
@@ -671,75 +656,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
 
   {%- comment -%}
   ============================================================
-  RATING BAR (review-card__bar*)
-  ============================================================
-  {%- endcomment -%}
-
-  #shopify-section-{{ section.id }} .review-card__bar {
-    max-width: 22rem;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__bar-question {
-    margin-block-end: .75rem;
-  }
-
-  {%- comment -%}
-  Own style, controlled entirely by this section's "Rating bar" settings above - not the theme's global
-  "Progress bar" design (that one stays reserved for the free shipping bar/inventory bar/etc.). Border is
-  fixed at 1px regardless of the configured height; only --bar-height and --bar-indicator-size come from
-  settings, so the outline and the marker both read from the merchant's own review-bar config. The
-  background-image below splits the track into 4 equal segments (3 divider lines at 25/50/75%) purely as
-  decoration - doesn't touch the markup and stays independent of the rating percentage.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .review-card__bar-track {
-    --bar-height: {{ section.settings.review_bar_height }}px;
-    --bar-indicator-size: {{ section.settings.review_bar_indicator_size }}px;
-    --bar-line-color: {% if section.settings.review_bar_border_color != blank %}rgb({{ section.settings.review_bar_border_color.rgb }}){% else %}rgb(var(--border-color)){% endif %};
-    height: var(--bar-height);
-    border: 1px solid var(--bar-line-color);
-    background-color: {% if section.settings.review_bar_background_color != blank %}rgb({{ section.settings.review_bar_background_color.rgb }}){% else %}transparent{% endif %};
-    background-image: linear-gradient(
-      to right,
-      transparent calc(25% - .5px), var(--bar-line-color) calc(25% - .5px), var(--bar-line-color) calc(25% + .5px), transparent calc(25% + .5px),
-      transparent calc(50% - .5px), var(--bar-line-color) calc(50% - .5px), var(--bar-line-color) calc(50% + .5px), transparent calc(50% + .5px),
-      transparent calc(75% - .5px), var(--bar-line-color) calc(75% - .5px), var(--bar-line-color) calc(75% + .5px), transparent calc(75% + .5px)
-    );
-    position: relative;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__bar-fill {
-    height: 100%;
-    background: none;
-    position: relative;
-  }
-
-  {%- comment -%}
-  Positioned against .review-card__bar-fill (not .review-card__bar-track), so the marker sits at the fill's
-  own right edge - which is where the width: {percent}% inline style above already places it - instead of
-  always sitting at the track's fixed right edge regardless of rating.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .review-card__bar-fill::after {
-    content: "";
-    width: var(--bar-indicator-size);
-    height: var(--bar-indicator-size);
-    border-radius: 50%;
-    background: var(--bar-line-color);
-    position: absolute;
-    inset-inline-end: calc(var(--bar-indicator-size) / -2);
-    inset-block-start: 50%;
-    transform: translateY(-50%);
-  }
-
-  #shopify-section-{{ section.id }} .review-card__bar-labels {
-    justify-content: space-between;
-    color: rgb(var(--text-color) / .6);
-    font-size: .875em;
-    margin-block-start: .5rem;
-    display: flex;
-  }
-
-  {%- comment -%}
-  ============================================================
   LOAD MORE / LOAD LESS + RESPONSIVE CARD LAYOUT
   ============================================================
   {%- endcomment -%}
@@ -1056,43 +972,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
         }
       ],
       "default": "display-m"
-    },
-    {
-      "type": "header",
-      "content": "Rating bar",
-      "info": "Style of each review's optional rating bar (the \"Rating bar\" settings on a Review block)."
-    },
-    {
-      "type": "range",
-      "id": "review_bar_height",
-      "min": 1,
-      "max": 20,
-      "step": 1,
-      "unit": "px",
-      "label": "Bar height",
-      "default": 4
-    },
-    {
-      "type": "color",
-      "id": "review_bar_border_color",
-      "label": "Border & indicator color",
-      "default": "#4a4a4a"
-    },
-    {
-      "type": "color",
-      "id": "review_bar_background_color",
-      "label": "Background color",
-      "info": "Leave blank for a transparent background."
-    },
-    {
-      "type": "range",
-      "id": "review_bar_indicator_size",
-      "min": 6,
-      "max": 30,
-      "step": 1,
-      "unit": "px",
-      "label": "Indicator size",
-      "default": 12
     }
   ],
   "blocks": [
@@ -1200,40 +1079,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
           "type": "text",
           "id": "attribute_3_value",
           "label": "Attribute 3 value"
-        },
-        {
-          "type": "header",
-          "content": "Rating bar (optional)"
-        },
-        {
-          "type": "paragraph",
-          "content": "An extra ranged question shown below the review, eg. \"How glowy did your skin look?\"."
-        },
-        {
-          "type": "text",
-          "id": "bar_question",
-          "label": "Question"
-        },
-        {
-          "type": "range",
-          "id": "bar_value",
-          "min": 1,
-          "max": 5,
-          "step": 1,
-          "label": "Value",
-          "default": 5
-        },
-        {
-          "type": "text",
-          "id": "bar_min_label",
-          "label": "Low label",
-          "default": "Bajo"
-        },
-        {
-          "type": "text",
-          "id": "bar_max_label",
-          "label": "High label",
-          "default": "Alto"
         }
       ]
     }
@@ -1258,11 +1103,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Manchas",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Primera vez",
-            "bar_question": "¿Qué tan parejo quedó el tono de tu piel?",
-            "bar_value": 5,
-            "bar_min_label": "Nada parejo",
-            "bar_max_label": "Muy parejo"
+            "attribute_3_value": "Primera vez"
           }
         },
         {
@@ -1280,11 +1121,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Edad",
             "attribute_2_value": "25 - 34",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Ya lo había probado antes",
-            "bar_question": "¿Qué tan suave quedó tu piel?",
-            "bar_value": 4,
-            "bar_min_label": "Nada suave",
-            "bar_max_label": "Muy suave"
+            "attribute_3_value": "Ya lo había probado antes"
           }
         },
         {
@@ -1302,11 +1139,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Cicatrices de acné",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Primera vez",
-            "bar_question": "¿Qué tan notorios fueron los resultados?",
-            "bar_value": 3,
-            "bar_min_label": "Poco notorio",
-            "bar_max_label": "Muy notorio"
+            "attribute_3_value": "Primera vez"
           }
         },
         {
@@ -1324,11 +1157,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Poros dilatados",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Ya lo había probado antes",
-            "bar_question": "¿Qué tanto brillo notaste en tu piel?",
-            "bar_value": 5,
-            "bar_min_label": "Nada de brillo",
-            "bar_max_label": "Muchísimo brillo"
+            "attribute_3_value": "Ya lo había probado antes"
           }
         },
         {
@@ -1346,11 +1175,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Edad",
             "attribute_2_value": "18 - 24",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Primera vez",
-            "bar_question": "¿Qué tan suave quedó tu piel?",
-            "bar_value": 4,
-            "bar_min_label": "Nada suave",
-            "bar_max_label": "Muy suave"
+            "attribute_3_value": "Primera vez"
           }
         },
         {
@@ -1368,11 +1193,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Manchas",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Primera vez",
-            "bar_question": "¿Qué tan incómoda fue la recuperación?",
-            "bar_value": 4,
-            "bar_min_label": "Nada incómoda",
-            "bar_max_label": "Muy incómoda"
+            "attribute_3_value": "Primera vez"
           }
         },
         {
@@ -1390,11 +1211,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Textura irregular",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Ya lo había probado antes",
-            "bar_question": "¿Qué tan pareja quedó la textura de tu piel?",
-            "bar_value": 5,
-            "bar_min_label": "Nada pareja",
-            "bar_max_label": "Muy pareja"
+            "attribute_3_value": "Ya lo había probado antes"
           }
         },
         {
@@ -1412,11 +1229,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Opacidad",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Primera vez",
-            "bar_question": "¿Qué tanto brillo notaste en tu piel?",
-            "bar_value": 3,
-            "bar_min_label": "Nada de brillo",
-            "bar_max_label": "Muchísimo brillo"
+            "attribute_3_value": "Primera vez"
           }
         },
         {
@@ -1434,11 +1247,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Edad",
             "attribute_2_value": "25 - 34",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Primera vez",
-            "bar_question": "¿Qué tanto brillo notaste en tu piel?",
-            "bar_value": 5,
-            "bar_min_label": "Nada de brillo",
-            "bar_max_label": "Muchísimo brillo"
+            "attribute_3_value": "Primera vez"
           }
         },
         {
@@ -1456,11 +1265,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Poros dilatados",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Primera vez",
-            "bar_question": "¿Qué tan incómoda fue la recuperación?",
-            "bar_value": 3,
-            "bar_min_label": "Nada incómoda",
-            "bar_max_label": "Muy incómoda"
+            "attribute_3_value": "Primera vez"
           }
         },
         {
@@ -1478,11 +1283,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Edad",
             "attribute_2_value": "35 - 44",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Ya lo había probado antes",
-            "bar_question": "¿Qué tan notorios fueron los resultados?",
-            "bar_value": 5,
-            "bar_min_label": "Poco notorio",
-            "bar_max_label": "Muy notorio"
+            "attribute_3_value": "Ya lo había probado antes"
           }
         },
         {
@@ -1500,11 +1301,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Manchas",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Primera vez",
-            "bar_question": "¿Qué tan parejo quedó el tono de tu piel?",
-            "bar_value": 4,
-            "bar_min_label": "Nada parejo",
-            "bar_max_label": "Muy parejo"
+            "attribute_3_value": "Primera vez"
           }
         },
         {
@@ -1522,11 +1319,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Edad",
             "attribute_2_value": "25 - 34",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Ya lo había probado antes",
-            "bar_question": "¿Qué tanto brillo notaste en tu piel?",
-            "bar_value": 3,
-            "bar_min_label": "Nada de brillo",
-            "bar_max_label": "Muchísimo brillo"
+            "attribute_3_value": "Ya lo había probado antes"
           }
         },
         {
@@ -1544,11 +1337,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Textura irregular",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Ya lo había probado antes",
-            "bar_question": "¿Qué tan suave quedó tu piel?",
-            "bar_value": 5,
-            "bar_min_label": "Nada suave",
-            "bar_max_label": "Muy suave"
+            "attribute_3_value": "Ya lo había probado antes"
           }
         },
         {
@@ -1566,11 +1355,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Poros dilatados",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Primera vez",
-            "bar_question": "¿Qué tan incómoda fue la recuperación?",
-            "bar_value": 5,
-            "bar_min_label": "Nada incómoda",
-            "bar_max_label": "Muy incómoda"
+            "attribute_3_value": "Primera vez"
           }
         },
         {
@@ -1588,11 +1373,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Edad",
             "attribute_2_value": "18 - 24",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Primera vez",
-            "bar_question": "¿Qué tan notorios fueron los resultados?",
-            "bar_value": 5,
-            "bar_min_label": "Poco notorio",
-            "bar_max_label": "Muy notorio"
+            "attribute_3_value": "Primera vez"
           }
         },
         {
@@ -1610,11 +1391,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Cicatrices de acné",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Primera vez",
-            "bar_question": "¿Qué tan suave quedó tu piel?",
-            "bar_value": 3,
-            "bar_min_label": "Nada suave",
-            "bar_max_label": "Muy suave"
+            "attribute_3_value": "Primera vez"
           }
         },
         {
@@ -1632,11 +1409,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Opacidad",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Ya lo había probado antes",
-            "bar_question": "¿Qué tanto brillo notaste en tu piel?",
-            "bar_value": 5,
-            "bar_min_label": "Nada de brillo",
-            "bar_max_label": "Muchísimo brillo"
+            "attribute_3_value": "Ya lo había probado antes"
           }
         },
         {
@@ -1654,11 +1427,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Edad",
             "attribute_2_value": "18 - 24",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Primera vez",
-            "bar_question": "¿Qué tan suave quedó tu piel?",
-            "bar_value": 4,
-            "bar_min_label": "Nada suave",
-            "bar_max_label": "Muy suave"
+            "attribute_3_value": "Primera vez"
           }
         },
         {
@@ -1676,11 +1445,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Manchas",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Ya lo había probado antes",
-            "bar_question": "¿Qué tan parejo quedó el tono de tu piel?",
-            "bar_value": 5,
-            "bar_min_label": "Nada parejo",
-            "bar_max_label": "Muy parejo"
+            "attribute_3_value": "Ya lo había probado antes"
           }
         },
         {
@@ -1698,11 +1463,7 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "attribute_2_label": "Preocupación principal",
             "attribute_2_value": "Textura irregular",
             "attribute_3_label": "Experiencia previa con peelings",
-            "attribute_3_value": "Primera vez",
-            "bar_question": "¿Qué tan notorios fueron los resultados?",
-            "bar_value": 3,
-            "bar_min_label": "Poco notorio",
-            "bar_max_label": "Muy notorio"
+            "attribute_3_value": "Primera vez"
           }
         }
       ]
