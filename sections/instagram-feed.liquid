@@ -348,13 +348,18 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
     {%- comment -%}
     Button + icon share a row here (instead of the icon stacked above the button, like on
-    desktop), button first/flush to the start - order swaps it ahead of the icon in display order
-    without touching the markup (which renders the icon first, so it still stacks above the button
-    on desktop, where flex-direction stays column).
+    desktop), button flush to the start and icon flush to the end, with the gap between them -
+    width: 100% so there's actually a full row to space-between across (by default this child only
+    takes up its own content width, same as .instagram-feed__header's other child, the title). order
+    swaps the button ahead of the icon in display order without touching the markup (which renders
+    the icon first, so it still stacks above the button on desktop, where flex-direction stays
+    column).
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .instagram-feed__cta {
       flex-direction: row;
+      justify-content: space-between;
       align-items: center;
+      width: 100%;
       margin-inline-start: 0;
     }
 
