@@ -114,6 +114,17 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                         </g>
                         <circle cx="50" cy="50" r="10" fill="{{ icon_secondary }}"/>
 
+                      {%- when 'clover' -%}
+                        {%- comment -%} Four overlapping circles, one per quadrant, form the classic four-leaf clover shape - plus a short diagonal stem. {%- endcomment -%}
+                        <g fill="{{ icon_primary }}">
+                          <circle cx="35" cy="35" r="20"/>
+                          <circle cx="65" cy="35" r="20"/>
+                          <circle cx="35" cy="65" r="20"/>
+                          <circle cx="65" cy="65" r="20"/>
+                        </g>
+                        <line x1="50" y1="78" x2="38" y2="95" stroke="{{ icon_secondary }}" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="50" cy="50" r="10" fill="{{ icon_secondary }}"/>
+
                       {%- else -%}
                         {%- comment -%} 'droplet' (default): pointed top tapering into a rounded bottom, classic serum-drop silhouette, plus a small shine highlight. {%- endcomment -%}
                         <path d="M50 5C50 5 20 45 20 65A30 30 0 0 0 80 65C80 45 50 5 50 5Z" fill="{{ icon_primary }}"/>
@@ -668,6 +679,10 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         {
           "value": "lotus",
           "label": "Lotus"
+        },
+        {
+          "value": "clover",
+          "label": "Clover"
         }
       ],
       "default": "droplet",
