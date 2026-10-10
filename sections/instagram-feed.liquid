@@ -329,6 +329,18 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     display: flex;
   }
 
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .instagram-feed__header {
+      flex-direction: column;
+      align-items: start;
+    }
+
+    #shopify-section-{{ section.id }} .instagram-feed__cta {
+      align-items: start;
+      margin-inline-start: 0;
+    }
+  }
+
   {%- comment -%}
   Spins in place, indefinitely - transform-origin stays centered (the SVG's own default for a
   square viewBox), so it rotates around its own center rather than orbiting anything. Respects
