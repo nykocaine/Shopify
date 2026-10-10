@@ -295,20 +295,24 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   ============================================================
   HEADER (title/subtitle + button)
   ============================================================
-  Desktop: title/subtitle and the flower+button column share the same row, that column flush to
-  the end - margin-inline-start: auto on .instagram-feed__cta itself (not justify-content:
-  space-between on the row), so it still pushes all the way to the end even when there's no
-  title/subtitle and it's the row's only child (space-between has nothing to "space between" with a
-  single item, so it would land at the start instead). align-items: start (not center) keeps it
-  aligned with the top of the title instead of the vertical center of the whole title+subtitle
-  block. Mobile: stacked, below and flush to the start, same align-items: start, still its own
-  natural width instead of filling the row.
+  Always a single row (no stacking on mobile): title/subtitle flush to the start, the flower+button
+  column flush to the end - margin-inline-start: auto on .instagram-feed__cta itself (not
+  justify-content: space-between on the row), so it still pushes all the way to the end even when
+  there's no title/subtitle and it's the row's only child (space-between has nothing to "space
+  between" with a single item, so it would land at the start instead). align-items: start (not
+  center) keeps it aligned with the top of the title instead of the vertical center of the whole
+  title+subtitle block. min-width: 0 on .prose lets the title/subtitle text wrap and shrink inside
+  the row instead of forcing the row wider (and the page along with it) - flex-shrink: 0 on
+  .instagram-feed__cta keeps the flower/button at their natural size instead of being squeezed.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__header {
     align-items: start;
-    flex-wrap: wrap;
     gap: 1rem;
     display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .instagram-feed__header > .prose {
+    min-width: 0;
   }
 
   {%- comment -%}
@@ -318,22 +322,11 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__cta {
     flex-direction: column;
+    flex-shrink: 0;
     align-items: center;
     gap: .5rem;
     margin-inline-start: auto;
     display: flex;
-  }
-
-  @media screen and (max-width: 699px) {
-    #shopify-section-{{ section.id }} .instagram-feed__header {
-      flex-direction: column;
-      align-items: start;
-    }
-
-    #shopify-section-{{ section.id }} .instagram-feed__cta {
-      align-items: start;
-      margin-inline-start: 0;
-    }
   }
 
   {%- comment -%}
