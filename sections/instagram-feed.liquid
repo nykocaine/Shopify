@@ -300,6 +300,27 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
               carousel.appendChild(cell);
             });
+
+            {%- comment -%}
+            <video-media autoplay> (assets/theme.js, BaseMedia#connectedCallback) only calls
+            .play() once an IntersectionObserver first reports it as visible - that observer is set
+            up when each element connects, which (since theme.js is deferred) happens AFTER this
+            same script has already reordered them above. It should already re-fire from that
+            reorder alone, but requestAnimationFrame + an explicit .play() call here is a cheap,
+            harmless safety net for whichever shuffled-in item ends up visible first on mobile,
+            where only the first couple of items are ever on-screen at once: .play() itself is a
+            no-op if it's already playing (BaseMedia#play), and silently no-ops again if the browser
+            still refuses autoplay (VideoMedia#_playerHandler already catches that).
+            {%- endcomment -%}
+            requestAnimationFrame(function () {
+              cells.forEach(function (cell) {
+                var videoMedia = cell.querySelector('video-media[autoplay]');
+
+                if (videoMedia && typeof videoMedia.play === 'function') {
+                  videoMedia.play();
+                }
+              });
+            });
           })();
         </script>
 
