@@ -201,19 +201,27 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   CAROUSEL GRID
   ============================================================
   Mobile: a single row of 2 columns that tiles the full width - any extra items beyond those 2
-  overflow and scroll horizontally. Desktop: 6 columns, same idea.
+  overflow and scroll horizontally (clipped by .scroll-area's own overflow: auto hidden). Desktop:
+  6 columns, same idea.
+
+  min-width: 0 + max-width: 100% guard against this grid item (itself a grid item of the outer
+  .instagram-feed.section-stack) reporting its un-clipped content width - the sum of every column,
+  which is intentionally wider than the visible area once there are more items than columns - as
+  its own size upstream, which was pushing the whole page wider once enough images/videos were
+  added to actually trigger the overflow.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__carousel {
-    --instagram-feed-columns: 2;
     grid-auto-flow: column;
-    grid-auto-columns: calc((100% - (var(--instagram-feed-columns) - 1) * .5rem) / var(--instagram-feed-columns));
+    grid-auto-columns: calc((100% - .5rem) / 2);
     gap: .5rem;
+    min-width: 0;
+    max-width: 100%;
     display: grid;
   }
 
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .instagram-feed__carousel {
-      --instagram-feed-columns: 6;
+      grid-auto-columns: calc((100% - 2.5rem) / 6);
     }
   }
 
