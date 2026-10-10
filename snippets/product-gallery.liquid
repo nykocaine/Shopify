@@ -370,45 +370,6 @@ only way to do it on Shopify right now.
     assign gallery_media = product.media | slice: 1, product.media.size
   endif
 
-  # move_to_second_media_id: repositions that media to index 1 (the second slide) instead of removing it,
-  # keeping every other item in its existing relative order - done here, before the variant-rotation step
-  # below, so rotation (if the moved media isn't itself the variant's default) runs on the already-
-  # reordered array. Only when it isn't already there (move_index 1) and there's more than one media to
-  # begin with - on a single-media product there's nothing to reposition.
-  if move_to_second_media_id != blank and gallery_media.size > 1
-    assign move_index = -1
-
-    for media in gallery_media
-      if media.id == move_to_second_media_id
-        assign move_index = forloop.index0
-        break
-      endif
-    endfor
-
-    if move_index == 0
-      # Currently first: swap with whatever is second, so that item keeps the first slide (unchanged
-      # from skip_first_media's old behavior, which excluded this media and left that one first) and
-      # this media becomes the second.
-      assign first_item = gallery_media | slice: 0, 1
-      assign second_item = gallery_media | slice: 1, 1
-      assign remaining_length = gallery_media.size | minus: 2
-      assign remaining = gallery_media | slice: 2, remaining_length
-      assign gallery_media = second_item | concat: first_item | concat: remaining
-    elsif move_index > 1
-      # Currently somewhere past the second slide: pull it out and reinsert at index 1, shifting
-      # everything that was between index 1 and it down by one - the first slide and everything after
-      # the moved media's old position keep their relative order untouched.
-      assign head = gallery_media | slice: 0, 1
-      assign moved_item = gallery_media | slice: move_index, 1
-      assign middle_length = move_index | minus: 1
-      assign middle = gallery_media | slice: 1, middle_length
-      assign tail_start = move_index | plus: 1
-      assign tail_length = gallery_media.size | minus: tail_start
-      assign tail = gallery_media | slice: tail_start, tail_length
-      assign gallery_media = head | concat: moved_item | concat: middle | concat: tail
-    endif
-  endif
-
   # Rotate gallery_media so default_media (the selected variant's featured media - whichever slide the
   # carousel actually opens on, via .is-initial/ScrollCarousel) becomes its first item, keeping the rest
   # in their original relative order. Without this, the numbers/bar counter and thumbnails order reflect
@@ -430,6 +391,49 @@ only way to do it on Shopify right now.
       assign rotated_tail = gallery_media | slice: default_media_position, rotated_tail_length
       assign rotated_head = gallery_media | slice: 0, default_media_position
       assign gallery_media = rotated_tail | concat: rotated_head
+    endif
+  endif
+
+  # move_to_second_media_id: repositions that media to index 1 (the second slide), keeping every other
+  # item in its existing relative order. Deliberately run AFTER the default_media rotation above, not
+  # before: this media (main-product.liquid's first_product_image) is itself product.featured_media's
+  # usual value, so on a product with no variant-specific image override, default_media resolves to this
+  # same media - running this reorder first left it sitting at index 1, which the rotation above then
+  # "corrected" back to index 0 (its job is exactly "bring default_media to the front"), shoving whatever
+  # was at index 0 (the image meant to open the gallery) to the very end instead. Running this after
+  # rotation instead repositions whatever the rotation already settled on as correct, so it only ever
+  # moves this one media and never fights that logic. Only when it isn't already there (move_index 1) and
+  # there's more than one media to begin with - on a single-media product there's nothing to reposition.
+  if move_to_second_media_id != blank and gallery_media.size > 1
+    assign move_index = -1
+
+    for media in gallery_media
+      if media.id == move_to_second_media_id
+        assign move_index = forloop.index0
+        break
+      endif
+    endfor
+
+    if move_index == 0
+      # Currently first: swap with whatever is second, so that item keeps the first slide and this
+      # media becomes the second.
+      assign first_item = gallery_media | slice: 0, 1
+      assign second_item = gallery_media | slice: 1, 1
+      assign remaining_length = gallery_media.size | minus: 2
+      assign remaining = gallery_media | slice: 2, remaining_length
+      assign gallery_media = second_item | concat: first_item | concat: remaining
+    elsif move_index > 1
+      # Currently somewhere past the second slide: pull it out and reinsert at index 1, shifting
+      # everything that was between index 1 and it down by one - the first slide and everything after
+      # the moved media's old position keep their relative order untouched.
+      assign head = gallery_media | slice: 0, 1
+      assign moved_item = gallery_media | slice: move_index, 1
+      assign middle_length = move_index | minus: 1
+      assign middle = gallery_media | slice: 1, middle_length
+      assign tail_start = move_index | plus: 1
+      assign tail_length = gallery_media.size | minus: tail_start
+      assign tail = gallery_media | slice: tail_start, tail_length
+      assign gallery_media = head | concat: moved_item | concat: middle | concat: tail
     endif
   endif
 
