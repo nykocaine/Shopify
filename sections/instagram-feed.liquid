@@ -171,6 +171,17 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                           <path d="M99.9814 137.91C120.916 137.91 137.887 120.939 137.887 100.005C137.887 79.0704 120.916 62.0996 99.9814 62.0996C79.0469 62.0996 62.0762 79.0704 62.0762 100.005C62.0762 120.939 79.0469 137.91 99.9814 137.91Z" fill="{{ icon_secondary }}"/>
                         </g>
 
+                      {%- when 'stamp' -%}
+                        {%- comment -%}
+                        Supplied artwork, outer wavy-edged shape only - same "without the R" request
+                        as 'badge' above, but this source SVG has no separate circle behind its
+                        letter-R paths, so there's nothing else to add back here. Same ~200x200
+                        canvas, so the same scale(0.5) + icon_primary swap applies.
+                        {%- endcomment -%}
+                        <g transform="scale(0.5)">
+                          <path d="M172.42 66.3168C166.807 55.0918 158.561 46.7876 149.741 41.0606C132.56 29.9502 112.744 25.254 93.9023 26.9721C80.6729 28.1748 67.558 32.5273 55.4739 40.4306C41.5573 49.5366 25.4643 64.1978 22.0281 86.705C21.0545 93.062 20.6536 100.564 25.6934 105.032C31.6495 110.358 40.8127 113.278 48.5442 114.195C52.4386 114.653 56.5621 114.653 59.941 116.6C67.6152 120.953 61.0292 134.297 59.941 141.112C58.9102 147.927 55.1303 158.465 59.082 164.936C61.4873 168.831 66.4698 170.549 71.2233 171.637C80.6729 173.813 90.5234 174.672 100.317 174.1C107.876 173.699 115.55 173.813 123.053 172.553C128.608 171.637 136.626 171.981 139.604 166.54C143.155 160.011 141.666 151.02 139.948 144.204C138.344 137.676 136.454 131.376 135.538 124.675C134.736 118.719 136.225 115.97 142.181 113.565C152.318 109.499 166.75 109.212 174.138 99.9917C182.041 90.1985 177.345 76.2818 172.363 66.2595L172.42 66.3168Z" fill="{{ icon_primary }}"/>
+                        </g>
+
                       {%- else -%}
                         {%- comment -%} 'droplet' (default): pointed top tapering into a rounded bottom, classic serum-drop silhouette, plus a small shine highlight. {%- endcomment -%}
                         <path d="M50 5C50 5 20 45 20 65A30 30 0 0 0 80 65C80 45 50 5 50 5Z" fill="{{ icon_primary }}"/>
@@ -443,22 +454,27 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   Spins in place, indefinitely - transform-origin stays centered (the SVG's own default for a
   square viewBox), so it rotates around its own center rather than orbiting anything. Respects
   reduced-motion like every other animation in this theme (see eg. snippets/media-zoom-style.liquid).
+  icon_spin: false (the "Spin icon" checkbox) skips the animation declaration entirely instead of
+  adding a second rule to cancel it, so that checkbox and reduced-motion both end up controlling
+  the exact same property without one fighting the other.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__icon svg {
-    animation: instagram-feed-icon-spin 8s linear infinite;
-  }
-
-  @keyframes instagram-feed-icon-spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
+  {%- if section.settings.icon_spin != false -%}
     #shopify-section-{{ section.id }} .instagram-feed__icon svg {
-      animation: none;
+      animation: instagram-feed-icon-spin 8s linear infinite;
     }
-  }
+
+    @keyframes instagram-feed-icon-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #shopify-section-{{ section.id }} .instagram-feed__icon svg {
+        animation: none;
+      }
+    }
+  {%- endif -%}
 
   {%- comment -%}
   Independent of button_style (outline already has its own border, solid/link normally don't) -
@@ -771,6 +787,10 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         {
           "value": "badge",
           "label": "Badge"
+        },
+        {
+          "value": "stamp",
+          "label": "Stamp"
         }
       ],
       "default": "droplet",
@@ -785,6 +805,13 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       "unit": "px",
       "label": "Icon size",
       "default": 32,
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "icon_spin",
+      "label": "Spin icon",
+      "default": true,
       "visible_if": "{{ section.settings.show_icon }}"
     },
     {
