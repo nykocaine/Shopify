@@ -25,6 +25,20 @@ body {
   overflow-x: hidden;
 }
 
+/* overflow-x: hidden above (the fallback for browsers without `clip` support) turns html/body into
+   a scroll container, which broke the header's position: sticky (sections/header.liquid,
+   enable_sticky): sticky elements resolve against their nearest ancestor scroll container, so once
+   html/body became one, the header started sticking relative to that instead of the viewport. clip
+   doesn't establish a scroll container at all - same horizontal-overflow clipping, without that
+   side effect - so it takes over here wherever the browser supports it (same
+   @supports (overflow: clip) pattern already used for .shopify-section--dynamic-grid further
+   down). */
+@supports (overflow: clip) {
+  html, body {
+    overflow-x: clip;
+  }
+}
+
 hr {
   border-top-width: 1px;
   justify-self: stretch;
