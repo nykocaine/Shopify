@@ -80,23 +80,30 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               global reset already strips any button border/background/padding, and
               .content-box__background-media's width/height: 100% (theme.css) sizes it to fill the
               square since it's the only direct child, same as a plain img would be.
+
+              The direct flex item is a plain div (like the video branch above, and like
+              trust-icons.liquid's own carousel items) - open-lightbox-button sits one level inside
+              it instead of being the flex item itself, same as it already is inside
+              media-zoom-slide.liquid's own output for the video branch.
               {%- endcomment -%}
-              <open-lightbox-button class="snap-start block" aria-controls="{{ instagram_lightbox_id }}" image-index="{{ instagram_slide_index }}" {{ block.shopify_attributes }}>
-                <div class="content-box__background-media">
-                  <button type="button">
-                    {%- comment -%}
-                    sizes/widths are sized for the lightbox's expanded view (up to 96vw, see
-                    media-zoom-style.liquid), not the small grid thumbnail - it's the same img
-                    element in both states (the lightbox only repositions/rescales it via CSS, never
-                    swaps in a different image), so a thumbnail-sized sizes hint here would have the
-                    browser fetch a small srcset candidate that then looks soft/blurry once expanded
-                    full-screen.
-                    {%- endcomment -%}
-                    {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: '90vw', widths: '150,300,450,600,900,1200,1500', class: 'instagram-feed__image aspect-square image-cover' -}}
-                    <span class="sr-only">{{ 'product.gallery.zoom' | t }}</span>
-                  </button>
-                </div>
-              </open-lightbox-button>
+              <div class="snap-start" {{ block.shopify_attributes }}>
+                <open-lightbox-button class="block" aria-controls="{{ instagram_lightbox_id }}" image-index="{{ instagram_slide_index }}">
+                  <div class="content-box__background-media">
+                    <button type="button">
+                      {%- comment -%}
+                      sizes/widths are sized for the lightbox's expanded view (up to 96vw, see
+                      media-zoom-style.liquid), not the small grid thumbnail - it's the same img
+                      element in both states (the lightbox only repositions/rescales it via CSS, never
+                      swaps in a different image), so a thumbnail-sized sizes hint here would have the
+                      browser fetch a small srcset candidate that then looks soft/blurry once expanded
+                      full-screen.
+                      {%- endcomment -%}
+                      {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: '90vw', widths: '150,300,450,600,900,1200,1500', class: 'instagram-feed__image aspect-square image-cover' -}}
+                      <span class="sr-only">{{ 'product.gallery.zoom' | t }}</span>
+                    </button>
+                  </div>
+                </open-lightbox-button>
+              </div>
 
               {%- assign instagram_slide_index = instagram_slide_index | plus: 1 -%}
             {%- endif -%}
@@ -143,8 +150,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         one captures its own "cells" snapshot inside an async customElements.whenDefined() callback,
         so this reorder - and the image-index rewrite that keeps each slide's lightbox index
         matching its new position - has to land first, or the lightbox would open the wrong item for
-        whatever position was clicked. Each cell's open-lightbox-button is either the cell itself
-        (image) or nested inside it (video, rendered by media-zoom-slide.liquid) - checked both ways.
+        whatever position was clicked. Every cell is a plain div (see above) with its
+        open-lightbox-button nested one level inside.
         {%- endcomment -%}
         <script>
           (function () {
@@ -161,7 +168,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             }
 
             cells.forEach(function (cell, index) {
-              var openButton = cell.tagName === 'OPEN-LIGHTBOX-BUTTON' ? cell : cell.querySelector('open-lightbox-button');
+              var openButton = cell.querySelector('open-lightbox-button');
 
               if (openButton) {
                 openButton.setAttribute('image-index', index);
@@ -214,8 +221,11 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__carousel {
     gap: .5rem;
+    width: 100%;
     min-width: 0;
     max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
     display: flex;
   }
 
