@@ -42,7 +42,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {{ section.settings.instagram_feed_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack">
-      {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank or section.settings.show_flower -%}
+      {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank or section.settings.show_icon -%}
         <div class="instagram-feed__header">
           {%- if section.settings.title != blank or section.settings.subtitle != blank -%}
             <div class="prose prose--compact">
@@ -58,24 +58,62 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             </div>
           {%- endif -%}
 
-          {%- if section.settings.button_text != blank or section.settings.show_flower -%}
+          {%- if section.settings.button_text != blank or section.settings.show_icon -%}
             <div class="instagram-feed__cta">
-              {%- if section.settings.show_flower -%}
+              {%- if section.settings.show_icon -%}
+                {%- liquid
+                  assign icon_primary = '#FF6B9D'
+                  assign icon_secondary = '#FFD93D'
+
+                  if section.settings.icon_primary_color != blank
+                    assign icon_primary = 'rgb(' | append: section.settings.icon_primary_color.rgb | append: ')'
+                  endif
+
+                  if section.settings.icon_secondary_color != blank
+                    assign icon_secondary = 'rgb(' | append: section.settings.icon_secondary_color.rgb | append: ')'
+                  endif
+                -%}
+
                 {%- comment -%}
                 Decorative only (aria-hidden) - the button next to/under it already carries the
-                actual call to action, this is purely a spinning visual accent above it.
+                actual call to action, this is purely a spinning visual accent above it. Every shape
+                shares the same two color settings (primary/secondary) and the same size setting, so
+                switching icon_type never requires re-configuring colors/size.
                 {%- endcomment -%}
-                <div class="instagram-feed__flower" aria-hidden="true">
-                  <svg viewBox="0 0 100 100" width="32" height="32">
-                    <g fill="{% if section.settings.flower_petal_color != blank %}rgb({{ section.settings.flower_petal_color.rgb }}){% else %}#FF6B9D{% endif %}">
-                      <ellipse cx="50" cy="26" rx="11" ry="20"/>
-                      <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(60 50 50)"/>
-                      <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(120 50 50)"/>
-                      <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(180 50 50)"/>
-                      <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(240 50 50)"/>
-                      <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(300 50 50)"/>
-                    </g>
-                    <circle cx="50" cy="50" r="12" fill="{% if section.settings.flower_center_color != blank %}rgb({{ section.settings.flower_center_color.rgb }}){% else %}#FFD93D{% endif %}"/>
+                <div class="instagram-feed__icon" aria-hidden="true">
+                  <svg viewBox="0 0 100 100" width="{{ section.settings.icon_size }}" height="{{ section.settings.icon_size }}">
+                    {%- case section.settings.icon_type -%}
+                      {%- when 'star' -%}
+                        <path d="M50 5 61 39 98 39 68 61 79 95 50 74 21 95 32 61 2 39 39 39Z" fill="{{ icon_primary }}" stroke="{{ icon_secondary }}" stroke-width="3" stroke-linejoin="round"/>
+
+                      {%- when 'sun' -%}
+                        <g fill="{{ icon_primary }}">
+                          <rect x="46" y="2" width="8" height="22" rx="4"/>
+                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(45 50 50)"/>
+                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(90 50 50)"/>
+                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(135 50 50)"/>
+                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(180 50 50)"/>
+                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(225 50 50)"/>
+                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(270 50 50)"/>
+                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(315 50 50)"/>
+                        </g>
+                        <circle cx="50" cy="50" r="18" fill="{{ icon_secondary }}"/>
+
+                      {%- when 'sparkle' -%}
+                        <path d="M50 2C53 42 58 47 98 50 58 53 53 58 50 98 47 58 42 53 2 50 42 47 47 42 50 2Z" fill="{{ icon_primary }}"/>
+                        <circle cx="78" cy="22" r="7" fill="{{ icon_secondary }}"/>
+
+                      {%- else -%}
+                        <g fill="{{ icon_primary }}">
+                          <ellipse cx="50" cy="26" rx="11" ry="20"/>
+                          <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(60 50 50)"/>
+                          <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(120 50 50)"/>
+                          <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(180 50 50)"/>
+                          <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(240 50 50)"/>
+                          <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(300 50 50)"/>
+                        </g>
+                        <circle cx="50" cy="50" r="12" fill="{{ icon_secondary }}"/>
+                    {%- endcase -%}
                   </svg>
                 </div>
               {%- endif -%}
@@ -298,18 +336,18 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   square viewBox), so it rotates around its own center rather than orbiting anything. Respects
   reduced-motion like every other animation in this theme (see eg. snippets/media-zoom-style.liquid).
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__flower svg {
-    animation: instagram-feed-flower-spin 8s linear infinite;
+  #shopify-section-{{ section.id }} .instagram-feed__icon svg {
+    animation: instagram-feed-icon-spin 8s linear infinite;
   }
 
-  @keyframes instagram-feed-flower-spin {
+  @keyframes instagram-feed-icon-spin {
     to {
       transform: rotate(360deg);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    #shopify-section-{{ section.id }} .instagram-feed__flower svg {
+    #shopify-section-{{ section.id }} .instagram-feed__icon svg {
       animation: none;
     }
   }
@@ -572,28 +610,64 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     },
     {
       "type": "header",
-      "content": "Flower icon"
+      "content": "Decorative icon"
     },
     {
       "type": "checkbox",
-      "id": "show_flower",
-      "label": "Show spinning flower icon",
+      "id": "show_icon",
+      "label": "Show spinning icon",
       "info": "A decorative icon shown above the button.",
       "default": true
     },
     {
-      "type": "color",
-      "id": "flower_petal_color",
-      "label": "Petal color",
-      "default": "#FF6B9D",
-      "visible_if": "{{ section.settings.show_flower }}"
+      "type": "select",
+      "id": "icon_type",
+      "label": "Icon",
+      "options": [
+        {
+          "value": "flower",
+          "label": "Flower"
+        },
+        {
+          "value": "star",
+          "label": "Star"
+        },
+        {
+          "value": "sun",
+          "label": "Sun"
+        },
+        {
+          "value": "sparkle",
+          "label": "Sparkle"
+        }
+      ],
+      "default": "flower",
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "min": 16,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Icon size",
+      "default": 32,
+      "visible_if": "{{ section.settings.show_icon }}"
     },
     {
       "type": "color",
-      "id": "flower_center_color",
-      "label": "Center color",
+      "id": "icon_primary_color",
+      "label": "Primary color",
+      "default": "#FF6B9D",
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "color",
+      "id": "icon_secondary_color",
+      "label": "Secondary color",
       "default": "#FFD93D",
-      "visible_if": "{{ section.settings.show_flower }}"
+      "visible_if": "{{ section.settings.show_icon }}"
     },
     {
       "type": "header",
