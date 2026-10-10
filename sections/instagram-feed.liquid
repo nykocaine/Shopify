@@ -59,7 +59,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
           {%- endif -%}
 
           {%- if section.settings.button_text != blank -%}
-            {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style -%}
+            {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style, class: 'instagram-feed__button' -%}
           {%- endif -%}
         </div>
       {%- endif -%}
@@ -236,6 +236,17 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       align-items: start;
     }
   }
+
+  {%- comment -%}
+  Independent of button_style (outline already has its own border, solid/link normally don't) -
+  left blank by default (the color picker's own "no color" state), so nothing renders unless the
+  merchant explicitly picks one.
+  {%- endcomment -%}
+  {%- if section.settings.button_border_color != blank -%}
+    #shopify-section-{{ section.id }} .instagram-feed__button {
+      border: 1px solid rgb({{ section.settings.button_border_color.rgb }});
+    }
+  {%- endif -%}
 
   {%- comment -%}
   ============================================================
@@ -475,6 +486,12 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         }
       ],
       "default": "outline"
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Button border color",
+      "info": "Leave blank for no border."
     },
     {
       "type": "header",
