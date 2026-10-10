@@ -83,36 +83,41 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                 <div class="instagram-feed__icon" aria-hidden="true">
                   <svg viewBox="0 0 100 100" width="{{ section.settings.icon_size }}" height="{{ section.settings.icon_size }}">
                     {%- case section.settings.icon_type -%}
-                      {%- when 'star' -%}
-                        <path d="M50 5 61 39 98 39 68 61 79 95 50 74 21 95 32 61 2 39 39 39Z" fill="{{ icon_primary }}" stroke="{{ icon_secondary }}" stroke-width="3" stroke-linejoin="round"/>
-
-                      {%- when 'sun' -%}
+                      {%- when 'dropper' -%}
+                        {%- comment -%} Serum bottle: round bulb + short neck on top, tall rounded body below. {%- endcomment -%}
                         <g fill="{{ icon_primary }}">
-                          <rect x="46" y="2" width="8" height="22" rx="4"/>
-                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(45 50 50)"/>
-                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(90 50 50)"/>
-                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(135 50 50)"/>
-                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(180 50 50)"/>
-                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(225 50 50)"/>
-                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(270 50 50)"/>
-                          <rect x="46" y="2" width="8" height="22" rx="4" transform="rotate(315 50 50)"/>
+                          <ellipse cx="50" cy="16" rx="15" ry="13"/>
+                          <rect x="45" y="26" width="10" height="14"/>
                         </g>
-                        <circle cx="50" cy="50" r="18" fill="{{ icon_secondary }}"/>
+                        <rect x="28" y="40" width="44" height="52" rx="10" fill="{{ icon_secondary }}"/>
 
-                      {%- when 'sparkle' -%}
-                        <path d="M50 2C53 42 58 47 98 50 58 53 53 58 50 98 47 58 42 53 2 50 42 47 47 42 50 2Z" fill="{{ icon_primary }}"/>
-                        <circle cx="78" cy="22" r="7" fill="{{ icon_secondary }}"/>
+                      {%- when 'jar' -%}
+                        {%- comment -%} Cream jar: wide lid + taller rounded body underneath. {%- endcomment -%}
+                        <rect x="24" y="10" width="52" height="18" rx="7" fill="{{ icon_secondary }}"/>
+                        <rect x="18" y="28" width="64" height="58" rx="12" fill="{{ icon_primary }}"/>
+
+                      {%- when 'gem' -%}
+                        {%- comment -%} Faceted gem: a kite-shaped outline with crossing facet lines - stroke-linejoin: round softens its points, same trick as the pre-existing star/sparkle shapes. {%- endcomment -%}
+                        <polygon points="50,8 82,36 66,92 34,92 18,36" fill="{{ icon_primary }}" stroke="{{ icon_primary }}" stroke-width="8" stroke-linejoin="round"/>
+                        <polyline points="18,36 82,36" fill="none" stroke="{{ icon_secondary }}" stroke-width="3" stroke-linecap="round"/>
+                        <polyline points="50,8 34,92" fill="none" stroke="{{ icon_secondary }}" stroke-width="3" stroke-linecap="round"/>
+                        <polyline points="50,8 66,92" fill="none" stroke="{{ icon_secondary }}" stroke-width="3" stroke-linecap="round"/>
+
+                      {%- when 'lotus' -%}
+                        {%- comment -%} Same rotate-around-center technique as the droplet/petal shapes below, just 5 wider/shorter petals (72deg apart) instead of 6 narrow ones, for a flatter blossom look. {%- endcomment -%}
+                        <g fill="{{ icon_primary }}">
+                          <ellipse cx="50" cy="30" rx="16" ry="22"/>
+                          <ellipse cx="50" cy="30" rx="16" ry="22" transform="rotate(72 50 50)"/>
+                          <ellipse cx="50" cy="30" rx="16" ry="22" transform="rotate(144 50 50)"/>
+                          <ellipse cx="50" cy="30" rx="16" ry="22" transform="rotate(216 50 50)"/>
+                          <ellipse cx="50" cy="30" rx="16" ry="22" transform="rotate(288 50 50)"/>
+                        </g>
+                        <circle cx="50" cy="50" r="10" fill="{{ icon_secondary }}"/>
 
                       {%- else -%}
-                        <g fill="{{ icon_primary }}">
-                          <ellipse cx="50" cy="26" rx="11" ry="20"/>
-                          <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(60 50 50)"/>
-                          <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(120 50 50)"/>
-                          <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(180 50 50)"/>
-                          <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(240 50 50)"/>
-                          <ellipse cx="50" cy="26" rx="11" ry="20" transform="rotate(300 50 50)"/>
-                        </g>
-                        <circle cx="50" cy="50" r="12" fill="{{ icon_secondary }}"/>
+                        {%- comment -%} 'droplet' (default): pointed top tapering into a rounded bottom, classic serum-drop silhouette, plus a small shine highlight. {%- endcomment -%}
+                        <path d="M50 5C50 5 20 45 20 65A30 30 0 0 0 80 65C80 45 50 5 50 5Z" fill="{{ icon_primary }}"/>
+                        <ellipse cx="38" cy="55" rx="7" ry="10" fill="{{ icon_secondary }}"/>
                     {%- endcase -%}
                   </svg>
                 </div>
@@ -625,23 +630,27 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       "label": "Icon",
       "options": [
         {
-          "value": "flower",
-          "label": "Flower"
+          "value": "droplet",
+          "label": "Serum drop"
         },
         {
-          "value": "star",
-          "label": "Star"
+          "value": "dropper",
+          "label": "Dropper bottle"
         },
         {
-          "value": "sun",
-          "label": "Sun"
+          "value": "jar",
+          "label": "Cream jar"
         },
         {
-          "value": "sparkle",
-          "label": "Sparkle"
+          "value": "gem",
+          "label": "Gem"
+        },
+        {
+          "value": "lotus",
+          "label": "Lotus"
         }
       ],
-      "default": "flower",
+      "default": "droplet",
       "visible_if": "{{ section.settings.show_icon }}"
     },
     {
