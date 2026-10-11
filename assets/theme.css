@@ -7269,7 +7269,9 @@ shopify-account::part(signed-out-avatar) {
 }
 
 .menu-drawer {
-  --menu-drawer-padding-inline: 1.5rem;
+  /* Same formula as the floating card content padding elsewhere (e.g. faq.liquid's .faq__container),
+     instead of a fixed rem value, so it scales with --container-gutter at every breakpoint. */
+  --menu-drawer-padding-inline: calc(var(--container-gutter) + 0.5rem);
   display: none;
 }
 
@@ -7402,7 +7404,7 @@ shopify-account::part(signed-out-avatar) {
 }
 
 .menu-drawer__panel-body {
-  padding: 2.2rem var(--menu-drawer-padding-inline);
+  padding: var(--menu-drawer-padding-inline);
   flex-grow: 1;
   overflow-y: auto;
 }
