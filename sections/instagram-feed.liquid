@@ -379,17 +379,34 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             .play() once an IntersectionObserver first reports it as visible - that observer is set
             up when each element connects, which (since theme.js is deferred) happens AFTER this
             same script has already reordered them above. It should already re-fire from that
-            reorder alone, but requestAnimationFrame + an explicit .play() call here is a cheap,
-            harmless safety net for whichever shuffled-in item ends up visible first on mobile,
-            where only the first couple of items are ever on-screen at once: .play() itself is a
-            no-op if it's already playing (BaseMedia#play), and silently no-ops again if the browser
-            still refuses autoplay (VideoMedia#_playerHandler already catches that).
+            reorder alone, but requestAnimationFrame + an explicit .play() call here is a cheap
+            safety net for whichever shuffled-in item ends up visible first on mobile.
+
+            Scoped to cells actually inside the carousel's own visible (horizontally un-clipped)
+            width on purpose - calling .play() unconditionally on every cell, including the ones
+            scrolled off-screen, was making every autoplaying video in the whole carousel start
+            fetching/buffering at once on page load (a real page-load slowdown with more than a
+            couple of video items), not just the one or two actually on screen. media-blocks.liquid's
+            own carousel never hits this at all: it never passes autoplay: true to media-zoom-slide
+            in the first place, so nothing there ever force-plays off-screen video - autoplay here is
+            the one deliberate difference from that section (per an earlier request), so unlike
+            media-blocks this needs this extra visibility check to stay just as lazy for everything
+            that isn't actually on screen yet.
             {%- endcomment -%}
             requestAnimationFrame(function () {
+              var carouselRect = carousel.getBoundingClientRect();
+
               cells.forEach(function (cell) {
                 var videoMedia = cell.querySelector('video-media[autoplay]');
 
-                if (videoMedia && typeof videoMedia.play === 'function') {
+                if (!videoMedia || typeof videoMedia.play !== 'function') {
+                  return;
+                }
+
+                var cellRect = cell.getBoundingClientRect();
+                var isWithinCarousel = cellRect.right > carouselRect.left && cellRect.left < carouselRect.right;
+
+                if (isWithinCarousel) {
                   videoMedia.play();
                 }
               });
