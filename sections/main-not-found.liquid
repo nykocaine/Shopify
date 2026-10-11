@@ -1,3 +1,19 @@
+{%- liquid
+  # .not-found-heading-row sits inside .empty-state's grid (.v-stack + justify-items-center), where
+  # grid items shrink-wrap to their own content and get centered by justify-items, not by any extra
+  # space inside them - so unlike a plain block row, aligning this one left/right needs justify-self
+  # on the row itself (which row, as a grid item, stays shrink-wrapped either way) rather than
+  # justify-content (which only redistributes leftover space inside the row, and there is none).
+  assign icon_justify_self = 'center'
+
+  case section.settings.icon_alignment
+    when 'left'
+      assign icon_justify_self = 'start'
+    when 'right'
+      assign icon_justify_self = 'end'
+  endcase
+-%}
+
 <style>
   #shopify-section-{{ section.id }} .content-box {
     min-height: {{ section.settings.mobile_height }}svh;
@@ -22,14 +38,13 @@
   }
 
   {%- comment -%}
-  .empty-state centers the heading via text-align (theme.css), which only centers inline content
-  (the h1's own text) - once the icon sits beside it as a second flex item, centering the pair as a
-  group instead needs justify-content on their own row. display: flex here defaults to filling the
-  full block width (same as the h1 did alone), so justify-content: center reproduces the exact same
-  centered look, just centering two items instead of one.
+  See the justify-self note above icon_justify_self - this row is a grid item (child of .empty-state,
+  a .v-stack), so its own horizontal position on the page comes from justify-self, not from anything
+  inside it. display: flex + align-items: center here is only about laying the heading and icon out
+  side by side (and centering them on the cross axis relative to each other).
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .not-found-heading-row {
-    justify-content: center;
+    justify-self: {{ icon_justify_self }};
     align-items: center;
     gap: .5rem;
     display: flex;
@@ -39,9 +54,11 @@
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_not_found %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_not_found %} style="border-end-start-radius: {{ section.settings.not_found_border_radius }}px; border-end-end-radius: {{ section.settings.not_found_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="content-box">
     <div class="empty-state v-stack gap-6 justify-items-center">
-      {%- if section.settings.heading != blank -%}
+      {%- if section.settings.heading != blank or section.settings.show_icon -%}
         <div class="not-found-heading-row">
-          <h1 class="{{ section.settings.heading_size }}">{{ section.settings.heading }}</h1>
+          {%- if section.settings.heading != blank -%}
+            <h1 class="{{ section.settings.heading_size }}">{{ section.settings.heading }}</h1>
+          {%- endif -%}
 
           {%- if section.settings.show_icon -%}
             {%- render 'decorative-icon',
@@ -243,6 +260,27 @@
       "id": "icon_border_color",
       "label": "Border color",
       "info": "Leave blank for no border.",
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "select",
+      "id": "icon_alignment",
+      "label": "Alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center",
       "visible_if": "{{ section.settings.show_icon }}"
     }
   ]

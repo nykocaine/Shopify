@@ -14,6 +14,18 @@
       endif
     endif
   endfor
+
+  # icon_alignment doubles as both the row's text-align (so a lone icon, with no heading next to
+  # it, still lands on the chosen side) and its flex justify-content (so the pair, when the heading
+  # is shown too, is positioned as a group instead of only the text inside the h1 shifting).
+  assign icon_justify = 'center'
+
+  case section.settings.icon_alignment
+    when 'left'
+      assign icon_justify = 'flex-start'
+    when 'right'
+      assign icon_justify = 'flex-end'
+  endcase
 -%}
 
 <style>
@@ -96,13 +108,16 @@
 
   {%- comment -%}
   .prose-justify-center (theme.css) centers the heading via text-align, which only centers inline
-  content (the h1's own text) - once the icon sits beside it as a second flex item, centering the
-  pair as a group instead needs justify-content on their own row. display: flex here defaults to
-  filling the full block width (same as the h1 did alone), so justify-content: center reproduces
-  the exact same centered look, just centering two items instead of one.
+  content (the h1's own text) - once the icon sits beside it as a second flex item, aligning the
+  pair as a group instead needs justify-content on their own row (text-align is set here too, so a
+  lone icon - no heading set - still lands on the chosen side instead of only ever centering, since
+  there'd be no text left for text-align to act on). display: flex here defaults to filling the full
+  block width (same as the h1 did alone), so this reproduces the same look at the default (center),
+  with left/right now also available via icon_alignment.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .search-heading-row {
-    justify-content: center;
+    justify-content: {{ icon_justify }};
+    text-align: {{ section.settings.icon_alignment | default: 'center' }};
     align-items: center;
     gap: .5rem;
     display: flex;
@@ -114,9 +129,11 @@
     <div class="container">
       <div class="empty-state">
         <div class="prose prose-justify-center">
-          {%- if section.settings.search_heading != blank -%}
+          {%- if section.settings.search_heading != blank or section.settings.show_icon -%}
             <div class="search-heading-row">
-              <h1 class="{{ section.settings.search_heading_size }}">{{ section.settings.search_heading }}</h1>
+              {%- if section.settings.search_heading != blank -%}
+                <h1 class="{{ section.settings.search_heading_size }}">{{ section.settings.search_heading }}</h1>
+              {%- endif -%}
 
               {%- if section.settings.show_icon -%}
                 {%- render 'decorative-icon',
@@ -152,9 +169,11 @@
 
     <div class="container section-spacing section-spacing--tight">
       <div class="prose prose-justify-center">
-        {%- if section.settings.search_heading != blank -%}
+        {%- if section.settings.search_heading != blank or section.settings.show_icon -%}
           <div class="search-heading-row">
-            <h1 class="{{ section.settings.search_heading_size }}">{{ section.settings.search_heading }}</h1>
+            {%- if section.settings.search_heading != blank -%}
+              <h1 class="{{ section.settings.search_heading_size }}">{{ section.settings.search_heading }}</h1>
+            {%- endif -%}
 
             {%- if section.settings.show_icon -%}
               {%- render 'decorative-icon',
@@ -464,6 +483,27 @@ on desktop based on the settings
       "id": "icon_border_color",
       "label": "Border color",
       "info": "Leave blank for no border.",
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "select",
+      "id": "icon_alignment",
+      "label": "Alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center",
       "visible_if": "{{ section.settings.show_icon }}"
     },
     {
