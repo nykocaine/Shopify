@@ -222,9 +222,12 @@
     Info panel: heading on top, then a list of label/content rows below it, each row edited as its
     own pair of fields (label + content) so the merchant can change one row without touching the
     others - a divider is added between rows automatically, not on the first or last one.
+    Padding follows the same formula faq.liquid uses for its own interior padding (--container-gutter
+    plus a flat 0.5rem, uncapped), instead of the old min(2.5rem, var(--container-gutter)) ceiling -
+    unified so every "card" interior padding in the theme matches.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel {
-      padding: min(2.5rem, var(--container-gutter));
+      padding: calc(var(--container-gutter) + 0.5rem);
       gap: 2rem;
       display: grid;
     }
@@ -738,7 +741,7 @@
                   </style>
 
                   <div id="results-tabs-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {{ block.shopify_attributes }}>
-                    <div style="padding: min(2.5rem, var(--container-gutter));">
+                    <div style="padding: calc(var(--container-gutter) + 0.5rem);">
                       <div class="results-tabs__toggles" role="tablist">
                         {%- for i in (1..3) -%}
                           {%- capture period_label_key -%}period_{{ i }}_label{%- endcapture -%}
@@ -1185,7 +1188,7 @@
                   -%}
                 </style>
 
-                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: min(1.25rem, var(--container-gutter));" {{ block.shopify_attributes }}>
+                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: calc(var(--container-gutter) + 0.25rem);" {{ block.shopify_attributes }}>
                   <div class="v-stack gap-4" id="{{ carousel_wrapper_id }}">
                     <div style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                     <product-list id="{{ carousel_dom_id }}" cell-selector=".snap-start" class="scroll-area snap-x">
