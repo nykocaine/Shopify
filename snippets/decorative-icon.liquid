@@ -123,10 +123,19 @@ re-configuring colors/size.
         </g>
 
       {%- when 'phone' -%}
-        {%- comment -%} Smartphone: body (icon_primary), screen (icon_secondary) and a home button dot (icon_secondary). {%- endcomment -%}
-        <rect x="30" y="8" width="40" height="84" rx="10" fill="{{ icon_primary }}"/>
-        <rect x="36" y="18" width="28" height="56" rx="3" fill="{{ icon_secondary }}"/>
-        <circle cx="50" cy="84" r="4" fill="{{ icon_secondary }}"/>
+        {%- comment -%}
+        Vintage desk phone: base + rotary dial center (icon_primary), the dial face + coiled cord
+        (icon_secondary), handset (receiver) resting across the top on its cradle pegs (icon_primary).
+        {%- endcomment -%}
+        <rect x="20" y="55" width="60" height="35" rx="12" fill="{{ icon_primary }}"/>
+        <circle cx="50" cy="73" r="18" fill="{{ icon_secondary }}"/>
+        <circle cx="50" cy="73" r="4" fill="{{ icon_primary }}"/>
+        <path d="M30 58Q24 48 34 42Q24 37 34 30" fill="none" stroke="{{ icon_secondary }}" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="28" cy="55" r="5" fill="{{ icon_primary }}"/>
+        <circle cx="72" cy="55" r="5" fill="{{ icon_primary }}"/>
+        <rect x="20" y="18" width="60" height="13" rx="6.5" fill="{{ icon_primary }}"/>
+        <circle cx="20" cy="24.5" r="10" fill="{{ icon_primary }}"/>
+        <circle cx="80" cy="24.5" r="10" fill="{{ icon_primary }}"/>
 
       {%- when 'swoosh' -%}
         {%- comment -%}
