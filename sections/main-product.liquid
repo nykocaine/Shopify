@@ -438,12 +438,16 @@
     The *2 above only makes sense when the next section independently contributes its own
     padding-block-start that needs collapsing away (the ".section-spacing" case the rule below and
     theme.css's own :has() mechanism both target). When the next section is ALSO a floating section
-    (eg. Featured Tabs with its own "Floating" setting on), it contributes zero top spacing of its own
-    (.section-floating--block-end only ever sets a bottom margin, never a top one) - so there's nothing
-    left to collapse, and the *2 just becomes a literal double gap. Halving it back down to the theme's
-    normal single inter-section spacing in that specific case only.
+    (eg. Featured Tabs with its own "Floating" setting on, or Instagram Feed/Reviews/Password which use
+    ".section-floating--block" instead), it never contributes a padding-block-start of its own - floating
+    sections only ever use margin, never padding, on that edge - so there's nothing left to collapse, and
+    the *2 just becomes a literal double gap (the ".section-floating--block" cases additionally carry their
+    own top margin, which only naturally collapses with this one down to the smaller of the two instead of
+    adding on top - but starting from *2 that smaller value is still the oversized one). Halving it back
+    down to the theme's normal single inter-section spacing in that specific case only. Checking for the
+    base ".section-floating" class (rather than just "--block-end") so this also catches the "--block" variants.
     {%- endcomment -%}
-    #shopify-section-{{ section.id }}:has(+ .shopify-section .section-floating--block-end) .section-floating--block-end {
+    #shopify-section-{{ section.id }}:has(+ .shopify-section .section-floating) .section-floating--block-end {
       margin-block-end: var(--section-vertical-spacing);
     }
 
