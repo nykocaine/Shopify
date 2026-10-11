@@ -7306,8 +7306,9 @@ shopify-account::part(signed-out-avatar) {
 }
 
 /* Mobile menu drawer: below 999px it drops down right below the header, leaving the header and anything above it
-   (announcement bar, countdown bar) visible, reaching the bottom of the viewport, with --container-gutter side
-   margins. position: fixed (not absolute) + --menu-offset-top (a CSS var written by HeaderMenuDrawer's
+   (announcement bar, countdown bar) visible, with --container-gutter margins on the sides and the bottom (so it
+   no longer touches the viewport's bottom edge), and rounded bottom corners (--drawer-border-radius) to match.
+   position: fixed (not absolute) + --menu-offset-top (a CSS var written by HeaderMenuDrawer's
    calculateOffsets_fn in theme.js, using the header's own getBoundingClientRect().bottom - a live, direct
    measurement of the header's real current bottom edge in the viewport). This was tried first with the theme's
    own --sticky-area-height variable, but that only accounts for header/announcement-bar height when
@@ -7331,17 +7332,11 @@ shopify-account::part(signed-out-avatar) {
   .menu-drawer::part(content) {
     position: fixed;
     inset-block-start: var(--menu-offset-top, 0px);
-    inset-block-end: auto;
+    inset-block-end: var(--container-gutter);
     inset-inline: var(--container-gutter);
     width: auto;
     max-width: none;
-    height: calc(100vh - var(--menu-offset-top, 0px));
-  }
-
-  @supports (height: 100dvh) {
-    .menu-drawer::part(content) {
-      height: calc(100dvh - var(--menu-offset-top, 0px));
-    }
+    border-radius: 0 0 var(--drawer-border-radius) var(--drawer-border-radius);
   }
 }
 
