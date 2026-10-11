@@ -61,135 +61,15 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
           {%- if section.settings.button_text != blank or section.settings.show_icon -%}
             <div class="instagram-feed__cta">
               {%- if section.settings.show_icon -%}
-                {%- liquid
-                  assign icon_primary = '#FF6B9D'
-                  assign icon_secondary = '#FFD93D'
-                  assign icon_border = blank
-
-                  if section.settings.icon_primary_color != blank
-                    assign icon_primary = 'rgb(' | append: section.settings.icon_primary_color.rgb | append: ')'
-                  endif
-
-                  if section.settings.icon_secondary_color != blank
-                    assign icon_secondary = 'rgb(' | append: section.settings.icon_secondary_color.rgb | append: ')'
-                  endif
-
-                  if section.settings.icon_border_color != blank
-                    assign icon_border = 'rgb(' | append: section.settings.icon_border_color.rgb | append: ')'
-                  endif
-
-                  # 'star' (the default shape) already draws a same-color stroke of its own,
-                  # unrelated to a border - stroke-linejoin: round there softens its otherwise-sharp
-                  # points. When a border color is picked, that stroke adopts it too instead of
-                  # staying tied to icon_primary, so the star ends up matching the new border instead
-                  # of silently ignoring it.
-                  assign icon_round_stroke = icon_primary
-
-                  if icon_border != blank
-                    assign icon_round_stroke = icon_border
-                  endif
+                {%- render 'decorative-icon',
+                  icon_type: section.settings.icon_type,
+                  icon_size: section.settings.icon_size,
+                  icon_spin: section.settings.icon_spin,
+                  icon_primary_color: section.settings.icon_primary_color,
+                  icon_secondary_color: section.settings.icon_secondary_color,
+                  icon_border_color: section.settings.icon_border_color,
+                  class: 'instagram-feed__icon'
                 -%}
-
-                {%- comment -%}
-                Decorative only (aria-hidden) - the button next to/under it already carries the
-                actual call to action, this is purely a spinning visual accent above it. Every shape
-                shares the same two color settings (primary/secondary) and the same size setting, so
-                switching icon_type never requires re-configuring colors/size.
-                {%- endcomment -%}
-                <div class="instagram-feed__icon" aria-hidden="true">
-                  {%- comment -%}
-                  stroke/stroke-width set on the svg root (not any inner shape) is inherited by
-                  every descendant that doesn't declare its own stroke - covers every icon's main
-                  shape(s) with one border, without touching each one's markup individually. Only
-                  added when a border color is actually picked, so there's no border by default.
-                  {%- endcomment -%}
-                  <svg viewBox="0 0 100 100" width="{{ section.settings.icon_size }}" height="{{ section.settings.icon_size }}"{% if icon_border != blank %} stroke="{{ icon_border }}" stroke-width="3"{% endif %}>
-                    {%- case section.settings.icon_type -%}
-                      {%- when 'lotus' -%}
-                        {%- comment -%} Same rotate-around-center technique as 'clover' below, just 5 wider/shorter petal ellipses (72deg apart) instead of 4 circles, for a flatter blossom look. {%- endcomment -%}
-                        <g fill="{{ icon_primary }}">
-                          <ellipse cx="50" cy="30" rx="16" ry="22"/>
-                          <ellipse cx="50" cy="30" rx="16" ry="22" transform="rotate(72 50 50)"/>
-                          <ellipse cx="50" cy="30" rx="16" ry="22" transform="rotate(144 50 50)"/>
-                          <ellipse cx="50" cy="30" rx="16" ry="22" transform="rotate(216 50 50)"/>
-                          <ellipse cx="50" cy="30" rx="16" ry="22" transform="rotate(288 50 50)"/>
-                        </g>
-                        <circle cx="50" cy="50" r="10" fill="{{ icon_secondary }}"/>
-
-                      {%- when 'clover' -%}
-                        {%- comment -%} Four overlapping circles, one per quadrant, form the classic four-leaf clover shape - plus a short diagonal stem. {%- endcomment -%}
-                        <g fill="{{ icon_primary }}">
-                          <circle cx="35" cy="35" r="20"/>
-                          <circle cx="65" cy="35" r="20"/>
-                          <circle cx="35" cy="65" r="20"/>
-                          <circle cx="65" cy="65" r="20"/>
-                        </g>
-                        <line x1="50" y1="78" x2="38" y2="95" stroke="{{ icon_secondary }}" stroke-width="4" stroke-linecap="round"/>
-                        <circle cx="50" cy="50" r="10" fill="{{ icon_secondary }}"/>
-
-                      {%- when 'smiley' -%}
-                        {%- comment -%} Face circle + two eye dots + a curved smile (quadratic bezier). {%- endcomment -%}
-                        <circle cx="50" cy="50" r="42" fill="{{ icon_primary }}"/>
-                        <circle cx="36" cy="42" r="6" fill="{{ icon_secondary }}"/>
-                        <circle cx="64" cy="42" r="6" fill="{{ icon_secondary }}"/>
-                        <path d="M30 60Q50 80 70 60" fill="none" stroke="{{ icon_secondary }}" stroke-width="6" stroke-linecap="round"/>
-
-                      {%- when 'blob' -%}
-                        {%- comment -%}
-                        Supplied path (user-provided artwork, originally on a ~200x200 canvas with
-                        its own hardcoded fill) - scale(0.5) fits it to this shared 0 0 100 100
-                        viewBox like every other icon, and the hardcoded fill is swapped for
-                        icon_primary so it follows the same editable-color convention as the rest.
-                        {%- endcomment -%}
-                        <g transform="scale(0.5)">
-                          <path d="M167.932 137.828C161.069 129.173 152.976 121.439 144.013 114.934C138.789 111.144 133.155 107.661 128.955 102.744C124.756 97.8276 122.246 90.8108 124.5 84.716C126.548 79.0821 131.977 75.5481 136.843 72.0653C141.709 68.5825 146.625 63.8706 146.779 57.8782C146.881 53.7808 144.577 49.8883 141.452 47.1738C138.328 44.4593 134.487 42.7691 130.697 41.2326C113.949 34.5743 96.1764 30.3745 78.1992 28.8892C69.3386 28.1722 60.3244 28.0697 51.7711 30.3233C43.2178 32.5769 35.0231 37.3401 30.1062 44.7153C11.8217 72.1165 43.0642 105.203 61.5536 123.078C82.2453 143.155 107.393 158.725 134.692 168.046C146.472 172.093 159.788 174.346 170.134 164.922C178.687 157.188 174.129 145.511 167.983 137.828H167.932Z" fill="{{ icon_primary }}"/>
-                        </g>
-
-                      {%- when 'badge' -%}
-                        {%- comment -%}
-                        Supplied artwork: outer wavy-edged shape + the round center - the user asked
-                        for it "without the R in the middle", so only the letter-R paths from the
-                        original 4-path SVG are omitted here, not the circle behind them. Same
-                        ~200x200 canvas as 'blob' above, so the same scale(0.5) applies; the
-                        hardcoded fills (#FFA400 outer, #A06A37 circle) are swapped for
-                        icon_primary/icon_secondary so it follows the same editable-color convention
-                        as every other icon.
-                        {%- endcomment -%}
-                        <g transform="scale(0.5)">
-                          <path d="M103.316 35.3748L102.698 35.9921C100.538 38.2146 96.9569 38.338 94.6728 36.1773C79.0538 21.1757 52.4461 20.0645 36.3332 34.5722C17.8127 51.2407 17.6275 79.7622 35.2837 96.6776C37.8766 99.147 37.9383 103.283 35.4689 105.876C19.2326 122.73 19.7883 149.584 36.6419 165.821C53.4956 182.057 80.3503 181.501 96.5866 164.648L97.2039 164.03C99.3646 161.808 102.945 161.684 105.229 163.845C120.848 178.847 147.456 179.958 163.569 165.45C182.089 148.782 182.275 120.26 164.618 103.345C162.026 100.876 161.964 96.7393 164.433 94.1465C180.67 77.2928 180.114 50.4381 163.26 34.2018C146.407 17.9655 119.552 18.5211 103.316 35.3748Z" fill="{{ icon_primary }}"/>
-                          <path d="M99.9814 137.91C120.916 137.91 137.887 120.939 137.887 100.005C137.887 79.0704 120.916 62.0996 99.9814 62.0996C79.0469 62.0996 62.0762 79.0704 62.0762 100.005C62.0762 120.939 79.0469 137.91 99.9814 137.91Z" fill="{{ icon_secondary }}"/>
-                        </g>
-
-                      {%- when 'stamp' -%}
-                        {%- comment -%}
-                        Supplied artwork, outer wavy-edged shape only - same "without the R" request
-                        as 'badge' above, but this source SVG has no separate circle behind its
-                        letter-R paths, so there's nothing else to add back here. Same ~200x200
-                        canvas, so the same scale(0.5) + icon_primary swap applies.
-                        {%- endcomment -%}
-                        <g transform="scale(0.5)">
-                          <path d="M172.42 66.3168C166.807 55.0918 158.561 46.7876 149.741 41.0606C132.56 29.9502 112.744 25.254 93.9023 26.9721C80.6729 28.1748 67.558 32.5273 55.4739 40.4306C41.5573 49.5366 25.4643 64.1978 22.0281 86.705C21.0545 93.062 20.6536 100.564 25.6934 105.032C31.6495 110.358 40.8127 113.278 48.5442 114.195C52.4386 114.653 56.5621 114.653 59.941 116.6C67.6152 120.953 61.0292 134.297 59.941 141.112C58.9102 147.927 55.1303 158.465 59.082 164.936C61.4873 168.831 66.4698 170.549 71.2233 171.637C80.6729 173.813 90.5234 174.672 100.317 174.1C107.876 173.699 115.55 173.813 123.053 172.553C128.608 171.637 136.626 171.981 139.604 166.54C143.155 160.011 141.666 151.02 139.948 144.204C138.344 137.676 136.454 131.376 135.538 124.675C134.736 118.719 136.225 115.97 142.181 113.565C152.318 109.499 166.75 109.212 174.138 99.9917C182.041 90.1985 177.345 76.2818 172.363 66.2595L172.42 66.3168Z" fill="{{ icon_primary }}"/>
-                        </g>
-
-                      {%- when 'swoosh' -%}
-                        {%- comment -%}
-                        Supplied artwork, on a wide 232x81 canvas (not the square ~200x200 the other
-                        supplied icons used) - scale(100/232) fits its width exactly to the shared
-                        viewBox, same uniform factor on both axes so it isn't stretched, then
-                        translate(0, 75.5) (applied first, before that scale, per SVG's transform
-                        list order) shifts it so the now-shorter height ends up vertically centered
-                        instead of flush to the top.
-                        {%- endcomment -%}
-                        <g transform="scale(0.431034) translate(0, 75.5)">
-                          <path d="M210.587 0.63539L186.905 18.6869C186.333 19.1302 185.575 19.1302 184.986 18.6869L160.918 0.334532C159.6 -0.66305 157.883 0.730397 158.354 2.40885L165.214 27.2534C165.529 28.4093 164.798 29.5811 163.711 29.6603L1.58966 38.6384C-0.529888 38.7809 -0.529888 42.217 1.58966 42.3595L163.711 51.3377C164.798 51.4169 165.543 52.5887 165.214 53.7446L158.354 78.5891C157.897 80.2835 159.6 81.6611 160.918 80.6635L184.986 62.327C185.558 61.8836 186.319 61.8836 186.905 62.327L210.587 80.3785C211.948 81.4077 213.693 79.9034 213.121 78.1933L204.859 53.3171C204.53 52.3195 205.017 51.2111 205.935 50.8944L230.819 42.2803C232.394 41.742 232.394 39.2717 230.819 38.7175L205.935 30.1035C205.017 29.7869 204.516 28.6785 204.859 27.6809L213.121 2.80472C213.693 1.09459 211.932 -0.409696 210.587 0.63539Z" fill="{{ icon_primary }}"/>
-                        </g>
-
-                      {%- else -%}
-                        {%- comment -%} 'star' (default): five points, stroke in the same color as the fill (icon_round_stroke, border-aware) with stroke-linejoin: round softens every point and inner corner. {%- endcomment -%}
-                        <path d="M50 5 61 39 98 39 68 61 79 95 50 74 21 95 32 61 2 39 39 39Z" fill="{{ icon_primary }}" stroke="{{ icon_round_stroke }}" stroke-width="14" stroke-linejoin="round"/>
-                    {%- endcase -%}
-                  </svg>
-                </div>
               {%- endif -%}
 
               {%- if section.settings.button_text != blank -%}
@@ -467,44 +347,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       order: 2;
     }
   }
-
-  {%- comment -%}
-  svg's own default is overflow: hidden, clipping anything outside its 0 0 100 100 viewBox - a
-  couple of shapes (eg. 'star') draw points right up against that edge, and their stroke (which
-  straddles the path edge, half outside it) pushes the actual painted pixels slightly past it. Not
-  very noticeable static, but a rotating shape sweeps those clipped corners through a visibly larger
-  path, reading as the points getting cut off mid-spin. overflow: visible removes that clip
-  entirely, regardless of which icon_type is picked or whether it's spinning at all.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__icon svg {
-    overflow: visible;
-  }
-
-  {%- comment -%}
-  Spins in place, indefinitely - transform-origin stays centered (the SVG's own default for a
-  square viewBox), so it rotates around its own center rather than orbiting anything. Respects
-  reduced-motion like every other animation in this theme (see eg. snippets/media-zoom-style.liquid).
-  icon_spin: false (the "Spin icon" checkbox) skips the animation declaration entirely instead of
-  adding a second rule to cancel it, so that checkbox and reduced-motion both end up controlling
-  the exact same property without one fighting the other.
-  {%- endcomment -%}
-  {%- if section.settings.icon_spin != false -%}
-    #shopify-section-{{ section.id }} .instagram-feed__icon svg {
-      animation: instagram-feed-icon-spin 8s linear infinite;
-    }
-
-    @keyframes instagram-feed-icon-spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      #shopify-section-{{ section.id }} .instagram-feed__icon svg {
-        animation: none;
-      }
-    }
-  {%- endif -%}
 
   {%- comment -%}
   Independent of button_style (outline already has its own border, solid/link normally don't) -

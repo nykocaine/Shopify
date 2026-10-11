@@ -11158,3 +11158,35 @@ figcaption {
 .trim-end {
   text-box: trim-end cap alphabetic;
 }
+
+/* Shared spinning decorative SVG icon (snippets/decorative-icon.liquid) - originally built for
+   sections/instagram-feed.liquid's "Decorative icon" settings, now also used by sections/main-cart.liquid.
+   svg's own default is overflow: hidden, clipping anything outside its 0 0 100 100 viewBox - a
+   couple of shapes (eg. 'star') draw points right up against that edge, and their stroke (which
+   straddles the path edge, half outside it) pushes the actual painted pixels slightly past it. Not
+   very noticeable static, but a rotating shape sweeps those clipped corners through a visibly larger
+   path, reading as the points getting cut off mid-spin. overflow: visible removes that clip
+   entirely, regardless of which icon_type is picked or whether it's spinning at all. */
+.decorative-icon svg {
+  overflow: visible;
+}
+
+/* Spins in place, indefinitely - transform-origin stays centered (the SVG's own default for a
+   square viewBox), so it rotates around its own center rather than orbiting anything. Only applied
+   when the "Spin icon" checkbox is on (the --spin modifier), and respects reduced-motion like every
+   other animation in this theme. */
+.decorative-icon--spin svg {
+  animation: decorative-icon-spin 8s linear infinite;
+}
+
+@keyframes decorative-icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .decorative-icon--spin svg {
+    animation: none;
+  }
+}
