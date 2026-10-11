@@ -1,14 +1,64 @@
 {%- liquid
   assign text_alignment = 'start'
+
+  # icon_alignment doubles as both the row's text-align (so a lone icon, with no title next to it,
+  # still lands on the chosen side) and its flex justify-content (so the pair, when the title is
+  # shown too, is positioned as a group instead of only the text inside the heading shifting).
+  assign icon_justify = 'flex-start'
+
+  case section.settings.icon_alignment
+    when 'center'
+      assign icon_justify = 'center'
+    when 'right'
+      assign icon_justify = 'flex-end'
+  endcase
+
+  # icon_position picks which side of the title the icon sits on. row-reverse/column-reverse (vs.
+  # row/column) swap the icon before the title in visual order without touching the markup order
+  # (title first, icon second) - so "above"/"left" still render the icon first on screen. When
+  # stacked (above/below), the icon's own horizontal position over/under the title is no longer the
+  # row's justify-content (that axis is now vertical) but its align-items instead - reusing the
+  # exact same icon_justify value, since both are the same left/center/right choice.
+  assign icon_flex_direction = 'row'
+  assign icon_align_items = 'center'
+
+  case section.settings.icon_position
+    when 'left'
+      assign icon_flex_direction = 'row-reverse'
+    when 'above'
+      assign icon_flex_direction = 'column-reverse'
+      assign icon_align_items = icon_justify
+    when 'below'
+      assign icon_flex_direction = 'column'
+      assign icon_align_items = icon_justify
+  endcase
 -%}
 
   {%- capture section_header -%}
     <div class="v-stack justify-items-{{ text_alignment }} gap-6 sm:gap-8">
-      {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank -%}
-        
+      {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank or section.settings.show_icon -%}
+
         <div class="prose prose-justify-{{ text_alignment }} w-full">
           {%- render 'subheading', content: section.settings.subheading -%}
-          {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.heading_size, html_tag: 'h2' -%}
+
+          {%- if section.settings.title != blank or section.settings.show_icon -%}
+            <div class="contact-heading-row">
+              {%- if section.settings.title != blank -%}
+                {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.heading_size, html_tag: 'h2' -%}
+              {%- endif -%}
+
+              {%- if section.settings.show_icon -%}
+                {%- render 'decorative-icon',
+                  icon_type: section.settings.icon_type,
+                  icon_size: section.settings.icon_size,
+                  icon_spin: section.settings.icon_spin,
+                  icon_primary_color: section.settings.icon_primary_color,
+                  icon_secondary_color: section.settings.icon_secondary_color,
+                  icon_border_color: section.settings.icon_border_color
+                -%}
+              {%- endif -%}
+            </div>
+          {%- endif -%}
 
           {%- comment -%} Full section width (no max-w-sm cap), so the text isn't inset with what looks
           like right-hand padding. w-full on .prose overrides the v-stack's justify-items: start
@@ -110,6 +160,21 @@
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .section-spacing .container {
       --container-gutter-context: 0px;
+    }
+
+    {%- comment -%}
+    .prose's heading normally centers/aligns via text-align alone (inline content only) - once the
+    icon sits beside it as a second flex item, positioning the pair as a group instead needs
+    justify-content on their own row. display: flex here defaults to filling the full block width
+    (.prose is width: 100%, same as the heading alone was), so this reproduces the same look at the
+    default (start/left), with center/right and above/below also available via the icon settings.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .contact-heading-row {
+      flex-direction: {{ icon_flex_direction }};
+      justify-content: {{ icon_justify }};
+      align-items: {{ icon_align_items }};
+      gap: .5rem;
+      display: flex;
     }
   </style>
 
@@ -287,6 +352,147 @@
       "label": "t:sections.contact.show_social_media",
       "info": "t:sections.contact.show_social_media_info",
       "default": true
+    },
+    {
+      "type": "header",
+      "content": "Decorative icon"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icon",
+      "label": "Show spinning icon",
+      "info": "A decorative icon shown next to the title.",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "icon_type",
+      "label": "Icon",
+      "options": [
+        {
+          "value": "star",
+          "label": "Star"
+        },
+        {
+          "value": "lotus",
+          "label": "Lotus"
+        },
+        {
+          "value": "clover",
+          "label": "Clover"
+        },
+        {
+          "value": "smiley",
+          "label": "Smiley face"
+        },
+        {
+          "value": "blob",
+          "label": "Blob"
+        },
+        {
+          "value": "badge",
+          "label": "Badge"
+        },
+        {
+          "value": "stamp",
+          "label": "Stamp"
+        },
+        {
+          "value": "swoosh",
+          "label": "Swoosh"
+        },
+        {
+          "value": "phone",
+          "label": "Phone"
+        }
+      ],
+      "default": "phone",
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "min": 16,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Icon size",
+      "default": 32,
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "icon_spin",
+      "label": "Spin icon",
+      "default": true,
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "color",
+      "id": "icon_primary_color",
+      "label": "Primary color",
+      "default": "#FF6B9D",
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "color",
+      "id": "icon_secondary_color",
+      "label": "Secondary color",
+      "default": "#FFD93D",
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "color",
+      "id": "icon_border_color",
+      "label": "Border color",
+      "info": "Leave blank for no border.",
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "select",
+      "id": "icon_position",
+      "label": "Position",
+      "options": [
+        {
+          "value": "right",
+          "label": "Right of title"
+        },
+        {
+          "value": "left",
+          "label": "Left of title"
+        },
+        {
+          "value": "above",
+          "label": "Above title"
+        },
+        {
+          "value": "below",
+          "label": "Below title"
+        }
+      ],
+      "default": "right",
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "select",
+      "id": "icon_alignment",
+      "label": "Alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left",
+      "visible_if": "{{ section.settings.show_icon }}"
     }
   ],
   "blocks": [
