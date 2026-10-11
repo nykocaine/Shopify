@@ -64,6 +64,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                 {%- liquid
                   assign icon_primary = '#FF6B9D'
                   assign icon_secondary = '#FFD93D'
+                  assign icon_border = blank
 
                   if section.settings.icon_primary_color != blank
                     assign icon_primary = 'rgb(' | append: section.settings.icon_primary_color.rgb | append: ')'
@@ -71,6 +72,22 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
                   if section.settings.icon_secondary_color != blank
                     assign icon_secondary = 'rgb(' | append: section.settings.icon_secondary_color.rgb | append: ')'
+                  endif
+
+                  if section.settings.icon_border_color != blank
+                    assign icon_border = 'rgb(' | append: section.settings.icon_border_color.rgb | append: ')'
+                  endif
+
+                  # A couple of shapes (gem's outline, sunglasses' temple arms) already draw a
+                  # same-color stroke of their own for reasons unrelated to a border (rounding the
+                  # gem's otherwise-sharp corners; the arms are lines, which need a stroke to be
+                  # visible at all) - when a border color is picked, that stroke adopts it too
+                  # instead of staying tied to icon_primary, so those bits end up matching the new
+                  # border instead of silently ignoring it.
+                  assign icon_round_stroke = icon_primary
+
+                  if icon_border != blank
+                    assign icon_round_stroke = icon_border
                   endif
                 -%}
 
@@ -81,7 +98,13 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                 switching icon_type never requires re-configuring colors/size.
                 {%- endcomment -%}
                 <div class="instagram-feed__icon" aria-hidden="true">
-                  <svg viewBox="0 0 100 100" width="{{ section.settings.icon_size }}" height="{{ section.settings.icon_size }}">
+                  {%- comment -%}
+                  stroke/stroke-width set on the svg root (not any inner shape) is inherited by
+                  every descendant that doesn't declare its own stroke - covers every icon's main
+                  shape(s) with one border, without touching each one's markup individually. Only
+                  added when a border color is actually picked, so there's no border by default.
+                  {%- endcomment -%}
+                  <svg viewBox="0 0 100 100" width="{{ section.settings.icon_size }}" height="{{ section.settings.icon_size }}"{% if icon_border != blank %} stroke="{{ icon_border }}" stroke-width="3"{% endif %}>
                     {%- case section.settings.icon_type -%}
                       {%- when 'dropper' -%}
                         {%- comment -%} Serum bottle: round bulb + short neck on top, tall rounded body below. {%- endcomment -%}
@@ -97,8 +120,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                         <rect x="18" y="28" width="64" height="58" rx="12" fill="{{ icon_primary }}"/>
 
                       {%- when 'gem' -%}
-                        {%- comment -%} Faceted gem: a kite-shaped outline with crossing facet lines - stroke-linejoin: round softens its points, same trick as the pre-existing star/sparkle shapes. {%- endcomment -%}
-                        <polygon points="50,8 82,36 66,92 34,92 18,36" fill="{{ icon_primary }}" stroke="{{ icon_primary }}" stroke-width="8" stroke-linejoin="round"/>
+                        {%- comment -%} Faceted gem: a kite-shaped outline with crossing facet lines - stroke-linejoin: round softens its points. {%- endcomment -%}
+                        <polygon points="50,8 82,36 66,92 34,92 18,36" fill="{{ icon_primary }}" stroke="{{ icon_round_stroke }}" stroke-width="8" stroke-linejoin="round"/>
                         <polyline points="18,36 82,36" fill="none" stroke="{{ icon_secondary }}" stroke-width="3" stroke-linecap="round"/>
                         <polyline points="50,8 34,92" fill="none" stroke="{{ icon_secondary }}" stroke-width="3" stroke-linecap="round"/>
                         <polyline points="50,8 66,92" fill="none" stroke="{{ icon_secondary }}" stroke-width="3" stroke-linecap="round"/>
@@ -139,7 +162,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                           <rect x="56" y="38" width="36" height="26" rx="13"/>
                           <rect x="42" y="46" width="16" height="6" rx="3"/>
                         </g>
-                        <path d="M8 42 1 36M92 42 99 36" fill="none" stroke="{{ icon_primary }}" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M8 42 1 36M92 42 99 36" fill="none" stroke="{{ icon_round_stroke }}" stroke-width="4" stroke-linecap="round"/>
                         <g fill="{{ icon_secondary }}" opacity=".8">
                           <ellipse cx="20" cy="46" rx="6" ry="3" transform="rotate(-30 20 46)"/>
                           <ellipse cx="68" cy="46" rx="6" ry="3" transform="rotate(-30 68 46)"/>
@@ -843,6 +866,13 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       "id": "icon_secondary_color",
       "label": "Secondary color",
       "default": "#FFD93D",
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "color",
+      "id": "icon_border_color",
+      "label": "Border color",
+      "info": "Leave blank for no border.",
       "visible_if": "{{ section.settings.show_icon }}"
     },
     {
