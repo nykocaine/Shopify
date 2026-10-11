@@ -7363,27 +7363,18 @@ shopify-account::part(signed-out-avatar) {
 
   /* This store has "Center drawers on mobile" (settings.drawer_mobile_centered) enabled, which makes the rule
      above turn the menu drawer into a fixed, evenly-inset floating card - overriding the position/size below it
-     with higher specificity. This re-overrides just the positioning (not the radius/background/mask-image skin)
-     so the menu drawer specifically still anchors below the header and reaches the bottom, per request, while
-     cart-drawer/search-drawer (which also use this setting) are unaffected since this only targets .menu-drawer.
-     Same --menu-offset-top approach as the base rule above (position: fixed, not absolute - body has
-     position: relative, so an absolute "100%" top-inset would resolve against the whole page's height). */
+     with higher specificity. This re-overrides just the positioning (not the background/mask-image skin) so the
+     menu drawer specifically still anchors below the header (no top gutter/border, unlike cart-drawer/search-drawer
+     which float with a gutter on every side) while still keeping the --container-gutter margin and rounded corners
+     on the bottom, per request. Same --menu-offset-top approach as the base rule above (position: fixed, not
+     absolute - body has position: relative, so an absolute "100%" top-inset would resolve against the whole
+     page's height). */
   .drawer-mobile-centered .menu-drawer::part(content) {
     position: fixed;
     inset-block-start: var(--menu-offset-top, 0px);
-    inset-block-end: auto;
+    inset-block-end: var(--container-gutter);
     inset-inline: var(--container-gutter);
-    height: calc(100vh - var(--menu-offset-top, 0px));
-    /* The panel now touches the header above and the viewport's bottom edge below, so rounding the top/bottom
-       corners (the original rule's border-radius: var(--drawer-border-radius)) no longer reads as a floating
-       card - squared off top and bottom. */
-    border-radius: 0;
-  }
-
-  @supports (height: 100dvh) {
-    .drawer-mobile-centered .menu-drawer::part(content) {
-      height: calc(100dvh - var(--menu-offset-top, 0px));
-    }
+    border-radius: 0 0 var(--drawer-border-radius) var(--drawer-border-radius);
   }
 }
 
