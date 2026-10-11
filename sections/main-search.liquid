@@ -15,36 +15,43 @@
     endif
   endfor
 
-  # icon_alignment doubles as both the row's text-align (so a lone icon, with no heading next to
-  # it, still lands on the chosen side) and its flex justify-content (so the pair, when the heading
-  # is shown too, is positioned as a group instead of only the text inside the h1 shifting).
-  assign icon_justify = 'center'
+  # icon_alignment only ever moves the icon, never the heading - the heading sits in its own grid
+  # column/area sized to its own content (or, side by side with the icon, the "title" area's track
+  # is "auto", always exactly as wide as the heading needs), so it can't be pushed around by
+  # whatever space the icon's alignment leaves unused. icon_justify_self is the icon's own
+  # justify-self (side-by-side layouts, a grid) or align-self (stacked layouts, a flex column) -
+  # both accept the same start/center/end keywords, so one variable covers either case.
+  assign icon_justify_self = 'center'
 
   case section.settings.icon_alignment
     when 'left'
-      assign icon_justify = 'flex-start'
+      assign icon_justify_self = 'start'
     when 'right'
-      assign icon_justify = 'flex-end'
+      assign icon_justify_self = 'end'
   endcase
 
-  # icon_position picks which side of the title the icon sits on. row-reverse/column-reverse (vs.
-  # row/column) swap the icon before the title in visual order without touching the markup order
-  # (title first, icon second) - so "above"/"left" still render the icon first on screen. When
-  # stacked (above/below), the icon's own horizontal position over/under the title is no longer the
-  # row's justify-content (that axis is now vertical) but its align-items instead - reusing the
-  # exact same icon_justify value, since both are the same left/center/right choice.
-  assign icon_flex_direction = 'row'
-  assign icon_align_items = 'center'
+  # icon_position picks which side of the title the icon sits on. Side by side (left/right), this
+  # is a 2-column grid with one named area per element - the heading's area/column is always "auto"
+  # (its own content width) and the icon's is always "1fr" (the rest of the row, for it to roam
+  # across via icon_justify_self above), regardless of which column each lands in, since grid-area
+  # ties each element to its column by name rather than by source order. Stacked (above/below) is a
+  # plain flex column instead - its cross-axis alignment (align-items/align-self) is already
+  # per-item independent of source order, so no grid trick is needed there.
+  assign icon_display = 'grid'
+  assign icon_grid_template_columns = 'auto 1fr'
+  assign icon_grid_template_areas = '"heading icon"'
+  assign icon_flex_direction = 'column'
 
   case section.settings.icon_position
     when 'left'
-      assign icon_flex_direction = 'row-reverse'
+      assign icon_grid_template_columns = '1fr auto'
+      assign icon_grid_template_areas = '"icon heading"'
     when 'above'
+      assign icon_display = 'flex'
       assign icon_flex_direction = 'column-reverse'
-      assign icon_align_items = icon_justify
     when 'below'
+      assign icon_display = 'flex'
       assign icon_flex_direction = 'column'
-      assign icon_align_items = icon_justify
   endcase
 -%}
 
@@ -127,22 +134,43 @@
   {%- endif -%}
 
   {%- comment -%}
-  .prose-justify-center (theme.css) centers the heading via text-align, which only centers inline
-  content (the h1's own text) - once the icon sits beside it as a second flex item, aligning the
-  pair as a group instead needs justify-content on their own row (text-align is set here too, so a
-  lone icon - no heading set - still lands on the chosen side instead of only ever centering, since
-  there'd be no text left for text-align to act on). display: flex here defaults to filling the full
-  block width (same as the h1 did alone), so this reproduces the same look at the default (center),
-  with left/right now also available via icon_alignment.
+  Entirely skipped when the icon is off - the row is then just a transparent wrapper around the
+  h1, which keeps behaving exactly like a bare h1 (centered by .prose-justify-center's inherited
+  text-align, nothing else involved).
+
+  With the icon on: side by side, this is a 2-column grid - the heading's own column is always
+  "auto" (sized to the heading alone), so icon_justify_self can move the icon around its "1fr"
+  column without ever resizing or shifting the heading's column. Stacked, it's a flex column
+  instead, whose per-item align-self (set on the icon element itself, not here) does the same job
+  without touching the heading's own position either.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .search-heading-row {
-    flex-direction: {{ icon_flex_direction }};
-    justify-content: {{ icon_justify }};
-    align-items: {{ icon_align_items }};
-    text-align: {{ section.settings.icon_alignment | default: 'center' }};
-    gap: .5rem;
-    display: flex;
-  }
+  {%- if section.settings.show_icon -%}
+    #shopify-section-{{ section.id }} .search-heading-row {
+      display: {{ icon_display }};
+      {%- if icon_display == 'grid' -%}
+        grid-template-columns: {{ icon_grid_template_columns }};
+        grid-template-areas: {{ icon_grid_template_areas }};
+        align-items: center;
+      {%- else -%}
+        flex-direction: {{ icon_flex_direction }};
+        align-items: flex-start;
+      {%- endif -%}
+      gap: .5rem;
+    }
+
+    #shopify-section-{{ section.id }} .search-heading-row__heading {
+      grid-area: heading;
+    }
+
+    #shopify-section-{{ section.id }} .search-heading-row__icon {
+      grid-area: icon;
+      {%- if icon_display == 'grid' -%}
+        justify-self: {{ icon_justify_self }};
+      {%- else -%}
+        align-self: {{ icon_justify_self }};
+      {%- endif -%}
+    }
+  {%- endif -%}
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_search %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_search %} style="border-end-start-radius: {{ section.settings.search_border_radius }}px; border-end-end-radius: {{ section.settings.search_border_radius }}px; overflow: hidden;"{% endif %}>
@@ -153,18 +181,20 @@
           {%- if section.settings.search_heading != blank or section.settings.show_icon -%}
             <div class="search-heading-row">
               {%- if section.settings.search_heading != blank -%}
-                <h1 class="{{ section.settings.search_heading_size }}">{{ section.settings.search_heading }}</h1>
+                <h1 class="search-heading-row__heading {{ section.settings.search_heading_size }}">{{ section.settings.search_heading }}</h1>
               {%- endif -%}
 
               {%- if section.settings.show_icon -%}
-                {%- render 'decorative-icon',
-                  icon_type: section.settings.icon_type,
-                  icon_size: section.settings.icon_size,
-                  icon_spin: section.settings.icon_spin,
-                  icon_primary_color: section.settings.icon_primary_color,
-                  icon_secondary_color: section.settings.icon_secondary_color,
-                  icon_border_color: section.settings.icon_border_color
-                -%}
+                <div class="search-heading-row__icon">
+                  {%- render 'decorative-icon',
+                    icon_type: section.settings.icon_type,
+                    icon_size: section.settings.icon_size,
+                    icon_spin: section.settings.icon_spin,
+                    icon_primary_color: section.settings.icon_primary_color,
+                    icon_secondary_color: section.settings.icon_secondary_color,
+                    icon_border_color: section.settings.icon_border_color
+                  -%}
+                </div>
               {%- endif -%}
             </div>
           {%- endif -%}
@@ -193,18 +223,20 @@
         {%- if section.settings.search_heading != blank or section.settings.show_icon -%}
           <div class="search-heading-row">
             {%- if section.settings.search_heading != blank -%}
-              <h1 class="{{ section.settings.search_heading_size }}">{{ section.settings.search_heading }}</h1>
+              <h1 class="search-heading-row__heading {{ section.settings.search_heading_size }}">{{ section.settings.search_heading }}</h1>
             {%- endif -%}
 
             {%- if section.settings.show_icon -%}
-              {%- render 'decorative-icon',
-                icon_type: section.settings.icon_type,
-                icon_size: section.settings.icon_size,
-                icon_spin: section.settings.icon_spin,
-                icon_primary_color: section.settings.icon_primary_color,
-                icon_secondary_color: section.settings.icon_secondary_color,
-                icon_border_color: section.settings.icon_border_color
-              -%}
+              <div class="search-heading-row__icon">
+                {%- render 'decorative-icon',
+                  icon_type: section.settings.icon_type,
+                  icon_size: section.settings.icon_size,
+                  icon_spin: section.settings.icon_spin,
+                  icon_primary_color: section.settings.icon_primary_color,
+                  icon_secondary_color: section.settings.icon_secondary_color,
+                  icon_border_color: section.settings.icon_border_color
+                -%}
+              </div>
             {%- endif -%}
           </div>
         {%- endif -%}

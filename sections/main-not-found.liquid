@@ -1,39 +1,38 @@
 {%- liquid
-  # .not-found-heading-row sits inside .empty-state's grid (.v-stack + justify-items-center), where
-  # grid items shrink-wrap to their own content and get centered by justify-items, not by any extra
-  # space inside them - so unlike a plain block row, aligning this one left/right needs justify-self
-  # on the row itself (which row, as a grid item, stays shrink-wrapped either way) rather than
-  # justify-content (which only redistributes leftover space inside the row, and there is none).
+  # icon_alignment only ever moves the icon, never the heading. icon_justify_self is the icon's own
+  # justify-self (side-by-side layouts, a grid) or align-self (stacked layouts, a flex column) -
+  # both accept the same start/center/end keywords, so one variable covers either case.
   assign icon_justify_self = 'center'
-  assign icon_align_items_value = 'center'
 
   case section.settings.icon_alignment
     when 'left'
       assign icon_justify_self = 'start'
-      assign icon_align_items_value = 'flex-start'
     when 'right'
       assign icon_justify_self = 'end'
-      assign icon_align_items_value = 'flex-end'
   endcase
 
-  # icon_position picks which side of the title the icon sits on. row-reverse/column-reverse (vs.
-  # row/column) swap the icon before the title in visual order without touching the markup order
-  # (title first, icon second) - so "above"/"left" still render the icon first on screen. When
-  # stacked (above/below), the icon's own horizontal position over/under the title is no longer the
-  # row's justify-content (that axis doesn't apply here, see icon_justify_self above) but its
-  # align-items instead - reusing the exact same left/center/right choice as icon_justify_self.
-  assign icon_flex_direction = 'row'
-  assign icon_align_items = 'center'
+  # icon_position picks which side of the title the icon sits on. Side by side (left/right), this
+  # is a 2-column grid with one named area per element - the heading's area/column is always "auto"
+  # (its own content width) and the icon's is always "1fr" (the rest of the row, for it to roam
+  # across via icon_justify_self above), regardless of which column each lands in, since grid-area
+  # ties each element to its column by name rather than by source order. Stacked (above/below) is a
+  # plain flex column instead - its cross-axis alignment (align-items/align-self) is already
+  # per-item independent of source order, so no grid trick is needed there.
+  assign icon_display = 'grid'
+  assign icon_grid_template_columns = 'auto 1fr'
+  assign icon_grid_template_areas = '"heading icon"'
+  assign icon_flex_direction = 'column'
 
   case section.settings.icon_position
     when 'left'
-      assign icon_flex_direction = 'row-reverse'
+      assign icon_grid_template_columns = '1fr auto'
+      assign icon_grid_template_areas = '"icon heading"'
     when 'above'
+      assign icon_display = 'flex'
       assign icon_flex_direction = 'column-reverse'
-      assign icon_align_items = icon_align_items_value
     when 'below'
+      assign icon_display = 'flex'
       assign icon_flex_direction = 'column'
-      assign icon_align_items = icon_align_items_value
   endcase
 -%}
 
@@ -61,18 +60,48 @@
   }
 
   {%- comment -%}
-  See the justify-self note above icon_justify_self - this row is a grid item (child of .empty-state,
-  a .v-stack), so its own horizontal position on the page comes from justify-self, not from anything
-  inside it. display: flex + align-items: center here is only about laying the heading and icon out
-  side by side (and centering them on the cross axis relative to each other).
+  Entirely skipped when the icon is off - the row is then just a transparent wrapper around the h1,
+  which keeps behaving exactly like a bare h1 (shrink-wrapped and centered by the outer .v-stack's
+  justify-items: center, nothing else involved).
+
+  With the icon on: justify-self: stretch makes the row fill its grid column's full width (the
+  .v-stack's own column is already the full content-box width) instead of shrink-wrapping - without
+  that, there'd be no room at all for the icon's "1fr" column to roam across via icon_justify_self.
+  Side by side, this is then a 2-column grid - the heading's own column is always "auto" (sized to
+  the heading alone), so icon_justify_self can move the icon around its "1fr" column without ever
+  resizing or shifting the heading's column (which otherwise, by default, now reads as pinned to the
+  start edge instead of centered - an accepted side effect of placing the icon beside it). Stacked,
+  it's a flex column instead, whose per-item align-self (set on the icon element itself, not here)
+  does the same job without touching the heading's own position either.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .not-found-heading-row {
-    flex-direction: {{ icon_flex_direction }};
-    justify-self: {{ icon_justify_self }};
-    align-items: {{ icon_align_items }};
-    gap: .5rem;
-    display: flex;
-  }
+  {%- if section.settings.show_icon -%}
+    #shopify-section-{{ section.id }} .not-found-heading-row {
+      justify-self: stretch;
+      display: {{ icon_display }};
+      {%- if icon_display == 'grid' -%}
+        grid-template-columns: {{ icon_grid_template_columns }};
+        grid-template-areas: {{ icon_grid_template_areas }};
+        align-items: center;
+      {%- else -%}
+        flex-direction: {{ icon_flex_direction }};
+        align-items: flex-start;
+      {%- endif -%}
+      gap: .5rem;
+    }
+
+    #shopify-section-{{ section.id }} .not-found-heading-row__heading {
+      grid-area: heading;
+    }
+
+    #shopify-section-{{ section.id }} .not-found-heading-row__icon {
+      grid-area: icon;
+      {%- if icon_display == 'grid' -%}
+        justify-self: {{ icon_justify_self }};
+      {%- else -%}
+        align-self: {{ icon_justify_self }};
+      {%- endif -%}
+    }
+  {%- endif -%}
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_not_found %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_not_found %} style="border-end-start-radius: {{ section.settings.not_found_border_radius }}px; border-end-end-radius: {{ section.settings.not_found_border_radius }}px; overflow: hidden;"{% endif %}>
@@ -81,18 +110,20 @@
       {%- if section.settings.heading != blank or section.settings.show_icon -%}
         <div class="not-found-heading-row">
           {%- if section.settings.heading != blank -%}
-            <h1 class="{{ section.settings.heading_size }}">{{ section.settings.heading }}</h1>
+            <h1 class="not-found-heading-row__heading {{ section.settings.heading_size }}">{{ section.settings.heading }}</h1>
           {%- endif -%}
 
           {%- if section.settings.show_icon -%}
-            {%- render 'decorative-icon',
-              icon_type: section.settings.icon_type,
-              icon_size: section.settings.icon_size,
-              icon_spin: section.settings.icon_spin,
-              icon_primary_color: section.settings.icon_primary_color,
-              icon_secondary_color: section.settings.icon_secondary_color,
-              icon_border_color: section.settings.icon_border_color
-            -%}
+            <div class="not-found-heading-row__icon">
+              {%- render 'decorative-icon',
+                icon_type: section.settings.icon_type,
+                icon_size: section.settings.icon_size,
+                icon_spin: section.settings.icon_spin,
+                icon_primary_color: section.settings.icon_primary_color,
+                icon_secondary_color: section.settings.icon_secondary_color,
+                icon_border_color: section.settings.icon_border_color
+              -%}
+            </div>
           {%- endif -%}
         </div>
       {%- endif -%}
