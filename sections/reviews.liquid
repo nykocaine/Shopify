@@ -125,7 +125,7 @@ to the first 5 of the newly sorted order.
                     endif
                 endcase
               -%}
-              <div class="review-card" data-rating="{{ block.settings.rating }}" data-index="{{ forloop.index }}" {{ block.shopify_attributes }}>
+              <div class="review-card" data-rating="{{ block.settings.rating }}" data-days-ago="{{ review_date_days }}" {{ block.shopify_attributes }}>
                 <div class="review-card__side">
                   <div class="review-card__reviewer">
                     <span class="review-card__name">{{ block.settings.reviewer_name }}</span>
@@ -857,7 +857,11 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
       } else if (value === 'rating_asc') {
         sortedCards.sort(function (a, b) { return a.getAttribute('data-rating') - b.getAttribute('data-rating'); });
       } else {
-        sortedCards.sort(function (a, b) { return a.getAttribute('data-index') - b.getAttribute('data-index'); });
+        // "Most recent": fewest days-ago first. data-days-ago comes from each card's computed,
+        // auto-rotating review date (reviews.liquid) - sorting by the block's own position instead
+        // would no longer match what each card's date actually says, since that date is no longer
+        // tied to the merchant's block order the way a fixed, hand-entered date used to be.
+        sortedCards.sort(function (a, b) { return a.getAttribute('data-days-ago') - b.getAttribute('data-days-ago'); });
       }
 
       sortedCards.forEach(function (card) { list.appendChild(card); });
