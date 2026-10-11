@@ -26,6 +26,26 @@
     when 'right'
       assign icon_justify = 'flex-end'
   endcase
+
+  # icon_position picks which side of the title the icon sits on. row-reverse/column-reverse (vs.
+  # row/column) swap the icon before the title in visual order without touching the markup order
+  # (title first, icon second) - so "above"/"left" still render the icon first on screen. When
+  # stacked (above/below), the icon's own horizontal position over/under the title is no longer the
+  # row's justify-content (that axis is now vertical) but its align-items instead - reusing the
+  # exact same icon_justify value, since both are the same left/center/right choice.
+  assign icon_flex_direction = 'row'
+  assign icon_align_items = 'center'
+
+  case section.settings.icon_position
+    when 'left'
+      assign icon_flex_direction = 'row-reverse'
+    when 'above'
+      assign icon_flex_direction = 'column-reverse'
+      assign icon_align_items = icon_justify
+    when 'below'
+      assign icon_flex_direction = 'column'
+      assign icon_align_items = icon_justify
+  endcase
 -%}
 
 <style>
@@ -116,9 +136,10 @@
   with left/right now also available via icon_alignment.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .search-heading-row {
+    flex-direction: {{ icon_flex_direction }};
     justify-content: {{ icon_justify }};
+    align-items: {{ icon_align_items }};
     text-align: {{ section.settings.icon_alignment | default: 'center' }};
-    align-items: center;
     gap: .5rem;
     display: flex;
   }
@@ -483,6 +504,31 @@ on desktop based on the settings
       "id": "icon_border_color",
       "label": "Border color",
       "info": "Leave blank for no border.",
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "select",
+      "id": "icon_position",
+      "label": "Position",
+      "options": [
+        {
+          "value": "right",
+          "label": "Right of title"
+        },
+        {
+          "value": "left",
+          "label": "Left of title"
+        },
+        {
+          "value": "above",
+          "label": "Above title"
+        },
+        {
+          "value": "below",
+          "label": "Below title"
+        }
+      ],
+      "default": "right",
       "visible_if": "{{ section.settings.show_icon }}"
     },
     {

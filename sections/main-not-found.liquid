@@ -5,12 +5,35 @@
   # on the row itself (which row, as a grid item, stays shrink-wrapped either way) rather than
   # justify-content (which only redistributes leftover space inside the row, and there is none).
   assign icon_justify_self = 'center'
+  assign icon_align_items_value = 'center'
 
   case section.settings.icon_alignment
     when 'left'
       assign icon_justify_self = 'start'
+      assign icon_align_items_value = 'flex-start'
     when 'right'
       assign icon_justify_self = 'end'
+      assign icon_align_items_value = 'flex-end'
+  endcase
+
+  # icon_position picks which side of the title the icon sits on. row-reverse/column-reverse (vs.
+  # row/column) swap the icon before the title in visual order without touching the markup order
+  # (title first, icon second) - so "above"/"left" still render the icon first on screen. When
+  # stacked (above/below), the icon's own horizontal position over/under the title is no longer the
+  # row's justify-content (that axis doesn't apply here, see icon_justify_self above) but its
+  # align-items instead - reusing the exact same left/center/right choice as icon_justify_self.
+  assign icon_flex_direction = 'row'
+  assign icon_align_items = 'center'
+
+  case section.settings.icon_position
+    when 'left'
+      assign icon_flex_direction = 'row-reverse'
+    when 'above'
+      assign icon_flex_direction = 'column-reverse'
+      assign icon_align_items = icon_align_items_value
+    when 'below'
+      assign icon_flex_direction = 'column'
+      assign icon_align_items = icon_align_items_value
   endcase
 -%}
 
@@ -44,8 +67,9 @@
   side by side (and centering them on the cross axis relative to each other).
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .not-found-heading-row {
+    flex-direction: {{ icon_flex_direction }};
     justify-self: {{ icon_justify_self }};
-    align-items: center;
+    align-items: {{ icon_align_items }};
     gap: .5rem;
     display: flex;
   }
@@ -260,6 +284,31 @@
       "id": "icon_border_color",
       "label": "Border color",
       "info": "Leave blank for no border.",
+      "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "select",
+      "id": "icon_position",
+      "label": "Position",
+      "options": [
+        {
+          "value": "right",
+          "label": "Right of title"
+        },
+        {
+          "value": "left",
+          "label": "Left of title"
+        },
+        {
+          "value": "above",
+          "label": "Above title"
+        },
+        {
+          "value": "below",
+          "label": "Below title"
+        }
+      ],
+      "default": "right",
       "visible_if": "{{ section.settings.show_icon }}"
     },
     {
