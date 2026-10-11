@@ -11155,8 +11155,14 @@ figcaption {
    very noticeable static, but a rotating shape sweeps those clipped corners through a visibly larger
    path, reading as the points getting cut off mid-spin. overflow: visible removes that clip
    entirely, regardless of which icon_type is picked or whether it's spinning at all. */
+/* svg is an inline-replaced element by default, so it sits on the text baseline like an inline
+   image - leaving a sliver of space below it (room for descenders) even though nothing is actually
+   below it. display: block removes that baseline gap, so the icon's own box matches its visible
+   pixels exactly (matters most once it sits in a flex/grid row next to a heading - see eg. the
+   heading rows in sections/main-search.liquid, sections/main-not-found.liquid, sections/contact.liquid). */
 .decorative-icon svg {
   overflow: visible;
+  display: block;
 }
 
 /* Spins in place, indefinitely - transform-origin stays centered (the SVG's own default for a

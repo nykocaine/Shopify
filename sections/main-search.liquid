@@ -158,8 +158,15 @@
       gap: .5rem;
     }
 
+    {%- comment -%}
+    Trims the heading's box down to its actual glyphs (cap height to baseline), removing the
+    invisible leading space a line box normally carries above/below the text - without it, that
+    space pads out the row's own height and throws off align-items: center, which centers boxes,
+    not visible pixels.
+    {%- endcomment -%}
     #shopify-section-{{ section.id }} .search-heading-row__heading {
       grid-area: heading;
+      text-box: trim-both cap alphabetic;
     }
 
     #shopify-section-{{ section.id }} .search-heading-row__icon {
