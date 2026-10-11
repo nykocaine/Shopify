@@ -441,14 +441,14 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   {%- comment -%}
-  Column, not row: the flower (when shown) stacks above the button, both centered on the same
-  horizontal center so the flower reads as sitting right above the button regardless of which one
-  ends up wider.
+  Column, not row: the icon (when shown) stacks above the button. align-items: end (not center)
+  keeps both flush to the same right edge instead of centered on each other - so the icon reads as
+  pinned to the button's own right side, not floating in the middle above it.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__cta {
     flex-direction: column;
     flex-shrink: 0;
-    align-items: center;
+    align-items: end;
     gap: .5rem;
     margin-inline-start: auto;
     display: flex;
