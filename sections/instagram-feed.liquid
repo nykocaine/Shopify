@@ -508,6 +508,18 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   {%- comment -%}
+  svg's own default is overflow: hidden, clipping anything outside its 0 0 100 100 viewBox - a
+  couple of shapes (eg. 'star') draw points right up against that edge, and their stroke (which
+  straddles the path edge, half outside it) pushes the actual painted pixels slightly past it. Not
+  very noticeable static, but a rotating shape sweeps those clipped corners through a visibly larger
+  path, reading as the points getting cut off mid-spin. overflow: visible removes that clip
+  entirely, regardless of which icon_type is picked or whether it's spinning at all.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__icon svg {
+    overflow: visible;
+  }
+
+  {%- comment -%}
   Spins in place, indefinitely - transform-origin stays centered (the SVG's own default for a
   square viewBox), so it rotates around its own center rather than orbiting anything. Respects
   reduced-motion like every other animation in this theme (see eg. snippets/media-zoom-style.liquid).
