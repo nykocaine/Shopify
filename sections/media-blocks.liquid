@@ -139,6 +139,21 @@
       overflow: hidden;
     }
 
+    {%- comment -%}
+    .content-box (theme.css) is the shared "media card" padding system - its --content-box-spacing
+    normally shrinks at narrow container widths (own @container rules) instead of staying fixed. The
+    "Image/video with text" blocks render their heading/text inside one of these (content-box.liquid
+    class="content-box h-full min-h-* md:min-h-*"), so without this override their text padding would
+    follow that shrinking system instead of the same faq.liquid-style formula used everywhere else in
+    this section. Scoped to this section only - .content-box itself is shared with many other
+    sections (hero banners, testimonials, etc.) that must keep the original system untouched. Specificity
+    (id + class) beats the unscoped @container overrides regardless of container width, matching the
+    "same value at every breakpoint" criterion the rest of this section's padding already follows.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .content-box {
+      --content-box-spacing: calc(var(--container-gutter) + 0.5rem);
+    }
+
     {%- if section.settings.column_spacing == 'none' -%}
       {%- comment -%}
         No spacing between cards: they form a single continuous piece, so the radius only
