@@ -93,6 +93,38 @@ to the first 5 of the newly sorted order.
 
           <div class="reviews__list" data-reviews-list>
             {%- for block in review_blocks -%}
+              {%- comment -%}
+              Date shown per review is computed, not merchant-entered (block.settings.date_label is
+              no longer read) - it auto-advances once every 24 hours (day_count, from the current
+              unix timestamp, is the same integer for everyone until the next UTC day) and never
+              reads as fresher than ~4-6 days or older than ~2 months: review_date_days cycles
+              through that [4, 59] range, wrapping back to the start every 56 days instead of
+              counting up forever. Each review gets a different point in that same cycle (seeded off
+              forloop.index) so they don't all display the exact same age on a given day.
+              {%- endcomment -%}
+              {%- liquid
+                assign review_date_now = 'now' | date: '%s' | plus: 0
+                assign review_date_day_count = review_date_now | divided_by: 86400
+                assign review_date_seed = forloop.index | times: 17 | plus: review_date_day_count
+                assign review_date_days = review_date_seed | modulo: 56 | plus: 4
+
+                case review_date_days
+                  when 4, 5, 6
+                    assign review_date_label = 'Hace ' | append: review_date_days | append: ' días'
+                  when 7, 8, 9, 10, 11, 12, 13
+                    assign review_date_label = 'Hace 1 semana'
+                  when 14, 15, 16, 17, 18, 19, 20
+                    assign review_date_label = 'Hace 2 semanas'
+                  when 21, 22, 23, 24, 25, 26, 27, 28, 29
+                    assign review_date_label = 'Hace 3 semanas'
+                  else
+                    if review_date_days < 50
+                      assign review_date_label = 'Hace 1 mes'
+                    else
+                      assign review_date_label = 'Hace 2 meses'
+                    endif
+                endcase
+              -%}
               <div class="review-card" data-rating="{{ block.settings.rating }}" data-index="{{ forloop.index }}" {{ block.shopify_attributes }}>
                 <div class="review-card__side">
                   <div class="review-card__reviewer">
@@ -185,9 +217,7 @@ to the first 5 of the newly sorted order.
                       {%- endfor -%}
                     </span>
 
-                    {%- if block.settings.date_label != blank -%}
-                      <span class="review-card__date">{{ block.settings.date_label }}</span>
-                    {%- endif -%}
+                    <span class="review-card__date">{{ review_date_label }}</span>
                   </div>
 
                   {%- if block.settings.title != blank -%}
@@ -982,13 +1012,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
         },
         {
           "type": "text",
-          "id": "date_label",
-          "label": "Date",
-          "info": "Shown as entered, eg. \"3 days ago\" or \"August 2026\".",
-          "default": "Hace 3 días"
-        },
-        {
-          "type": "text",
           "id": "title",
           "label": "Review title",
           "default": "¡Excelente producto!"
@@ -1074,7 +1097,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Valentina Rojas",
             "verified_buyer": true,
             "rating": 5.0,
-            "date_label": "Hace 2 días",
             "title": "Mi piel se ve muchísimo más pareja",
             "body": "<p>Lo apliqué siguiendo las instrucciones y sentí un hormigueo leve los primeros minutos, nada insoportable. A los tres días empecé a descamar un poco en las mejillas y para el quinto día ya tenía la piel completamente renovada. El tono se ve mucho más parejo y las manchitas que tenía por el sol están bastante más claras. No pensé que un solo proceso me iba a dar un cambio tan notorio.</p>",
             "product_name": "Peeling Químico",
@@ -1092,7 +1114,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Camila Torres",
             "verified_buyer": true,
             "rating": 4.0,
-            "date_label": "Hace 5 días",
             "title": "Bien, aunque la descamación me tomó por sorpresa",
             "body": "<p>El proceso de aplicación es fácil, en menos de diez minutos ya había terminado. Ardió un poco más de lo que esperaba en la segunda pasada, pero se pasó rápido. Lo que no me avisaron es que la descamación dura casi una semana, así que la próxima vez lo voy a planear mejor para no andar con la cara pelando entre semana. Aun así mi piel quedó bastante más suave.</p>",
             "product_name": "Peeling Químico",
@@ -1110,7 +1131,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Mateo Salazar",
             "verified_buyer": true,
             "rating": 3.5,
-            "date_label": "Hace 1 semana",
             "title": "Ayudó, aunque menos de lo que esperaba",
             "body": "<p>Soy hombre y la verdad me daba desconfianza, pero mi pareja me convenció de probarlo por unas marcas de acné en la mandíbula. El ardor fue tipo hormigueo, tolerable, y a los días empezó a pelar bastante. Las marcas más superficiales casi desaparecieron, pero las más profundas apenas se notan un poco menos marcadas. Esperaba un cambio mayor, aunque entiendo que capaz necesito repetirlo.</p>",
             "product_name": "Peeling Químico",
@@ -1128,7 +1148,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Sofía Herrera",
             "verified_buyer": true,
             "rating": 5.0,
-            "date_label": "Hace 4 días",
             "title": "El mejor tratamiento que probé en años",
             "body": "<p>Tengo la piel bastante sensible y siempre le tuve miedo a los peelings, pero seguí el tiempo de exposición recomendado y no tuve ningún problema. Sentí calorcito, nada de ardor fuerte. A la semana mi piel estaba luminosa, sin puntos negros y con los poros visiblemente más cerrados. Ya voy a repetir el proceso.</p>",
             "product_name": "Peeling Químico",
@@ -1146,7 +1165,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Gabriela Muñoz",
             "verified_buyer": true,
             "rating": 4.5,
-            "date_label": "Hace 2 semanas",
             "title": "Poros mucho más chicos",
             "body": "<p>Corto y directo: los puntos negros de la nariz se redujeron muchísimo y la piel quedó más suave. Recomendado.</p>",
             "product_name": "Peeling Químico",
@@ -1164,7 +1182,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Fernanda Silva",
             "verified_buyer": true,
             "rating": 2.5,
-            "date_label": "Hace 6 días",
             "title": "La recuperación fue más dura de lo que pensé",
             "body": "<p>Tenía manchas en los pómulos por el sol y sí veo algo de diferencia, pero la descamación fue mucho más intensa y larga de lo que imaginaba, casi diez días con la piel visiblemente pelando. Tuve que cancelar planes porque no quería salir así. El resultado final no está mal, pero el proceso de recuperación me pareció incómodo para lo que esperaba.</p>",
             "product_name": "Peeling Químico",
@@ -1182,7 +1199,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Daniela Castro",
             "verified_buyer": true,
             "rating": 4.8,
-            "date_label": "Hace 3 semanas",
             "title": "Después de un mes, mi piel es otra",
             "body": "<p>Escribo esta reseña casi un mes después del proceso porque quería ver los resultados a largo plazo antes de opinar. Tenía la piel con una textura bastante irregular, como arenosa al tacto, y hoy se siente completamente lisa y pareja. El proceso en sí no dolió, fue más una sensación de calor progresivo. La descamación duró unos cinco días y después de eso fue solo mejora constante. Definitivamente superó lo que esperaba antes de empezar.</p>",
             "product_name": "Peeling Químico",
@@ -1200,7 +1216,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Andrea Vargas",
             "verified_buyer": true,
             "rating": 3.0,
-            "date_label": "Hace 1 mes",
             "title": "Resultado moderado, esperaba más",
             "body": "<p>Lo hice por la opacidad de mi piel y sí noté algo más de luminosidad, pero esperaba un cambio más grande, sobre todo después de leer otras experiencias. El proceso de aplicación fue simple y sin molestias, y la descamación duró unos cuatro días, nada del otro mundo. Creo que con una segunda sesión los resultados serían mejores, capaz lo vuelvo a intentar más adelante.</p>",
             "product_name": "Peeling Químico",
@@ -1218,7 +1233,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Paulina Reyes",
             "verified_buyer": true,
             "rating": 4.5,
-            "date_label": "Hace 4 días",
             "title": "Cambió por completo mi rutina de piel",
             "body": "<p>Nunca había hecho un peeling en casa y me sorprendió lo fácil que fue todo el proceso. Sentí un hormigueo suave, nada de dolor, y a partir del tercer día empecé a pelar en la frente y la barbilla. El resultado final fue una piel súper luminosa, con los poros más cerrados y sin puntos negros visibles.</p>",
             "product_name": "Peeling Químico",
@@ -1236,7 +1250,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Carolina Méndez",
             "verified_buyer": true,
             "rating": 3.5,
-            "date_label": "Hace 10 días",
             "title": "Buen resultado, pero la recuperación fue incómoda para mí",
             "body": "<p>Los poros se notan bastante menos visibles y eso me tiene contenta, pero no voy a mentir: la primera vez el ardor durante la aplicación fue más fuerte de lo que me habían contado y los primeros dos días de descamación me costó ponerme maquillaje para ir a trabajar. El resultado final compensa, pero preferiría que la recuperación fuera menos molesta.</p>",
             "product_name": "Peeling Químico",
@@ -1254,7 +1267,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Alejandra Ruiz",
             "verified_buyer": true,
             "rating": 5.0,
-            "date_label": "Hace 1 semana",
             "title": "Superó mis expectativas totalmente",
             "body": "<p>Antes de empezar tenía la piel opaca y con líneas finas alrededor de los ojos que me molestaban bastante. Seguí las instrucciones al pie de la letra, respeté el tiempo exacto recomendado y esperé pacientemente los días de descamación sin apurar nada. El resultado fue una piel completamente renovada, luminosa y con esas líneas mucho menos marcadas. Comparando las fotos de antes y después, la diferencia es enorme.</p>",
             "product_name": "Peeling Químico",
@@ -1272,7 +1284,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Isabella Cruz",
             "verified_buyer": true,
             "rating": 4.0,
-            "date_label": "Hace 5 días",
             "title": "Rápido y con buenos resultados",
             "body": "<p>Lo que más me gustó fue lo rápido del proceso, en cinco minutos ya estaba listo. Tuve un enrojecimiento leve los primeros dos días, nada grave, y para el final de la semana mi piel ya se veía renovada y con mejor tono. Las marcas de acné en las mejillas se notan bastante menos.</p>",
             "product_name": "Peeling Químico",
@@ -1290,7 +1301,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Renata Flores",
             "verified_buyer": true,
             "rating": 3.5,
-            "date_label": "Hace 2 semanas",
             "title": "Hace falta paciencia para ver el cambio",
             "body": "<p>Con la primera aplicación no vi grandes cambios y estuve a punto de no repetir. Pero después de la segunda sesión sí noté la piel más suave y luminosa. El proceso es tolerable, se siente calor y un poco de hormigueo, y la descamación fue leve en mi caso. Si esperás resultados desde la primera vez, capaz te desilusiona un poco, pero con constancia funciona.</p>",
             "product_name": "Peeling Químico",
@@ -1308,7 +1318,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Ximena Ortiz",
             "verified_buyer": true,
             "rating": 4.7,
-            "date_label": "Hace 3 días",
             "title": "Mi piel nunca se sintió tan lisa",
             "body": "<p>Tengo la piel con textura irregular desde hace años y esto fue lo que más diferencia me hizo, más que cualquier exfoliante físico que probé antes. El proceso de aplicación no duele, solo se siente tibio, y la descamación empezó al cuarto día. Al pasar la mano por la cara ahora se siente completamente lisa.</p>",
             "product_name": "Peeling Químico",
@@ -1326,7 +1335,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Antonella Paredes",
             "verified_buyer": true,
             "rating": 2.0,
-            "date_label": "Hace 8 días",
             "title": "No fue lo que esperaba para mi tipo de piel",
             "body": "<p>El ardor durante la aplicación fue bastante más fuerte de lo que anticipaba y la descamación se extendió casi dos semanas, mucho más de lo que había leído en otras reseñas. Al final la piel quedó un poco más suave, pero para lo incómodo que fue el proceso esperaba un resultado más grande. Creo que en mi caso, con piel sensible, hubiera necesitado una preparación distinta.</p>",
             "product_name": "Peeling Químico",
@@ -1344,7 +1352,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Lucía Fernández",
             "verified_buyer": true,
             "rating": 4.5,
-            "date_label": "Hace 6 días",
             "title": "Resultados visibles desde la primera vez",
             "body": "<p>No esperaba ver cambios tan rápido, pero desde la primera aplicación mi piel ya se veía distinta. El proceso fue sencillo, sentí hormigueo leve y nada de dolor. Después de la descamación mi piel quedó mucho más luminosa y pareja, se lo recomendé a mi hermana enseguida.</p>",
             "product_name": "Peeling Químico",
@@ -1362,7 +1369,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Sebastián Cordero",
             "verified_buyer": true,
             "rating": 3.0,
-            "date_label": "Hace 3 semanas",
             "title": "Bien, aunque esperaba un poco más",
             "body": "<p>El proceso fue fácil y sin dolor, solo un poco de calor en la piel. Los resultados fueron buenos pero no tan dramáticos como esperaba después de leer otras reseñas, quizás porque mi problema principal eran cicatrices más profundas. Igual noté la piel más suave y con mejor textura en general, así que no me arrepiento.</p>",
             "product_name": "Peeling Químico",
@@ -1380,7 +1386,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Mariana López",
             "verified_buyer": true,
             "rating": 4.8,
-            "date_label": "Hace 4 días",
             "title": "Se nota muchísimo la diferencia en fotos",
             "body": "<p>Quería mejorar el tono general de mi piel antes de un evento familiar y llegué justo a tiempo. La aplicación fue simple, con un hormigueo leve, y la descamación duró unos cinco días. En las fotos del evento mi piel se veía radiante, sin comparación con cómo estaba dos semanas antes.</p>",
             "product_name": "Peeling Químico",
@@ -1398,7 +1403,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Natalia Duarte",
             "verified_buyer": true,
             "rating": 4.2,
-            "date_label": "Hace 12 días",
             "title": "Buena opción para empezar con peelings",
             "body": "<p>Era mi primera vez y estaba nerviosa, había leído reseñas que hablaban de mucho ardor y me imaginaba lo peor. En mi caso el proceso fue mucho más tolerable de lo que imaginaba, solo ardor leve durante la aplicación. La descamación fue moderada y en una semana ya tenía la piel visiblemente más suave y los puntos negros bastante reducidos.</p>",
             "product_name": "Peeling Químico",
@@ -1416,7 +1420,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Josefina Salinas",
             "verified_buyer": true,
             "rating": 5.0,
-            "date_label": "Hace 2 días",
             "title": "Excelente, ya es parte fija de mi rutina",
             "body": "<p>Esta fue mi tercera vez y cada vez los resultados son mejores. El proceso ya lo conozco de memoria: aplicación rápida, un poco de hormigueo, descamación entre el día tres y el cinco, y una piel renovada al final. Mis manchas casi desaparecieron y mi tono está más parejo que nunca, muy por encima de cómo tenía la piel hace unos meses.</p>",
             "product_name": "Peeling Químico",
@@ -1434,7 +1437,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
             "reviewer_name": "Constanza Ibarra",
             "verified_buyer": true,
             "rating": 3.5,
-            "date_label": "Hace 1 semana",
             "title": "Resultados reales, sin exagerar",
             "body": "<p>Me gustó que el proceso no fue tan agresivo como esperaba, apenas un cosquilleo y algo de calor. La descamación fue leve, casi no se notó. Los resultados fueron graduales, no un cambio inmediato, pero reales: piel más luminosa, textura más pareja y menos puntos negros en la nariz después de un par de semanas.</p>",
             "product_name": "Peeling Químico",
