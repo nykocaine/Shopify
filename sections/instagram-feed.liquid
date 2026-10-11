@@ -119,6 +119,11 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                         <rect x="24" y="10" width="52" height="18" rx="7" fill="{{ icon_secondary }}"/>
                         <rect x="18" y="28" width="64" height="58" rx="12" fill="{{ icon_primary }}"/>
 
+                      {%- when 'star' -%}
+                        {%- comment -%} Five-point star: stroke in the same color as the fill (icon_round_stroke, border-aware) with stroke-linejoin: round softens every point and inner corner, same trick as 'gem' below - plus a small center dot in icon_secondary. {%- endcomment -%}
+                        <path d="M50 5 61 39 98 39 68 61 79 95 50 74 21 95 32 61 2 39 39 39Z" fill="{{ icon_primary }}" stroke="{{ icon_round_stroke }}" stroke-width="8" stroke-linejoin="round"/>
+                        <circle cx="50" cy="50" r="8" fill="{{ icon_secondary }}"/>
+
                       {%- when 'gem' -%}
                         {%- comment -%} Faceted gem: a kite-shaped outline with crossing facet lines - stroke-linejoin: round softens its points. {%- endcomment -%}
                         <polygon points="50,8 82,36 66,92 34,92 18,36" fill="{{ icon_primary }}" stroke="{{ icon_round_stroke }}" stroke-width="8" stroke-linejoin="round"/>
@@ -800,6 +805,10 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         {
           "value": "droplet",
           "label": "Serum drop"
+        },
+        {
+          "value": "star",
+          "label": "Star"
         },
         {
           "value": "dropper",
