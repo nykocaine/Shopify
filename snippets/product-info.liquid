@@ -230,9 +230,33 @@ no need to manually pass the section as it is globally available)
                 renders in full rather than being silently cut with no way to reveal the rest.
                 {%- endcomment -%}
                 <style>
+                  {%- comment -%}
+                  <read-more-text> is an otherwise-unstyled custom element: undefined/plain custom
+                  elements default to display: inline in the UA stylesheet, same as <span>. Forcing
+                  it to block keeps it a predictable full-width box in whatever grid/flex context it
+                  renders in, instead of relying on the inline-with-block-children fixup browsers do
+                  automatically (harmless in practice, but not guaranteed to size identically everywhere).
+                  {%- endcomment -%}
+                  #shopify-section-{{ section.id }} .product-description-collapsible {
+                    display: block;
+                  }
+
                   #shopify-section-{{ section.id }} .product-description-collapsible__content {
                     overflow: hidden;
                     transition: max-height .3s ease-in-out;
+                  }
+
+                  {%- comment -%}
+                  collapsed-height (120px) is a fixed value, so it rarely lands exactly on a line
+                  boundary - the last visible line is often clipped halfway through its own glyphs
+                  (descenders/ascenders cut off) rather than ending cleanly. Fading that edge out
+                  (mask-image, only while actually collapsed - never while expanded or not overflowing,
+                  so fully-visible text is never faded) turns that hard, mid-line cut into a soft
+                  gradient instead, so it doesn't read as the text itself being cut/covered.
+                  {%- endcomment -%}
+                  #shopify-section-{{ section.id }} .product-description-collapsible[data-overflowing]:not([data-expanded]) .product-description-collapsible__content {
+                    mask-image: linear-gradient(to bottom, rgb(0 0 0 / 1) calc(100% - 1.5rem), rgb(0 0 0 / 0) 100%);
+                    -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0 / 1) calc(100% - 1.5rem), rgb(0 0 0 / 0) 100%);
                   }
 
                   {%- comment -%}
@@ -241,13 +265,16 @@ no need to manually pass the section as it is globally available)
                   below instead of needing a separate color. font-size isn't set at all: the theme's
                   own base reset (theme.css, "button, input, ... { font-size: 100% }") already makes a
                   bare <button> inherit its parent's size, which is exactly the inherited size wanted
-                  here. display: block + text-align: end sits it right below the text with no gap,
-                  right-aligned, instead of inline mid-text (simpler and more robust than trying to
-                  flow it into the clamped text's actual last line).
+                  here. display: block + text-align: end sits it right below the text, right-aligned,
+                  instead of inline mid-text (simpler and more robust than trying to flow it into the
+                  clamped text's actual last line). margin-block-start adds breathing room above it,
+                  now that the content above fades out instead of ending in a hard edge, so the toggle
+                  never reads as sitting directly on top of the description.
                   {%- endcomment -%}
                   #shopify-section-{{ section.id }} .product-description-collapsible__toggle {
                     color: rgb(var(--text-color) / .5);
                     text-align: end;
+                    margin-block-start: .5rem;
                     display: none;
                   }
 
