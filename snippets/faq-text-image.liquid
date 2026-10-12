@@ -39,14 +39,106 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
   if slide_count > 1
     assign is_carousel = true
   endif
+
+  # Same layout logic as sections/contact.liquid's own "Decorative icon" settings, just driven by
+  # this block's settings instead of the section's - see contact.liquid for the full rationale.
+  assign icon_justify_self = 'start'
+
+  case block.settings.icon_alignment
+    when 'center'
+      assign icon_justify_self = 'center'
+    when 'right'
+      assign icon_justify_self = 'end'
+  endcase
+
+  assign icon_display = 'grid'
+  assign icon_grid_template_columns = 'auto 1fr'
+  assign icon_grid_template_areas = '"title icon"'
+  assign icon_flex_direction = 'column'
+
+  case block.settings.icon_position
+    when 'left'
+      assign icon_grid_template_columns = '1fr auto'
+      assign icon_grid_template_areas = '"icon title"'
+    when 'above'
+      assign icon_display = 'flex'
+      assign icon_flex_direction = 'column-reverse'
+    when 'below'
+      assign icon_display = 'flex'
+      assign icon_flex_direction = 'column'
+  endcase
+
+  assign heading_row_id = 'faq-text-image-heading-row-' | append: block.id
 -%}
 
-{%- if block.settings.title != blank or block.settings.text != blank or has_media -%}
+{%- if block.settings.title != blank or block.settings.text != blank or block.settings.show_icon or has_media -%}
   <div class="faq__text-image {% if has_media %}faq__text-image--with-image{% endif %}" {{ block.shopify_attributes }}>
-    {%- if block.settings.title != blank -%}
+    {%- if block.settings.title != blank or block.settings.show_icon -%}
       <div class="faq__text-image-title prose">
-        {%- render 'heading', content: block.settings.title, style: 'h5', html_tag: 'h3' -%}
+        <div class="faq__text-image-heading-row" id="{{ heading_row_id }}">
+          {%- if block.settings.title != blank -%}
+            <div class="faq__text-image-heading-row__title">
+              {%- render 'heading', content: block.settings.title, style: 'h5', html_tag: 'h3' -%}
+            </div>
+          {%- endif -%}
+
+          {%- if block.settings.show_icon -%}
+            <div class="faq__text-image-heading-row__icon">
+              {%- render 'decorative-icon',
+                icon_type: block.settings.icon_type,
+                icon_size: block.settings.icon_size,
+                icon_spin: block.settings.icon_spin,
+                icon_primary_color: block.settings.icon_primary_color,
+                icon_secondary_color: block.settings.icon_secondary_color,
+                icon_border_color: block.settings.icon_border_color
+              -%}
+            </div>
+          {%- endif -%}
+        </div>
       </div>
+
+      {%- if block.settings.show_icon -%}
+        <style>
+          #{{ heading_row_id }} {
+            display: {{ icon_display }};
+            {%- if icon_display == 'grid' -%}
+              grid-template-columns: {{ icon_grid_template_columns }};
+              grid-template-areas: {{ icon_grid_template_areas }};
+              align-items: center;
+            {%- else -%}
+              flex-direction: {{ icon_flex_direction }};
+              align-items: flex-start;
+            {%- endif -%}
+            gap: .5rem;
+          }
+
+          #{{ heading_row_id }} .faq__text-image-heading-row__title {
+            grid-area: title;
+          }
+
+          {%- comment -%}
+          Same two-levels-deep .prose spacing fix as contact.liquid's .contact-heading-row__title - see
+          that section for the full rationale (the heading sits past .prose's own one-level exemption).
+          {%- endcomment -%}
+          #{{ heading_row_id }} .faq__text-image-heading-row__title > * {
+            text-box: trim-both cap alphabetic;
+            margin-block-start: 0;
+          }
+
+          #{{ heading_row_id }} .faq__text-image-heading-row__icon {
+            grid-area: icon;
+            {%- if icon_display == 'grid' -%}
+              justify-self: {{ icon_justify_self }};
+            {%- else -%}
+              align-self: {{ icon_justify_self }};
+            {%- endif -%}
+          }
+
+          #{{ heading_row_id }} .faq__text-image-heading-row__icon svg {
+            margin-block: calc(var(--prose-media-spacing) / 2);
+          }
+        </style>
+      {%- endif -%}
     {%- endif -%}
 
     {%- if block.settings.text != blank -%}
