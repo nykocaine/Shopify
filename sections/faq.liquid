@@ -332,11 +332,11 @@
       fixed horizontal one and a vertical one carrying the .accordion-plus-bar class. theme.css's own
       default open effect shrinks that vertical bar to nothing (transform: scaleY(0)), fading the whole
       icon to 40% opacity at the same time, so the "+" simply thins down into a "-". This overrides the
-      vertical bar's transform so it spins a full 360° on its own center instead of shrinking - 450deg
-      (360 + 90), not a literal 360deg, since a straight bar rotated exactly 360deg lands back looking
-      identical to its 0deg start (still a "+"); the extra 90deg is what actually leaves it lying flat
-      on top of the fixed horizontal bar at the end, same "-" end result as before, now reached via one
-      full spin instead of a quarter turn.
+      vertical bar's transform so it rotates on its own center instead of shrinking. Note: a straight
+      bar rotated exactly 180deg lands back looking identical to its 0deg start (a line has 180°
+      rotational symmetry), so it reads as a plain "+" again at rest, not a "-" - if a "-" end look is
+      wanted instead, the angle needs a trailing +90deg (eg. 270deg) to actually leave it lying flat on
+      the fixed horizontal bar.
 
       The duration is slowed down from theme.css's default transition: transform .3s ease-in-out (kept
       as-is for that icon everywhere else in the theme) to .6s here, applied to the bar unconditionally
@@ -350,7 +350,7 @@
       }
 
       #shopify-section-{{ section.id }} .accordion.is-open .accordion__summary .icon-accordion-plus .accordion-plus-bar {
-        transform: rotate(450deg);
+        transform: rotate(180deg);
       }
 
       {%- comment -%}
