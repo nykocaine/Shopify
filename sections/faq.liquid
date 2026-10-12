@@ -490,45 +490,43 @@
       {%- endcomment -%}
 
       {%- comment -%}
-      "Text with image" block (faq-text-image.liquid): plain editorial content, not an accordion -
-      lives alongside questions inside the same category panel/list. Single column (text, then image
-      below it) until 700px; from there, text | image side by side only when an image is actually
-      set - text-only blocks stay full width at every size. The image keeps its natural aspect ratio
-      (width: 100%, height: auto - never height: 100%, which would stretch/crop it) and gets the
-      section's own Corner radius (faq_border_radius) via inline style + overflow: hidden on its
-      wrapper, so it reads as part of the same rounded-corner system as the rest of the section.
+      "Text with image or video" block (faq-text-image.liquid): plain editorial content, not an
+      accordion - lives alongside questions inside the same category panel/list. Single column
+      (title, then text, then media stacked in that order) until 700px; from there, when there is at
+      least one media item, title | text | media become three equal columns - same 3-equal-column
+      pattern as main-product.liquid's "Show first image as its own column" grid
+      (--product-grid: repeat(3, minmax(0, 1fr))). Text-only blocks (no media) stay single column,
+      full width, at every size. Every media item (image or video, single or carousel) renders through
+      snippets/media-zoom-slide.liquid, the same markup Media Blocks' Carousel uses, so it already
+      carries its own sizing (block_size/mobile_block_size) and corner radius (faq_border_radius) -
+      nothing here needs to size or round it.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__text-image {
         gap: 1.5rem;
         display: grid;
       }
 
-      #shopify-section-{{ section.id }} .faq__text-image-content {
+      #shopify-section-{{ section.id }} .faq__text-image-title,
+      #shopify-section-{{ section.id }} .faq__text-image-text {
         align-self: center;
       }
 
+      {%- comment -%}
+      flex column + gap: with a carousel (more than one media item), this stacks the scrolling
+      product-list above its progress bar with some breathing room between them. With a single media
+      item it has no visible effect (one child, the <figure> - the lightbox element next to it stays
+      hidden until opened).
+      {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__text-image-media {
         overflow: hidden;
-      }
-
-      {%- comment -%}
-      Direct children only (not a plain descendant selector): the plain image render outputs its
-      <img> directly inside .faq__text-image-media, so this still matches it exactly as before. The
-      video variant (snippets/media-zoom-slide.liquid, shared with Media Blocks' Carousel) instead
-      nests its <video> several levels deep inside its own sized .content-box box - that one must
-      size itself via its own block_size/mobile_block_size setting, so it's deliberately excluded
-      here rather than forced to width:100%/height:auto.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .faq__text-image-media > img,
-      #shopify-section-{{ section.id }} .faq__text-image-media > video {
-        width: 100%;
-        height: auto;
-        display: block;
+        gap: .75rem;
+        display: flex;
+        flex-direction: column;
       }
 
       @media screen and (min-width: 700px) {
         #shopify-section-{{ section.id }} .faq__text-image--with-image {
-          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          grid-template-columns: repeat(3, minmax(0, 1fr));
           align-items: center;
         }
       }
@@ -1714,32 +1712,68 @@
           "default": "<p>Add editorial content, like a longer explanation or a note, inside any category.</p>"
         },
         {
-          "type": "select",
-          "id": "media_type",
-          "label": "Media type",
-          "options": [
-            {
-              "value": "image",
-              "label": "t:global.image.image"
-            },
-            {
-              "value": "video",
-              "label": "t:global.video.video"
-            }
-          ],
-          "default": "image"
+          "type": "header",
+          "content": "Media 1"
         },
         {
           "type": "image_picker",
-          "id": "image",
-          "label": "t:global.image.image",
-          "visible_if": "{{ block.settings.media_type == 'image' }}"
+          "id": "image_1",
+          "label": "t:global.image.image"
         },
         {
           "type": "video",
-          "id": "video",
+          "id": "video_1",
           "label": "t:global.video.video",
-          "visible_if": "{{ block.settings.media_type == 'video' }}"
+          "info": "If set, this plays instead of the image above."
+        },
+        {
+          "type": "text",
+          "id": "caption_1",
+          "label": "t:global.image.caption"
+        },
+        {
+          "type": "header",
+          "content": "Media 2"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_2",
+          "label": "t:global.image.image"
+        },
+        {
+          "type": "video",
+          "id": "video_2",
+          "label": "t:global.video.video",
+          "info": "If set, this plays instead of the image above."
+        },
+        {
+          "type": "text",
+          "id": "caption_2",
+          "label": "t:global.image.caption"
+        },
+        {
+          "type": "header",
+          "content": "Media 3"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_3",
+          "label": "t:global.image.image"
+        },
+        {
+          "type": "video",
+          "id": "video_3",
+          "label": "t:global.video.video",
+          "info": "If set, this plays instead of the image above."
+        },
+        {
+          "type": "text",
+          "id": "caption_3",
+          "label": "t:global.image.caption"
+        },
+        {
+          "type": "header",
+          "content": "Media size"
         },
         {
           "type": "select",
@@ -1768,8 +1802,7 @@
             }
           ],
           "info": "t:global.image.ratio_avoid_cropping_info",
-          "default": "auto",
-          "visible_if": "{{ block.settings.media_type == 'video' }}"
+          "default": "auto"
         },
         {
           "type": "select",
@@ -1798,8 +1831,7 @@
             }
           ],
           "info": "t:global.image.ratio_avoid_cropping_info",
-          "default": "auto",
-          "visible_if": "{{ block.settings.media_type == 'video' }}"
+          "default": "auto"
         }
       ]
     }
