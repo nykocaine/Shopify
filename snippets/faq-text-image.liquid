@@ -78,7 +78,7 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
         <div class="faq__text-image-heading-row" id="{{ heading_row_id }}">
           {%- if block.settings.title != blank -%}
             <div class="faq__text-image-heading-row__title">
-              {%- render 'heading', content: block.settings.title, style: 'h5', html_tag: 'h3' -%}
+              {%- render 'heading', content: block.settings.title, style: block.settings.title_tag, html_tag: 'h3', balance_text: true -%}
             </div>
           {%- endif -%}
 
@@ -245,6 +245,26 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
           @media screen and (min-width: 700px) {
             #{{ media_carousel_id }} {
               grid: auto / auto-flow 45%;
+            }
+          }
+        {%- endif -%}
+
+        {%- if block.settings.block_size == 'auto' -%}
+          {%- comment -%}
+          theme.css's own desktop (1000px+) rule that makes a sized media item's background fill its
+          content-box via position: absolute (".content-box[class*='md:min-h-'] .content-box__background-media")
+          matches ANY "md:min-h-*" class, including "md:min-h-auto" - unlike its mobile equivalent
+          (".content-box[class*='min-h-']:not(.min-h-auto) ..."), which correctly excludes the "auto"
+          ("Original image ratio") case. With no sized min-height class to size against and its own
+          media pulled out of flow, an "auto"-sized content-box has nothing left to size itself from at
+          1000px+, collapsing the figure around it - which is what was hiding the figcaption below it
+          (present in the DOM, just inside a collapsed box). This restores the same static positioning
+          theme.css's own mobile rule already uses for "auto", scoped to this block only.
+          {%- endcomment -%}
+          @media screen and (min-width: 1000px) {
+            #{{ media_wrapper_id }} .content-box__background-media {
+              position: static;
+              inset: auto;
             }
           }
         {%- endif -%}
