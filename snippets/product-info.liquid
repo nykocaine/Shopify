@@ -223,138 +223,131 @@ no need to manually pass the section as it is globally available)
               {%- elsif context == 'main_product' -%}
                 {%- comment -%}
                 "Show more/less": main_product only (featured-product, quick-buy keep showing the
-                description in full, unchanged) - collapses to data-collapsed-height (px) and reveals
-                a text-link toggle to expand it, but only once JS actually confirms the content
-                overflows that height. The clipping itself is applied by the read-more-text element
-                below, never by this stylesheet alone, so with JS disabled the description always
-                renders in full rather than being silently cut with no way to reveal the rest.
+                description in full, unchanged). Whether the toggle appears is decided from the
+                description's own markup - a paragraph break (another <p> after the first one) or,
+                failing that, a manual line break (<br>) - never from a measured pixel height. That
+                means the part kept always-visible is always a complete paragraph/line, so it can
+                never be cut off mid-line the way a fixed-height overflow clip could. A single short
+                paragraph with no break at all means no toggle - the whole description just renders
+                in full, same as the plain branch below.
                 {%- endcomment -%}
-                <style>
-                  {%- comment -%}
-                  <read-more-text> is an otherwise-unstyled custom element: undefined/plain custom
-                  elements default to display: inline in the UA stylesheet, same as <span>. Forcing
-                  it to block keeps it a predictable full-width box in whatever grid/flex context it
-                  renders in, instead of relying on the inline-with-block-children fixup browsers do
-                  automatically (harmless in practice, but not guaranteed to size identically everywhere).
-                  {%- endcomment -%}
-                  #shopify-section-{{ section.id }} .product-description-collapsible {
-                    display: block;
-                  }
+                {%- liquid
+                  assign description_first_chunk = product_description
+                  assign description_rest_chunk = ''
+                  assign description_has_more = false
+                  assign br_variants = '<br>,<br />,<br/>' | split: ','
 
-                  #shopify-section-{{ section.id }} .product-description-collapsible__content {
-                    overflow: hidden;
-                    transition: max-height .3s ease-in-out;
-                  }
+                  if product_description contains '</p>'
+                    assign scope_text = product_description | split: '</p>' | first
+                    assign after_scope = product_description | remove_first: scope_text | remove_first: '</p>'
+                    assign after_scope_check = after_scope | strip_html | strip
+                    assign scope_is_paragraph = true
+                  else
+                    assign scope_text = product_description
+                    assign after_scope = ''
+                    assign after_scope_check = ''
+                    assign scope_is_paragraph = false
+                  endif
 
-                  {%- comment -%}
-                  Plain text link, not a button: reuses .link (theme.css) for the underline - its
-                  underline is a currentColor gradient, so it automatically follows the faded color
-                  below instead of needing a separate color. font-size isn't set at all: the theme's
-                  own base reset (theme.css, "button, input, ... { font-size: 100% }") already makes a
-                  bare <button> inherit its parent's size, which is exactly the inherited size wanted
-                  here. display: block + text-align: end sits it right below the text, right-aligned,
-                  instead of inline mid-text (simpler and more robust than trying to flow it into the
-                  clamped text's actual last line). margin-block-start gives it clear breathing room
-                  above, so the toggle never sits directly against (or visually overlaps) the clipped
-                  line of text right above it.
-                  {%- endcomment -%}
-                  #shopify-section-{{ section.id }} .product-description-collapsible__toggle {
-                    color: rgb(var(--text-color) / .5);
-                    text-align: end;
-                    margin-block-start: 1rem;
-                    display: none;
-                  }
+                  if scope_is_paragraph and after_scope_check != blank
+                    # More than one paragraph: keep the first one (re-closed) always visible, reveal
+                    # every paragraph after it (already valid, self-contained <p> markup) on toggle.
+                    assign description_first_chunk = scope_text | append: '</p>'
+                    assign description_rest_chunk = after_scope
+                    assign description_has_more = true
+                  else
+                    # Either a single paragraph, or no paragraph markup at all - look for a manual
+                    # line break instead, trying each <br> variant RTEs may emit.
+                    for delimiter in br_variants
+                      unless description_has_more
+                        if scope_text contains delimiter
+                          assign before_break = scope_text | split: delimiter | first
+                          assign after_break = scope_text | remove_first: before_break | remove_first: delimiter
+                          assign after_break_check = after_break | strip_html | strip
 
-                  #shopify-section-{{ section.id }} .product-description-collapsible[data-overflowing] .product-description-collapsible__toggle {
-                    display: block;
-                  }
+                          if after_break_check != blank
+                            if scope_is_paragraph
+                              # Re-wrap both halves of the single paragraph in their own <p>, so the
+                              # break effectively becomes a paragraph split once expanded - keeps both
+                              # chunks self-contained, valid HTML instead of leaving a <p> unclosed.
+                              assign description_first_chunk = before_break | append: '</p>'
+                              assign description_rest_chunk = '<p>' | append: after_break | append: '</p>'
+                            else
+                              assign description_first_chunk = before_break
+                              assign description_rest_chunk = after_break
+                            endif
 
-                  #shopify-section-{{ section.id }} .product-description-collapsible__label-less {
-                    display: none;
-                  }
+                            assign description_has_more = true
+                          endif
+                        endif
+                      endunless
+                    endfor
+                  endif
+                -%}
 
-                  #shopify-section-{{ section.id }} .product-description-collapsible[data-expanded] .product-description-collapsible__label-more {
-                    display: none;
-                  }
+                {%- if description_has_more -%}
+                  <style>
+                    {%- comment -%}
+                    Plain text link, not a button: reuses .link (theme.css) for the underline - its
+                    underline is a currentColor gradient, so it automatically follows the faded color
+                    below instead of needing a separate color. <summary> defaults to display: list-item
+                    with its own disclosure marker (a browser-drawn triangle) - removed here since the
+                    label itself already swaps text to say "show less" once open, so a marker would be
+                    redundant. margin-block-start gives the toggle clear breathing room above it, so it
+                    never sits directly against the always-complete paragraph/line right above it.
+                    {%- endcomment -%}
+                    #shopify-section-{{ section.id }} .product-description-more {
+                      margin-block-start: 1rem;
+                    }
 
-                  #shopify-section-{{ section.id }} .product-description-collapsible[data-expanded] .product-description-collapsible__label-less {
-                    display: inline;
-                  }
-                </style>
+                    #shopify-section-{{ section.id }} .product-description-more__toggle {
+                      color: rgb(var(--text-color) / .5);
+                      text-align: end;
+                      list-style: none;
+                      cursor: pointer;
+                      display: block;
+                    }
 
-                {%- assign description_dom_id = 'ProductDescription-' | append: section.id -%}
+                    #shopify-section-{{ section.id }} .product-description-more__toggle::marker,
+                    #shopify-section-{{ section.id }} .product-description-more__toggle::-webkit-details-marker {
+                      content: '';
+                      display: none;
+                    }
 
-                <read-more-text class="product-description-collapsible" data-collapsed-height="120">
-                  <div id="{{ description_dom_id }}" class="prose prose-justify-{{ alignment }} product-description-collapsible__content">
+                    #shopify-section-{{ section.id }} .product-description-more__label-less {
+                      display: none;
+                    }
+
+                    #shopify-section-{{ section.id }} .product-description-more[open] .product-description-more__label-more {
+                      display: none;
+                    }
+
+                    #shopify-section-{{ section.id }} .product-description-more[open] .product-description-more__label-less {
+                      display: inline;
+                    }
+                  </style>
+
+                  <div class="prose prose-justify-{{ alignment }}">
+                    {{- description_first_chunk -}}
+
+                    {%- comment -%}
+                    Native disclosure widget: accessible and keyboard-operable with no JS of its own
+                    (unlike the previous scrollHeight-measuring custom element), and the "rest" content
+                    simply doesn't exist in the DOM as visible text until opened.
+                    {%- endcomment -%}
+                    <details class="product-description-more">
+                      <summary class="link product-description-more__toggle">
+                        <span class="product-description-more__label-more">{{ 'product.general.show_more' | t }}</span><span class="product-description-more__label-less">{{ 'product.general.show_less' | t }}</span>
+                      </summary>
+
+                      {{- description_rest_chunk -}}
+                    </details>
+                  </div>
+                {%- else -%}
+                  <div class="prose prose-justify-{{ alignment }}">
                     {{- product_description -}}
                   </div>
-
-                  <button type="button" class="link product-description-collapsible__toggle" aria-controls="{{ description_dom_id }}">
-                    <span class="product-description-collapsible__label-more">{{ 'product.general.show_more' | t }}</span><span class="product-description-collapsible__label-less">{{ 'product.general.show_less' | t }}</span>
-                  </button>
-                </read-more-text>
-
-                {%- comment -%}
-                Plain script tag with its own idempotency guard (same reasoning/pattern as the accordion
-                auto-collapse script further down this file): product-info.liquid, and so this block, can
-                render more than once on the same page.
-                {%- endcomment -%}
-                <script>
-                  if (!window.customElements.get('read-more-text')) {
-                    window.customElements.define('read-more-text', class extends HTMLElement {
-                      connectedCallback() {
-                        var content = this.querySelector('.product-description-collapsible__content');
-                        var toggle = this.querySelector('.product-description-collapsible__toggle');
-                        if (!content || !toggle) return;
-
-                        this.content = content;
-                        this.toggle = toggle;
-                        this.collapsedHeight = parseInt(this.dataset.collapsedHeight, 10) || 120;
-
-                        toggle.setAttribute('aria-expanded', 'false');
-                        toggle.addEventListener('click', this.onToggleClick.bind(this));
-
-                        this.measure();
-
-                        if (window.ResizeObserver) {
-                          this.resizeObserver = new ResizeObserver(this.measure.bind(this));
-                          this.resizeObserver.observe(content);
-                        }
-                      }
-
-                      disconnectedCallback() {
-                        if (this.resizeObserver) this.resizeObserver.disconnect();
-                      }
-
-                      measure() {
-                        if (this.hasAttribute('data-expanded')) {
-                          // Keeps the open height in sync with a resize (eg. rotating a phone) instead
-                          // of leaving it pinned to whatever it measured when it was expanded.
-                          this.content.style.maxHeight = this.content.scrollHeight + 'px';
-                          return;
-                        }
-
-                        var overflowing = this.content.scrollHeight - this.collapsedHeight > 1;
-                        this.toggleAttribute('data-overflowing', overflowing);
-                        this.content.style.maxHeight = overflowing ? this.collapsedHeight + 'px' : '';
-                      }
-
-                      onToggleClick() {
-                        var expanding = !this.hasAttribute('data-expanded');
-
-                        if (expanding) {
-                          this.content.style.maxHeight = this.content.scrollHeight + 'px';
-                          this.setAttribute('data-expanded', '');
-                        } else {
-                          this.removeAttribute('data-expanded');
-                          this.content.style.maxHeight = this.collapsedHeight + 'px';
-                        }
-
-                        this.toggle.setAttribute('aria-expanded', String(expanding));
-                      }
-                    });
-                  }
-                </script>
+                {%- endif -%}
               {%- else -%}
                 <div class="prose prose-justify-{{ alignment }}">
                   {{- product_description -}}
