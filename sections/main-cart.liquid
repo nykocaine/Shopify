@@ -102,6 +102,20 @@
   }
 
   {%- comment -%}
+  Same title alignment system as sections/contact.liquid's .contact-heading-row__title: text-box
+  trims the title's line box down to its actual glyphs (cap height to baseline) instead of the full
+  line-height box, so align-items: center above centers it against the icon's own tight box exactly,
+  and the row's height hugs whichever of the two is actually taller instead of carrying the title's
+  invisible line-height leading. margin-block-start: 0 guards against the same .prose heading-margin
+  leak contact.liquid had (not currently in play here - this h1 isn't nested inside a .prose - kept
+  for parity in case that ever changes).
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .cart__title-row > h1 {
+    text-box: trim-both cap alphabetic;
+    margin-block-start: 0;
+  }
+
+  {%- comment -%}
   Product images inherit the order summary box's own corner radius (cart_summary_border_radius,
   set above) instead of a new independent value, so they stay in sync with it.
   {%- endcomment -%}
