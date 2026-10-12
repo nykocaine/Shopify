@@ -223,8 +223,8 @@ no need to manually pass the section as it is globally available)
               {%- elsif context == 'main_product' -%}
                 {%- comment -%}
                 "Show more/less": main_product only (featured-product, quick-buy keep showing the
-                description in full, unchanged) - collapses to data-collapsed-height (px) and reveals
-                a text-link toggle to expand it, but only once JS actually confirms the content
+                description in full, unchanged) - collapses to a fixed number of lines and reveals a
+                text-link toggle to expand it, but only once JS actually confirms the content
                 overflows that height. The clipping itself is applied by the read-more-text element
                 below, never by this stylesheet alone, so with JS disabled the description always
                 renders in full rather than being silently cut with no way to reveal the rest.
@@ -241,7 +241,16 @@ no need to manually pass the section as it is globally available)
                     display: block;
                   }
 
+                  {%- comment -%}
+                  The collapsed height is N whole lines (--text-line-height, the same token body text's
+                  own line-height already uses, theme.css) instead of a flat pixel number - a flat
+                  number rarely lands exactly on a line boundary, so the last visible line would get cut
+                  off mid-glyph instead of ending cleanly. 1em resolves against this element's own
+                  font-size, so it stays correct even if the description's font size ever changes.
+                  {%- endcomment -%}
                   #shopify-section-{{ section.id }} .product-description-collapsible__content {
+                    --product-description-collapsed-lines: 5;
+                    max-height: calc(var(--product-description-collapsed-lines) * var(--text-line-height) * 1em);
                     overflow: hidden;
                     transition: max-height .3s ease-in-out;
                   }
@@ -284,7 +293,7 @@ no need to manually pass the section as it is globally available)
 
                 {%- assign description_dom_id = 'ProductDescription-' | append: section.id -%}
 
-                <read-more-text class="product-description-collapsible" data-collapsed-height="120">
+                <read-more-text class="product-description-collapsible">
                   <div id="{{ description_dom_id }}" class="prose prose-justify-{{ alignment }} product-description-collapsible__content">
                     {{- product_description -}}
                   </div>
@@ -309,7 +318,11 @@ no need to manually pass the section as it is globally available)
 
                         this.content = content;
                         this.toggle = toggle;
-                        this.collapsedHeight = parseInt(this.dataset.collapsedHeight, 10) || 120;
+
+                        // The CSS max-height (theme.css-driven --text-line-height * N lines) is already
+                        // aligned to a whole number of lines - read it back instead of a hardcoded pixel
+                        // value, so the collapsed state can never land mid-line.
+                        this.collapsedHeight = parseFloat(getComputedStyle(content).maxHeight) || 120;
 
                         toggle.setAttribute('aria-expanded', 'false');
                         toggle.addEventListener('click', this.onToggleClick.bind(this));
