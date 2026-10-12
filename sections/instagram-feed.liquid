@@ -298,8 +298,22 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     display: flex;
   }
 
+  {%- comment -%}
+  min-width: 0 as before. align-self: stretch overrides the row's own align-items: start just for
+  this item, so .prose's box grows to the row's full height (matching .instagram-feed__cta, the
+  taller of the two when there's an icon+button) instead of shrinking to just its own content.
+  display: flex + flex-direction: column turns .prose into a column of its own (title, then
+  subtitle) whose justify-content: space-between then pins the subtitle to the very bottom of that
+  now-taller box, while the title stays exactly where it already was (top-aligned, unaffected) and
+  the existing title-to-subtitle gap (--prose-default-spacing, overridden above to .5rem) still
+  applies as a minimum - space-between only adds whatever extra room is left over beyond that.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__header > .prose {
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-self: stretch;
   }
 
   {%- comment -%}
