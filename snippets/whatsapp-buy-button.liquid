@@ -24,15 +24,17 @@ independent from the rest of the theme's buttons.
 
 {%- if button_style == 'link' -%}
   {%- comment -%}
-  Same "plain text link" treatment as the product description's show-more/less toggle
-  (snippets/product-info.liquid): .link (theme.css) for the underline - its underline is a currentColor
-  gradient, so it automatically follows the faded color below - instead of going through
-  snippets/button.liquid, whose own style: 'link' adds .subheading (its own font scale) and the
-  WhatsApp icon, neither of which is wanted here.
+  Same "plain text link" positioning as the product description's show-more/less toggle
+  (snippets/product-info.liquid), but without .link's own underline (background gradient, theme.css):
+  a permanent underline under a secondary action like this read as visual noise/competed with the
+  WhatsApp icon-less text for attention - color alone (faded, same as that toggle) is enough to mark
+  it as secondary. Still skips snippets/button.liquid, whose own style: 'link' adds .subheading (its
+  own font scale) and the WhatsApp icon, neither of which is wanted here.
   {%- endcomment -%}
   <style>
     #shopify-section-{{ section.id }} .whatsapp-buy-button--link {
       color: rgb(var(--text-color) / .5);
+      background: none;
     }
   </style>
 
@@ -40,12 +42,20 @@ independent from the rest of the theme's buttons.
     {{- button_text -}}
   </a>
 {%- else -%}
+  {%- comment -%}
+  size: 'sm' (snippets/button.liquid's own "sm" size, not a new style) keeps this visually secondary
+  to the Add to cart button above it (buy-buttons.liquid, always full-size + stretch: true) - without
+  it, WhatsApp's bold brand green at full size could outweigh the primary action instead of
+  supporting it, especially against an Add to cart button configured with a muted/outline-like
+  background (eg. this theme's current white background + dark border default).
+  {%- endcomment -%}
   {%- render 'button',
       content: button_text,
       href: wa_href,
       external: true,
       icon: 'whatsapp',
       style: button_style,
+      size: 'sm',
       background: background_color,
       text_color: text_color,
       class: 'whatsapp-buy-button',
