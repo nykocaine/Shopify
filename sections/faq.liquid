@@ -331,16 +331,24 @@
       Toggle icon ("+"/toggle_icon: 'accordion-plus', snippets/icon.liquid): the icon is two bars, a
       fixed horizontal one and a vertical one carrying the .accordion-plus-bar class. theme.css's own
       default open effect shrinks that vertical bar to nothing (transform: scaleY(0)), fading the whole
-      icon to 40% opacity at the same time, so the "+" simply thins down into a "-". This overrides just
-      the vertical bar's transform (same existing transition: transform .3s ease-in-out off
-      .accordion-plus-bar in theme.css, already around transform-origin: center - no new transition is
-      introduced) so it spins a full 360° on its own center instead of shrinking - 450deg (360 + 90),
-      not a literal 360deg, since a straight bar rotated exactly 360deg lands back looking identical to
-      its 0deg start (still a "+"); the extra 90deg is what actually leaves it lying flat on top of the
-      fixed horizontal bar at the end, same "-" end result as before, now reached via one full spin
-      instead of a quarter turn. Scoped to this section only - theme.css's own behavior (and every
-      other place this icon is used) is untouched.
+      icon to 40% opacity at the same time, so the "+" simply thins down into a "-". This overrides the
+      vertical bar's transform so it spins a full 360° on its own center instead of shrinking - 450deg
+      (360 + 90), not a literal 360deg, since a straight bar rotated exactly 360deg lands back looking
+      identical to its 0deg start (still a "+"); the extra 90deg is what actually leaves it lying flat
+      on top of the fixed horizontal bar at the end, same "-" end result as before, now reached via one
+      full spin instead of a quarter turn.
+
+      The duration is slowed down from theme.css's default transition: transform .3s ease-in-out (kept
+      as-is for that icon everywhere else in the theme) to .6s here, applied to the bar unconditionally
+      (not only while .is-open) so opening and closing spin at the same, slower speed symmetrically -
+      scoping it only to .is-open would leave closing animating at the faster default instead. Scoped to
+      this section only - theme.css's own behavior (and every other place this icon is used) is
+      untouched.
       {%- endcomment -%}
+      #shopify-section-{{ section.id }} .icon-accordion-plus .accordion-plus-bar {
+        transition-duration: .6s;
+      }
+
       #shopify-section-{{ section.id }} .accordion.is-open .accordion__summary .icon-accordion-plus .accordion-plus-bar {
         transform: rotate(450deg);
       }
