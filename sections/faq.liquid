@@ -60,10 +60,10 @@
             <button
               type="button"
               slot="tab"
-              class="faq__category-tab"
+              class="faq__category-tab {% if block.settings.category_tab_style == 'filled' %}faq__category-tab--filled{% endif %}"
               aria-controls="faq-panel-{{ section.id }}-{{ panel_index }}"
               aria-selected="{% if panel_index == 0 %}true{% else %}false{% endif %}"
-              {% if block.settings.tab_border_color != blank %}style="--faq-category-tab-border-color: {{ block.settings.tab_border_color.rgb }};"{% endif %}
+              {% if block.settings.tab_border_color != blank %}style="border-color: rgb({{ block.settings.tab_border_color.rgb }});"{% endif %}
               {{ block.shopify_attributes }}
             >
               {%- if block.settings.custom_icon != blank -%}
@@ -146,7 +146,7 @@
           {%- endunless -%}
 
           {%- if has_categories -%}
-            <x-tabs class="section-header__controls faq__categories {% if section.settings.category_tab_style == 'filled' %}faq__categories--filled{% endif %}">
+            <x-tabs class="section-header__controls faq__categories">
               <template shadowrootmode="open">
                 <slot part="tablist" role="tablist" name="tab"></slot>
               </template>
@@ -369,18 +369,11 @@
         display: none;
       }
 
-      {%- comment -%}
-      --faq-category-tab-border-color is set inline per-tab (block.settings.tab_border_color, "Tab"
-      header above) only when the merchant picks one - the var()'s own fallback keeps every other tab
-      on the default --text-color-based look, same pattern sections/main-product.liquid's
-      atc_button_border_color/snippets/button.liquid already use for the "Add to cart" button's border.
-      Only touches the border - text color stays on --text-color regardless, same as before.
-      {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__category-tab {
         white-space: nowrap;
         color: rgb(var(--text-color) / .5);
         background: none;
-        border: 1px solid rgb(var(--faq-category-tab-border-color, var(--text-color)) / .3);
+        border: 1px solid rgb(var(--text-color) / .3);
         border-radius: 999px;
         align-items: center;
         gap: .5rem;
@@ -399,7 +392,7 @@
       @media screen and (pointer: fine) {
         #shopify-section-{{ section.id }} .faq__category-tab:hover {
           color: rgb(var(--text-color) / .8);
-          border-color: rgb(var(--faq-category-tab-border-color, var(--text-color)) / .5);
+          border-color: rgb(var(--text-color) / .5);
         }
       }
 
@@ -408,14 +401,14 @@
       }
 
       {%- comment -%}
-      Default "Outline" style (section.settings.category_tab_style) - font color and border both come
-      from the body text color, never a filled background, even when active (only the opacity step
-      changes: muted when inactive, full strength when selected).
+      Default "Outline" style (block.settings.category_tab_style, "Tab" header below) - font color and
+      border both come from the body text color, never a filled background, even when active (only the
+      opacity step changes: muted when inactive, full strength when selected).
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"] {
         color: rgb(var(--text-color));
         background: none;
-        border-color: rgb(var(--faq-category-tab-border-color, var(--text-color)));
+        border-color: rgb(var(--text-color));
       }
 
       #shopify-section-{{ section.id }} .faq__category-tab-icon {
@@ -423,34 +416,48 @@
       }
 
       {%- comment -%}
-      "Filled" style (section.settings.category_tab_style): reuses the theme's own Buttons color
-      scheme tokens - --button-background-primary/--button-text-primary/--button-hover-background,
-      the exact variables snippets/button.liquid and theme.css's own .button rule already use for
-      every solid button sitewide - instead of introducing new colors. Same muted-when-inactive /
-      full-strength-when-selected pattern the Outline style above already uses, just applied to the
-      fill instead of the border/text. Hover reuses --button-hover-background as-is, the same variable
-      (and the same (pointer: fine) guard) .button:hover already uses in theme.css - no new transition
-      is introduced, color/border-color/background-color simply piggyback on this rule's own existing
-      transition declaration.
+      "Filled" style (block.settings.category_tab_style, set per category block - "Tab" header below):
+      reuses the theme's own Buttons color scheme tokens -
+      --button-background-primary/--button-text-primary/--button-hover-background, the exact variables
+      snippets/button.liquid and theme.css's own .button rule already use for every solid button
+      sitewide - instead of introducing new colors. Same muted-when-inactive / full-strength-when-
+      selected pattern the Outline style above already uses, just applied to the fill instead of the
+      border/text. Hover reuses --button-hover-background as-is, the same variable (and the same
+      (pointer: fine) guard) .button:hover already uses in theme.css - no new transition is introduced,
+      color/border-color/background-color simply piggyback on this rule's own existing transition
+      declaration.
+
+      .faq__category-tab--filled is combined with .faq__category-tab (not nested under a wrapper class
+      like .faq__categories--filled) so the style is picked per-tab, matching how it's now a per-
+      category setting rather than a single section-wide one - each category can be Outline or Filled
+      independently.
       {%- endcomment -%}
-      #shopify-section-{{ section.id }} .faq__categories--filled .faq__category-tab {
+      #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled {
         color: rgb(var(--button-text-primary));
         background: rgb(var(--button-background-primary) / .5);
         border-color: transparent;
         transition: color .2s ease, border-color .2s ease, background-color .2s ease;
       }
 
-      #shopify-section-{{ section.id }} .faq__categories--filled .faq__category-tab[aria-selected="true"] {
+      #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled[aria-selected="true"] {
         color: rgb(var(--button-text-primary));
         background: rgb(var(--button-background-primary));
         border-color: transparent;
       }
 
       @media screen and (pointer: fine) {
-        #shopify-section-{{ section.id }} .faq__categories--filled .faq__category-tab:hover {
+        #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled:hover {
           background: rgb(var(--button-hover-background));
         }
       }
+
+      {%- comment -%}
+      "Tab border color" (block.settings.tab_border_color, "Tab" header below) overrides whichever
+      style (Outline or Filled) is active for this one tab - set as a plain inline border-color (not a
+      custom property threaded through the rules above) specifically so it wins over both styles'
+      border-color declarations uniformly, the same way an inline style on any element already beats an
+      external class rule without needing !important or to duplicate the override per style.
+      {%- endcomment -%}
 
       {%- comment -%}
       ============================================================
@@ -687,27 +694,6 @@
         }
       ],
       "default": "text"
-    },
-    {
-      "type": "header",
-      "content": "Categories"
-    },
-    {
-      "type": "select",
-      "id": "category_tab_style",
-      "label": "Category tab style",
-      "info": "Only applies when at least one \"Category\" block below has a title.",
-      "options": [
-        {
-          "value": "outline",
-          "label": "Outline"
-        },
-        {
-          "value": "filled",
-          "label": "Filled"
-        }
-      ],
-      "default": "outline"
     },
     {
       "type": "inline_richtext",
@@ -1234,10 +1220,26 @@
           "content": "Tab"
         },
         {
+          "type": "select",
+          "id": "category_tab_style",
+          "label": "Tab style",
+          "options": [
+            {
+              "value": "outline",
+              "label": "Outline"
+            },
+            {
+              "value": "filled",
+              "label": "Filled"
+            }
+          ],
+          "default": "outline"
+        },
+        {
           "type": "color",
           "id": "tab_border_color",
           "label": "Tab border color",
-          "info": "Only visible when \"Category tab style\" (section settings) is set to Outline. Leave blank to use the default text color."
+          "info": "Works with both Outline and Filled. Leave blank to use the default (the text color for Outline, none for Filled)."
         }
       ]
     },
