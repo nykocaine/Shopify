@@ -235,9 +235,19 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
           (sections/media-blocks.liquid) - 85% of the wrapper on mobile (full slide, peek of the
           next), 45% from 700px up. Scoped to this block's own carousel id, same as Carousel scopes
           to its own block id.
+
+          align-items: start (instead of grid's own default, stretch) is the one deliberate
+          difference from Carousel's version of this rule - Carousel never has a <figcaption> sibling
+          after its media, so stretching each cell's <figure> to match the row's height never mattered
+          there. Here it does: a stretched <figure> gets a fixed, definite height, and content-box's
+          own height: 100% (the "h-full" class, media-zoom-slide.liquid) then greedily fills all of
+          it, leaving no room for the <figcaption> below - which then overflows the figure and gets
+          clipped by .scroll-area's own overflow-y: hidden. Keeping figures at their own natural
+          (unstretched) height avoids that entirely, on every breakpoint.
           {%- endcomment -%}
           #{{ media_carousel_id }} {
             grid: auto / auto-flow 85%;
+            align-items: start;
             gap: .75rem;
             display: grid;
           }
