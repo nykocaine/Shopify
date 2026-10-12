@@ -63,6 +63,7 @@
               class="faq__category-tab"
               aria-controls="faq-panel-{{ section.id }}-{{ panel_index }}"
               aria-selected="{% if panel_index == 0 %}true{% else %}false{% endif %}"
+              {% if block.settings.tab_border_color != blank %}style="--faq-category-tab-border-color: {{ block.settings.tab_border_color.rgb }};"{% endif %}
               {{ block.shopify_attributes }}
             >
               {%- if block.settings.custom_icon != blank -%}
@@ -368,11 +369,18 @@
         display: none;
       }
 
+      {%- comment -%}
+      --faq-category-tab-border-color is set inline per-tab (block.settings.tab_border_color, "Tab"
+      header above) only when the merchant picks one - the var()'s own fallback keeps every other tab
+      on the default --text-color-based look, same pattern sections/main-product.liquid's
+      atc_button_border_color/snippets/button.liquid already use for the "Add to cart" button's border.
+      Only touches the border - text color stays on --text-color regardless, same as before.
+      {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__category-tab {
         white-space: nowrap;
         color: rgb(var(--text-color) / .5);
         background: none;
-        border: 1px solid rgb(var(--text-color) / .3);
+        border: 1px solid rgb(var(--faq-category-tab-border-color, var(--text-color)) / .3);
         border-radius: 999px;
         align-items: center;
         gap: .5rem;
@@ -391,7 +399,7 @@
       @media screen and (pointer: fine) {
         #shopify-section-{{ section.id }} .faq__category-tab:hover {
           color: rgb(var(--text-color) / .8);
-          border-color: rgb(var(--text-color) / .5);
+          border-color: rgb(var(--faq-category-tab-border-color, var(--text-color)) / .5);
         }
       }
 
@@ -407,7 +415,7 @@
       #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"] {
         color: rgb(var(--text-color));
         background: none;
-        border-color: rgb(var(--text-color));
+        border-color: rgb(var(--faq-category-tab-border-color, var(--text-color)));
       }
 
       #shopify-section-{{ section.id }} .faq__category-tab-icon {
@@ -1220,6 +1228,16 @@
           "unit": "px",
           "label": "t:global.icons.mobile_icon_width",
           "default": 20
+        },
+        {
+          "type": "header",
+          "content": "Tab"
+        },
+        {
+          "type": "color",
+          "id": "tab_border_color",
+          "label": "Tab border color",
+          "info": "Only visible when \"Category tab style\" (section settings) is set to Outline. Leave blank to use the default text color."
         }
       ]
     },
