@@ -247,19 +247,6 @@ no need to manually pass the section as it is globally available)
                   }
 
                   {%- comment -%}
-                  collapsed-height (120px) is a fixed value, so it rarely lands exactly on a line
-                  boundary - the last visible line is often clipped halfway through its own glyphs
-                  (descenders/ascenders cut off) rather than ending cleanly. Fading that edge out
-                  (mask-image, only while actually collapsed - never while expanded or not overflowing,
-                  so fully-visible text is never faded) turns that hard, mid-line cut into a soft
-                  gradient instead, so it doesn't read as the text itself being cut/covered.
-                  {%- endcomment -%}
-                  #shopify-section-{{ section.id }} .product-description-collapsible[data-overflowing]:not([data-expanded]) .product-description-collapsible__content {
-                    mask-image: linear-gradient(to bottom, rgb(0 0 0 / 1) calc(100% - 1.5rem), rgb(0 0 0 / 0) 100%);
-                    -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0 / 1) calc(100% - 1.5rem), rgb(0 0 0 / 0) 100%);
-                  }
-
-                  {%- comment -%}
                   Plain text link, not a button: reuses .link (theme.css) for the underline - its
                   underline is a currentColor gradient, so it automatically follows the faded color
                   below instead of needing a separate color. font-size isn't set at all: the theme's
@@ -267,14 +254,14 @@ no need to manually pass the section as it is globally available)
                   bare <button> inherit its parent's size, which is exactly the inherited size wanted
                   here. display: block + text-align: end sits it right below the text, right-aligned,
                   instead of inline mid-text (simpler and more robust than trying to flow it into the
-                  clamped text's actual last line). margin-block-start adds breathing room above it,
-                  now that the content above fades out instead of ending in a hard edge, so the toggle
-                  never reads as sitting directly on top of the description.
+                  clamped text's actual last line). margin-block-start gives it clear breathing room
+                  above, so the toggle never sits directly against (or visually overlaps) the clipped
+                  line of text right above it.
                   {%- endcomment -%}
                   #shopify-section-{{ section.id }} .product-description-collapsible__toggle {
                     color: rgb(var(--text-color) / .5);
                     text-align: end;
-                    margin-block-start: .5rem;
+                    margin-block-start: 1rem;
                     display: none;
                   }
 
