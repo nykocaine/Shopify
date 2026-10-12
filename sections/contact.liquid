@@ -213,9 +213,16 @@
       its own, so text-box there trimmed nothing and the row kept the heading's full line-height
       leading, offsetting it from the icon's top edge and padding out the row's height beyond
       whichever element (title or icon) is actually tallest.
+
+      margin-block-start: 0 is needed for the same two-levels-deep reason: .prose's heading spacing
+      system (assets/theme.css) zeroes out a heading's top margin only when it's .prose's own direct
+      child or one div-wrapper deep - here the heading sits two wrappers deep (.contact-heading-row >
+      .contact-heading-row__title > the heading), past what that exemption reaches, so .prose still
+      hands it a non-zero margin-block-start that nothing cancels, nudging it down inside the row.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .contact-heading-row__title > * {
         text-box: trim-both cap alphabetic;
+        margin-block-start: 0;
       }
 
       #shopify-section-{{ section.id }} .contact-heading-row__icon {
@@ -225,6 +232,17 @@
         {%- else -%}
           align-self: {{ icon_justify_self }};
         {%- endif -%}
+      }
+
+      {%- comment -%}
+      Same leftover-.prose-spacing issue as the title above, but for media: .prose hands any svg
+      margin-block: var(--prose-media-spacing) (top and bottom alike) regardless of nesting depth,
+      and the icon's own svg (inside snippets/decorative-icon.liquid's wrapper div) sits well past
+      the one-level exemption that would normally zero it out. Halving rather than zeroing it, per
+      request, instead of matching the title's full reset above.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .contact-heading-row__icon svg {
+        margin-block: calc(var(--prose-media-spacing) / 2);
       }
     {%- endif -%}
   </style>
