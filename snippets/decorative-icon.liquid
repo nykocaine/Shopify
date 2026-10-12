@@ -6,7 +6,7 @@ own heading instead of duplicating this markup.
 
 Pair with the ".decorative-icon" rules in assets/theme.css (overflow fix + spin keyframes).
 
-@param {string} [icon_type] - star/lotus/clover/smiley/blob/badge/stamp/swoosh (default star)
+@param {string} [icon_type] - star/lotus/clover/smiley/blob/badge/stamp/swoosh/skincare_era (default star)
 @param {number} [icon_size] - svg width/height in px
 @param {boolean} [icon_spin] - whether the icon spins (default true)
 @param {object} [icon_primary_color] - color setting, defaults to #FF6B9D when blank
@@ -155,6 +155,52 @@ re-configuring colors/size.
         <rect x="20" y="18" width="60" height="13" rx="6.5" fill="{{ icon_primary }}"/>
         <circle cx="20" cy="24.5" r="10" fill="{{ icon_primary }}"/>
         <circle cx="80" cy="24.5" r="10" fill="{{ icon_primary }}"/>
+
+      {%- when 'skincare_era' -%}
+        {%- comment -%}
+        Stylistic recreation of a licensed "In my Skincare era" sticker design (stacked tilted
+        lettering + sparkle accents) - built from a reference image, not traced from the original
+        vector file (none was available), so it's an approximation of the look rather than a pixel
+        copy. Follows the same two-color convention as every other icon: icon_primary is the
+        lettering, icon_secondary is the sparkles. The black layer behind the lettering (offset via
+        transform instead of the black layer itself, so the black stays put and only the colored
+        layer shifts) stands in for the original's drop shadow; the shared stroke on the wrapping <g>
+        (white, paint-order: stroke so it paints behind the fill) stands in for its white outline.
+        Sized for a 32-80px decorative badge (this icon's usual range) - the lettering reads as
+        texture/shape at that size rather than literal words, same as the original sticker does when
+        shrunk down that far.
+        {%- endcomment -%}
+        <g font-family="Arial, Helvetica, sans-serif" font-weight="900" paint-order="stroke" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round">
+          <g fill="#000000">
+            <text x="15" y="26" font-size="11" transform="rotate(-8 15 26)">In my</text>
+            <text x="8" y="50" font-size="18" transform="rotate(4 8 50)">Skincare</text>
+            <text x="42" y="72" font-size="14" transform="rotate(-6 42 72)">era</text>
+          </g>
+          <g fill="{{ icon_primary }}" transform="translate(-1.5 -1.5)">
+            <text x="15" y="26" font-size="11" transform="rotate(-8 15 26)">In my</text>
+            <text x="8" y="50" font-size="18" transform="rotate(4 8 50)">Skincare</text>
+            <text x="42" y="72" font-size="14" transform="rotate(-6 42 72)">era</text>
+          </g>
+        </g>
+        <g fill="{{ icon_secondary }}">
+          <path d="M82 14L83.8 20.2 90 22 83.8 23.8 82 30 80.2 23.8 74 22 80.2 20.2Z"/>
+          <path d="M22 74L24.2 81.8 32 84 24.2 86.2 22 94 19.8 86.2 12 84 19.8 81.8Z"/>
+          <path d="M58 11.5L58.99 15.01 62.5 16 58.99 16.99 58 20.5 57.01 16.99 53.5 16 57.01 15.01Z"/>
+        </g>
+
+      {%- when 'ticket' -%}
+        {%- comment -%}
+        Admission-ticket silhouette: a rounded rectangle with a scalloped/perforated edge (3 notch
+        "bites" per side) - just the generic ticket shape, no lettering or stars, built with plain
+        geometry (not traced from any specific reference) since a ticket outline like this is a
+        common, non-distinctive motif. One compound path with fill-rule: evenodd draws the rounded
+        rect and 6 notch circles together, so each circle cuts a true transparent hole out of the
+        ticket body instead of needing to match a specific background color. icon_primary is the
+        ticket body; icon_secondary is the inset frame line, standing in for the original's
+        border/stars accent color.
+        {%- endcomment -%}
+        <path fill-rule="evenodd" fill="{{ icon_primary }}" d="M16,30 L84,30 A6,6 0 0,1 90,36 L90,64 A6,6 0 0,1 84,70 L16,70 A6,6 0 0,1 10,64 L10,36 A6,6 0 0,1 16,30Z M6,38 A4,4 0 1,1 14,38 A4,4 0 1,1 6,38Z M6,50 A4,4 0 1,1 14,50 A4,4 0 1,1 6,50Z M6,62 A4,4 0 1,1 14,62 A4,4 0 1,1 6,62Z M86,38 A4,4 0 1,1 94,38 A4,4 0 1,1 86,38Z M86,50 A4,4 0 1,1 94,50 A4,4 0 1,1 86,50Z M86,62 A4,4 0 1,1 94,62 A4,4 0 1,1 86,62Z"/>
+        <rect x="20" y="38" width="60" height="24" rx="3" fill="none" stroke="{{ icon_secondary }}" stroke-width="2"/>
 
       {%- when 'swoosh' -%}
         {%- comment -%}
