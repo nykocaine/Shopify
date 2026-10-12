@@ -524,9 +524,15 @@
         flex-direction: column;
       }
 
+      {%- comment -%}
+      Desktop only: the title column doesn't get an equal 1fr share like text/media - it's sized to
+      its own content (the title text, plus the decorative icon next to it when that's turned on)
+      via "auto", so it never stretches wider than it needs to. The freed-up space goes to text and
+      media instead, split evenly between them (minmax(0, 1fr) each).
+      {%- endcomment -%}
       @media screen and (min-width: 700px) {
         #shopify-section-{{ section.id }} .faq__text-image--with-image {
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
           align-items: center;
         }
       }
