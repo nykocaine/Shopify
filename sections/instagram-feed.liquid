@@ -44,6 +44,26 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack">
       {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank or section.settings.show_icon -%}
         <div class="instagram-feed__header">
+          <div class="instagram-feed__content">
+            {%- if section.settings.title != blank or section.settings.subtitle != blank -%}
+              <div class="prose prose--compact">
+                {%- if section.settings.title != blank -%}
+                  {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.title_tag, html_tag: 'h2' -%}
+                {%- endif -%}
+
+                {%- if section.settings.subtitle != blank -%}
+                  <div class="max-w-sm">
+                    {{- section.settings.subtitle -}}
+                  </div>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+
+            {%- if section.settings.button_text != blank -%}
+              {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style, class: 'instagram-feed__button' -%}
+            {%- endif -%}
+          </div>
+
           {%- if section.settings.show_icon -%}
             {%- render 'decorative-icon',
               icon_type: section.settings.icon_type,
@@ -54,24 +74,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               icon_border_color: section.settings.icon_border_color,
               class: 'instagram-feed__icon'
             -%}
-          {%- endif -%}
-
-          {%- if section.settings.title != blank or section.settings.subtitle != blank -%}
-            <div class="prose prose--compact">
-              {%- if section.settings.title != blank -%}
-                {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.title_tag, html_tag: 'h2' -%}
-              {%- endif -%}
-
-              {%- if section.settings.subtitle != blank -%}
-                <div class="max-w-sm">
-                  {{- section.settings.subtitle -}}
-                </div>
-              {%- endif -%}
-            </div>
-          {%- endif -%}
-
-          {%- if section.settings.button_text != blank -%}
-            {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style, class: 'instagram-feed__button' -%}
           {%- endif -%}
         </div>
       {%- endif -%}
@@ -266,78 +268,58 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   ============================================================
   TITLE/SUBTITLE SPACING
   ============================================================
-  Overrides --prose-default-spacing (set by .prose--compact in the markup above, 1/1.25rem) down to
-  a tighter 0.5rem between the title and subtitle specifically for this section, instead of
-  introducing a parallel spacing scheme.
+  Overrides --prose-default-spacing (set by .prose--compact in the markup above, 1/1.25rem) to match
+  .instagram-feed__content's own gap below (1rem) - keeps the title-to-subtitle gap the same size as
+  the subtitle-to-button gap, instead of introducing a parallel spacing scheme.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .prose {
-    --prose-default-spacing: .5rem;
+    --prose-default-spacing: 1rem;
   }
 
   {%- comment -%}
   ============================================================
-  HEADER (title/subtitle + button)
+  HEADER (content column + icon column)
   ============================================================
-  Title, subtitle and button now all stack in one column, same on mobile and desktop - no more
-  breakpoint-specific row/column swap. The icon (when shown) is pulled out of that flow entirely
-  with position: absolute, pinned to the header's own top-end corner regardless of how tall the
-  column ends up being or which breakpoint is active - position: relative here gives it that
-  positioning context.
+  Two real columns, same on mobile and desktop - no breakpoint-specific swap. .instagram-feed__content
+  (title, subtitle and button stacked) takes the start side, the icon (when shown) sits in its own
+  column flush to the end. A plain flex row instead of pulling the icon out with position: absolute:
+  that let the icon overlap the subtitle on narrow screens once the column grew tall enough to reach
+  it, since an out-of-flow element doesn't share space with in-flow content. flex: 1 + min-width: 0
+  on the content column let it take the remaining width and wrap/shrink its own text inside that,
+  while flex-shrink: 0 on the icon keeps it at its own natural size instead of being squeezed.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__header {
-    position: relative;
     align-items: start;
     gap: 1rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .instagram-feed__content {
+    min-width: 0;
+    flex: 1;
+    gap: 1rem;
+    align-items: start;
     display: flex;
     flex-direction: column;
   }
 
-  {%- comment -%}
-  min-width: 0 lets the title/subtitle text wrap and shrink inside the column instead of forcing it
-  (and the page along with it) wider.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__header > .prose {
+  #shopify-section-{{ section.id }} .instagram-feed__content > .prose {
     min-width: 0;
+  }
+
+  #shopify-section-{{ section.id }} .instagram-feed__icon {
+    flex-shrink: 0;
   }
 
   {%- comment -%}
   Same title alignment system as sections/contact.liquid's .contact-heading-row__title: without it,
-  the icon (top: 0 below) would line up with the top of the title's full line-height box, not its
-  visible glyphs - text-box trims that invisible leading off so the icon's top edge is flush with
+  align-items: start above lines the icon up with the top of the title's full line-height box, not
+  its visible glyphs - text-box trims that invisible leading off so the icon's top edge is flush with
   the visible top of the title text instead of sitting visibly lower than it.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__header > .prose > h2 {
+  #shopify-section-{{ section.id }} .instagram-feed__content > .prose > h2 {
     text-box: trim-both cap alphabetic;
   }
-
-  {%- if section.settings.show_icon -%}
-    {%- comment -%}
-    Pinned to the column's own top-end corner, same on every breakpoint - taken out of the column's
-    flow (position: absolute) so it never pushes the title/subtitle/button down or affects the
-    column's own gap. margin-inline-end on the in-flow children (not padding on the header, which
-    would also shift the icon itself since it shares the same positioned ancestor) reserves room so
-    wrapping text/the button never run underneath it.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .instagram-feed__icon {
-      position: absolute;
-      top: 0;
-      inset-inline-end: 0;
-    }
-
-    #shopify-section-{{ section.id }} .instagram-feed__header > .prose,
-    #shopify-section-{{ section.id }} .instagram-feed__header > .instagram-feed__button {
-      margin-inline-end: calc({{ section.settings.icon_size }}px + 1rem);
-    }
-
-    {%- comment -%}
-    Without in-flow content tall enough to clear it, the icon (out of flow) wouldn't otherwise keep
-    any room reserved for itself - this is just a floor, content taller than the icon still grows
-    the header normally.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .instagram-feed__header {
-      min-height: {{ section.settings.icon_size }}px;
-    }
-  {%- endif -%}
 
   {%- comment -%}
   Independent of button_style (outline already has its own border, solid/link normally don't) -
