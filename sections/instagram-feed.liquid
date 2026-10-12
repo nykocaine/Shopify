@@ -303,6 +303,17 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   {%- comment -%}
+  Same title alignment system as sections/contact.liquid's .contact-heading-row__title: without it,
+  align-items: start above (chosen specifically to line .instagram-feed__cta up with the title's
+  own top, per the comment above) actually lines up with the top of the title's full line-height
+  box, not its visible glyphs - text-box trims that invisible leading off so the icon/button column
+  starts flush with the visible top of the title text instead of sitting visibly lower than it.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__header > .prose > h2 {
+    text-box: trim-both cap alphabetic;
+  }
+
+  {%- comment -%}
   Column, not row: the icon (when shown) stacks above the button. align-items: end (not center)
   keeps both flush to the same right edge instead of centered on each other - so the icon reads as
   pinned to the button's own right side, not floating in the middle above it.
