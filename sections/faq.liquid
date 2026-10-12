@@ -328,6 +328,22 @@
       }
 
       {%- comment -%}
+      Toggle icon ("+"/toggle_icon: 'accordion-plus', snippets/icon.liquid): the icon is two bars, a
+      fixed horizontal one and a vertical one carrying the .accordion-plus-bar class. theme.css's own
+      default open effect shrinks that vertical bar to nothing (transform: scaleY(0)), fading the whole
+      icon to 40% opacity at the same time, so the "+" simply thins down into a "-". This overrides just
+      the vertical bar's transform (same existing transition: transform .3s ease-in-out off
+      .accordion-plus-bar in theme.css, already around transform-origin: center - no new transition is
+      introduced) so it rotates 90° on its own center instead of shrinking, swinging flat to lie exactly
+      on top of the fixed horizontal bar - same end result (a "-"), reached by spinning instead of
+      disappearing. Scoped to this section only - theme.css's own behavior (and every other place this
+      icon is used) is untouched.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .accordion.is-open .accordion__summary .icon-accordion-plus .accordion-plus-bar {
+        transform: rotate(90deg);
+      }
+
+      {%- comment -%}
       ============================================================
       CATEGORIES (tabs row + tab buttons)
       ============================================================
