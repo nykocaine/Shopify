@@ -546,8 +546,18 @@
         display: block;
       }
 
+      {%- comment -%}
+      overflow-y (not the overflow: hidden shorthand, which clips both axes) - only the vertical
+      axis needs clipping here, to hide whatever sits below the collapsed max-height. Clipping the
+      horizontal axis too was an unintended side effect of the shorthand: list markers
+      (list-style-position: outside, assets/theme.css) render slightly left of the text's own
+      content box, inside the <ul>/<ol>'s margin-inline-start gutter - overflow-x: hidden could
+      clip part of that marker (a bullet, or a two-digit "10."/"11." number) instead of just
+      leaving the collapsed/expanding height clip in place.
+      {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__text-image-text-content {
-        overflow: hidden;
+        overflow-x: visible;
+        overflow-y: hidden;
         transition: max-height .3s ease-in-out;
       }
 
