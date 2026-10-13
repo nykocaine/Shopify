@@ -391,6 +391,11 @@
       row's full width (the title/subheading/content/button row is never rendered alongside
       categories - see section_header above), with the tabs themselves starting from the left edge of
       it (flex's own default justify-content: flex-start) on both mobile and desktop.
+
+      border-radius: 999px matches .faq__category-tab's own (below) - when the row overflows and
+      scrolls (eg. many categories on mobile), its own clipped edge reads as the same pill shape as
+      the tabs inside it, instead of the section's general corner radius (section.settings.faq_border_radius,
+      meant for the floating card/media/content boxes elsewhere - unrelated to this pill-shaped row).
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
         width: 100%;
@@ -399,7 +404,7 @@
         padding-block: .25rem;
         display: flex;
         overflow-x: auto;
-        border-radius: {{ section.settings.faq_border_radius }}px;
+        border-radius: 999px;
       }
 
       #shopify-section-{{ section.id }} .faq__categories::part(tablist)::-webkit-scrollbar {
