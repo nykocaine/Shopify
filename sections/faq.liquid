@@ -516,13 +516,6 @@
       product-list above its progress bar with some breathing room between them. With a single media
       item it has no visible effect (one child, the <figure> - the lightbox element next to it stays
       hidden until opened).
-
-      No overflow: hidden here (every corner that actually needs rounding/clipping - content-box, the
-      carousel's own wrapper - already clips itself) - this box's own height has to stay a plain,
-      visible-overflow content size so it can act as the reference the text card (show_text_card)
-      stretches/scrolls to match: a sibling with overflow other than visible contributes a minimum
-      size of 0 to the shared grid row's height instead of its real content height, so if THIS element
-      also had overflow: hidden, neither column would have a real height left for the other to match.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__text-image-media {
         gap: .75rem;
@@ -540,6 +533,45 @@
         #shopify-section-{{ section.id }} .faq__text-image--with-image {
           align-items: start;
         }
+      }
+
+      {%- comment -%}
+      "Content box style" (show_text_card) when there's media next to it (faq-text-image.liquid's
+      <read-more-match-height>): same "collapse + Show more/less" pattern as the main product page's
+      own description (snippets/product-info.liquid, search that file for "Show more/less" for the
+      full rationale behind each rule below) - written once here instead of per block, since the
+      behavior is identical for every instance regardless of its own colors/size/content.
+      {%- endcomment -%}
+      read-more-match-height {
+        display: block;
+      }
+
+      #shopify-section-{{ section.id }} .faq__text-image-text-content {
+        overflow: hidden;
+        transition: max-height .3s ease-in-out;
+      }
+
+      #shopify-section-{{ section.id }} .faq__text-image-text-toggle {
+        color: rgb(var(--text-color) / .5);
+        text-align: end;
+        margin-block-start: 1rem;
+        display: none;
+      }
+
+      #shopify-section-{{ section.id }} read-more-match-height[data-overflowing] .faq__text-image-text-toggle {
+        display: block;
+      }
+
+      #shopify-section-{{ section.id }} .faq__text-image-text-toggle__label-less {
+        display: none;
+      }
+
+      #shopify-section-{{ section.id }} read-more-match-height[data-expanded] .faq__text-image-text-toggle__label-more {
+        display: none;
+      }
+
+      #shopify-section-{{ section.id }} read-more-match-height[data-expanded] .faq__text-image-text-toggle__label-less {
+        display: inline;
       }
     </style>
 
@@ -1778,7 +1810,7 @@
           "type": "checkbox",
           "id": "show_text_card",
           "label": "Add background to the content",
-          "info": "Uses the section's own corner radius. When there's media next to it, the content box matches its height and scrolls internally instead of growing taller.",
+          "info": "Uses the section's own corner radius. When there's media next to it, the content box matches its height and reveals a \"Show more\" toggle instead of growing taller.",
           "default": false
         },
         {

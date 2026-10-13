@@ -7,10 +7,12 @@ share the row: title (when present) is a flat 20%, text and media split the rest
 grid-template-columns rule near the end of this file for why that has to be computed per block
 instead of once for the section.
 
-The text content can optionally become a card (show_text_card): background + border from a Color
-scheme, the section's own corner radius and the same interior padding already used elsewhere in FAQ
-(.faq-content-box, assets/theme.css). From 700px up, once there's media next to it, the card
-stretches to match the media's height and scrolls internally instead of growing past it.
+The text content can optionally become a card (show_text_card): background from a Color scheme, the
+section's own corner radius and the same interior padding already used elsewhere in FAQ
+(.faq-content-box, assets/theme.css). Once there's media next to it, the card collapses to roughly
+the media's own rendered height instead of growing past it, revealing a "Show more"/"Show less"
+toggle to expand/collapse it - the same pattern (and reusing the same "Show more/less" translation
+strings) as the product description on the main product page, snippets/product-info.liquid.
 
 Every media item - whether there's one or several - renders through the exact same shared markup as
 Media Blocks' Carousel: snippets/media-zoom-slide.liquid (sound/play-pause toggle, zoom-to-lightbox),
@@ -94,44 +96,9 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
     assign has_text_column = true
   endif
 
-  # Only used for the "Content box style" + media height-match case further down, to give every
-  # column an explicit grid-column instead of relying on auto-placement there: an absolutely
-  # positioned grid item (what the text card becomes in that case) is skipped entirely by Grid's
-  # auto-placement algorithm for OTHER items, as if it didn't reserve its column at all - title and
-  # media, if left on auto-placement, could then both land fighting over the same column instead of
-  # their intended ones.
-  assign title_column_index = 1
-  assign text_column_index = 1
-  assign media_column_index = 1
-
-  if has_title_column
-    assign text_column_index = text_column_index | plus: 1
-    assign media_column_index = media_column_index | plus: 1
-  endif
-
-  # Mobile equivalent of the desktop row-matching trick above: below 700px everything stacks
-  # vertically instead of sharing a row, so there's no grid row for the card to borrow a height from -
-  # the only way to still match the media's height is to know it ahead of time, so this mirrors the
-  # exact clamp()/calc() values the "Mobile block size" keywords already resolve to via the
-  # .min-h-{sm/md/lg/fill} utility classes (assets/theme.css), rather than inventing new ones. "Original
-  # image ratio" has no such fixed value (it depends on each photo/video's own aspect ratio) - there's
-  # nothing to match it to on mobile, so the card just keeps its natural height there, same as before.
-  assign mobile_card_height = nil
-
-  case block.settings.mobile_block_size
-    when 'sm'
-      assign mobile_card_height = 'clamp(15rem, 35vmax, 25rem)'
-    when 'md'
-      assign mobile_card_height = 'clamp(20rem, 45vmax, 35rem)'
-    when 'lg'
-      assign mobile_card_height = 'clamp(25rem, 55vmax, 45rem)'
-    when 'fill'
-      assign mobile_card_height = 'calc(100svh - var(--sticky-area-height, 0px))'
-  endcase
-
-  if has_text_column
-    assign media_column_index = media_column_index | plus: 1
-  endif
+  # Needed early (not just down by the media markup) since the text card, when it's set to match the
+  # media's height, has to know this element's id too - see read-more-match-height further down.
+  assign media_wrapper_id = 'faq-text-image-media-' | append: block.id
 
   # Icon row layout (title + decorative icon): plain flex, not grid - a grid with a "1fr" track only
   # behaves predictably when the row itself has a definite width to distribute, which isn't the case
@@ -235,99 +202,111 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
     {%- endif -%}
 
     {%- if has_text_column -%}
-      <div class="faq__text-image-text prose {% if block.settings.show_text_card %}faq-content-box faq__text-image-text--card color-scheme color-scheme--{{ block.settings.text_card_color_scheme.id }}{% endif %}" {% if block.settings.show_text_card %}style="border-radius: {{ border_radius_px }};"{% endif %}>
-        {{- block.settings.text -}}
-      </div>
+      {%- assign text_card_matches_media = false -%}
 
       {%- if block.settings.show_text_card and has_media -%}
-        <style>
-          {%- comment -%}
-          Content box style (show_text_card), once there's media next to it: background comes from
-          the chosen Color scheme and the corner radius matches the section's own (both set via the
-          class/inline style on the div above) - this part only handles matching the media's height.
+        {%- assign text_card_matches_media = true -%}
+        {%- assign text_content_id = 'faq-text-image-text-content-' | append: block.id -%}
 
-          align-self: stretch + overflow-y: auto alone doesn't work here: a CSS Grid "auto" row still
-          sizes itself off EVERY item's own full content height first (overflow doesn't change that,
-          only how much an item is later allowed to shrink once stretched into an ALREADY-decided row
-          height) - so with text naturally taller than the media/carousel next to it, the row just grew
-          to match the text instead of the other way around, and media (not stretched) was left with a
-          gap below it instead.
+        {%- comment -%}
+        Same "collapse + Show more/less" pattern as the product description on the main product page
+        (snippets/product-info.liquid's <read-more-text>, "Show more/less" comment) - reused here as a
+        distinct custom element (read-more-match-height, not read-more-text) because its "how tall
+        should the collapsed state be" rule is different: product-info.liquid clamps to a fixed number
+        of lines; this instead matches whatever height the media/carousel next to it actually renders
+        at (measured in JS, not assumed - works the same regardless of block_size/mobile_block_size,
+        including "Original image ratio", and on every breakpoint, carousel or single item alike).
+        {%- endcomment -%}
+        <read-more-match-height
+          class="faq__text-image-text faq-content-box faq__text-image-text--card color-scheme color-scheme--{{ block.settings.text_card_color_scheme.id }}"
+          style="border-radius: {{ border_radius_px }};"
+          data-match-id="{{ media_wrapper_id }}"
+        >
+          <div id="{{ text_content_id }}" class="prose faq__text-image-text-content">
+            {{- block.settings.text -}}
+          </div>
 
-          position: absolute + inset: 0 removes the card from that row-sizing calculation entirely
-          (an absolutely positioned grid item doesn't contribute to its row's size at all), so the row
-          ends up sized by the media column alone - then the card, explicitly placed into the same
-          grid-column/row the text would otherwise auto-place into, fills exactly that resulting box
-          (its grid area becomes its containing block for inset: 0) and scrolls internally if its
-          content doesn't fit. position: relative on the grid itself is what makes that containing
-          block resolve to the grid area instead of some further-out ancestor.
+          <button type="button" class="link faq__text-image-text-toggle" aria-controls="{{ text_content_id }}">
+            <span class="faq__text-image-text-toggle__label-more">{{ 'product.general.show_more' | t }}</span><span class="faq__text-image-text-toggle__label-less">{{ 'product.general.show_less' | t }}</span>
+          </button>
+        </read-more-match-height>
 
-          Title and media also need an explicit grid-column here, not just text: Grid's auto-placement
-          algorithm skips absolutely positioned items entirely when deciding where auto-placed items
-          go, as if the card's column were never spoken for - left on auto-placement, title and media
-          ended up fighting over the same leftover columns instead of landing in their intended ones
-          (this is also why it only showed up with a card + media both present, and only at this
-          700px+ breakpoint - the one place all three columns are ever side by side to begin with).
-          {%- endcomment -%}
-          @media screen and (min-width: 700px) {
-            #{{ text_image_id }}.faq__text-image--with-image {
-              position: relative;
-            }
+        <script>
+          if (!window.customElements.get('read-more-match-height')) {
+            window.customElements.define('read-more-match-height', class extends HTMLElement {
+              connectedCallback() {
+                var content = this.querySelector('.faq__text-image-text-content');
+                var toggle = this.querySelector('.faq__text-image-text-toggle');
+                var matchTarget = this.dataset.matchId ? document.getElementById(this.dataset.matchId) : null;
+                if (!content || !toggle || !matchTarget) return;
 
-            {%- if has_title_column -%}
-              #{{ text_image_id }} > .faq__text-image-title {
-                grid-column: {{ title_column_index }};
-                grid-row: 1;
+                this.content = content;
+                this.toggle = toggle;
+                this.matchTarget = matchTarget;
+
+                toggle.setAttribute('aria-expanded', 'false');
+                toggle.addEventListener('click', this.onToggleClick.bind(this));
+
+                this.measure();
+
+                if (window.ResizeObserver) {
+                  // Both: matchTarget resizing (eg. the carousel changing height on a breakpoint
+                  // change, or an "Original image ratio" photo finishing load) and content resizing
+                  // (eg. a webfont swap reflowing the text) can each change whether this should be
+                  // collapsed/overflowing, independently of the other.
+                  this.resizeObserver = new ResizeObserver(this.measure.bind(this));
+                  this.resizeObserver.observe(matchTarget);
+                  this.resizeObserver.observe(content);
+                }
               }
-            {%- endif -%}
 
-            {%- comment -%}
-            span 1 explicitly on both axes - required because this item is absolutely positioned:
-            with only a start line given (no end), an abs-positioned grid item's containing block
-            extends all the way to the grid container's own edge on that side instead of stopping at
-            the next line, which is what was letting the card's inset: 0 spill across the media
-            column next to it (and visually land behind it, since media comes after it in source
-            order). A plain, non-absolutely-positioned item (like title/media above) doesn't have this
-            quirk - a bare start line already defaults to a span of 1 for those.
-            {%- endcomment -%}
-            #{{ text_image_id }} > .faq__text-image-text.faq__text-image-text--card {
-              grid-column: {{ text_column_index }} / span 1;
-              grid-row: 1 / span 1;
-              position: absolute;
-              inset: 0;
-              overflow-y: auto;
-            }
+              disconnectedCallback() {
+                if (this.resizeObserver) this.resizeObserver.disconnect();
+              }
 
-            #{{ text_image_id }} > .faq__text-image-media {
-              grid-column: {{ media_column_index }};
-              grid-row: 1;
-            }
+              measure() {
+                this.collapsedHeight = this.matchTarget.offsetHeight;
+
+                if (this.hasAttribute('data-expanded')) {
+                  // Keeps the open height in sync with a resize instead of leaving it pinned to
+                  // whatever it measured when it was expanded.
+                  this.content.style.maxHeight = this.content.scrollHeight + 'px';
+                  return;
+                }
+
+                var overflowing = this.content.scrollHeight - this.collapsedHeight > 1;
+                this.toggleAttribute('data-overflowing', overflowing);
+                this.content.style.maxHeight = overflowing ? this.collapsedHeight + 'px' : '';
+              }
+
+              onToggleClick() {
+                var expanding = !this.hasAttribute('data-expanded');
+
+                if (expanding) {
+                  this.content.style.maxHeight = this.content.scrollHeight + 'px';
+                  this.setAttribute('data-expanded', '');
+                } else {
+                  this.removeAttribute('data-expanded');
+                  this.content.style.maxHeight = this.collapsedHeight + 'px';
+                }
+
+                this.toggle.setAttribute('aria-expanded', String(expanding));
+              }
+            });
           }
-
-          {%- if mobile_card_height != nil -%}
-            {%- comment -%}
-            Below 700px, title/text/media stack vertically instead of sharing a row, so there's no
-            row for the card to inherit a height from the way there is on desktop - this pins it to
-            the exact same height "Mobile block size" already gives the media (the mobile_card_height
-            value computed above), so it visually matches it, with its own content scrolling inside if
-            it doesn't fit. Media keeps its own normal height here, unaffected (unlike the desktop
-            rule, nothing needs to be pulled out of flow on mobile - media and text were never
-            fighting over the same row's auto-size in the first place, since they're not in one).
-            {%- endcomment -%}
-            @media screen and (max-width: 699px) {
-              #{{ text_image_id }} > .faq__text-image-text.faq__text-image-text--card {
-                height: {{ mobile_card_height }};
-                overflow-y: auto;
-              }
-            }
-          {%- endif -%}
-        </style>
+        </script>
       {%- endif -%}
+
+      {%- unless text_card_matches_media -%}
+        <div class="faq__text-image-text prose {% if block.settings.show_text_card %}faq-content-box faq__text-image-text--card color-scheme color-scheme--{{ block.settings.text_card_color_scheme.id }}{% endif %}" {% if block.settings.show_text_card %}style="border-radius: {{ border_radius_px }};"{% endif %}>
+          {{- block.settings.text -}}
+        </div>
+      {%- endunless -%}
     {%- endif -%}
 
     {%- if has_media -%}
       {%- liquid
         assign media_corner_radius = border_radius_px
-        assign media_wrapper_id = 'faq-text-image-media-' | append: block.id
         assign media_lightbox_id = 'faq-text-image-lightbox-' | append: block.id
         assign media_carousel_id = nil
 
