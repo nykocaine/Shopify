@@ -222,7 +222,7 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
           style="border-radius: {{ border_radius_px }};"
           data-match-id="{{ media_wrapper_id }}"
         >
-          <div id="{{ text_content_id }}" class="prose faq__text-image-text-content">
+          <div id="{{ text_content_id }}" class="prose faq__text-image-text-content" data-min-lines="2">
             {{- block.settings.text -}}
           </div>
 
@@ -284,11 +284,19 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
                 var paddingY = parseFloat(cardStyle.paddingTop) + parseFloat(cardStyle.paddingBottom);
 
                 this.toggle.style.display = 'block';
-                var toggleStyle = getComputedStyle(this.toggle);
-                var toggleSpace = this.toggle.offsetHeight + parseFloat(toggleStyle.marginBlockStart || toggleStyle.marginTop || 0);
+                var toggleSpace = this.toggle.offsetHeight + parseFloat(getComputedStyle(this.toggle).marginBlockStart);
                 this.toggle.style.display = '';
 
-                this.collapsedHeight = Math.max(0, this.matchTarget.offsetHeight - paddingY - toggleSpace);
+                // Floor (data-min-lines, same --text-line-height token product-info.liquid's own
+                // line-based collapse uses): a short enough carousel could otherwise leave nothing of
+                // the text actually visible (collapsedHeight clamped to 0 by the line below) - a
+                // couple of lines always showing is a stronger hint there's a "Show more" to reveal
+                // than an empty box would be.
+                var minLines = parseFloat(this.content.dataset.minLines) || 0;
+                var lineHeight = parseFloat(getComputedStyle(this.content).lineHeight) || 0;
+                var minHeight = minLines * lineHeight;
+
+                this.collapsedHeight = Math.max(minHeight, this.matchTarget.offsetHeight - paddingY - toggleSpace);
 
                 if (this.hasAttribute('data-expanded')) {
                   // Keeps the open height in sync with a resize instead of leaving it pinned to
@@ -321,8 +329,17 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
       {%- endif -%}
 
       {%- unless text_card_matches_media -%}
-        <div class="faq__text-image-text prose {% if block.settings.show_text_card %}faq-content-box faq__text-image-text--card color-scheme color-scheme--{{ block.settings.text_card_color_scheme.id }}{% endif %}" {% if block.settings.show_text_card %}style="border-radius: {{ border_radius_px }};"{% endif %}>
-          {{- block.settings.text -}}
+        {%- comment -%}
+        .prose sits one level deeper here (its own .faq__text-image-text-content div, not directly on
+        .faq__text-image-text) to match the read-more-match-height case above exactly - that one NEEDS
+        the extra level (the clamped content has to be a separate element from the card and its toggle
+        button), so keeping both paths the same depth means .prose's own nesting-depth-sensitive rules
+        (eg. the heading margin fix above) behave identically regardless of which path rendered.
+        {%- endcomment -%}
+        <div class="faq__text-image-text {% if block.settings.show_text_card %}faq-content-box faq__text-image-text--card color-scheme color-scheme--{{ block.settings.text_card_color_scheme.id }}{% endif %}" {% if block.settings.show_text_card %}style="border-radius: {{ border_radius_px }};"{% endif %}>
+          <div class="prose faq__text-image-text-content">
+            {{- block.settings.text -}}
+          </div>
         </div>
       {%- endunless -%}
     {%- endif -%}
