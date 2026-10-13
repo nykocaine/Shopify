@@ -391,11 +391,6 @@
       row's full width (the title/subheading/content/button row is never rendered alongside
       categories - see section_header above), with the tabs themselves starting from the left edge of
       it (flex's own default justify-content: flex-start) on both mobile and desktop.
-
-      border-radius: 999px matches .faq__category-tab's own (below) - when the row overflows and
-      scrolls (eg. many categories on mobile), its own clipped edge reads as the same pill shape as
-      the tabs inside it, instead of the section's general corner radius (section.settings.faq_border_radius,
-      meant for the floating card/media/content boxes elsewhere - unrelated to this pill-shaped row).
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
         width: 100%;
@@ -404,7 +399,34 @@
         padding-block: .25rem;
         display: flex;
         overflow-x: auto;
-        border-radius: 999px;
+      }
+
+      {%- comment -%}
+      Edge fade instead of a hard-clipped cut when the tab row overflows and scrolls (script further
+      down toggles is-overflowing/at-start/at-end on .faq__categories itself, based on the tablist's
+      own scroll position). Starts right-only (there's nothing to scroll back to yet); once the
+      visitor scrolls away from the start, the left edge fades in too; the right edge only stops
+      fading once they've reached the actual end - never both at once unless the row doesn't need to
+      scroll in the first place (is-overflowing absent, no mask at all).
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .faq__categories.is-overflowing::part(tablist) {
+        -webkit-mask-image: linear-gradient(to right, transparent, black 2rem, black calc(100% - 2rem), transparent);
+        mask-image: linear-gradient(to right, transparent, black 2rem, black calc(100% - 2rem), transparent);
+      }
+
+      #shopify-section-{{ section.id }} .faq__categories.is-overflowing.at-start::part(tablist) {
+        -webkit-mask-image: linear-gradient(to right, black, black calc(100% - 2rem), transparent);
+        mask-image: linear-gradient(to right, black, black calc(100% - 2rem), transparent);
+      }
+
+      #shopify-section-{{ section.id }} .faq__categories.is-overflowing.at-end::part(tablist) {
+        -webkit-mask-image: linear-gradient(to right, transparent, black 2rem, black);
+        mask-image: linear-gradient(to right, transparent, black 2rem, black);
+      }
+
+      #shopify-section-{{ section.id }} .faq__categories.is-overflowing.at-start.at-end::part(tablist) {
+        -webkit-mask-image: none;
+        mask-image: none;
       }
 
       #shopify-section-{{ section.id }} .faq__categories::part(tablist)::-webkit-scrollbar {
@@ -667,6 +689,36 @@
               var index = buttons.indexOf(button);
               if (index > -1) tabs.selectedIndex = index;
             });
+          })();
+        </script>
+
+        {%- comment -%}
+        Edge fade (is-overflowing/at-start/at-end classes, see ::part(tablist) above): unlike the
+        script above, this one isn't design-mode-only - it has to run for every visitor, not just in
+        the editor. part="tablist" is a <slot> inside x-tabs' declarative shadow root (shadowrootmode
+        "open"), parsed and attached before this script runs, so tabs.shadowRoot is already populated
+        here with no need to wait for the custom element to upgrade.
+        {%- endcomment -%}
+        <script>
+          (function () {
+            var root = document.getElementById('shopify-section-{{ section.id }}');
+            if (!root) return;
+
+            var tabs = root.querySelector('.faq__categories');
+            if (!tabs || !tabs.shadowRoot) return;
+
+            var tablist = tabs.shadowRoot.querySelector('[part="tablist"]');
+            if (!tablist) return;
+
+            function updateEdgeFade() {
+              tabs.classList.toggle('is-overflowing', tablist.scrollWidth > tablist.clientWidth + 1);
+              tabs.classList.toggle('at-start', tablist.scrollLeft <= 0);
+              tabs.classList.toggle('at-end', tablist.scrollLeft + tablist.clientWidth >= tablist.scrollWidth - 1);
+            }
+
+            updateEdgeFade();
+            tablist.addEventListener('scroll', updateEdgeFade, { passive: true });
+            window.addEventListener('resize', updateEdgeFade);
           })();
         </script>
 
