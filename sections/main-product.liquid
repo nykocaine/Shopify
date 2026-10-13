@@ -269,7 +269,24 @@
         #shopify-section-{{ section.id }} .product-first-image-frame {
           border-radius: {{ gallery_border_radius }}px;
           overflow: hidden;
+          position: relative;
         }
+
+        {%- comment -%}
+        Decorative icon (section.settings.show_icon): a badge floating over the top-left corner of
+        the static first-image column - same icon system, and the same top-left corner convention
+        (never used by any zoom/lightbox controls on this plain static image, unlike the gallery's own
+        carousel slides), as snippets/faq-text-image.liquid's own per-slide decorative icon.
+        {%- endcomment -%}
+        {%- if section.settings.show_icon -%}
+          #shopify-section-{{ section.id }} .product-first-image-icon {
+            top: .75rem;
+            left: .75rem;
+            z-index: 2;
+            position: absolute;
+            pointer-events: none;
+          }
+        {%- endif -%}
       {%- endif -%}
     }
   {%- endif -%}
@@ -792,6 +809,19 @@
               <div class="product-gallery__media" data-media-type="{{ first_product_image.media_type }}">
                 {%- render 'media', product: product, media: first_product_image, sizes: '(min-width: 1000px) 33vw, 100vw', preload: false -%}
               </div>
+
+              {%- if section.settings.show_icon -%}
+                <div class="product-first-image-icon">
+                  {%- render 'decorative-icon',
+                    icon_type: section.settings.icon_type,
+                    icon_size: section.settings.icon_size,
+                    icon_spin: section.settings.icon_spin,
+                    icon_primary_color: section.settings.icon_primary_color,
+                    icon_secondary_color: section.settings.icon_secondary_color,
+                    icon_border_color: section.settings.icon_border_color
+                  -%}
+                </div>
+              {%- endif -%}
             </div>
           {%- endif -%}
 
@@ -1026,6 +1056,80 @@
       "info": "Elimina el espacio entre la foto fija y la información, uniendo sus bordes. Solo disponible cuando la imagen está posicionada a la derecha de la galería (abajo), porque es la única posición donde esas dos columnas quedan una junto a la otra. Se puede combinar con \"Unir foto fija y galería\" para unir las tres. Solo afecta a desktop.",
       "default": false,
       "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.desktop_media_position == 'end' }}"
+    },
+    {
+      "type": "header",
+      "content": "Decorative icon",
+      "visible_if": "{{ section.settings.desktop_show_first_image_column }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icon",
+      "label": "Show spinning icon",
+      "info": "A decorative icon shown over the top-left corner of the first-image column (desktop only, same as the static image itself).",
+      "default": false,
+      "visible_if": "{{ section.settings.desktop_show_first_image_column }}"
+    },
+    {
+      "type": "select",
+      "id": "icon_type",
+      "label": "Icon",
+      "options": [
+        { "value": "star", "label": "Star" },
+        { "value": "lotus", "label": "Lotus" },
+        { "value": "clover", "label": "Clover" },
+        { "value": "smiley", "label": "Smiley face" },
+        { "value": "cherries", "label": "Cherries" },
+        { "value": "eight_ball", "label": "8-Ball" },
+        { "value": "blob", "label": "Blob" },
+        { "value": "badge", "label": "Badge" },
+        { "value": "stamp", "label": "Stamp" },
+        { "value": "swoosh", "label": "Swoosh" },
+        { "value": "phone", "label": "Phone" },
+        { "value": "skincare_era", "label": "Skincare era" },
+        { "value": "ticket", "label": "Ticket" }
+      ],
+      "default": "phone",
+      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "min": 16,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Icon size",
+      "default": 32,
+      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "icon_spin",
+      "label": "Spin icon",
+      "default": true,
+      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
+    },
+    {
+      "type": "color",
+      "id": "icon_primary_color",
+      "label": "Primary color",
+      "default": "#FF6B9D",
+      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
+    },
+    {
+      "type": "color",
+      "id": "icon_secondary_color",
+      "label": "Secondary color",
+      "default": "#FFD93D",
+      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
+    },
+    {
+      "type": "color",
+      "id": "icon_border_color",
+      "label": "Border color",
+      "info": "Leave blank for no border.",
+      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
     },
     {
       "type": "range",
