@@ -109,6 +109,26 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
     assign media_column_index = media_column_index | plus: 1
   endif
 
+  # Mobile equivalent of the desktop row-matching trick above: below 700px everything stacks
+  # vertically instead of sharing a row, so there's no grid row for the card to borrow a height from -
+  # the only way to still match the media's height is to know it ahead of time, so this mirrors the
+  # exact clamp()/calc() values the "Mobile block size" keywords already resolve to via the
+  # .min-h-{sm/md/lg/fill} utility classes (assets/theme.css), rather than inventing new ones. "Original
+  # image ratio" has no such fixed value (it depends on each photo/video's own aspect ratio) - there's
+  # nothing to match it to on mobile, so the card just keeps its natural height there, same as before.
+  assign mobile_card_height = nil
+
+  case block.settings.mobile_block_size
+    when 'sm'
+      assign mobile_card_height = 'clamp(15rem, 35vmax, 25rem)'
+    when 'md'
+      assign mobile_card_height = 'clamp(20rem, 45vmax, 35rem)'
+    when 'lg'
+      assign mobile_card_height = 'clamp(25rem, 55vmax, 45rem)'
+    when 'fill'
+      assign mobile_card_height = 'calc(100svh - var(--sticky-area-height, 0px))'
+  endcase
+
   if has_text_column
     assign media_column_index = media_column_index | plus: 1
   endif
@@ -260,9 +280,18 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
               }
             {%- endif -%}
 
+            {%- comment -%}
+            span 1 explicitly on both axes - required because this item is absolutely positioned:
+            with only a start line given (no end), an abs-positioned grid item's containing block
+            extends all the way to the grid container's own edge on that side instead of stopping at
+            the next line, which is what was letting the card's inset: 0 spill across the media
+            column next to it (and visually land behind it, since media comes after it in source
+            order). A plain, non-absolutely-positioned item (like title/media above) doesn't have this
+            quirk - a bare start line already defaults to a span of 1 for those.
+            {%- endcomment -%}
             #{{ text_image_id }} > .faq__text-image-text.faq__text-image-text--card {
-              grid-column: {{ text_column_index }};
-              grid-row: 1;
+              grid-column: {{ text_column_index }} / span 1;
+              grid-row: 1 / span 1;
               position: absolute;
               inset: 0;
               overflow-y: auto;
@@ -273,6 +302,24 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
               grid-row: 1;
             }
           }
+
+          {%- if mobile_card_height != nil -%}
+            {%- comment -%}
+            Below 700px, title/text/media stack vertically instead of sharing a row, so there's no
+            row for the card to inherit a height from the way there is on desktop - this pins it to
+            the exact same height "Mobile block size" already gives the media (the mobile_card_height
+            value computed above), so it visually matches it, with its own content scrolling inside if
+            it doesn't fit. Media keeps its own normal height here, unaffected (unlike the desktop
+            rule, nothing needs to be pulled out of flow on mobile - media and text were never
+            fighting over the same row's auto-size in the first place, since they're not in one).
+            {%- endcomment -%}
+            @media screen and (max-width: 699px) {
+              #{{ text_image_id }} > .faq__text-image-text.faq__text-image-text--card {
+                height: {{ mobile_card_height }};
+                overflow-y: auto;
+              }
+            }
+          {%- endif -%}
         </style>
       {%- endif -%}
     {%- endif -%}
