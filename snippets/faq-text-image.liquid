@@ -3,8 +3,14 @@ Renders a FAQ "Text + image/video" block: optional title, rich text, and up to 3
 or video, chosen per slot - video wins over image when both are set, same as Media Blocks' Carousel).
 Single column (title, then text, then media) on mobile, stacked in that order; from 700px up, when
 there's at least one media item, whichever of title/text/media are actually present on THIS block
-share the row as equal-width columns (title capped at 30% max) - see the grid-template-columns rule
-near the end of this file for why that has to be computed per block instead of once for the section.
+share the row: title (when present) is a flat 20%, text and media split the rest 40/40 - see the
+grid-template-columns rule near the end of this file for why that has to be computed per block
+instead of once for the section.
+
+The text content can optionally become a card (show_text_card): background + border from a Color
+scheme, the section's own corner radius and the same interior padding already used elsewhere in FAQ
+(.faq-content-box, assets/theme.css). From 700px up, once there's media next to it, the card
+stretches to match the media's height and scrolls internally instead of growing past it.
 
 Every media item - whether there's one or several - renders through the exact same shared markup as
 Media Blocks' Carousel: snippets/media-zoom-slide.liquid (sound/play-pause toggle, zoom-to-lightbox),
@@ -15,7 +21,7 @@ the same snippets. Each item gets a <figcaption> below it (its own per-slide cap
 media itself - the same <figure>/<figcaption> pattern as blocks/image-with-caption.liquid.
 
 @param {object} block - the "text_image" block to render
-@param {number} [faq_border_radius] - the section's own corner radius (Corner radius setting), applied to the media so it matches the section's rounded corners
+@param {number} [faq_border_radius] - the section's own corner radius (Corner radius setting), applied to the media (and the text card, when enabled) so they match the section's rounded corners
 {%- enddoc -%}
 
 {%- liquid
@@ -90,11 +96,11 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
 
   # Icon row layout (title + decorative icon): plain flex, not grid - a grid with a "1fr" track only
   # behaves predictably when the row itself has a definite width to distribute, which isn't the case
-  # here (the title column below is content-sized, capped at 30%, never stretched). Flex sizes both
-  # the title and the icon to their own content regardless, so "Left"/"Right" never has odd/
-  # inconsistent sizing. "icon_alignment" (left/center/right) only has visible room to act on
-  # "Above"/"Below" (a flex column, where the title and icon can differ in width) - for "Left"/"Right"
-  # the row is exactly as wide as title + icon + gap, so there's no extra space left to align within.
+  # here (the title column below is a flat 20% of the row, never stretched). Flex sizes both the
+  # title and the icon to their own content regardless, so "Left"/"Right" never has odd/inconsistent
+  # sizing. "icon_alignment" (left/center/right) only has visible room to act on "Above"/"Below" (a
+  # flex column, where the title and icon can differ in width) - for "Left"/"Right" the row is
+  # exactly as wide as title + icon + gap, so there's no extra space left to align within.
   assign icon_flex_direction = 'row'
 
   case block.settings.icon_position
@@ -123,6 +129,7 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
 
   assign heading_row_id = 'faq-text-image-heading-row-' | append: block.id
   assign text_image_id = 'faq-text-image-' | append: block.id
+  assign border_radius_px = faq_border_radius | default: 0 | append: 'px'
 -%}
 
 {%- if block.settings.title != blank or block.settings.text != blank or block.settings.show_icon or has_media -%}
@@ -189,14 +196,48 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
     {%- endif -%}
 
     {%- if has_text_column -%}
-      <div class="faq__text-image-text prose">
+      <div class="faq__text-image-text prose {% if block.settings.show_text_card %}faq-content-box faq__text-image-text--card color-scheme color-scheme--{{ block.settings.text_card_color_scheme.id }}{% endif %}" {% if block.settings.show_text_card %}style="border-radius: {{ border_radius_px }};"{% endif %}>
         {{- block.settings.text -}}
       </div>
+
+      {%- if block.settings.show_text_card -%}
+        <style>
+          {%- comment -%}
+          "Content box style" (show_text_card): background + border come from the chosen Color scheme
+          (.color-scheme already sets --border-color from it, so border-width/style here is all that's
+          needed to actually draw one). Padding and corner radius reuse the exact values the rest of
+          this section already uses for the same kind of card (.faq-content-box, assets/theme.css, and
+          this block's own faq_border_radius) instead of inventing new ones.
+          {%- endcomment -%}
+          #{{ text_image_id }} .faq__text-image-text--card {
+            border-width: 1px;
+            border-style: solid;
+          }
+
+          {%- if has_media -%}
+            {%- comment -%}
+            Desktop only, and only once there's media to match: the card stretches to the row's full
+            height (same height as the media/carousel next to it) instead of only as tall as its own
+            content - min-height: 0 is required for a stretched grid item to be allowed to shrink
+            below its content's size at all, which is what lets overflow-y: auto actually kick in and
+            scroll internally once the text no longer fits, instead of just pushing the card taller
+            than the media beside it.
+            {%- endcomment -%}
+            @media screen and (min-width: 700px) {
+              #{{ text_image_id }} .faq__text-image-text--card {
+                align-self: stretch;
+                min-height: 0;
+                overflow-y: auto;
+              }
+            }
+          {%- endif -%}
+        </style>
+      {%- endif -%}
     {%- endif -%}
 
     {%- if has_media -%}
       {%- liquid
-        assign media_corner_radius = faq_border_radius | default: 0 | append: 'px'
+        assign media_corner_radius = border_radius_px
         assign media_wrapper_id = 'faq-text-image-media-' | append: block.id
         assign media_lightbox_id = 'faq-text-image-lightbox-' | append: block.id
         assign media_carousel_id = nil
