@@ -94,12 +94,23 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
     assign has_text_column = true
   endif
 
-  # Only used for the "Content box style" + media height-match case further down - the text column's
-  # own grid-column index shifts by one whenever a title column exists before it.
+  # Only used for the "Content box style" + media height-match case further down, to give every
+  # column an explicit grid-column instead of relying on auto-placement there: an absolutely
+  # positioned grid item (what the text card becomes in that case) is skipped entirely by Grid's
+  # auto-placement algorithm for OTHER items, as if it didn't reserve its column at all - title and
+  # media, if left on auto-placement, could then both land fighting over the same column instead of
+  # their intended ones.
+  assign title_column_index = 1
   assign text_column_index = 1
+  assign media_column_index = 1
 
   if has_title_column
-    assign text_column_index = 2
+    assign text_column_index = text_column_index | plus: 1
+    assign media_column_index = media_column_index | plus: 1
+  endif
+
+  if has_text_column
+    assign media_column_index = media_column_index | plus: 1
   endif
 
   # Icon row layout (title + decorative icon): plain flex, not grid - a grid with a "1fr" track only
@@ -229,11 +240,25 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
           (its grid area becomes its containing block for inset: 0) and scrolls internally if its
           content doesn't fit. position: relative on the grid itself is what makes that containing
           block resolve to the grid area instead of some further-out ancestor.
+
+          Title and media also need an explicit grid-column here, not just text: Grid's auto-placement
+          algorithm skips absolutely positioned items entirely when deciding where auto-placed items
+          go, as if the card's column were never spoken for - left on auto-placement, title and media
+          ended up fighting over the same leftover columns instead of landing in their intended ones
+          (this is also why it only showed up with a card + media both present, and only at this
+          700px+ breakpoint - the one place all three columns are ever side by side to begin with).
           {%- endcomment -%}
           @media screen and (min-width: 700px) {
             #{{ text_image_id }}.faq__text-image--with-image {
               position: relative;
             }
+
+            {%- if has_title_column -%}
+              #{{ text_image_id }} > .faq__text-image-title {
+                grid-column: {{ title_column_index }};
+                grid-row: 1;
+              }
+            {%- endif -%}
 
             #{{ text_image_id }} > .faq__text-image-text.faq__text-image-text--card {
               grid-column: {{ text_column_index }};
@@ -244,6 +269,7 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
             }
 
             #{{ text_image_id }} > .faq__text-image-media {
+              grid-column: {{ media_column_index }};
               grid-row: 1;
             }
           }
