@@ -94,6 +94,14 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
     assign has_text_column = true
   endif
 
+  # Only used for the "Content box style" + media height-match case further down - the text column's
+  # own grid-column index shifts by one whenever a title column exists before it.
+  assign text_column_index = 1
+
+  if has_title_column
+    assign text_column_index = 2
+  endif
+
   # Icon row layout (title + decorative icon): plain flex, not grid - a grid with a "1fr" track only
   # behaves predictably when the row itself has a definite width to distribute, which isn't the case
   # here (the title column below is a flat 20% of the row, never stretched). Flex sizes both the
@@ -207,22 +215,36 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
           the chosen Color scheme and the corner radius matches the section's own (both set via the
           class/inline style on the div above) - this part only handles matching the media's height.
 
-          Desktop only: the card stretches to the row's full height (same height as the media/carousel
-          next to it) instead of only as tall as its own content - min-height: 0 is required for a
-          stretched grid item to be allowed to shrink below its content's size at all, which is what
-          lets overflow-y: auto actually kick in and scroll internally once the text no longer fits,
-          instead of just pushing the card taller than the media beside it. This only works because
-          .faq__text-image-media (sections/faq.liquid) has no overflow: hidden of its own - a sibling
-          with overflow other than visible contributes a minimum size of 0 to the shared grid row's
-          height instead of its real content height, same as this card does once scrollable, so if
-          the media column were ALSO not visible-overflow, neither would have a real height left for
-          the other to match.
+          align-self: stretch + overflow-y: auto alone doesn't work here: a CSS Grid "auto" row still
+          sizes itself off EVERY item's own full content height first (overflow doesn't change that,
+          only how much an item is later allowed to shrink once stretched into an ALREADY-decided row
+          height) - so with text naturally taller than the media/carousel next to it, the row just grew
+          to match the text instead of the other way around, and media (not stretched) was left with a
+          gap below it instead.
+
+          position: absolute + inset: 0 removes the card from that row-sizing calculation entirely
+          (an absolutely positioned grid item doesn't contribute to its row's size at all), so the row
+          ends up sized by the media column alone - then the card, explicitly placed into the same
+          grid-column/row the text would otherwise auto-place into, fills exactly that resulting box
+          (its grid area becomes its containing block for inset: 0) and scrolls internally if its
+          content doesn't fit. position: relative on the grid itself is what makes that containing
+          block resolve to the grid area instead of some further-out ancestor.
           {%- endcomment -%}
           @media screen and (min-width: 700px) {
-            #{{ text_image_id }} .faq__text-image-text--card {
-              align-self: stretch;
-              min-height: 0;
+            #{{ text_image_id }}.faq__text-image--with-image {
+              position: relative;
+            }
+
+            #{{ text_image_id }} > .faq__text-image-text.faq__text-image-text--card {
+              grid-column: {{ text_column_index }};
+              grid-row: 1;
+              position: absolute;
+              inset: 0;
               overflow-y: auto;
+            }
+
+            #{{ text_image_id }} > .faq__text-image-media {
+              grid-row: 1;
             }
           }
         </style>
