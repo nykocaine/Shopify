@@ -105,7 +105,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               controls hidden until the video itself is tapped, instead of sitting on top of it
               permanently.
               {%- endcomment -%}
-              <div class="snap-start" {{ block.shopify_attributes }}>
+              <div class="snap-start" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
                 {%- render 'media-zoom-slide',
                   video: block.settings.video,
                   autoplay: true,
@@ -131,7 +131,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               it instead of being the flex item itself, same as it already is inside
               media-zoom-slide.liquid's own output for the video branch.
               {%- endcomment -%}
-              <div class="snap-start" {{ block.shopify_attributes }}>
+              <div class="snap-start" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
                 <open-lightbox-button class="block" aria-controls="{{ instagram_lightbox_id }}" image-index="{{ instagram_slide_index }}">
                   <div class="content-box__background-media">
                     <button type="button">
@@ -185,8 +185,45 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
         {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple -%}
 
+        {%- comment -%}
+        Caption shown only in the zoomed-in lightbox, never in the feed grid itself - each "Media"
+        block's own caption setting, read from its cell's data-caption attribute by the script below.
+        A plain sibling of the shared lightbox snippet rather than something added inside it (shared
+        with FAQ/Media Blocks too) - kept entirely local to this section instead. The CSS fade uses
+        #{{ instagram_lightbox_id }}.is-lightbox-visible's own existing toggle (a sibling selector,
+        no extra JS needed just to fade it in/out in sync with the lightbox itself); the script below
+        only has to keep its TEXT in sync with whichever item is currently expanded.
+        {%- endcomment -%}
+        <p id="{{ instagram_lightbox_id }}-caption" class="instagram-feed__lightbox-caption empty:hidden" aria-live="polite"></p>
+
         <style>
           {%- render 'media-zoom-style', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, corner_radius: instagram_corner_radius_px -%}
+
+          {%- comment -%}
+          empty:hidden (theme.css utility) keeps this out of the way entirely when the active item has
+          no caption set, instead of reserving space for/fading in an empty bar. Positioned fixed at
+          the bottom of the viewport rather than pinned to the media's own bottom edge: unlike mobile
+          (--lightbox-media-w/h, media-zoom-style.liquid), desktop's expanded media has no fixed box
+          size of its own to pin a caption to (it's sized by its own content, up to 96vw/96vh) - a
+          constant screen-relative position works the same way regardless of that.
+          {%- endcomment -%}
+          #shopify-section-{{ section.id }} .instagram-feed__lightbox-caption {
+            color: rgb(var(--text-color));
+            text-align: center;
+            z-index: 1000;
+            position: fixed;
+            inset-inline: 4rem;
+            inset-block-end: 1rem;
+            opacity: 0;
+            scale: .95;
+            pointer-events: none;
+            transition: opacity .2s ease, scale .2s ease;
+          }
+
+          #{{ instagram_lightbox_id }}.is-lightbox-visible ~ .instagram-feed__lightbox-caption {
+            opacity: 1;
+            scale: 1;
+          }
         </style>
 
         {%- comment -%}
@@ -284,6 +321,37 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         </script>
 
         {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id -%}
+
+        {%- comment -%}
+        Keeps the lightbox caption's TEXT in sync with whichever item is currently expanded - open,
+        close, and next/prev inside the lightbox (snippets/media-zoom-script.liquid) all end up
+        toggling the "is-lightbox-expanded" class onto that item's own <img>/<video-media>, so
+        watching for that one class, scoped to this carousel, covers every way the active item can
+        change without needing its own copy of (or any changes to) that shared open/close/navigate
+        logic. The caption's own fade in/out is handled in CSS alone (see the sibling selector above),
+        so this only ever has to update which text is showing.
+        {%- endcomment -%}
+        <script>
+          (function () {
+            var carousel = document.getElementById('{{ instagram_carousel_id }}');
+            var caption = document.getElementById('{{ instagram_lightbox_id }}-caption');
+
+            if (!carousel || !caption) return;
+
+            function syncCaption() {
+              var expanded = carousel.querySelector('.is-lightbox-expanded');
+              var cell = expanded ? expanded.closest('.snap-start') : null;
+
+              caption.textContent = cell ? cell.dataset.caption || '' : '';
+            }
+
+            new MutationObserver(syncCaption).observe(carousel, {
+              attributes: true,
+              attributeFilter: ['class'],
+              subtree: true
+            });
+          })();
+        </script>
       {%- endif -%}
     </div>
   </div>
@@ -807,6 +875,12 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
           "id": "video",
           "label": "t:global.video.video",
           "visible_if": "{{ block.settings.media_type == 'video' }}"
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "label": "t:global.image.caption",
+          "info": "Only shown in the zoomed-in lightbox view, not in the feed itself."
         }
       ]
     }
