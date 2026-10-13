@@ -357,8 +357,18 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
 
       <div class="faq__text-image-media" id="{{ media_wrapper_id }}">
         {%- if is_carousel -%}
-          <div style="border-radius: {{ media_corner_radius }}; overflow: hidden;">
-            <product-list id="{{ media_carousel_id }}" cell-selector=".snap-start" class="scroll-area snap-x">
+          {%- comment -%}
+          border-radius lives directly on <product-list> itself (added in the CSS below, next to
+          its existing grid rule) instead of an extra wrapping div around it - same technique as
+          sections/instagram-feed.liquid's .instagram-feed__carousel: the SAME element that already
+          has overflow-x: auto / overflow-y: hidden (.scroll-area) also gets the rounded corners, so
+          the clip stays correctly tied to its own scrollport as it scrolls. An earlier attempt put
+          overflow: hidden on a separate, non-scrolling wrapper one level in - that clip moved WITH
+          the content instead of staying fixed as a window onto it, so scrolling never actually
+          revealed the later slides. Figure/figcaption stay exactly as they were (caption directly
+          below its own media, same element) - nothing about that structure needed to change.
+          {%- endcomment -%}
+          <product-list id="{{ media_carousel_id }}" cell-selector=".snap-start" class="scroll-area snap-x">
               {%- liquid
                 assign lightbox_slide_index = 0
               -%}
@@ -418,7 +428,6 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
                 {%- endif -%}
               {%- endfor -%}
             </product-list>
-          </div>
 
           {%- render 'media-lightbox', id: media_lightbox_id, show_nav: true -%}
 
@@ -511,6 +520,7 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
             align-items: start;
             gap: .75rem;
             display: grid;
+            border-radius: {{ media_corner_radius }};
           }
 
           @media screen and (min-width: 700px) {
