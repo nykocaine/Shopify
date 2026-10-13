@@ -379,8 +379,10 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   content size feed back into the container's own sizing, so .scroll-area's overflow: auto hidden
   reliably clips the rest instead.
 
-  Mobile: a single row of 2 items that tiles the full width - any extra items beyond those 2
-  overflow and scroll horizontally. Desktop: 6 items, same idea.
+  Mobile: a row of items sized a bit larger than an even 2-per-row split (dividing by 1.8 instead
+  of 2) - each square is slightly bigger/taller than before, at the cost of the 2nd item peeking
+  in partially cropped at the edge instead of tiling exactly - a deliberate tradeoff (per request),
+  not a bug. Desktop: 4 items, unchanged, still an even split.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__carousel {
     gap: .5rem;
@@ -393,7 +395,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
-    flex: 0 0 calc((100% - .5rem) / 2);
+    flex: 0 0 calc((100% - .5rem) / 1.8);
     min-width: 0;
   }
 
