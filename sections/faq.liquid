@@ -493,10 +493,15 @@
       "Text with image or video" block (faq-text-image.liquid): plain editorial content, not an
       accordion - lives alongside questions inside the same category panel/list. Single column
       (title, then text, then media stacked in that order) until 700px; from there, when there is at
-      least one media item, title | text | media become three equal columns - same 3-equal-column
-      pattern as main-product.liquid's "Show first image as its own column" grid
-      (--product-grid: repeat(3, minmax(0, 1fr))). Text-only blocks (no media) stay single column,
-      full width, at every size. Every media item (image or video, single or carousel) renders through
+      least one media item, whichever of title/text/media are actually present share the row as
+      equal-width columns - EXCEPT the title column, capped at 30% max so a short title never grows
+      past that even with extra room to spare. The actual grid-template-columns value is computed and
+      set per block, not here - see faq-text-image.liquid's own scoped style block (id
+      faq-text-image-<block.id>), since which of the three columns exist (title/icon, text, media)
+      varies block by block and a single section-wide rule can't account for that: with no title, for
+      example, the row should split 50/50 between text and media instead of leaving the title's column
+      empty and media stuck in a narrower share. Text-only blocks (no media) stay single column, full
+      width, at every size. Every media item (image or video, single or carousel) renders through
       snippets/media-zoom-slide.liquid, the same markup Media Blocks' Carousel uses, so it already
       carries its own sizing (block_size/mobile_block_size) and corner radius (faq_border_radius) -
       nothing here needs to size or round it.
@@ -524,15 +529,8 @@
         flex-direction: column;
       }
 
-      {%- comment -%}
-      Desktop only: the title column doesn't get an equal 1fr share like text/media - it's sized to
-      its own content (the title text, plus the decorative icon next to it when that's turned on)
-      via "auto", so it never stretches wider than it needs to. The freed-up space goes to text and
-      media instead, split evenly between them (minmax(0, 1fr) each).
-      {%- endcomment -%}
       @media screen and (min-width: 700px) {
         #shopify-section-{{ section.id }} .faq__text-image--with-image {
-          grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
           align-items: center;
         }
       }
@@ -1905,6 +1903,7 @@
           "type": "select",
           "id": "icon_alignment",
           "label": "Alignment",
+          "info": "Only has a visible effect when Position is \"Above title\" or \"Below title\".",
           "options": [
             {
               "value": "left",

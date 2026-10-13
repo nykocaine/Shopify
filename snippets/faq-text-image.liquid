@@ -2,7 +2,9 @@
 Renders a FAQ "Text + image/video" block: optional title, rich text, and up to 3 media items (image
 or video, chosen per slot - video wins over image when both are set, same as Media Blocks' Carousel).
 Single column (title, then text, then media) on mobile, stacked in that order; from 700px up, when
-there's at least one media item, title | text | media become three equal columns.
+there's at least one media item, whichever of title/text/media are actually present on THIS block
+share the row as equal-width columns (title capped at 30% max) - see the grid-template-columns rule
+near the end of this file for why that has to be computed per block instead of once for the section.
 
 Every media item - whether there's one or several - renders through the exact same shared markup as
 Media Blocks' Carousel: snippets/media-zoom-slide.liquid (sound/play-pause toggle, zoom-to-lightbox),
@@ -74,40 +76,58 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
     assign is_carousel = true
   endif
 
-  # Same layout logic as sections/contact.liquid's own "Decorative icon" settings, just driven by
-  # this block's settings instead of the section's - see contact.liquid for the full rationale.
-  assign icon_justify_self = 'start'
+  assign has_title_column = false
+
+  if block.settings.title != blank or block.settings.show_icon
+    assign has_title_column = true
+  endif
+
+  assign has_text_column = false
+
+  if block.settings.text != blank
+    assign has_text_column = true
+  endif
+
+  # Icon row layout (title + decorative icon): plain flex, not grid - a grid with a "1fr" track only
+  # behaves predictably when the row itself has a definite width to distribute, which isn't the case
+  # here (the title column below is content-sized, capped at 30%, never stretched). Flex sizes both
+  # the title and the icon to their own content regardless, so "Left"/"Right" never has odd/
+  # inconsistent sizing. "icon_alignment" (left/center/right) only has visible room to act on
+  # "Above"/"Below" (a flex column, where the title and icon can differ in width) - for "Left"/"Right"
+  # the row is exactly as wide as title + icon + gap, so there's no extra space left to align within.
+  assign icon_flex_direction = 'row'
+
+  case block.settings.icon_position
+    when 'left'
+      assign icon_flex_direction = 'row-reverse'
+    when 'above'
+      assign icon_flex_direction = 'column-reverse'
+    when 'below'
+      assign icon_flex_direction = 'column'
+  endcase
+
+  assign icon_is_column = false
+
+  if icon_flex_direction == 'column' or icon_flex_direction == 'column-reverse'
+    assign icon_is_column = true
+  endif
+
+  assign icon_justify_self = 'flex-start'
 
   case block.settings.icon_alignment
     when 'center'
       assign icon_justify_self = 'center'
     when 'right'
-      assign icon_justify_self = 'end'
-  endcase
-
-  assign icon_display = 'grid'
-  assign icon_grid_template_columns = 'auto 1fr'
-  assign icon_grid_template_areas = '"title icon"'
-  assign icon_flex_direction = 'column'
-
-  case block.settings.icon_position
-    when 'left'
-      assign icon_grid_template_columns = '1fr auto'
-      assign icon_grid_template_areas = '"icon title"'
-    when 'above'
-      assign icon_display = 'flex'
-      assign icon_flex_direction = 'column-reverse'
-    when 'below'
-      assign icon_display = 'flex'
-      assign icon_flex_direction = 'column'
+      assign icon_justify_self = 'flex-end'
   endcase
 
   assign heading_row_id = 'faq-text-image-heading-row-' | append: block.id
+  assign text_image_id = 'faq-text-image-' | append: block.id
 -%}
 
 {%- if block.settings.title != blank or block.settings.text != blank or block.settings.show_icon or has_media -%}
-  <div class="faq__text-image {% if has_media %}faq__text-image--with-image{% endif %}" {{ block.shopify_attributes }}>
-    {%- if block.settings.title != blank or block.settings.show_icon -%}
+  <div class="faq__text-image {% if has_media %}faq__text-image--with-image{% endif %}" id="{{ text_image_id }}" {{ block.shopify_attributes }}>
+    {%- if has_title_column -%}
       <div class="faq__text-image-title prose">
         <div class="faq__text-image-heading-row" id="{{ heading_row_id }}">
           {%- if block.settings.title != blank -%}
@@ -134,20 +154,10 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
       {%- if block.settings.show_icon -%}
         <style>
           #{{ heading_row_id }} {
-            display: {{ icon_display }};
-            {%- if icon_display == 'grid' -%}
-              grid-template-columns: {{ icon_grid_template_columns }};
-              grid-template-areas: {{ icon_grid_template_areas }};
-              align-items: center;
-            {%- else -%}
-              flex-direction: {{ icon_flex_direction }};
-              align-items: flex-start;
-            {%- endif -%}
+            display: flex;
+            flex-direction: {{ icon_flex_direction }};
+            align-items: {% if icon_is_column %}flex-start{% else %}center{% endif %};
             gap: .5rem;
-          }
-
-          #{{ heading_row_id }} .faq__text-image-heading-row__title {
-            grid-area: title;
           }
 
           {%- comment -%}
@@ -159,14 +169,11 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
             margin-block-start: 0;
           }
 
-          #{{ heading_row_id }} .faq__text-image-heading-row__icon {
-            grid-area: icon;
-            {%- if icon_display == 'grid' -%}
-              justify-self: {{ icon_justify_self }};
-            {%- else -%}
+          {%- if icon_is_column -%}
+            #{{ heading_row_id }} .faq__text-image-heading-row__icon {
               align-self: {{ icon_justify_self }};
-            {%- endif -%}
-          }
+            }
+          {%- endif -%}
 
           #{{ heading_row_id }} .faq__text-image-heading-row__icon svg {
             margin-block: calc(var(--prose-media-spacing) / 2);
@@ -175,7 +182,7 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
       {%- endif -%}
     {%- endif -%}
 
-    {%- if block.settings.text != blank -%}
+    {%- if has_text_column -%}
       <div class="faq__text-image-text prose">
         {{- block.settings.text -}}
       </div>
@@ -219,31 +226,33 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
 
                 {%- if slide_image != blank or slide_video != blank -%}
                   <figure class="snap-start">
-                    {%- render 'media-zoom-slide',
-                      video: slide_video,
-                      image: slide_image,
-                      block_size: block.settings.block_size,
-                      mobile_block_size: block.settings.mobile_block_size,
-                      corner_radius: media_corner_radius,
-                      lightbox_id: media_lightbox_id,
-                      aria_controls_id: media_carousel_id,
-                      lightbox_index: lightbox_slide_index,
-                      enable_lightbox: false,
-                      sizes: '(max-width: 699px) 100vw, 33vw'
-                    -%}
+                    <div class="faq__text-image-media-frame">
+                      {%- render 'media-zoom-slide',
+                        video: slide_video,
+                        image: slide_image,
+                        block_size: block.settings.block_size,
+                        mobile_block_size: block.settings.mobile_block_size,
+                        corner_radius: media_corner_radius,
+                        lightbox_id: media_lightbox_id,
+                        aria_controls_id: media_carousel_id,
+                        lightbox_index: lightbox_slide_index,
+                        enable_lightbox: false,
+                        sizes: '(max-width: 699px) 100vw, 33vw'
+                      -%}
 
-                    {%- if slide_show_icon -%}
-                      <div class="faq__text-image-slide-icon">
-                        {%- render 'decorative-icon',
-                          icon_type: block.settings[icon_type_key],
-                          icon_size: block.settings[icon_size_key],
-                          icon_spin: block.settings[icon_spin_key],
-                          icon_primary_color: block.settings[icon_primary_color_key],
-                          icon_secondary_color: block.settings[icon_secondary_color_key],
-                          icon_border_color: block.settings[icon_border_color_key]
-                        -%}
-                      </div>
-                    {%- endif -%}
+                      {%- if slide_show_icon -%}
+                        <div class="faq__text-image-slide-icon">
+                          {%- render 'decorative-icon',
+                            icon_type: block.settings[icon_type_key],
+                            icon_size: block.settings[icon_size_key],
+                            icon_spin: block.settings[icon_spin_key],
+                            icon_primary_color: block.settings[icon_primary_color_key],
+                            icon_secondary_color: block.settings[icon_secondary_color_key],
+                            icon_border_color: block.settings[icon_border_color_key]
+                          -%}
+                        </div>
+                      {%- endif -%}
+                    </div>
 
                     {%- if slide_caption != blank -%}
                       <figcaption>{{ slide_caption }}</figcaption>
@@ -261,31 +270,33 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
           <progress-bar track-scroll-target="{{ media_carousel_id }}" class="progress-bar w-full"></progress-bar>
         {%- else -%}
           <figure>
-            {%- render 'media-zoom-slide',
-              video: single_slide_video,
-              image: single_slide_image,
-              block_size: block.settings.block_size,
-              mobile_block_size: block.settings.mobile_block_size,
-              corner_radius: media_corner_radius,
-              lightbox_id: media_lightbox_id,
-              lightbox_index: 0,
-              as_lightbox_cell: true,
-              enable_lightbox: false,
-              sizes: '(max-width: 699px) 100vw, 33vw'
-            -%}
+            <div class="faq__text-image-media-frame">
+              {%- render 'media-zoom-slide',
+                video: single_slide_video,
+                image: single_slide_image,
+                block_size: block.settings.block_size,
+                mobile_block_size: block.settings.mobile_block_size,
+                corner_radius: media_corner_radius,
+                lightbox_id: media_lightbox_id,
+                lightbox_index: 0,
+                as_lightbox_cell: true,
+                enable_lightbox: false,
+                sizes: '(max-width: 699px) 100vw, 33vw'
+              -%}
 
-            {%- if single_slide_show_icon -%}
-              <div class="faq__text-image-slide-icon">
-                {%- render 'decorative-icon',
-                  icon_type: single_slide_icon_type,
-                  icon_size: single_slide_icon_size,
-                  icon_spin: single_slide_icon_spin,
-                  icon_primary_color: single_slide_icon_primary_color,
-                  icon_secondary_color: single_slide_icon_secondary_color,
-                  icon_border_color: single_slide_icon_border_color
-                -%}
-              </div>
-            {%- endif -%}
+              {%- if single_slide_show_icon -%}
+                <div class="faq__text-image-slide-icon">
+                  {%- render 'decorative-icon',
+                    icon_type: single_slide_icon_type,
+                    icon_size: single_slide_icon_size,
+                    icon_spin: single_slide_icon_spin,
+                    icon_primary_color: single_slide_icon_primary_color,
+                    icon_secondary_color: single_slide_icon_secondary_color,
+                    icon_border_color: single_slide_icon_border_color
+                  -%}
+                </div>
+              {%- endif -%}
+            </div>
 
             {%- if single_slide_caption != blank -%}
               <figcaption>{{ single_slide_caption }}</figcaption>
@@ -299,17 +310,26 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
       <style>
         {%- comment -%}
         Per-slide decorative icon (block.settings.show_icon_1/2/3): a badge floating over the
-        top-right corner of that slide's photo/video, same icon system as the title's own (just a
+        top-left corner of that slide's photo/video, same icon system as the title's own (just a
         separate, independent type/size/color config per slide - see sections/faq.liquid's schema).
-        pointer-events: none so it never intercepts taps meant for the video tap-to-play area.
+        Top-LEFT, not top-right: media-zoom-style.liquid positions a video's own sound/play-pause
+        controls at the top-right of every slide (.carousel-video-controls, inset-inline-end: 1rem) -
+        top-left is the one corner never used by anything else this block renders, on image or video
+        slides alike, so the icon can't ever sit on top of those buttons.
+
+        .faq__text-image-media-frame (position: relative + overflow: hidden, wrapping the media and
+        the icon together but NOT the <figcaption> below) keeps the icon clipped to the media's own
+        box - without it, a large icon (up to 80px) over a short "Original image ratio" photo could
+        spill past the photo's bottom edge into the caption below it.
         {%- endcomment -%}
-        #{{ media_wrapper_id }} figure {
+        #{{ media_wrapper_id }} .faq__text-image-media-frame {
           position: relative;
+          overflow: hidden;
         }
 
         #{{ media_wrapper_id }} .faq__text-image-slide-icon {
           top: .75rem;
-          right: .75rem;
+          left: .75rem;
           z-index: 2;
           position: absolute;
           pointer-events: none;
@@ -376,4 +396,30 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
       {%- render 'media-zoom-script', wrapper_id: media_wrapper_id, lightbox_id: media_lightbox_id, carousel_id: media_carousel_id -%}
     {%- endif -%}
   </div>
+
+  {%- if has_media -%}
+    <style>
+      {%- comment -%}
+      Desktop column widths, computed for THIS block specifically: a section-wide rule can't do this,
+      since which of title/text/media are actually present varies block by block. With no title, for
+      example, the row splits 50/50 between text and media instead of leaving an empty title column
+      and media stuck sharing only 1 of 3 tracks. The title column, when present, is capped at 30% of
+      the row (minmax(0, 30%)) instead of an equal share or unbounded "auto" - it still shrinks to fit
+      a short title, it just never grows past 30% for a long one.
+      {%- endcomment -%}
+      @media screen and (min-width: 700px) {
+        #{{ text_image_id }}.faq__text-image--with-image {
+          {%- if has_title_column and has_text_column -%}
+            grid-template-columns: minmax(0, 30%) minmax(0, 1fr) minmax(0, 1fr);
+          {%- elsif has_title_column -%}
+            grid-template-columns: minmax(0, 30%) minmax(0, 1fr);
+          {%- elsif has_text_column -%}
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          {%- else -%}
+            grid-template-columns: minmax(0, 1fr);
+          {%- endif -%}
+        }
+      }
+    </style>
+  {%- endif -%}
 {%- endif -%}

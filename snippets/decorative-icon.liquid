@@ -164,22 +164,31 @@ re-configuring colors/size.
         copy. Follows the same two-color convention as every other icon: icon_primary is the
         lettering, icon_secondary is the sparkles. The black layer behind the lettering (offset via
         transform instead of the black layer itself, so the black stays put and only the colored
-        layer shifts) stands in for the original's drop shadow; the shared stroke on the wrapping <g>
-        (white, paint-order: stroke so it paints behind the fill) stands in for its white outline.
-        Sized for a 32-80px decorative badge (this icon's usual range) - the lettering reads as
-        texture/shape at that size rather than literal words, same as the original sticker does when
-        shrunk down that far.
+        layer shifts) stands in for the original's drop shadow.
+
+        sticker_outline (icon_border when set, white otherwise) stands in for the original's white
+        outline and is also what "Border color" actually controls here - same convention as 'star'
+        above (icon_round_stroke): defaults to the look this icon is named for, but still responds to
+        the shared setting instead of silently ignoring it like a hardcoded color would.
+
+        Text sizes/positions are kept with a comfortable margin from the shared 0-100 viewBox edges -
+        .decorative-icon svg has overflow: visible (theme.css, so a spinning icon's points don't get
+        clipped mid-turn), so anything that DID cross an edge here would render past this icon's own
+        box instead of being cut off, into whatever sits next to it (sized for a 32-80px decorative
+        badge; the lettering reads as texture/shape at that size rather than literal words, same as
+        the original sticker does when shrunk down that far).
         {%- endcomment -%}
-        <g font-family="Arial, Helvetica, sans-serif" font-weight="900" paint-order="stroke" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round">
+        {%- assign sticker_outline = icon_border | default: '#ffffff' -%}
+        <g font-family="Arial, Helvetica, sans-serif" font-weight="900" paint-order="stroke" stroke="{{ sticker_outline }}" stroke-width="2.5" stroke-linejoin="round">
           <g fill="#000000">
-            <text x="15" y="26" font-size="11" transform="rotate(-8 15 26)">In my</text>
-            <text x="8" y="50" font-size="18" transform="rotate(4 8 50)">Skincare</text>
-            <text x="42" y="72" font-size="14" transform="rotate(-6 42 72)">era</text>
+            <text x="18" y="25" font-size="10" transform="rotate(-6 18 25)">In my</text>
+            <text x="11" y="50" font-size="15" transform="rotate(3 11 50)">Skincare</text>
+            <text x="46" y="71" font-size="12" transform="rotate(-4 46 71)">era</text>
           </g>
           <g fill="{{ icon_primary }}" transform="translate(-1.5 -1.5)">
-            <text x="15" y="26" font-size="11" transform="rotate(-8 15 26)">In my</text>
-            <text x="8" y="50" font-size="18" transform="rotate(4 8 50)">Skincare</text>
-            <text x="42" y="72" font-size="14" transform="rotate(-6 42 72)">era</text>
+            <text x="18" y="25" font-size="10" transform="rotate(-6 18 25)">In my</text>
+            <text x="11" y="50" font-size="15" transform="rotate(3 11 50)">Skincare</text>
+            <text x="46" y="71" font-size="12" transform="rotate(-4 46 71)">era</text>
           </g>
         </g>
         <g fill="{{ icon_secondary }}">
