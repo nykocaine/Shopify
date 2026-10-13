@@ -273,7 +273,22 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
               }
 
               measure() {
-                this.collapsedHeight = this.matchTarget.offsetHeight;
+                // matchTarget.offsetHeight is the TOTAL card's target height, but collapsedHeight
+                // below clamps only the inner .faq__text-image-text-content - so this card's own
+                // padding (.faq-content-box) and the toggle's own space (shown or not) both have to
+                // be subtracted first, or the card would end up that much taller than the carousel
+                // instead of matching it. The toggle is measured by briefly forcing it visible (a
+                // hidden, display: none element always reports 0 for its height) - synchronous, so
+                // nothing is ever actually painted in that intermediate state.
+                var cardStyle = getComputedStyle(this);
+                var paddingY = parseFloat(cardStyle.paddingTop) + parseFloat(cardStyle.paddingBottom);
+
+                this.toggle.style.display = 'block';
+                var toggleStyle = getComputedStyle(this.toggle);
+                var toggleSpace = this.toggle.offsetHeight + parseFloat(toggleStyle.marginBlockStart || toggleStyle.marginTop || 0);
+                this.toggle.style.display = '';
+
+                this.collapsedHeight = Math.max(0, this.matchTarget.offsetHeight - paddingY - toggleSpace);
 
                 if (this.hasAttribute('data-expanded')) {
                   // Keeps the open height in sync with a resize instead of leaving it pinned to
