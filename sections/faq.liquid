@@ -511,11 +511,6 @@
         display: grid;
       }
 
-      #shopify-section-{{ section.id }} .faq__text-image-title,
-      #shopify-section-{{ section.id }} .faq__text-image-text {
-        align-self: start;
-      }
-
       {%- comment -%}
       flex column + gap: with a carousel (more than one media item), this stacks the scrolling
       product-list above its progress bar with some breathing room between them. With a single media
@@ -529,9 +524,15 @@
         flex-direction: column;
       }
 
+      {%- comment -%}
+      align-items: start (not grid's own default, stretch/center): title, text and media all pin to
+      the top of the row instead of centering around whichever column is tallest - title/text already
+      read top-down naturally, and a centered media column would float with uneven gaps above/below it
+      whenever it's shorter than the text next to it.
+      {%- endcomment -%}
       @media screen and (min-width: 700px) {
         #shopify-section-{{ section.id }} .faq__text-image--with-image {
-          align-items: center;
+          align-items: start;
         }
       }
     </style>

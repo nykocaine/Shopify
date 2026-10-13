@@ -151,22 +151,28 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
         </div>
       </div>
 
-      {%- if block.settings.show_icon -%}
-        <style>
+      <style>
+        {%- comment -%}
+        Same two-levels-deep .prose spacing fix as contact.liquid's .contact-heading-row__title - see
+        that section for the full rationale (the heading sits past .prose's own one-level exemption).
+        Unconditional (not only when show_icon): the extra wrapping div this fix targets
+        (.faq__text-image-heading-row__title) exists whenever the title itself renders, with or
+        without an icon next to it - gating this on show_icon left the title's own top margin
+        unreset, and so pushed down, whenever the icon was off.
+        {%- endcomment -%}
+        {%- if block.settings.title != blank -%}
+          #{{ heading_row_id }} .faq__text-image-heading-row__title > * {
+            text-box: trim-both cap alphabetic;
+            margin-block-start: 0;
+          }
+        {%- endif -%}
+
+        {%- if block.settings.show_icon -%}
           #{{ heading_row_id }} {
             display: flex;
             flex-direction: {{ icon_flex_direction }};
             align-items: {% if icon_is_column %}flex-start{% else %}center{% endif %};
             gap: .5rem;
-          }
-
-          {%- comment -%}
-          Same two-levels-deep .prose spacing fix as contact.liquid's .contact-heading-row__title - see
-          that section for the full rationale (the heading sits past .prose's own one-level exemption).
-          {%- endcomment -%}
-          #{{ heading_row_id }} .faq__text-image-heading-row__title > * {
-            text-box: trim-both cap alphabetic;
-            margin-block-start: 0;
           }
 
           {%- if icon_is_column -%}
@@ -178,8 +184,8 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
           #{{ heading_row_id }} .faq__text-image-heading-row__icon svg {
             margin-block: calc(var(--prose-media-spacing) / 2);
           }
-        </style>
-      {%- endif -%}
+        {%- endif -%}
+      </style>
     {%- endif -%}
 
     {%- if has_text_column -%}
@@ -403,16 +409,18 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
       Desktop column widths, computed for THIS block specifically: a section-wide rule can't do this,
       since which of title/text/media are actually present varies block by block. With no title, for
       example, the row splits 50/50 between text and media instead of leaving an empty title column
-      and media stuck sharing only 1 of 3 tracks. The title column, when present, is capped at 30% of
-      the row (minmax(0, 30%)) instead of an equal share or unbounded "auto" - it still shrinks to fit
-      a short title, it just never grows past 30% for a long one.
+      and media stuck sharing only 1 of 3 tracks. The title column, when present, is a flat 20% (not
+      minmax/auto - a fixed share, same every time regardless of how long or short the title text
+      is), with text and media splitting the other 80% evenly between them (minmax(0, 1fr) each
+      always resolves to exactly 40/40 once the title's share is fixed, rather than shifting around
+      with the title's own content width).
       {%- endcomment -%}
       @media screen and (min-width: 700px) {
         #{{ text_image_id }}.faq__text-image--with-image {
           {%- if has_title_column and has_text_column -%}
-            grid-template-columns: minmax(0, 30%) minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-columns: 20% minmax(0, 1fr) minmax(0, 1fr);
           {%- elsif has_title_column -%}
-            grid-template-columns: minmax(0, 30%) minmax(0, 1fr);
+            grid-template-columns: 20% minmax(0, 1fr);
           {%- elsif has_text_column -%}
             grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
           {%- else -%}
