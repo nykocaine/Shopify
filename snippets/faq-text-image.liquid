@@ -357,36 +357,15 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
 
       <div class="faq__text-image-media" id="{{ media_wrapper_id }}">
         {%- if is_carousel -%}
-          {%- comment -%}
-          Two synced grid rows inside the SAME scrolling <product-list>, instead of each slide's
-          own <figure> stacking media + caption together - a single rounded/overflow: hidden
-          wrapper around the whole carousel (same technique as sections/instagram-feed.liquid's
-          .instagram-feed__carousel) needs to contain ONLY the media cells: if a slide's
-          <figcaption> sat inside that same box, the box's rounded corners (sized to media +
-          caption together) would land past the caption instead of right at the image's own edge,
-          visibly clipping the caption near the scroll edges instead of leaving it as plain,
-          uncropped text under the media.
-
-          Both rows share the exact same grid template (see the CSS below) so each caption cell
-          lines up under its own media cell automatically as the carousel scrolls - no JS scroll
-          sync needed. Every slide gets a caption CELL even when it has no caption text (empty
-          <figure>) so a missing caption on one slide doesn't shift the auto-placed columns of
-          the slides after it out of alignment with their own media cell.
-
-          cell-selector=".snap-start" only ever matches the media cells (caption cells never
-          carry that class), so the carousel's JS (snap/scroll math, progress bar, prev/next,
-          lightbox index) keeps working exactly as before. aria-describedby on each media cell,
-          pointing at its caption cell's id, keeps the image/video and its caption associated for
-          screen readers even though they're no longer DOM siblings inside one <figure>.
-          {%- endcomment -%}
-          <product-list id="{{ media_carousel_id }}" cell-selector=".snap-start" class="scroll-area snap-x">
-            <div class="faq__text-image-media-row">
+          <div style="border-radius: {{ media_corner_radius }}; overflow: hidden;">
+            <product-list id="{{ media_carousel_id }}" cell-selector=".snap-start" class="scroll-area snap-x">
               {%- liquid
                 assign lightbox_slide_index = 0
               -%}
               {%- for i in (1..3) -%}
                 {%- capture image_key -%}image_{{ i }}{%- endcapture -%}
                 {%- capture video_key -%}video_{{ i }}{%- endcapture -%}
+                {%- capture caption_key -%}caption_{{ i }}{%- endcapture -%}
                 {%- capture show_icon_key -%}show_icon_{{ i }}{%- endcapture -%}
                 {%- capture icon_type_key -%}icon_type_{{ i }}{%- endcapture -%}
                 {%- capture icon_size_key -%}icon_size_{{ i }}{%- endcapture -%}
@@ -397,66 +376,49 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
 
                 {%- assign slide_image = block.settings[image_key] -%}
                 {%- assign slide_video = block.settings[video_key] -%}
+                {%- assign slide_caption = block.settings[caption_key] -%}
                 {%- assign slide_show_icon = block.settings[show_icon_key] -%}
 
                 {%- if slide_image != blank or slide_video != blank -%}
-                  {%- assign slide_caption_id = media_wrapper_id | append: '-caption-' | append: i -%}
+                  <figure class="snap-start">
+                    <div class="faq__text-image-media-frame">
+                      {%- render 'media-zoom-slide',
+                        video: slide_video,
+                        image: slide_image,
+                        block_size: block.settings.block_size,
+                        mobile_block_size: block.settings.mobile_block_size,
+                        corner_radius: media_corner_radius,
+                        lightbox_id: media_lightbox_id,
+                        aria_controls_id: media_carousel_id,
+                        lightbox_index: lightbox_slide_index,
+                        enable_lightbox: false,
+                        sizes: '(max-width: 699px) 100vw, 33vw'
+                      -%}
 
-                  <div class="snap-start faq__text-image-media-frame" aria-describedby="{{ slide_caption_id }}">
-                    {%- render 'media-zoom-slide',
-                      video: slide_video,
-                      image: slide_image,
-                      block_size: block.settings.block_size,
-                      mobile_block_size: block.settings.mobile_block_size,
-                      corner_radius: media_corner_radius,
-                      lightbox_id: media_lightbox_id,
-                      aria_controls_id: media_carousel_id,
-                      lightbox_index: lightbox_slide_index,
-                      enable_lightbox: false,
-                      sizes: '(max-width: 699px) 100vw, 33vw'
-                    -%}
+                      {%- if slide_show_icon -%}
+                        <div class="faq__text-image-slide-icon">
+                          {%- render 'decorative-icon',
+                            icon_type: block.settings[icon_type_key],
+                            icon_size: block.settings[icon_size_key],
+                            icon_spin: block.settings[icon_spin_key],
+                            icon_primary_color: block.settings[icon_primary_color_key],
+                            icon_secondary_color: block.settings[icon_secondary_color_key],
+                            icon_border_color: block.settings[icon_border_color_key]
+                          -%}
+                        </div>
+                      {%- endif -%}
+                    </div>
 
-                    {%- if slide_show_icon -%}
-                      <div class="faq__text-image-slide-icon">
-                        {%- render 'decorative-icon',
-                          icon_type: block.settings[icon_type_key],
-                          icon_size: block.settings[icon_size_key],
-                          icon_spin: block.settings[icon_spin_key],
-                          icon_primary_color: block.settings[icon_primary_color_key],
-                          icon_secondary_color: block.settings[icon_secondary_color_key],
-                          icon_border_color: block.settings[icon_border_color_key]
-                        -%}
-                      </div>
-                    {%- endif -%}
-                  </div>
-
-                  {%- assign lightbox_slide_index = lightbox_slide_index | plus: 1 -%}
-                {%- endif -%}
-              {%- endfor -%}
-            </div>
-
-            <div class="faq__text-image-caption-row">
-              {%- for i in (1..3) -%}
-                {%- capture image_key -%}image_{{ i }}{%- endcapture -%}
-                {%- capture video_key -%}video_{{ i }}{%- endcapture -%}
-                {%- capture caption_key -%}caption_{{ i }}{%- endcapture -%}
-
-                {%- assign slide_image = block.settings[image_key] -%}
-                {%- assign slide_video = block.settings[video_key] -%}
-                {%- assign slide_caption = block.settings[caption_key] -%}
-
-                {%- if slide_image != blank or slide_video != blank -%}
-                  {%- assign slide_caption_id = media_wrapper_id | append: '-caption-' | append: i -%}
-
-                  <figure id="{{ slide_caption_id }}">
                     {%- if slide_caption != blank -%}
                       <figcaption>{{ slide_caption }}</figcaption>
                     {%- endif -%}
                   </figure>
+
+                  {%- assign lightbox_slide_index = lightbox_slide_index | plus: 1 -%}
                 {%- endif -%}
               {%- endfor -%}
-            </div>
-          </product-list>
+            </product-list>
+          </div>
 
           {%- render 'media-lightbox', id: media_lightbox_id, show_nav: true -%}
 
@@ -530,45 +492,29 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
 
         {%- if is_carousel -%}
           {%- comment -%}
-          #{{ media_carousel_id }} itself just stacks the two rows (media, then captions)
-          vertically - the actual auto-flow percentage-width grid (same one Media Blocks' Carousel
-          uses on its own <product-list>, sections/media-blocks.liquid: 85% of the wrapper on
-          mobile - full slide, peek of the next - 45% from 700px up) is applied to EACH row
-          separately so their columns land at the same width/offset, keeping every caption lined
-          up under its own media cell as the whole thing scrolls.
+          Same auto-flow percentage-width grid Media Blocks' Carousel uses on its own <product-list>
+          (sections/media-blocks.liquid) - 85% of the wrapper on mobile (full slide, peek of the
+          next), 45% from 700px up. Scoped to this block's own carousel id, same as Carousel scopes
+          to its own block id.
 
-          border-radius + overflow: hidden on .faq__text-image-media-row only (not on
-          #{{ media_carousel_id }} itself, which would also clip the caption row below) gives the
-          media its own rounded/clipped carousel frame, same as instagram-feed.liquid's
-          .instagram-feed__carousel, without touching the captions.
-
-          align-items: start (instead of grid's own default, stretch) keeps each media cell at its
-          own natural height instead of being stretched to match the row's tallest slide - with
-          block_size "auto" ("Original image ratio"), stretching would otherwise distort that
-          slide's aspect ratio to fill a taller row.
+          align-items: start (instead of grid's own default, stretch) is the one deliberate
+          difference from Carousel's version of this rule - Carousel never has a <figcaption> sibling
+          after its media, so stretching each cell's <figure> to match the row's height never mattered
+          there. Here it does: a stretched <figure> gets a fixed, definite height, and content-box's
+          own height: 100% (the "h-full" class, media-zoom-slide.liquid) then greedily fills all of
+          it, leaving no room for the <figcaption> below - which then overflows the figure and gets
+          clipped by .scroll-area's own overflow-y: hidden. Keeping figures at their own natural
+          (unstretched) height avoids that entirely, on every breakpoint.
           {%- endcomment -%}
           #{{ media_carousel_id }} {
-            display: flex;
-            flex-direction: column;
-            gap: .5rem;
-          }
-
-          #{{ media_carousel_id }} .faq__text-image-media-row,
-          #{{ media_carousel_id }} .faq__text-image-caption-row {
             grid: auto / auto-flow 85%;
             align-items: start;
             gap: .75rem;
             display: grid;
           }
 
-          #{{ media_carousel_id }} .faq__text-image-media-row {
-            border-radius: {{ media_corner_radius }};
-            overflow: hidden;
-          }
-
           @media screen and (min-width: 700px) {
-            #{{ media_carousel_id }} .faq__text-image-media-row,
-            #{{ media_carousel_id }} .faq__text-image-caption-row {
+            #{{ media_carousel_id }} {
               grid: auto / auto-flow 45%;
             }
           }

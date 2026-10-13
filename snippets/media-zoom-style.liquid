@@ -27,6 +27,20 @@ Must be rendered inside a <style> tag by the caller, once per instance (wrapper_
   opacity: 1 !important;
 }
 
+{%- comment -%}
+Safari/WebKit doesn't reliably clip a <video> element to an ANCESTOR's overflow: hidden +
+border-radius (a long-standing WebKit bug) - .content-box (media-zoom-slide.liquid) sets both
+inline, which clips the poster <img> fine, but can leave the <video> itself rendering square
+corners in Safari even though the exact same radius is already set two levels up. Setting the
+same radius directly on the <video> element sidesteps that: its own corners are rounded
+regardless of whether the ancestor's clip is honored. The lightbox-expanded state already does
+this for itself further down (video-media.is-lightbox-expanded video) - this is the same fix for
+the resting thumbnail, which that rule doesn't cover.
+{%- endcomment -%}
+#{{ wrapper_id }} video-media > video {
+  border-radius: {{ resolved_corner_radius }};
+}
+
 #{{ wrapper_id }} video-media > img {
   z-index: 1;
   transition: opacity .3s ease;
