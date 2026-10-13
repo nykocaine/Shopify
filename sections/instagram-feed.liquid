@@ -201,19 +201,25 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
           {%- comment -%}
           empty:hidden (theme.css utility) keeps this out of the way entirely when the active item has
-          no caption set, instead of reserving space for/fading in an empty bar. Positioned fixed at
-          the bottom of the viewport rather than pinned to the media's own bottom edge: unlike mobile
-          (--lightbox-media-w/h, media-zoom-style.liquid), desktop's expanded media has no fixed box
-          size of its own to pin a caption to (it's sized by its own content, up to 96vw/96vh) - a
-          constant screen-relative position works the same way regardless of that.
+          no caption set, instead of reserving space for/fading in an empty bar. top is left unset
+          here on purpose - desktop's expanded media has no fixed box size of its own to pin a caption
+          to in pure CSS (it's sized by its own content, up to 96vw/96vh), so the script below sets
+          "top" itself, measured from the actual expanded media's own bottom edge, every time the
+          active item (or the viewport) changes. left/translate alone center it horizontally, matching
+          the media's own centering.
           {%- endcomment -%}
           #shopify-section-{{ section.id }} .instagram-feed__lightbox-caption {
             color: rgb(var(--text-color));
+            background: rgb(var(--background) / .9);
             text-align: center;
+            max-width: min(90vw, 32rem);
+            width: fit-content;
+            padding: .5rem 1rem;
+            border-radius: {{ instagram_corner_radius_px }};
             z-index: 1000;
             position: fixed;
-            inset-inline: 4rem;
-            inset-block-end: 1rem;
+            inset-inline-start: 50%;
+            translate: -50% 0;
             opacity: 0;
             scale: .95;
             pointer-events: none;
@@ -323,13 +329,19 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id -%}
 
         {%- comment -%}
-        Keeps the lightbox caption's TEXT in sync with whichever item is currently expanded - open,
-        close, and next/prev inside the lightbox (snippets/media-zoom-script.liquid) all end up
-        toggling the "is-lightbox-expanded" class onto that item's own <img>/<video-media>, so
-        watching for that one class, scoped to this carousel, covers every way the active item can
+        Keeps the lightbox caption's TEXT and POSITION in sync with whichever item is currently
+        expanded - open, close, and next/prev inside the lightbox (snippets/media-zoom-script.liquid)
+        all end up toggling the "is-lightbox-expanded" class onto that item's own <img>/<video-media>,
+        so watching for that one class, scoped to this carousel, covers every way the active item can
         change without needing its own copy of (or any changes to) that shared open/close/navigate
-        logic. The caption's own fade in/out is handled in CSS alone (see the sibling selector above),
-        so this only ever has to update which text is showing.
+        logic. The caption's own fade in/out is handled in CSS alone (see the sibling selector above).
+
+        Position: the expanded media has no fixed box of its own in CSS (sized by its own content, up
+        to 96vw/96vh - see media-zoom-style.liquid), so there's no pure-CSS anchor to pin a caption
+        right below it. getBoundingClientRect() reads wherever it actually ended up rendering and
+        places the caption a small, fixed gap under its real bottom edge - re-measured on resize too
+        (the media's own rendered size/position changes then, eg. rotating a phone), not just when the
+        active item changes.
         {%- endcomment -%}
         <script>
           (function () {
@@ -338,11 +350,17 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
             if (!carousel || !caption) return;
 
+            var captionGap = 12;
+
             function syncCaption() {
               var expanded = carousel.querySelector('.is-lightbox-expanded');
               var cell = expanded ? expanded.closest('.snap-start') : null;
 
               caption.textContent = cell ? cell.dataset.caption || '' : '';
+
+              if (expanded) {
+                caption.style.top = (expanded.getBoundingClientRect().bottom + captionGap) + 'px';
+              }
             }
 
             new MutationObserver(syncCaption).observe(carousel, {
@@ -350,6 +368,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               attributeFilter: ['class'],
               subtree: true
             });
+
+            window.addEventListener('resize', syncCaption);
           })();
         </script>
       {%- endif -%}
