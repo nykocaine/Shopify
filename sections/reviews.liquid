@@ -70,14 +70,14 @@ to the first 5 of the newly sorted order.
               </div>
             </div>
           </div>
-
-          <div class="reviews__summary-write">
-            {%- render 'button', content: 'Escribir una reseña', aria_controls: write_review_modal_id, class: 'reviews__write-button' -%}
-          </div>
         </div>
 
         {%- if review_blocks.size > 0 -%}
           <div class="reviews__controls">
+            <div class="reviews__summary-write">
+              {%- render 'button', content: 'Escribir una reseña', aria_controls: write_review_modal_id, class: 'reviews__write-button' -%}
+            </div>
+
             <div class="reviews__sort button">
               <label class="sr-only" for="reviews-sort-{{ section.id }}">Sort reviews</label>
               <div class="button__content">
@@ -373,40 +373,6 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   ============================================================
   {%- endcomment -%}
 
-  {%- comment -%}
-  Single column, sized to .reviews__summary (the widest/only visible child on mobile - see below) -
-  "Escribir una reseña" stacks below the rating block on every breakpoint now, both flush to the
-  start. justify-content: start keeps the column (and so the rating block inside it) flush to the
-  left instead of centered in the row.
-
-  The border-color rule right below (guarded by section.settings.button_border_color) gives the
-  button its own border color, independent of the Buttons global style.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .reviews__summary-row {
-    grid-template-columns: minmax(0, max-content);
-    justify-content: start;
-    row-gap: 1.5rem;
-    display: grid;
-  }
-
-  {%- if section.settings.button_border_color != blank -%}
-    #shopify-section-{{ section.id }} .reviews__write-button {
-      border: 1px solid rgb({{ section.settings.button_border_color.rgb }});
-    }
-  {%- endif -%}
-
-  {%- comment -%}
-  "Escribir una reseña" only shows from this breakpoint up - writing a review opens a long form in
-  a modal, which reads better as a deliberate desktop action than a mobile one for this theme. Only
-  the visibility is mobile/desktop-specific; the stacked-below-the-rating position above applies on
-  both.
-  {%- endcomment -%}
-  @media screen and (max-width: 699px) {
-    #shopify-section-{{ section.id }} .reviews__summary-write {
-      display: none;
-    }
-  }
-
   #shopify-section-{{ section.id }} .reviews__summary {
     text-align: start;
   }
@@ -465,9 +431,13 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   margin-block-end cancels out .section-stack's own row-gap below this element, so the review cards
   start flush against the separator line (padding-block-end below) instead of leaving the usual
   stack gap between the line and the list.
+
+  justify-content: space-between (not the old end-only) puts "Escribir una reseña" flush to the
+  start and the sort control flush to the end, sharing this one row on every breakpoint - no
+  mobile-only hiding here anymore, the button shows at every screen size now.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__controls {
-    justify-content: end;
+    justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
@@ -476,6 +446,16 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
     border-block-end: 1px solid rgb(var(--border-color));
     display: flex;
   }
+
+  {%- comment -%}
+  Gives "Escribir una reseña" its own border color (guarded by section.settings.button_border_color,
+  Button border color setting), independent of the Buttons global style.
+  {%- endcomment -%}
+  {%- if section.settings.button_border_color != blank -%}
+    #shopify-section-{{ section.id }} .reviews__write-button {
+      border: 1px solid rgb({{ section.settings.button_border_color.rgb }});
+    }
+  {%- endif -%}
 
   {%- comment -%}
   .reviews__sort keeps .button's structure (so the select/icon overlay trick below still works), but
