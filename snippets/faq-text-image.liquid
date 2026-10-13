@@ -200,37 +200,31 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
         {{- block.settings.text -}}
       </div>
 
-      {%- if block.settings.show_text_card -%}
+      {%- if block.settings.show_text_card and has_media -%}
         <style>
           {%- comment -%}
-          "Content box style" (show_text_card): background + border come from the chosen Color scheme
-          (.color-scheme already sets --border-color from it, so border-width/style here is all that's
-          needed to actually draw one). Padding and corner radius reuse the exact values the rest of
-          this section already uses for the same kind of card (.faq-content-box, assets/theme.css, and
-          this block's own faq_border_radius) instead of inventing new ones.
-          {%- endcomment -%}
-          #{{ text_image_id }} .faq__text-image-text--card {
-            border-width: 1px;
-            border-style: solid;
-          }
+          Content box style (show_text_card), once there's media next to it: background comes from
+          the chosen Color scheme and the corner radius matches the section's own (both set via the
+          class/inline style on the div above) - this part only handles matching the media's height.
 
-          {%- if has_media -%}
-            {%- comment -%}
-            Desktop only, and only once there's media to match: the card stretches to the row's full
-            height (same height as the media/carousel next to it) instead of only as tall as its own
-            content - min-height: 0 is required for a stretched grid item to be allowed to shrink
-            below its content's size at all, which is what lets overflow-y: auto actually kick in and
-            scroll internally once the text no longer fits, instead of just pushing the card taller
-            than the media beside it.
-            {%- endcomment -%}
-            @media screen and (min-width: 700px) {
-              #{{ text_image_id }} .faq__text-image-text--card {
-                align-self: stretch;
-                min-height: 0;
-                overflow-y: auto;
-              }
+          Desktop only: the card stretches to the row's full height (same height as the media/carousel
+          next to it) instead of only as tall as its own content - min-height: 0 is required for a
+          stretched grid item to be allowed to shrink below its content's size at all, which is what
+          lets overflow-y: auto actually kick in and scroll internally once the text no longer fits,
+          instead of just pushing the card taller than the media beside it. This only works because
+          .faq__text-image-media (sections/faq.liquid) has no overflow: hidden of its own - a sibling
+          with overflow other than visible contributes a minimum size of 0 to the shared grid row's
+          height instead of its real content height, same as this card does once scrollable, so if
+          the media column were ALSO not visible-overflow, neither would have a real height left for
+          the other to match.
+          {%- endcomment -%}
+          @media screen and (min-width: 700px) {
+            #{{ text_image_id }} .faq__text-image-text--card {
+              align-self: stretch;
+              min-height: 0;
+              overflow-y: auto;
             }
-          {%- endif -%}
+          }
         </style>
       {%- endif -%}
     {%- endif -%}

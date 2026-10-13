@@ -516,9 +516,15 @@
       product-list above its progress bar with some breathing room between them. With a single media
       item it has no visible effect (one child, the <figure> - the lightbox element next to it stays
       hidden until opened).
+
+      No overflow: hidden here (every corner that actually needs rounding/clipping - content-box, the
+      carousel's own wrapper - already clips itself) - this box's own height has to stay a plain,
+      visible-overflow content size so it can act as the reference the text card (show_text_card)
+      stretches/scrolls to match: a sibling with overflow other than visible contributes a minimum
+      size of 0 to the shared grid row's height instead of its real content height, so if THIS element
+      also had overflow: hidden, neither column would have a real height left for the other to match.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__text-image-media {
-        overflow: hidden;
         gap: .75rem;
         display: flex;
         flex-direction: column;
@@ -1771,7 +1777,7 @@
         {
           "type": "checkbox",
           "id": "show_text_card",
-          "label": "Add background and border to the content",
+          "label": "Add background to the content",
           "info": "Uses the section's own corner radius. When there's media next to it, the content box matches its height and scrolls internally instead of growing taller.",
           "default": false
         },
