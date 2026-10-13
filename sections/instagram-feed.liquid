@@ -37,9 +37,14 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   assign instagram_feed_id = 'instagram-feed-' | append: section.id
   assign instagram_carousel_id = 'instagram-feed-carousel-' | append: section.id
   assign instagram_lightbox_id = 'instagram-feed-lightbox-' | append: section.id
+
+  # Computed once here (same pattern as snippets/faq-text-image.liquid's border_radius_px) instead
+  # of repeating "section.settings.instagram_feed_border_radius | append: 'px'" inline at each call
+  # site - every image, video and the carousel frame itself then shares this exact same string.
+  assign instagram_corner_radius_px = section.settings.instagram_feed_border_radius | append: 'px'
 -%}
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {{ section.settings.instagram_feed_border_radius }}px; overflow: hidden;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {{ instagram_corner_radius_px }}; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack">
       {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank or section.settings.show_icon -%}
@@ -105,7 +110,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                   autoplay: true,
                   show_pause_button: false,
                   reveal_controls_on_tap: true,
-                  corner_radius: section.settings.instagram_feed_border_radius | append: 'px',
+                  corner_radius: instagram_corner_radius_px,
                   lightbox_id: instagram_lightbox_id,
                   lightbox_index: instagram_slide_index,
                   sizes: '90vw'
@@ -181,7 +186,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple -%}
 
         <style>
-          {%- render 'media-zoom-style', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, corner_radius: section.settings.instagram_feed_border_radius | append: 'px' -%}
+          {%- render 'media-zoom-style', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, corner_radius: instagram_corner_radius_px -%}
         </style>
 
         {%- comment -%}
@@ -357,7 +362,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     rounded through the whole scroll range instead of only at the section's own edge.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .instagram-feed__carousel {
-      border-radius: {{ section.settings.instagram_feed_border_radius }}px;
+      border-radius: {{ instagram_corner_radius_px }};
     }
   {%- endif -%}
 
@@ -407,15 +412,15 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   default (it's built for FAQ/Media Blocks' own configurable-ratio hero blocks) - aspect-ratio: 1
   here forces it to match the image thumbnails instead of adding a parallel sizing mechanism.
 
-  border-radius here reuses section.settings.instagram_feed_border_radius (same value as the
-  carousel's own frame above and the video thumbnail's corner_radius param below) instead of a
-  fixed px value with no real source - so every corner in this section (carousel frame, image
-  thumbnails, video thumbnails) always matches whatever the merchant sets, instead of the images
-  being stuck at an arbitrary radius the rest of the section doesn't share.
+  border-radius here reuses instagram_corner_radius_px (same value as the carousel's own frame
+  above and the video thumbnail's corner_radius param below) instead of a fixed px value with no
+  real source - so every corner in this section (carousel frame, image thumbnails, video
+  thumbnails) always matches whatever the merchant sets, instead of the images being stuck at an
+  arbitrary radius the rest of the section doesn't share.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__image {
     width: 100%;
-    border-radius: {{ section.settings.instagram_feed_border_radius }}px;
+    border-radius: {{ instagram_corner_radius_px }};
   }
 
   #shopify-section-{{ section.id }} .content-box {
