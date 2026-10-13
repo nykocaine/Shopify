@@ -357,8 +357,16 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
 
       <div class="faq__text-image-media" id="{{ media_wrapper_id }}">
         {%- if is_carousel -%}
-          <div style="border-radius: {{ media_corner_radius }}; overflow: hidden;">
-            <product-list id="{{ media_carousel_id }}" cell-selector=".snap-start" class="scroll-area snap-x">
+          {%- comment -%}
+          No outer border-radius/overflow: hidden wrapper around the whole <product-list> here on
+          purpose - each slide's own content-box already carries media_corner_radius independently
+          (render 'media-zoom-slide' below), so every image/video is already rounded to match the
+          section without one. Wrapping the whole scrollable row would also wrap each slide's
+          <figcaption> below it (same box, full height) - its bottom corners would then sit inside
+          that rounded/clipped shape too, visibly biting into the caption text at the two ends of
+          the row as it scrolls instead of leaving it as plain, uncropped text under the media.
+          {%- endcomment -%}
+          <product-list id="{{ media_carousel_id }}" cell-selector=".snap-start" class="scroll-area snap-x">
               {%- liquid
                 assign lightbox_slide_index = 0
               -%}
@@ -418,7 +426,6 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
                 {%- endif -%}
               {%- endfor -%}
             </product-list>
-          </div>
 
           {%- render 'media-lightbox', id: media_lightbox_id, show_nav: true -%}
 
