@@ -379,10 +379,10 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   content size feed back into the container's own sizing, so .scroll-area's overflow: auto hidden
   reliably clips the rest instead.
 
-  Mobile: a row of items sized a bit larger than an even 2-per-row split (dividing by 1.8 instead
-  of 2) - each square is slightly bigger/taller than before, at the cost of the 2nd item peeking
-  in partially cropped at the edge instead of tiling exactly - a deliberate tradeoff (per request),
-  not a bug. Desktop: 4 items, unchanged, still an even split.
+  Mobile: a single row of 2 items that tiles the full width - any extra items beyond those 2
+  overflow and scroll horizontally. Desktop: 4 items, same idea. Width stays an even split on
+  purpose - only the height changes (.instagram-feed__image/.content-box aspect-ratio override
+  further down), not how many items fit per row.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__carousel {
     gap: .5rem;
@@ -395,7 +395,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
-    flex: 0 0 calc((100% - .5rem) / 1.8);
+    flex: 0 0 calc((100% - .5rem) / 2);
     min-width: 0;
   }
 
@@ -427,6 +427,19 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
   #shopify-section-{{ section.id }} .content-box {
     aspect-ratio: 1;
+  }
+
+  {%- comment -%}
+  Mobile only: taller than square (overrides .aspect-square's aspect-ratio: 1, assets/theme.css,
+  and the aspect-ratio: 1 rule right above for video) - width stays exactly as set by
+  .instagram-feed__carousel > .snap-start above, only the height grows. Desktop (700px+) keeps the
+  plain square shape, untouched.
+  {%- endcomment -%}
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .instagram-feed__image,
+    #shopify-section-{{ section.id }} .content-box {
+      aspect-ratio: 4 / 5;
+    }
   }
 
   {%- comment -%}
