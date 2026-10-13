@@ -235,6 +235,14 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
           if (!window.customElements.get('read-more-match-height')) {
             window.customElements.define('read-more-match-height', class extends HTMLElement {
               connectedCallback() {
+                // Deferred one frame on purpose: this element renders BEFORE the media/carousel
+                // further down in the markup, so looking up data-match-id synchronously here (at
+                // parse time) would run before that element even exists in the DOM yet, silently
+                // finding nothing. By the next animation frame, the whole page has been parsed.
+                requestAnimationFrame(this.init.bind(this));
+              }
+
+              init() {
                 var content = this.querySelector('.faq__text-image-text-content');
                 var toggle = this.querySelector('.faq__text-image-text-toggle');
                 var matchTarget = this.dataset.matchId ? document.getElementById(this.dataset.matchId) : null;
