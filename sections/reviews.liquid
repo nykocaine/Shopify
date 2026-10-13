@@ -72,7 +72,7 @@ to the first 5 of the newly sorted order.
           </div>
 
           <div class="reviews__summary-write">
-            {%- render 'button', content: 'Escribir una reseña', aria_controls: write_review_modal_id -%}
+            {%- render 'button', content: 'Escribir una reseña', aria_controls: write_review_modal_id, class: 'reviews__write-button' -%}
           </div>
         </div>
 
@@ -374,39 +374,34 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
   {%- endcomment -%}
 
   {%- comment -%}
-  Rating block flush to the start and "Escribir una reseña" flush to the end, on desktop
-  (space-between). Mobile stacks the button below the rating block instead (see the max-width:
-  699px override below), both flush to the start - opposite edges don't apply the same way in a
-  single stacked column.
+  Single column, sized to .reviews__summary (the widest/only visible child on mobile - see below) -
+  "Escribir una reseña" stacks below the rating block on every breakpoint now, both flush to the
+  start. justify-content: start keeps the column (and so the rating block inside it) flush to the
+  left instead of centered in the row.
+
+  The border-color rule right below (guarded by section.settings.button_border_color) gives the
+  button its own border color, independent of the Buttons global style.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .reviews__summary-row {
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    display: flex;
+    grid-template-columns: minmax(0, max-content);
+    justify-content: start;
+    row-gap: 1.5rem;
+    display: grid;
   }
 
-  #shopify-section-{{ section.id }} .reviews__summary-write {
-    flex-shrink: 0;
-  }
+  {%- if section.settings.button_border_color != blank -%}
+    #shopify-section-{{ section.id }} .reviews__write-button {
+      border: 1px solid rgb({{ section.settings.button_border_color.rgb }});
+    }
+  {%- endif -%}
 
   {%- comment -%}
-  Mobile: switch to a single-column grid instead of a flex column, sized to .reviews__summary (the
-  only visible child here - see below). justify-content: start keeps that column, and so the rating
-  block inside it, flush to the left instead of centered in the row.
-
-  "Escribir una reseña" is hidden here and only shows above this breakpoint (its default, unhidden
-  state): writing a review opens a long form in a modal, which reads better as a deliberate desktop
-  action than a mobile one for this theme.
+  "Escribir una reseña" only shows from this breakpoint up - writing a review opens a long form in
+  a modal, which reads better as a deliberate desktop action than a mobile one for this theme. Only
+  the visibility is mobile/desktop-specific; the stacked-below-the-rating position above applies on
+  both.
   {%- endcomment -%}
   @media screen and (max-width: 699px) {
-    #shopify-section-{{ section.id }} .reviews__summary-row {
-      grid-template-columns: minmax(0, max-content);
-      justify-content: start;
-      display: grid;
-    }
-
     #shopify-section-{{ section.id }} .reviews__summary-write {
       display: none;
     }
@@ -986,6 +981,16 @@ output is captured here and echoed inside the modal afterwards - not evaluated d
         }
       ],
       "default": "display-m"
+    },
+    {
+      "type": "header",
+      "content": "Write review button"
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Button border color",
+      "info": "Leave blank for no border."
     }
   ],
   "blocks": [
