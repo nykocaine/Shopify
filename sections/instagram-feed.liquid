@@ -466,6 +466,27 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   {%- comment -%}
+  The video case never has this problem: its forced aspect-ratio lives on .content-box, an ANCESTOR
+  of the element that actually gets .is-lightbox-expanded (video-media) - once that's position: fixed,
+  it's sized purely by its own width/height/max-width/max-height (media-zoom-style.liquid), completely
+  independent of its parent's box. The image case is different: .is-lightbox-expanded (and
+  position: fixed) lands directly ON the <img> that ALSO carries .instagram-feed__image's own forced
+  aspect-ratio above - that's a property of the element itself, not something position: fixed exempts
+  it from, so without this it stayed locked to the grid's cropped 4/5 (or 2/3) shape even full-screen,
+  instead of showing the photo's real proportions like every other expanded image in the theme does.
+
+  border-radius is re-asserted here too (same instagram_corner_radius_px value media-zoom-style.liquid
+  already sets on img.is-lightbox-expanded) at higher specificity (two ids instead of one) so it wins
+  regardless of source order - belt-and-suspenders against whatever was making the expanded video
+  round but the expanded image not, since nothing else here explains that difference once
+  aspect-ratio is accounted for.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} #{{ instagram_feed_id }} img.is-lightbox-expanded {
+    aspect-ratio: auto;
+    border-radius: {{ instagram_corner_radius_px }};
+  }
+
+  {%- comment -%}
   ============================================================
   SCROLL CONTROLS (progress bar + prev/next, same pattern as sections/featured-product-list.liquid)
   ============================================================
