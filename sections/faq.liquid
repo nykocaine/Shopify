@@ -695,30 +695,59 @@
         {%- comment -%}
         Edge fade (is-overflowing/at-start/at-end classes, see ::part(tablist) above): unlike the
         script above, this one isn't design-mode-only - it has to run for every visitor, not just in
-        the editor. part="tablist" is a <slot> inside x-tabs' declarative shadow root (shadowrootmode
-        "open"), parsed and attached before this script runs, so tabs.shadowRoot is already populated
-        here with no need to wait for the custom element to upgrade.
+        the editor.
+
+        Two things make this trickier than it looks:
+
+        1. part="tablist" is a <slot> inside x-tabs' declarative shadow root - that only attaches
+        itself automatically when the browser parses it directly off the page. The editor's own
+        section reloads insert the section's HTML via innerHTML instead (whenever ANY setting
+        changes, not just this one), which does NOT trigger that - Tabs' own constructor
+        (assets/theme.js) falls back to attaching the shadow root itself in that case, but only once
+        the element has actually been upgraded, which happens a tick after the HTML lands. Reading
+        tabs.shadowRoot synchronously, right as this script runs, could still catch it empty -
+        wrapped in requestAnimationFrame so that upgrade has already happened by the time this looks
+        for it.
+
+        2. This script tag itself only runs once (whether on first load, or - assuming the editor
+        re-executes inline scripts the same way it does for the design-mode one above - again after
+        a reload). Either way, the listeners it attaches are tied to that specific, now-replaced
+        tablist element once a reload swaps in a new one. shopify:section:load (dispatched on the
+        reloaded section itself, listened for here on document since the section's own node is what
+        gets replaced) re-runs the whole setup against whatever's actually in the DOM now.
         {%- endcomment -%}
         <script>
           (function () {
-            var root = document.getElementById('shopify-section-{{ section.id }}');
-            if (!root) return;
+            function setup() {
+              var root = document.getElementById('shopify-section-{{ section.id }}');
+              if (!root) return;
 
-            var tabs = root.querySelector('.faq__categories');
-            if (!tabs || !tabs.shadowRoot) return;
+              var tabs = root.querySelector('.faq__categories');
+              if (!tabs) return;
 
-            var tablist = tabs.shadowRoot.querySelector('[part="tablist"]');
-            if (!tablist) return;
+              requestAnimationFrame(function () {
+                if (!tabs.shadowRoot) return;
 
-            function updateEdgeFade() {
-              tabs.classList.toggle('is-overflowing', tablist.scrollWidth > tablist.clientWidth + 1);
-              tabs.classList.toggle('at-start', tablist.scrollLeft <= 0);
-              tabs.classList.toggle('at-end', tablist.scrollLeft + tablist.clientWidth >= tablist.scrollWidth - 1);
+                var tablist = tabs.shadowRoot.querySelector('[part="tablist"]');
+                if (!tablist) return;
+
+                function updateEdgeFade() {
+                  tabs.classList.toggle('is-overflowing', tablist.scrollWidth > tablist.clientWidth + 1);
+                  tabs.classList.toggle('at-start', tablist.scrollLeft <= 0);
+                  tabs.classList.toggle('at-end', tablist.scrollLeft + tablist.clientWidth >= tablist.scrollWidth - 1);
+                }
+
+                updateEdgeFade();
+                tablist.addEventListener('scroll', updateEdgeFade, { passive: true });
+                window.addEventListener('resize', updateEdgeFade);
+              });
             }
 
-            updateEdgeFade();
-            tablist.addEventListener('scroll', updateEdgeFade, { passive: true });
-            window.addEventListener('resize', updateEdgeFade);
+            setup();
+
+            document.addEventListener('shopify:section:load', function (event) {
+              if (event.target && event.target.id === 'shopify-section-{{ section.id }}') setup();
+            });
           })();
         </script>
 
