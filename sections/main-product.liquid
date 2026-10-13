@@ -273,15 +273,16 @@
         }
 
         {%- comment -%}
-        Decorative icon (section.settings.show_icon): a badge floating over the top-left corner of
-        the static first-image column - same icon system, and the same top-left corner convention
-        (never used by any zoom/lightbox controls on this plain static image, unlike the gallery's own
-        carousel slides), as snippets/faq-text-image.liquid's own per-slide decorative icon.
+        Decorative icon (section.settings.show_icon): a badge floating over the top corner of the
+        static first-image column - same icon system as snippets/faq-text-image.liquid's own per-slide
+        decorative icon. Side is configurable (icon_corner): unlike a carousel slide, this plain
+        static image has no zoom/lightbox controls of its own on either corner, so both are equally
+        safe to use.
         {%- endcomment -%}
         {%- if section.settings.show_icon -%}
           #shopify-section-{{ section.id }} .product-first-image-icon {
             top: .75rem;
-            left: .75rem;
+            {% if section.settings.icon_corner == 'right' %}right: .75rem;{% else %}left: .75rem;{% endif %}
             z-index: 2;
             position: absolute;
             pointer-events: none;
@@ -1129,6 +1130,17 @@
       "id": "icon_border_color",
       "label": "Border color",
       "info": "Leave blank for no border.",
+      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
+    },
+    {
+      "type": "select",
+      "id": "icon_corner",
+      "label": "Position",
+      "options": [
+        { "value": "left", "label": "Top left" },
+        { "value": "right", "label": "Top right" }
+      ],
+      "default": "left",
       "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
     },
     {
