@@ -258,6 +258,25 @@
                         margin-inline-start: auto;
                       }
                     }
+
+                    {%- comment -%}
+                    The flex gap above already spaces the button away from the title/icon - without
+                    this, the button ALSO keeps its own margin-block-start: var(--prose-button-spacing)
+                    from .prose's :where(button, .button-group, .button) rule (a descendant selector,
+                    so it still reaches the button at this depth), stacking on top of the gap and
+                    showing as extra space. Same reasoning applies to the title: when show_icon is off,
+                    the heading itself sits two wrapper divs deep here (.rich-text-heading-row-with-button
+                    > .rich-text-heading-row__title-wrap > heading) - past the one-wrapper-deep margin
+                    exemption .prose normally gives a first/only heading - so its own top margin needs
+                    the same explicit reset as the title row's heading gets above when show_icon is on.
+                    {%- endcomment -%}
+                    #shopify-section-{{ section.id }}-{{ block.id }}-row > .rich-text-heading-row__button > * {
+                      margin-block-start: 0;
+                    }
+
+                    #shopify-section-{{ section.id }}-{{ block.id }}-row > .rich-text-heading-row__title-wrap > * {
+                      margin-block-start: 0;
+                    }
                   </style>
 
                   <div class="rich-text-heading-row-with-button" id="shopify-section-{{ section.id }}-{{ block.id }}-row">
