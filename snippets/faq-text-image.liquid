@@ -84,19 +84,6 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
     assign is_carousel = true
   endif
 
-  # With exactly 2 slides (never 3 - that overflows/scrolls correctly already, and never 1, which is
-  # the single/non-carousel path below instead), the desktop carousel swaps its usual auto-flow 45%
-  # grid-auto-columns (a fixed width sized for a row meant to overflow with a "peek" of a 3rd slide)
-  # for an explicit 2-column grid-template-columns instead: the first slide keeps that exact same
-  # normal 45% carousel width (reads the same as it would with a 3rd slide present), and the second
-  # stretches to fill whatever's left, so there's no longer a gap the width of the missing 3rd slide.
-  # Mobile is untouched (85% auto-flow at every slide count): 2 slides at 85% each already overflow
-  # (170%) and scroll correctly there, so there was never a gap to fix on that breakpoint.
-  assign carousel_is_two_up = false
-
-  if slide_count == 2
-    assign carousel_is_two_up = true
-  endif
 
   assign has_title_column = false
 
@@ -555,27 +542,50 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
 
         {%- if is_carousel -%}
           {%- comment -%}
-          Same auto-flow percentage-width grid Media Blocks' Carousel uses on its own <product-list>
-          (sections/media-blocks.liquid) - 85% of the wrapper on mobile (full slide, peek of the
-          next). .faq__text-image-caption-row (the separate caption strip below, synced by the script
-          above) reuses the exact same grid template so its columns land at the same width/offset as
-          #{{ media_carousel_id }}'s own - every caption stays lined up under its own image as both
-          move together.
+          Flexbox, not a percentage-width grid: every slide shares one flex-basis (85% on mobile,
+          45% from 700px up - the same reference width Media Blocks' Carousel uses) and the same
+          flex-grow (1) and flex-shrink (0). That one rule handles both slide counts this block can
+          actually have on its own, without special-casing either:
 
-          align-items: start (instead of grid's own default, stretch) keeps each media cell at its
-          own natural height instead of being stretched to match the row's tallest slide - with
+          - 2 slides (2 * 45% = 90%, fits): flex-grow distributes the 10% of leftover space between
+          them EQUALLY (same grow factor on both), so they end up the same width as each other,
+          filling the row exactly - no gap left over.
+          - 3 slides (3 * 45% = 135%, doesn't fit): flex-shrink: 0 forbids shrinking below that 45%
+          basis to make room, so the row overflows instead and scrolls - all three stay the same
+          width as each other and as a 2-slide row's own 45% (nothing stretches just because a 3rd
+          slide happens to be present).
+
+          .faq__text-image-caption-row (the separate caption strip below, synced by the script above)
+          reuses the exact same flex rules on its own cells so its columns land at the same
+          width/offset as #{{ media_carousel_id }}'s own - every caption stays lined up under its
+          own image as both move together.
+
+          align-items: start (flex's own default is stretch) keeps each media cell at its own
+          natural height instead of being stretched to match the row's tallest slide - with
           block_size "auto" ("Original image ratio"), stretching would otherwise distort that
           slide's aspect ratio to fill a taller row.
           {%- endcomment -%}
           #{{ media_carousel_id }},
           #{{ media_caption_row_id }} {
-            grid: auto / auto-flow 85%;
+            display: flex;
+            align-items: start;
             gap: .75rem;
-            display: grid;
+          }
+
+          #{{ media_carousel_id }} > figure,
+          #{{ media_caption_row_id }} > figure {
+            flex: 1 0 85%;
+            min-width: 0;
+          }
+
+          @media screen and (min-width: 700px) {
+            #{{ media_carousel_id }} > figure,
+            #{{ media_caption_row_id }} > figure {
+              flex-basis: 45%;
+            }
           }
 
           #{{ media_carousel_id }} {
-            align-items: start;
             border-radius: {{ media_corner_radius }};
           }
 
@@ -590,29 +600,6 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
           {%- endcomment -%}
           #{{ media_caption_row_id }} figcaption {
             margin-block-start: 0 !important;
-          }
-
-          @media screen and (min-width: 700px) {
-            {%- if carousel_is_two_up -%}
-              {%- comment -%}
-              Exactly 2 slides: explicit 2-column grid instead of auto-flow 45% - with only 2 slides,
-              auto-flow's fixed-width columns (45% + 45% = 90%) left a gap the width of the missing
-              3rd slide instead of reaching the row's full width. The first column stays the exact
-              same 45% a 3-slide row would give it (so this slide is sized identically either way);
-              the second is minmax(0, 1fr), taking whatever's left (roughly the other 55%, minus the
-              gap) instead of a fixed share - that's what actually closes the gap, without having to
-              grow the first slide past its normal carousel width to do it.
-              {%- endcomment -%}
-              #{{ media_carousel_id }},
-              #{{ media_caption_row_id }} {
-                grid-template-columns: 45% minmax(0, 1fr);
-              }
-            {%- else -%}
-              #{{ media_carousel_id }},
-              #{{ media_caption_row_id }} {
-                grid-auto-columns: 45%;
-              }
-            {%- endif -%}
           }
         {%- endif -%}
 
