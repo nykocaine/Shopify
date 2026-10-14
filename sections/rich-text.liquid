@@ -47,17 +47,108 @@
                 {%- render 'subheading', content: block.settings.text, block: block -%}
 
               {%- when 'heading' -%}
-                {%- render 'heading', 
-                  content: block.settings.text, 
-                  html_tag: block.settings.html_tag,
-                  highlight_effect: block.settings.highlight_effect, 
-                  highlight_accent_color: block.settings.highlight_accent_color, 
-                  highlight_text_color: block.settings.highlight_text_color, 
-                  style: block.settings.heading_tag,
-                  indent: block.settings.indent,
-                  balance_text: true,
-                  block: block 
-                -%}
+                {%- if block.settings.show_icon -%}
+                  {%- liquid
+                    # Same decorative-icon-next-to-heading pattern as sections/contact.liquid /
+                    # sections/the-method.liquid (snippets/decorative-icon.liquid), adapted to a
+                    # per-BLOCK setting (rich-text's heading is a block, not a single section-level
+                    # title, so position/alignment have to be computed per block instead of once
+                    # per section) and rendered via inline styles (this file's own convention for
+                    # per-block dynamic values, eg. the 'image' case above) rather than a
+                    # #shopify-section-{{ section.id }} <style> block, which would only reach the
+                    # first heading block if more than one were added.
+                    assign icon_justify_self = 'start'
+                    case block.settings.icon_alignment
+                      when 'center'
+                        assign icon_justify_self = 'center'
+                      when 'right'
+                        assign icon_justify_self = 'end'
+                    endcase
+
+                    assign icon_display = 'grid'
+                    assign icon_grid_template_columns = 'auto 1fr'
+                    assign icon_grid_template_areas = '"title icon"'
+                    assign icon_flex_direction = 'column'
+
+                    case block.settings.icon_position
+                      when 'left'
+                        assign icon_grid_template_columns = '1fr auto'
+                        assign icon_grid_template_areas = '"icon title"'
+                      when 'above'
+                        assign icon_display = 'flex'
+                        assign icon_flex_direction = 'column-reverse'
+                      when 'below'
+                        assign icon_display = 'flex'
+                        assign icon_flex_direction = 'column'
+                    endcase
+                  -%}
+
+                  <div class="rich-text-heading-row" id="rich-text-heading-row-{{ block.id }}" style="display: {{ icon_display }}; gap: .5rem; align-items: {% if icon_display == 'grid' %}center{% else %}flex-start{% endif %}; {% if icon_display == 'grid' %}grid-template-columns: {{ icon_grid_template_columns }}; grid-template-areas: {{ icon_grid_template_areas }};{% else %}flex-direction: {{ icon_flex_direction }};{% endif %}">
+                    <style>
+                      {%- comment -%}
+                      Same two-levels-deep .prose spacing fix as sections/contact.liquid's
+                      .contact-heading-row__title > * / .contact-heading-row__icon svg rules: the
+                      heading sits past .prose's one-wrapper-deep margin exemption (.prose >
+                      .rich-text-heading-row__title > the heading), so its own top margin and the
+                      icon svg's media spacing need resetting here instead.
+                      {%- endcomment -%}
+                      #rich-text-heading-row-{{ block.id }} > .rich-text-heading-row__title {
+                        grid-area: title;
+                      }
+
+                      #rich-text-heading-row-{{ block.id }} > .rich-text-heading-row__title > * {
+                        text-box: trim-both cap alphabetic;
+                        margin-block-start: 0;
+                      }
+
+                      #rich-text-heading-row-{{ block.id }} > .rich-text-heading-row__icon {
+                        grid-area: icon;
+                        {% if icon_display == 'grid' %}justify-self{% else %}align-self{% endif %}: {{ icon_justify_self }};
+                      }
+
+                      #rich-text-heading-row-{{ block.id }} > .rich-text-heading-row__icon svg {
+                        margin-block: calc(var(--prose-media-spacing) / 2);
+                      }
+                    </style>
+
+                    <div class="rich-text-heading-row__title">
+                      {%- render 'heading',
+                        content: block.settings.text,
+                        html_tag: block.settings.html_tag,
+                        highlight_effect: block.settings.highlight_effect,
+                        highlight_accent_color: block.settings.highlight_accent_color,
+                        highlight_text_color: block.settings.highlight_text_color,
+                        style: block.settings.heading_tag,
+                        indent: block.settings.indent,
+                        balance_text: true,
+                        block: block
+                      -%}
+                    </div>
+
+                    <div class="rich-text-heading-row__icon">
+                      {%- render 'decorative-icon',
+                        icon_type: block.settings.icon_type,
+                        icon_size: block.settings.icon_size,
+                        icon_spin: block.settings.icon_spin,
+                        icon_primary_color: block.settings.icon_primary_color,
+                        icon_secondary_color: block.settings.icon_secondary_color,
+                        icon_border_color: block.settings.icon_border_color
+                      -%}
+                    </div>
+                  </div>
+                {%- else -%}
+                  {%- render 'heading',
+                    content: block.settings.text,
+                    html_tag: block.settings.html_tag,
+                    highlight_effect: block.settings.highlight_effect,
+                    highlight_accent_color: block.settings.highlight_accent_color,
+                    highlight_text_color: block.settings.highlight_text_color,
+                    style: block.settings.heading_tag,
+                    indent: block.settings.indent,
+                    balance_text: true,
+                    block: block
+                  -%}
+                {%- endif -%}
 
               {%- when 'richtext' -%}
                 {%- if block.settings.text != blank -%}
@@ -419,6 +510,156 @@
           "type": "color",
           "id": "highlight_text_color",
           "label": "t:global.heading_effect.text_color"
+        },
+        {
+          "type": "header",
+          "content": "Decorative icon"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_icon",
+          "label": "Show spinning icon",
+          "info": "A decorative icon shown next to the heading.",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "icon_type",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "star",
+              "label": "Star"
+            },
+            {
+              "value": "lotus",
+              "label": "Lotus"
+            },
+            {
+              "value": "clover",
+              "label": "Clover"
+            },
+            {
+              "value": "smiley",
+              "label": "Smiley face"
+            },
+            {
+              "value": "cherries",
+              "label": "Cherries"
+            },
+            {
+              "value": "eight_ball",
+              "label": "8-Ball"
+            },
+            {
+              "value": "blob",
+              "label": "Blob"
+            },
+            {
+              "value": "badge",
+              "label": "Badge"
+            },
+            {
+              "value": "stamp",
+              "label": "Stamp"
+            },
+            {
+              "value": "swoosh",
+              "label": "Swoosh"
+            },
+            {
+              "value": "phone",
+              "label": "Phone"
+            }
+          ],
+          "default": "star",
+          "visible_if": "{{ block.settings.show_icon }}"
+        },
+        {
+          "type": "range",
+          "id": "icon_size",
+          "min": 16,
+          "max": 80,
+          "step": 4,
+          "unit": "px",
+          "label": "Icon size",
+          "default": 32,
+          "visible_if": "{{ block.settings.show_icon }}"
+        },
+        {
+          "type": "checkbox",
+          "id": "icon_spin",
+          "label": "Spin icon",
+          "default": true,
+          "visible_if": "{{ block.settings.show_icon }}"
+        },
+        {
+          "type": "select",
+          "id": "icon_position",
+          "label": "Position",
+          "options": [
+            {
+              "value": "right",
+              "label": "Right of heading"
+            },
+            {
+              "value": "left",
+              "label": "Left of heading"
+            },
+            {
+              "value": "above",
+              "label": "Above heading"
+            },
+            {
+              "value": "below",
+              "label": "Below heading"
+            }
+          ],
+          "default": "right",
+          "visible_if": "{{ block.settings.show_icon }}"
+        },
+        {
+          "type": "select",
+          "id": "icon_alignment",
+          "label": "Alignment",
+          "info": "Only has a visible effect when position is \"Above\" or \"Below\" the heading.",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left",
+          "visible_if": "{{ block.settings.show_icon }}"
+        },
+        {
+          "type": "color",
+          "id": "icon_primary_color",
+          "label": "Primary color",
+          "default": "#FF6B9D",
+          "visible_if": "{{ block.settings.show_icon }}"
+        },
+        {
+          "type": "color",
+          "id": "icon_secondary_color",
+          "label": "Secondary color",
+          "default": "#FFD93D",
+          "visible_if": "{{ block.settings.show_icon }}"
+        },
+        {
+          "type": "color",
+          "id": "icon_border_color",
+          "label": "Border color",
+          "info": "Leave blank for no border.",
+          "visible_if": "{{ block.settings.show_icon }}"
         }
       ]
     },
