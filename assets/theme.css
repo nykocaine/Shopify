@@ -819,11 +819,16 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 }
 
 @media screen and (pointer: fine) {
-  .circle-button:not([disabled]):hover, .circle-button .group\:circle-button:hover {
+  /* :not(.circle-button--outline) below: this icon color-flip only makes sense for the filled
+     variant, where :before (right under it) goes fully solid/dark on hover - the icon needs to flip
+     near-light for contrast against that. The outline variant's own hover rule further down only
+     tints its background subtly (never goes solid), so flipping its icon the same way left it
+     reading as near-invisible/"transparent" against that light tint instead of a real color change. */
+  .circle-button:not(.circle-button--outline):not([disabled]):hover, .circle-button:not(.circle-button--outline) .group\:circle-button:hover {
     color: color-mix(in srgb, rgb(var(--text-color)) 8%, rgb(var(--background)));
   }
 
-  :is(.circle-button:not([disabled]):hover, .circle-button .group\:circle-button:hover):before {
+  :is(.circle-button:not(.circle-button--outline):not([disabled]):hover, .circle-button:not(.circle-button--outline) .group\:circle-button:hover):before {
     background: var(--nav-control-hover-background-color, rgb(var(--text-color)));
   }
 }
