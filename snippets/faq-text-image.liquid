@@ -84,15 +84,19 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
     assign is_carousel = true
   endif
 
-  # Each carousel cell's width, computed from however many slides actually exist (2 or 3 - never 1,
-  # that's the single/non-carousel path below instead) instead of a fixed percentage. A fixed
-  # percentage assumes there's always enough slides for the row to overflow and scroll with a "peek"
-  # of the next one - with fewer than that, it left a gap the width of the missing slide(s) instead
-  # of filling the row. This divides the full row width evenly among exactly the slides present
-  # (accounting for the .75rem gaps between them), so 2 slides always fill it exactly in half, 3 in
-  # thirds, with nothing left over and nothing to scroll.
-  assign carousel_gap_count = slide_count | minus: 1
-  assign carousel_column_width = 'calc((100% - ' | append: carousel_gap_count | append: ' * .75rem) / ' | append: slide_count | append: ')'
+  # With exactly 2 slides (never 3 - that overflows/scrolls correctly already, and never 1, which is
+  # the single/non-carousel path below instead), the desktop carousel swaps its usual auto-flow 45%
+  # grid-auto-columns (a fixed width sized for a row meant to overflow with a "peek" of a 3rd slide)
+  # for an explicit 2-column grid-template-columns instead: the first slide keeps that exact same
+  # normal 45% carousel width (reads the same as it would with a 3rd slide present), and the second
+  # stretches to fill whatever's left, so there's no longer a gap the width of the missing 3rd slide.
+  # Mobile is untouched (85% auto-flow at every slide count): 2 slides at 85% each already overflow
+  # (170%) and scroll correctly there, so there was never a gap to fix on that breakpoint.
+  assign carousel_is_two_up = false
+
+  if slide_count == 2
+    assign carousel_is_two_up = true
+  endif
 
   assign has_title_column = false
 
@@ -551,14 +555,12 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
 
         {%- if is_carousel -%}
           {%- comment -%}
-          carousel_column_width (computed above) divides the row evenly across however many slides
-          this block actually has (2 or 3), instead of a fixed percentage sized for a row meant to
-          overflow and scroll with a "peek" of the next slide - same width at every breakpoint, since
-          it already accounts for the real slide count rather than assuming one. With exactly 2 or 3
-          slides, the row now always fills edge to edge with nothing left to scroll.
-          .faq__text-image-caption-row (the separate caption strip below, synced by the script above)
-          reuses the exact same grid template so its columns land at the same width/offset as
-          #{{ media_carousel_id }}'s own - every caption stays lined up under its own image.
+          Same auto-flow percentage-width grid Media Blocks' Carousel uses on its own <product-list>
+          (sections/media-blocks.liquid) - 85% of the wrapper on mobile (full slide, peek of the
+          next). .faq__text-image-caption-row (the separate caption strip below, synced by the script
+          above) reuses the exact same grid template so its columns land at the same width/offset as
+          #{{ media_carousel_id }}'s own - every caption stays lined up under its own image as both
+          move together.
 
           align-items: start (instead of grid's own default, stretch) keeps each media cell at its
           own natural height instead of being stretched to match the row's tallest slide - with
@@ -567,7 +569,7 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
           {%- endcomment -%}
           #{{ media_carousel_id }},
           #{{ media_caption_row_id }} {
-            grid: auto / auto-flow {{ carousel_column_width }};
+            grid: auto / auto-flow 85%;
             gap: .75rem;
             display: grid;
           }
@@ -588,6 +590,29 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
           {%- endcomment -%}
           #{{ media_caption_row_id }} figcaption {
             margin-block-start: 0 !important;
+          }
+
+          @media screen and (min-width: 700px) {
+            {%- if carousel_is_two_up -%}
+              {%- comment -%}
+              Exactly 2 slides: explicit 2-column grid instead of auto-flow 45% - with only 2 slides,
+              auto-flow's fixed-width columns (45% + 45% = 90%) left a gap the width of the missing
+              3rd slide instead of reaching the row's full width. The first column stays the exact
+              same 45% a 3-slide row would give it (so this slide is sized identically either way);
+              the second is minmax(0, 1fr), taking whatever's left (roughly the other 55%, minus the
+              gap) instead of a fixed share - that's what actually closes the gap, without having to
+              grow the first slide past its normal carousel width to do it.
+              {%- endcomment -%}
+              #{{ media_carousel_id }},
+              #{{ media_caption_row_id }} {
+                grid-template-columns: 45% minmax(0, 1fr);
+              }
+            {%- else -%}
+              #{{ media_carousel_id }},
+              #{{ media_caption_row_id }} {
+                grid-auto-columns: 45%;
+              }
+            {%- endif -%}
           }
         {%- endif -%}
 
