@@ -34,6 +34,24 @@
       #shopify-section-{{ section.id }} .rich-text {
         padding: calc(var(--container-gutter) + 0.5rem);
       }
+
+      {%- comment -%}
+      This section's own top padding is already zeroed above, but the section right before it can
+      still carry its OWN bottom spacing as a margin on its own #shopify-section-{id} wrapper
+      (eg. sections/slideshow.liquid's unconditional margin-block-end: var(--section-vertical-spacing))
+      rather than through the shared .section-spacing padding system - the normal padding-collapsing
+      trick (theme.css, matches on .section-spacing/.section-split) never reaches that case, so a gap
+      still shows above the floating card. :has(+ #shopify-section-{{ section.id }}) reaches backward
+      to whichever section immediately precedes THIS instance and cancels its bottom margin/padding,
+      scoped only to this one floating section (never any other section pair in the theme).
+      {%- endcomment -%}
+      .shopify-section:has(+ #shopify-section-{{ section.id }}) {
+        margin-block-end: 0;
+      }
+
+      .shopify-section:has(+ #shopify-section-{{ section.id }}) .section-spacing {
+        padding-block-end: 0;
+      }
     </style>
   {%- endif -%}
 
