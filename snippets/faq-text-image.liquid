@@ -572,14 +572,19 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
             gap: .75rem;
           }
 
-          #{{ media_carousel_id }} > figure,
+          {%- comment -%}
+          .snap-start (not figure): the carousel's own cells are <div class="snap-start
+          faq__text-image-media-frame"> - the <figure> wrapper now lives only in the separate,
+          synced .faq__text-image-caption-row below it, which holds just the captions.
+          {%- endcomment -%}
+          #{{ media_carousel_id }} > .snap-start,
           #{{ media_caption_row_id }} > figure {
             flex: 1 0 85%;
             min-width: 0;
           }
 
           @media screen and (min-width: 700px) {
-            #{{ media_carousel_id }} > figure,
+            #{{ media_carousel_id }} > .snap-start,
             #{{ media_caption_row_id }} > figure {
               flex-basis: 45%;
             }
