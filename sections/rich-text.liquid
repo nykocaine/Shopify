@@ -13,6 +13,24 @@
     assign second_column = ''
   -%}
 
+  <style>
+    {%- comment -%}
+    Same spacing scheme as sections/instagram-feed.liquid's title/subtitle .prose (prose--compact on
+    the markup below, plus this override) - extended here to every prose spacing variable, not just
+    --prose-default-spacing, since unlike instagram-feed's fixed title/subtitle/button layout, this
+    section's blocks (subheading/heading/paragraph/button/image/icon) can be reordered freely, so
+    each one can land next to any other. Pinning them all to the same 1rem at every breakpoint keeps
+    every block-to-block gap tight and consistent instead of growing on desktop.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .prose {
+      --prose-default-spacing: 1rem;
+      --prose-heading-spacing: 1rem;
+      --prose-subheading-spacing: 1rem;
+      --prose-button-spacing: 1rem;
+      --prose-media-spacing: 1rem;
+    }
+  </style>
+
   {%- if section.settings.floating_rich_text -%}
     <style>
       {%- comment -%}
@@ -259,23 +277,23 @@
         {%- if column_delimiter_position != -1 -%}
           <div class="contents md:hidden">
             {%- comment -%}On narrow screens there is just a single column{%- endcomment -%}
-            <div class="prose prose-justify-{{ section.settings.text_alignment }} max-w-{{ section.settings.content_width }}">
+            <div class="prose prose--compact prose-justify-{{ section.settings.text_alignment }} max-w-{{ section.settings.content_width }}">
               {{- first_column -}}
               {{- second_column -}}
             </div>
           </div>
   
           <div class="hidden md:contents">
-            <div class="prose prose-justify-{{ section.settings.text_alignment }} max-w-{{ section.settings.content_width }}">
+            <div class="prose prose--compact prose-justify-{{ section.settings.text_alignment }} max-w-{{ section.settings.content_width }}">
               {{- first_column -}}
             </div>
 
-            <div class="prose prose-justify-{{ section.settings.text_alignment }} max-w-{{ section.settings.content_width }}">
+            <div class="prose prose--compact prose-justify-{{ section.settings.text_alignment }} max-w-{{ section.settings.content_width }}">
               {{- second_column -}}
             </div>
           </div>
         {%- else -%}
-          <div class="prose prose-justify-{{ section.settings.text_alignment }} max-w-{{ section.settings.content_width }}">
+          <div class="prose prose--compact prose-justify-{{ section.settings.text_alignment }} max-w-{{ section.settings.content_width }}">
             {{- first_column -}}
             {{- second_column -}}
           </div>
