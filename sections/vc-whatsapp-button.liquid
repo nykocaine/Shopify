@@ -40,17 +40,6 @@
     assign dock_radius_bl = section.settings.dock_border_radius
   endif
 
-  # Sombra (solo floating)
-  assign wa_shadow_value = 'none'
-  case section.settings.shadow_intensity
-    when 'sm'
-      assign wa_shadow_value = '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
-    when 'md'
-      assign wa_shadow_value = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-    when 'lg'
-      assign wa_shadow_value = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-  endcase
-
   # Textos accesibles
   assign dock_label = section.settings.dock_tab_label | default: 'WhatsApp'
   assign wa_aria_label = 'Chat on WhatsApp'
@@ -67,7 +56,6 @@
   <div
     class="vc-whatsapp-overlay"
     data-section-id="{{ section.id }}"
-    style="--wa-z-index: {{ section.settings.z_index }};"
     hidden
   ></div>
 
@@ -82,13 +70,11 @@
       --wa-icon-size: {{ section.settings.icon_size }}px;
       --wa-bg-color: {{ section.settings.background_color }};
       --wa-icon-color: {{ section.settings.icon_color }};
-      --wa-z-index: {{ section.settings.z_index }};
       --wa-agents-radius: {{ section.settings.agents_box_radius }}px;
       --wa-left: {% if is_docked %}{% if side == 'right' %}auto{% else %}0{% endif %}{% else %}{% if side == 'right' %}auto{% else %}var(--container-gutter){% endif %}{% endif %};
       --wa-right: {% if is_docked %}{% if side == 'right' %}0{% else %}auto{% endif %}{% else %}{% if side == 'right' %}var(--container-gutter){% else %}auto{% endif %}{% endif %};
       --wa-anchor-left: {% if side == 'right' %}auto{% else %}0{% endif %};
       --wa-anchor-right: {% if side == 'right' %}0{% else %}auto{% endif %};
-      --wa-shadow: {{ wa_shadow_value }};
       --wa-dock-width: {{ section.settings.dock_width }}px;
       --wa-dock-height: {{ section.settings.dock_height }}px;
       --wa-dock-padding: {{ section.settings.dock_padding }}px;
@@ -103,15 +89,7 @@
       --wa-dock-vertical-position: {{ section.settings.dock_vertical_position }}%;
     "
   >
-    {% if section.settings.show_close_button %}
-      <button type="button" class="vc-whatsapp-close-button color-scheme color-scheme--{{ section.settings.popup_color_scheme.id }}" aria-label="Cerrar">&times;</button>
-    {% endif %}
-
     <div class="vc-whatsapp-main-container">
-      {% if section.settings.show_tooltip and section.settings.tooltip_text != blank %}
-        <div class="vc-whatsapp-tooltip color-scheme color-scheme--{{ section.settings.popup_color_scheme.id }}">{{ section.settings.tooltip_text }}</div>
-      {% endif %}
-
       {% if has_agents %}
         <div class="vc-whatsapp-agents-list color-scheme color-scheme--{{ section.settings.popup_color_scheme.id }}" hidden>
           <div class="vc-whatsapp-agents-list-header">Elige un contacto</div>
@@ -165,7 +143,7 @@
 {% stylesheet %}
   .vc-whatsapp-button-wrapper {
     position: fixed;
-    z-index: var(--wa-z-index);
+    z-index: 100;
     bottom: var(--container-gutter);
     left: var(--wa-left);
     right: var(--wa-right);
@@ -188,7 +166,7 @@
     height: var(--wa-button-size);
     background-color: var(--wa-bg-color);
     border-radius: 50%;
-    box-shadow: var(--wa-shadow);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     text-decoration: none;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     flex-shrink: 0;
@@ -232,50 +210,6 @@
     background-color: #ff3b30;
     border: 2px solid #ffffff;
     border-radius: 50%;
-  }
-
-  .vc-whatsapp-tooltip {
-    position: absolute;
-    bottom: calc(100% + 12px);
-    left: var(--wa-anchor-left);
-    right: var(--wa-anchor-right);
-    white-space: nowrap;
-    background-color: rgb(var(--background));
-    color: rgb(var(--text-color));
-    padding: 10px 16px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    font-size: 14px;
-    pointer-events: none;
-    max-width: 80vw;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .vc-whatsapp-close-button {
-    position: absolute;
-    top: -8px;
-    left: var(--wa-anchor-left);
-    right: var(--wa-anchor-right);
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--close-control-background-color, rgb(var(--background)));
-    color: var(--close-control-icon-color, rgb(var(--text-color)));
-    border: 1px solid var(--close-control-border-color, transparent);
-    border-radius: 50%;
-    font-size: 16px;
-    line-height: 1;
-    cursor: pointer;
-    z-index: 1;
-    padding: 0;
-    transition: background .2s;
-  }
-
-  .vc-whatsapp-close-button:hover {
-    background-color: var(--close-control-hover-background-color, rgb(var(--background)));
   }
 
   /* Caja de agentes: sin sombra, radio en px, tipografía heredada del body del tema */
@@ -407,7 +341,7 @@
       display: block;
       position: fixed;
       inset: 0;
-      z-index: calc(var(--wa-z-index) - 1);
+      z-index: 99;
       background: rgb(var(--page-overlay));
       -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
       backdrop-filter: blur(var(--dialog-backdrop-blur));
@@ -423,24 +357,9 @@
       wrapper.dataset.waInitialized = 'true';
 
       var sectionId = wrapper.dataset.sectionId;
-      var storageKey = 'vc-whatsapp-closed-' + sectionId;
-
-      if (window.localStorage.getItem(storageKey) === 'true') {
-        wrapper.style.display = 'none';
-      }
 
       if (wrapper.querySelector('.vc-whatsapp-button-text')) {
         wrapper.classList.add('has-text');
-      }
-
-      var closeButton = wrapper.querySelector('.vc-whatsapp-close-button');
-      if (closeButton) {
-        closeButton.addEventListener('click', function(event) {
-          event.preventDefault();
-          event.stopPropagation();
-          wrapper.style.display = 'none';
-          window.localStorage.setItem(storageKey, 'true');
-        });
       }
 
       var button = wrapper.querySelector('.vc-whatsapp-button');
@@ -526,7 +445,6 @@
     { "type": "range", "id": "icon_size", "label": "Tamaño del ícono", "min": 20, "max": 60, "step": 2, "unit": "px", "default": 30, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "color", "id": "background_color", "label": "Color de fondo", "default": "#25D366", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "color", "id": "icon_color", "label": "Color del ícono y texto", "default": "#FFFFFF", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
-    { "type": "select", "id": "shadow_intensity", "label": "Intensidad de la sombra", "options": [{ "value": "none", "label": "Ninguna" }, { "value": "sm", "label": "Pequeña" }, { "value": "md", "label": "Mediana" }, { "value": "lg", "label": "Grande" }], "default": "md", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
 
     { "type": "header", "content": "Docked Tab: posición y tamaño", "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
     { "type": "select", "id": "dock_position", "label": "Position", "options": [{ "value": "right", "label": "Right" }, { "value": "left", "label": "Left" }], "default": "right", "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
@@ -546,20 +464,14 @@
     { "type": "range", "id": "dock_text_size_mobile", "label": "Tamaño de texto (Mobile)", "min": 10, "max": 24, "step": 1, "unit": "px", "default": 12, "visible_if": "{{ section.settings.display_style == 'docked_tab' }}" },
 
     { "type": "header", "content": "Colores del popup" },
-    { "type": "color_scheme", "id": "popup_color_scheme", "label": "Esquema de color (tooltip y caja de agentes)", "default": "scheme-1" },
-    { "type": "header", "content": "Mensaje flotante (tooltip)" },
-    { "type": "checkbox", "id": "show_tooltip", "label": "Mostrar mensaje flotante", "default": false },
-    { "type": "text", "id": "tooltip_text", "label": "Texto del mensaje flotante", "default": "¡Chatea con nosotros!" },
+    { "type": "color_scheme", "id": "popup_color_scheme", "label": "Esquema de color (caja de agentes)", "default": "scheme-1" },
     { "type": "header", "content": "Notificación", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "checkbox", "id": "show_badge", "label": "Mostrar punto de notificación", "default": false, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
-    { "type": "header", "content": "Cierre" },
-    { "type": "checkbox", "id": "show_close_button", "label": "Permitir cerrar el botón", "info": "El visitante podrá ocultarlo; se recuerda su elección en este navegador.", "default": false },
     { "type": "header", "content": "Caja de agentes" },
     { "type": "range", "id": "agents_box_radius", "label": "Radio de la caja de agentes", "min": 0, "max": 40, "step": 1, "unit": "px", "default": 12 },
     { "type": "header", "content": "Comportamiento" },
     { "type": "checkbox", "id": "show_on_mobile", "label": "Mostrar en móvil", "default": true },
-    { "type": "checkbox", "id": "show_on_desktop", "label": "Mostrar en escritorio", "default": true },
-    { "type": "number", "id": "z_index", "label": "Z-index", "default": 100 }
+    { "type": "checkbox", "id": "show_on_desktop", "label": "Mostrar en escritorio", "default": true }
   ],
   "blocks": [
     {
