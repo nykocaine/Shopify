@@ -84,6 +84,16 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
     assign is_carousel = true
   endif
 
+  # Each carousel cell's width, computed from however many slides actually exist (2 or 3 - never 1,
+  # that's the single/non-carousel path below instead) instead of a fixed percentage. A fixed
+  # percentage assumes there's always enough slides for the row to overflow and scroll with a "peek"
+  # of the next one - with fewer than that, it left a gap the width of the missing slide(s) instead
+  # of filling the row. This divides the full row width evenly among exactly the slides present
+  # (accounting for the .75rem gaps between them), so 2 slides always fill it exactly in half, 3 in
+  # thirds, with nothing left over and nothing to scroll.
+  assign carousel_gap_count = slide_count | minus: 1
+  assign carousel_column_width = 'calc((100% - ' | append: carousel_gap_count | append: ' * .75rem) / ' | append: slide_count | append: ')'
+
   assign has_title_column = false
 
   if block.settings.title != blank or block.settings.show_icon
@@ -541,12 +551,14 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
 
         {%- if is_carousel -%}
           {%- comment -%}
-          Same auto-flow percentage-width grid Media Blocks' Carousel uses on its own <product-list>
-          (sections/media-blocks.liquid) - 85% of the wrapper on mobile (full slide, peek of the
-          next), 45% from 700px up. .faq__text-image-caption-row (the separate caption strip below,
-          synced by the script above) reuses the exact same grid template so its columns land at
-          the same width/offset as #{{ media_carousel_id }}'s own - every caption stays lined up
-          under its own image as both move together.
+          carousel_column_width (computed above) divides the row evenly across however many slides
+          this block actually has (2 or 3), instead of a fixed percentage sized for a row meant to
+          overflow and scroll with a "peek" of the next slide - same width at every breakpoint, since
+          it already accounts for the real slide count rather than assuming one. With exactly 2 or 3
+          slides, the row now always fills edge to edge with nothing left to scroll.
+          .faq__text-image-caption-row (the separate caption strip below, synced by the script above)
+          reuses the exact same grid template so its columns land at the same width/offset as
+          #{{ media_carousel_id }}'s own - every caption stays lined up under its own image.
 
           align-items: start (instead of grid's own default, stretch) keeps each media cell at its
           own natural height instead of being stretched to match the row's tallest slide - with
@@ -555,7 +567,7 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
           {%- endcomment -%}
           #{{ media_carousel_id }},
           #{{ media_caption_row_id }} {
-            grid: auto / auto-flow 85%;
+            grid: auto / auto-flow {{ carousel_column_width }};
             gap: .75rem;
             display: grid;
           }
@@ -576,13 +588,6 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
           {%- endcomment -%}
           #{{ media_caption_row_id }} figcaption {
             margin-block-start: 0 !important;
-          }
-
-          @media screen and (min-width: 700px) {
-            #{{ media_carousel_id }},
-            #{{ media_caption_row_id }} {
-              grid: auto / auto-flow 45%;
-            }
           }
         {%- endif -%}
 
