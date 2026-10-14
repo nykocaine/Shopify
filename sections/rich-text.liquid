@@ -11,6 +11,12 @@
 
     assign first_column = ''
     assign second_column = ''
+
+    # Set by the 'heading' case below when the block right after it is a 'button' block with
+    # join_heading_row on - that button then gets rendered INSIDE the heading's own row instead of
+    # in its normal stacked position, so the 'button' case (once the loop reaches it) needs to skip
+    # re-rendering it here.
+    assign consumed_button_id = nil
   -%}
 
   <style>
@@ -86,123 +92,193 @@
                 {%- render 'subheading', content: block.settings.text, block: block -%}
 
               {%- when 'heading' -%}
-                {%- if block.settings.show_icon -%}
-                  {%- liquid
-                    # Same decorative-icon-next-to-title pattern as sections/contact.liquid
-                    # (.contact-heading-row, snippets/decorative-icon.liquid), just scoped per
-                    # block instead of per section since rich-text's heading is a block.
-                    assign icon_justify_self = 'start'
-                    case block.settings.icon_alignment
-                      when 'center'
-                        assign icon_justify_self = 'center'
-                      when 'right'
-                        assign icon_justify_self = 'end'
-                    endcase
+                {%- liquid
+                  # Lookahead: if the block right after this heading is a 'button' block with
+                  # join_heading_row on, that button joins this heading's row (right side on
+                  # desktop, stacks below on mobile) instead of rendering in its own normal spot -
+                  # consumed_button_id tells the 'button' case below to skip it when the loop gets
+                  # there, since it was already rendered here.
+                  assign join_button_block = nil
 
-                    assign icon_display = 'grid'
-                    assign icon_grid_template_columns = 'auto 1fr'
-                    assign icon_grid_template_areas = '"title icon"'
-                    assign icon_flex_direction = 'column'
+                  if forloop.index < section.blocks.size
+                    assign next_block = section.blocks[forloop.index]
 
-                    case block.settings.icon_position
-                      when 'left'
-                        assign icon_grid_template_columns = '1fr auto'
-                        assign icon_grid_template_areas = '"icon title"'
-                      when 'above'
-                        assign icon_display = 'flex'
-                        assign icon_flex_direction = 'column-reverse'
-                      when 'below'
-                        assign icon_display = 'flex'
-                        assign icon_flex_direction = 'column'
-                    endcase
-                  -%}
+                    if next_block.type == 'button' and next_block.settings.join_heading_row
+                      assign join_button_block = next_block
+                      assign consumed_button_id = next_block.id
+                    endif
+                  endif
+                -%}
 
+                {%- capture heading_title_content -%}
+                  {%- if block.settings.show_icon -%}
+                    {%- liquid
+                      # Same decorative-icon-next-to-title pattern as sections/contact.liquid
+                      # (.contact-heading-row, snippets/decorative-icon.liquid), just scoped per
+                      # block instead of per section since rich-text's heading is a block.
+                      assign icon_justify_self = 'start'
+                      case block.settings.icon_alignment
+                        when 'center'
+                          assign icon_justify_self = 'center'
+                        when 'right'
+                          assign icon_justify_self = 'end'
+                      endcase
+
+                      assign icon_display = 'grid'
+                      assign icon_grid_template_columns = 'auto 1fr'
+                      assign icon_grid_template_areas = '"title icon"'
+                      assign icon_flex_direction = 'column'
+
+                      case block.settings.icon_position
+                        when 'left'
+                          assign icon_grid_template_columns = '1fr auto'
+                          assign icon_grid_template_areas = '"icon title"'
+                        when 'above'
+                          assign icon_display = 'flex'
+                          assign icon_flex_direction = 'column-reverse'
+                        when 'below'
+                          assign icon_display = 'flex'
+                          assign icon_flex_direction = 'column'
+                      endcase
+                    -%}
+
+                    <style>
+                      {%- comment -%}
+                      Scoped with #shopify-section-{{ section.id }}-{{ block.id }} rather than just
+                      the section id (sections/contact.liquid's approach) - rich-text's heading is a
+                      repeatable BLOCK, not a single section-level title, so more than one heading
+                      block (each with its own icon position/alignment) can exist in the same section.
+                      {%- endcomment -%}
+                      #shopify-section-{{ section.id }}-{{ block.id }} {
+                        display: {{ icon_display }};
+                        {%- if icon_display == 'grid' -%}
+                          grid-template-columns: {{ icon_grid_template_columns }};
+                          grid-template-areas: {{ icon_grid_template_areas }};
+                          align-items: center;
+                        {%- else -%}
+                          flex-direction: {{ icon_flex_direction }};
+                          align-items: flex-start;
+                        {%- endif -%}
+                        gap: .5rem;
+                      }
+
+                      #shopify-section-{{ section.id }}-{{ block.id }} .rich-text-heading-row__title {
+                        grid-area: title;
+                      }
+
+                      {%- comment -%}
+                      Same two-levels-deep .prose spacing fix as sections/contact.liquid's
+                      .contact-heading-row__title > * rule: the heading sits past .prose's
+                      one-wrapper-deep margin exemption, so its own top margin needs resetting here.
+                      {%- endcomment -%}
+                      #shopify-section-{{ section.id }}-{{ block.id }} .rich-text-heading-row__title > * {
+                        text-box: trim-both cap alphabetic;
+                        margin-block-start: 0;
+                      }
+
+                      #shopify-section-{{ section.id }}-{{ block.id }} .rich-text-heading-row__icon {
+                        grid-area: icon;
+                        {%- if icon_display == 'grid' -%}
+                          justify-self: {{ icon_justify_self }};
+                        {%- else -%}
+                          align-self: {{ icon_justify_self }};
+                        {%- endif -%}
+                      }
+
+                      #shopify-section-{{ section.id }}-{{ block.id }} .rich-text-heading-row__icon svg {
+                        margin-block: 0;
+                      }
+                    </style>
+
+                    <div class="rich-text-heading-row" id="shopify-section-{{ section.id }}-{{ block.id }}">
+                      <div class="rich-text-heading-row__title">
+                        {%- render 'heading',
+                          content: block.settings.text,
+                          html_tag: block.settings.html_tag,
+                          highlight_effect: block.settings.highlight_effect,
+                          highlight_accent_color: block.settings.highlight_accent_color,
+                          highlight_text_color: block.settings.highlight_text_color,
+                          style: block.settings.heading_tag,
+                          indent: block.settings.indent,
+                          balance_text: true,
+                          block: block
+                        -%}
+                      </div>
+
+                      <div class="rich-text-heading-row__icon">
+                        {%- render 'decorative-icon',
+                          icon_type: block.settings.icon_type,
+                          icon_size: block.settings.icon_size,
+                          icon_spin: block.settings.icon_spin,
+                          icon_primary_color: block.settings.icon_primary_color,
+                          icon_secondary_color: block.settings.icon_secondary_color,
+                          icon_border_color: block.settings.icon_border_color
+                        -%}
+                      </div>
+                    </div>
+                  {%- else -%}
+                    {%- render 'heading',
+                      content: block.settings.text,
+                      html_tag: block.settings.html_tag,
+                      highlight_effect: block.settings.highlight_effect,
+                      highlight_accent_color: block.settings.highlight_accent_color,
+                      highlight_text_color: block.settings.highlight_text_color,
+                      style: block.settings.heading_tag,
+                      indent: block.settings.indent,
+                      balance_text: true,
+                      block: block
+                    -%}
+                  {%- endif -%}
+                {%- endcapture -%}
+
+                {%- if join_button_block -%}
                   <style>
                     {%- comment -%}
-                    Scoped with #shopify-section-{{ section.id }}-{{ block.id }} rather than just
-                    the section id (sections/contact.liquid's approach) - rich-text's heading is a
-                    repeatable BLOCK, not a single section-level title, so more than one heading
-                    block (each with its own icon position/alignment) can exist in the same section.
+                    Mobile-first: the button defaults to flex-basis: 100% (its own full-width line,
+                    below the title/icon) so it stacks normally on narrow screens - only from 700px
+                    up does it shrink back to its own width and get pushed to the end of the row via
+                    margin-inline-start: auto, sitting to the right of the title (and icon, if shown)
+                    on the same line. flex-wrap on the row is still needed as a fallback for a title
+                    long enough that it alone doesn't leave room for the button even on desktop.
                     {%- endcomment -%}
-                    #shopify-section-{{ section.id }}-{{ block.id }} {
-                      display: {{ icon_display }};
-                      {%- if icon_display == 'grid' -%}
-                        grid-template-columns: {{ icon_grid_template_columns }};
-                        grid-template-areas: {{ icon_grid_template_areas }};
-                        align-items: center;
-                      {%- else -%}
-                        flex-direction: {{ icon_flex_direction }};
-                        align-items: flex-start;
-                      {%- endif -%}
-                      gap: .5rem;
+                    #shopify-section-{{ section.id }}-{{ block.id }}-row {
+                      display: flex;
+                      flex-wrap: wrap;
+                      align-items: center;
+                      gap: .75rem 1rem;
                     }
 
-                    #shopify-section-{{ section.id }}-{{ block.id }} .rich-text-heading-row__title {
-                      grid-area: title;
+                    #shopify-section-{{ section.id }}-{{ block.id }}-row > .rich-text-heading-row__button {
+                      flex-basis: 100%;
                     }
 
-                    {%- comment -%}
-                    Same two-levels-deep .prose spacing fix as sections/contact.liquid's
-                    .contact-heading-row__title > * rule: the heading sits past .prose's
-                    one-wrapper-deep margin exemption, so its own top margin needs resetting here.
-                    {%- endcomment -%}
-                    #shopify-section-{{ section.id }}-{{ block.id }} .rich-text-heading-row__title > * {
-                      text-box: trim-both cap alphabetic;
-                      margin-block-start: 0;
-                    }
-
-                    #shopify-section-{{ section.id }}-{{ block.id }} .rich-text-heading-row__icon {
-                      grid-area: icon;
-                      {%- if icon_display == 'grid' -%}
-                        justify-self: {{ icon_justify_self }};
-                      {%- else -%}
-                        align-self: {{ icon_justify_self }};
-                      {%- endif -%}
-                    }
-
-                    #shopify-section-{{ section.id }}-{{ block.id }} .rich-text-heading-row__icon svg {
-                      margin-block: 0;
+                    @media screen and (min-width: 700px) {
+                      #shopify-section-{{ section.id }}-{{ block.id }}-row > .rich-text-heading-row__button {
+                        flex-basis: auto;
+                        margin-inline-start: auto;
+                      }
                     }
                   </style>
 
-                  <div class="rich-text-heading-row" id="shopify-section-{{ section.id }}-{{ block.id }}">
-                    <div class="rich-text-heading-row__title">
-                      {%- render 'heading',
-                        content: block.settings.text,
-                        html_tag: block.settings.html_tag,
-                        highlight_effect: block.settings.highlight_effect,
-                        highlight_accent_color: block.settings.highlight_accent_color,
-                        highlight_text_color: block.settings.highlight_text_color,
-                        style: block.settings.heading_tag,
-                        indent: block.settings.indent,
-                        balance_text: true,
-                        block: block
-                      -%}
+                  <div class="rich-text-heading-row-with-button" id="shopify-section-{{ section.id }}-{{ block.id }}-row">
+                    <div class="rich-text-heading-row__title-wrap">
+                      {{- heading_title_content -}}
                     </div>
 
-                    <div class="rich-text-heading-row__icon">
-                      {%- render 'decorative-icon',
-                        icon_type: block.settings.icon_type,
-                        icon_size: block.settings.icon_size,
-                        icon_spin: block.settings.icon_spin,
-                        icon_primary_color: block.settings.icon_primary_color,
-                        icon_secondary_color: block.settings.icon_secondary_color,
-                        icon_border_color: block.settings.icon_border_color
+                    <div class="rich-text-heading-row__button">
+                      {%- render 'button',
+                        content: join_button_block.settings.text,
+                        href: join_button_block.settings.url,
+                        style: join_button_block.settings.style,
+                        background: join_button_block.settings.background,
+                        text_color: join_button_block.settings.text_color,
+                        external: join_button_block.settings.open_in_new_tab,
+                        block: join_button_block
                       -%}
                     </div>
                   </div>
                 {%- else -%}
-                  {%- render 'heading',
-                    content: block.settings.text,
-                    html_tag: block.settings.html_tag,
-                    highlight_effect: block.settings.highlight_effect,
-                    highlight_accent_color: block.settings.highlight_accent_color,
-                    highlight_text_color: block.settings.highlight_text_color,
-                    style: block.settings.heading_tag,
-                    indent: block.settings.indent,
-                    balance_text: true,
-                    block: block
-                  -%}
+                  {{- heading_title_content -}}
                 {%- endif -%}
 
               {%- when 'richtext' -%}
@@ -236,15 +312,21 @@
                 {%- endif -%}
 
               {%- when 'button' -%}
-                {%- render 'button', 
-                  content: block.settings.text, 
-                  href: block.settings.url,
-                  style: block.settings.style, 
-                  background: block.settings.background, 
-                  text_color: block.settings.text_color, 
-                  external: block.settings.open_in_new_tab,
-                  block: block 
-                -%}
+                {%- comment -%}
+                Skipped when already rendered inside the previous heading's row (see the 'heading'
+                case above and consumed_button_id) - rendering it again here would duplicate it.
+                {%- endcomment -%}
+                {%- unless block.id == consumed_button_id -%}
+                  {%- render 'button',
+                    content: block.settings.text,
+                    href: block.settings.url,
+                    style: block.settings.style,
+                    background: block.settings.background,
+                    text_color: block.settings.text_color,
+                    external: block.settings.open_in_new_tab,
+                    block: block
+                  -%}
+                {%- endunless -%}
 
               {%- when 'icon' -%}
                 {%- if block.settings.custom_icon != blank -%}
@@ -839,6 +921,17 @@
           "type": "color",
           "id": "text_color",
           "label": "t:global.text.text"
+        },
+        {
+          "type": "header",
+          "content": "Desktop position"
+        },
+        {
+          "type": "checkbox",
+          "id": "join_heading_row",
+          "label": "Place next to the previous heading on desktop",
+          "info": "Only works when this button is the block right after a heading block. On desktop it sits to the right of the heading (and its icon, if shown); on mobile it stacks below as usual.",
+          "default": false
         }
       ]
     },
