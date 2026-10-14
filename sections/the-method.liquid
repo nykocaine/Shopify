@@ -20,29 +20,22 @@
   assign newsletter_form_id = 'the-method-newsletter-' | append: section.id
 -%}
 
-{%- if section.settings.floating_the_method -%}
-  <style>
-    {%- comment -%}
-    Same mechanism as sections/reviews.liquid's floating_reviews branch: this section becomes its own
-    padded card, so .section-spacing's generic page-to-page rhythm (padding-block only) and .container's
-    side gutter (a MARGIN, not padding, and without the +0.5rem below - a different value from a
-    different mechanism than the top/bottom spacing) are both zeroed out, and replaced with a single
-    padding, equal on all 4 sides, on the actual content wrapper (.the-method - the same role .reviews
-    plays there). Scoped with #shopify-section-{{ section.id }} (a plain <style> tag, not
-    {% stylesheet %} - the latter is deduplicated per section TYPE, not scoped per instance, so bare
-    .container/.section-spacing selectors there would leak into every other section using those same
-    theme-wide classes, like a plain rich-text section).
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .container.section-spacing {
-      margin-inline: 0;
-      padding-block: 0;
-    }
-
-    #shopify-section-{{ section.id }} .the-method {
-      padding: calc(var(--container-gutter) + 0.5rem);
-    }
-  </style>
-{%- endif -%}
+<style>
+  {%- comment -%}
+  Same mechanism as sections/faq.liquid's .faq__container / .faq-content-box pair: the outer
+  container's own side margin and section-to-section padding (.container/.section-spacing, theme-wide
+  classes) are zeroed out and replaced with a single gutter-driven padding here, always on - not just
+  when floating_the_method is on, since the two inner cards below (content + image) now rely on it
+  unconditionally. Scoped with #shopify-section-{{ section.id }} (a plain <style> tag, not
+  {% stylesheet %} - the latter is deduplicated per section TYPE, not scoped per instance, so bare
+  .container/.section-spacing selectors there would leak into every other section using those same
+  theme-wide classes, like a plain rich-text section).
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .container.section-spacing {
+    margin-inline: 0;
+    padding: calc(var(--container-gutter) + 0.5rem);
+  }
+</style>
 
 {%- comment -%}
   Todo el widget vive dentro de un único {% form 'customer' %} cuando se pide correo para
@@ -65,13 +58,13 @@
   <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_the_method %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_the_method %} style="border-end-start-radius: {{ section.settings.the_method_border_radius }}px; border-end-end-radius: {{ section.settings.the_method_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="container section-spacing">
     {%- comment -%}
-      Con imagen: dos columnas dentro del mismo contenedor floating — el contenido a la
-      izquierda conserva su padding de siempre; la imagen a la derecha no tiene padding propio,
-      así que llega pegada a los bordes del contenedor exterior (que es quien recorta las
-      esquinas via overflow:hidden + radius más arriba). Sin imagen, se ve exactamente igual
-      que antes.
+      Dos tarjetas lado a lado (contenido + imagen), cada una con su propio radio — mismo patrón que
+      .faq-content-box en sections/faq.liquid. Al comenzar el test (data-the-method-layout gana
+      --quiz-active, en JS o ya en el primer render si el correo obligatorio hizo recargar la página
+      directo al paso 1) la grilla colapsa a una sola columna y la imagen se oculta.
     {%- endcomment -%}
-    <div class="the-method-layout{% if section.settings.image != blank %} the-method-layout--has-image{% endif %}">
+    <div class="the-method-layout{% if section.settings.image != blank %} the-method-layout--has-image{% endif %}{% if just_subscribed %} the-method-layout--quiz-active{% endif %}" data-the-method-layout>
+      <div class="the-method-layout__content color-scheme color-scheme--{{ section.settings.content_card_color_scheme.id }}" style="border-radius: {{ section.settings.the_method_border_radius }}px;">
       <div class="the-method" data-the-method data-section-id="{{ section.id }}">
 
       <div class="the-method__meta">
@@ -388,9 +381,10 @@
 
       </div>
       </div>
+      </div>
 
       {%- if section.settings.image != blank -%}
-        <div class="the-method__media the-method__media--{{ section.settings.image_height }}" style="border-radius: {{ section.settings.the_method_border_radius }}px;">
+        <div class="the-method-layout__media the-method-layout__media--{{ section.settings.image_height }}" style="border-radius: {{ section.settings.the_method_border_radius }}px;">
           {{ section.settings.image | image_url: width: 1600 | image_tag: loading: 'lazy', sizes: '(max-width: 749px) 100vw, 50vw', widths: '375, 550, 750, 1100, 1500' }}
         </div>
       {%- endif -%}
@@ -403,24 +397,34 @@
   .the-method-layout {
     display: grid;
     grid-template-columns: 1fr;
+    gap: calc(var(--container-gutter, 1.5rem) + 0.5rem);
   }
 
-  /* Con imagen: dos columnas iguales en desktop — el contenido conserva el padding de .the-method,
-     la imagen no tiene padding propio y llega pegada a los bordes del contenedor exterior (el
-     .color-scheme más arriba), que es quien recorta las esquinas via overflow hidden + radius. */
+  /* Con imagen y el test todavía sin empezar: dos columnas iguales en desktop. Mobile siempre
+     se apila. En cuanto el test arranca (--quiz-active, agregado por JS o ya en el primer
+     render si el correo obligatorio hizo recargar la página directo al paso 1), la grilla
+     vuelve a una sola columna y la imagen se oculta - solo se ve en la intro. */
   @media screen and (min-width: 750px) {
-    .the-method-layout--has-image {
+    .the-method-layout--has-image:not(.the-method-layout--quiz-active) {
       grid-template-columns: 1fr 1fr;
       align-items: stretch;
     }
   }
 
-  .the-method__media {
+  .the-method-layout--quiz-active .the-method-layout__media {
+    display: none;
+  }
+
+  .the-method-layout__content {
+    padding: calc(var(--container-gutter) + 0.5rem);
+  }
+
+  .the-method-layout__media {
     overflow: hidden;
     min-height: 20rem;
   }
 
-  .the-method__media img {
+  .the-method-layout__media img {
     display: block;
     width: 100%;
     height: 100%;
@@ -430,15 +434,15 @@
   /* "Adaptable" (sin clase de alto fijo) estira la imagen a la altura del contenido vía
      align-items: stretch del grid. Los demás tamaños fuerzan una altura fija, igual en
      mobile y desktop para mantenerlo simple. */
-  .the-method__media--small {
+  .the-method-layout__media--small {
     height: 20rem;
   }
 
-  .the-method__media--medium {
+  .the-method-layout__media--medium {
     height: 28rem;
   }
 
-  .the-method__media--large {
+  .the-method-layout__media--large {
     height: 36rem;
   }
 
@@ -880,6 +884,7 @@
     var contextNotes = wrapper.querySelectorAll('[data-the-method-context-note]');
     var warningEl = wrapper.querySelector('[data-the-method-warning]');
     var routineEl = wrapper.querySelector('[data-the-method-routine]');
+    var layoutEl = wrapper.closest('[data-the-method-layout]');
 
     // El orden y el total de pasos salen del DOM (uno por bloque de pregunta renderizado),
     // no de una lista fija — así cualquier cantidad/orden de bloques funciona sin tocar JS.
@@ -1020,6 +1025,10 @@
       if (backButton) backButton.hidden = isIntro;
       if (restartButton) restartButton.hidden = isIntro;
       if (progressWrapper) progressWrapper.hidden = isIntro;
+
+      // La imagen de la intro solo se ve en la intro: al avanzar, la sección colapsa a una
+      // sola columna (y vuelve a dos columnas si se reinicia el test).
+      if (layoutEl) layoutEl.classList.toggle('the-method-layout--quiz-active', !isIntro);
 
       if (isQuestion && progressCurrent) {
         var stepNumber = panelKey.split('-')[1];
@@ -1216,9 +1225,15 @@
       "max": 30,
       "step": 2,
       "unit": "px",
-      "label": "Corner radius",
-      "default": 0,
-      "visible_if": "{{ section.settings.floating_the_method }}"
+      "label": "Radio de esquina",
+      "info": "Se usa en las esquinas exteriores (si Floating está activo) y también en las dos tarjetas internas: contenido e imagen.",
+      "default": 0
+    },
+    {
+      "type": "color_scheme",
+      "id": "content_card_color_scheme",
+      "label": "Color de la tarjeta de contenido",
+      "default": "scheme-1"
     },
     {
       "type": "header",
