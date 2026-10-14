@@ -76,6 +76,7 @@
       --wa-icon-size: {{ section.settings.icon_size }}px;
       --wa-bg-color: {{ section.settings.background_color }};
       --wa-icon-color: {{ section.settings.icon_color }};
+      --wa-badge-color: {{ section.settings.badge_color }};
       --wa-agents-radius: {{ section.settings.agents_box_radius }}px;
       --wa-left: {% if is_docked %}{% if side == 'right' %}auto{% else %}0{% endif %}{% else %}{% if side == 'right' %}auto{% else %}var(--container-gutter){% endif %}{% endif %};
       --wa-right: {% if is_docked %}{% if side == 'right' %}0{% else %}auto{% endif %}{% else %}{% if side == 'right' %}var(--container-gutter){% else %}auto{% endif %}{% endif %};
@@ -213,8 +214,8 @@
     right: 2px;
     width: 12px;
     height: 12px;
-    background-color: #ff3b30;
-    border: 2px solid #ffffff;
+    background-color: var(--wa-badge-color);
+    border: 2px solid transparent;
     border-radius: 50%;
   }
 
@@ -473,6 +474,7 @@
     { "type": "color_scheme", "id": "popup_color_scheme", "label": "Esquema de color (caja de agentes)", "default": "scheme-1" },
     { "type": "header", "content": "Notificación", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "checkbox", "id": "show_badge", "label": "Mostrar punto de notificación", "default": false, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "color", "id": "badge_color", "label": "Color del punto de notificación", "default": "#ff3b30", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "header", "content": "Caja de agentes" },
     { "type": "range", "id": "agents_box_radius", "label": "Radio de la caja de agentes", "min": 0, "max": 40, "step": 1, "unit": "px", "default": 12 },
     { "type": "header", "content": "Comportamiento" },
