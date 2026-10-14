@@ -15,9 +15,6 @@
 
   assign result_blocks = section.blocks | where: 'type', 'result'
   assign routine_blocks = section.blocks | where: 'type', 'routine_step'
-
-  assign require_email_to_start = section.settings.require_email_to_start
-  assign newsletter_form_id = 'the-method-newsletter-' | append: section.id
 -%}
 
 {%- if section.settings.floating_the_method -%}
@@ -44,44 +41,26 @@
   </style>
 {%- endif -%}
 
-{%- comment -%}
-  Todo el widget vive dentro de un único {% form 'customer' %} cuando se pide correo para
-  empezar: así el botón "Comenzar" puede ser el submit real de una suscripción de newsletter
-  (misma mecánica que snippets/newsletter-form.liquid), y form.posted_successfully? decide,
-  ya en el primer render tras la recarga, que el panel inicial visible sea el paso 1 en vez
-  de la intro. Los demás controles (opciones, atrás, reiniciar) ya declaran type="button"
-  explícito, así que no hay riesgo de que disparen un submit por accidente.
-{%- endcomment -%}
-{%- form 'customer', id: newsletter_form_id -%}
-  {%- if require_email_to_start -%}
-    <input type="hidden" name="contact[tags]" value="newsletter">
-  {%- endif -%}
-
-  {%- assign just_subscribed = false -%}
-  {%- if require_email_to_start and form.posted_successfully? -%}
-    {%- assign just_subscribed = true -%}
-  {%- endif -%}
-
-  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_the_method %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_the_method %} style="border-end-start-radius: {{ section.settings.the_method_border_radius }}px; border-end-end-radius: {{ section.settings.the_method_border_radius }}px; overflow: hidden;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_the_method %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_the_method %} style="border-end-start-radius: {{ section.settings.the_method_border_radius }}px; border-end-end-radius: {{ section.settings.the_method_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="container section-spacing">
     <div class="the-method" data-the-method data-section-id="{{ section.id }}">
 
       <div class="the-method__meta">
-        <button type="button" class="circle-button the-method__back" data-the-method-back {% unless just_subscribed %}hidden{% endunless %}>
+        <button type="button" class="circle-button the-method__back" data-the-method-back hidden>
           <span class="sr-only">{{ section.settings.back_button_text }}</span>
           {%- render 'icon' with 'back-arrow', width: 14, direction_aware: true -%}
         </button>
 
-        <div class="the-method__progress" data-the-method-progress {% unless just_subscribed %}hidden{% endunless %} aria-hidden="true">
+        <div class="the-method__progress" data-the-method-progress hidden aria-hidden="true">
           <p class="the-method__progress-text">
             <span data-the-method-progress-current>01</span> / <span data-the-method-progress-total>0{{ total_steps }}</span>
           </p>
           <span class="the-method__progress-track">
-            <span class="the-method__progress-fill" data-the-method-progress-fill {% if just_subscribed and total_steps > 0 %}style="width: {{ 1.0 | times: 100 | divided_by: total_steps }}%;"{% endif %}></span>
+            <span class="the-method__progress-fill" data-the-method-progress-fill></span>
           </span>
         </div>
 
-        <button type="button" class="circle-button the-method__restart" data-the-method-restart {% unless just_subscribed %}hidden{% endunless %}>
+        <button type="button" class="circle-button the-method__restart" data-the-method-restart hidden>
           <span class="sr-only">{{ section.settings.restart_button_text }}</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M4 12a8 8 0 1 1 2.5 5.8"/>
@@ -99,7 +78,7 @@
 
       <div class="the-method__panels" data-the-method-panels>
 
-        <div class="the-method__panel the-method__panel--intro justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="intro" tabindex="-1" {% if just_subscribed %}hidden{% endif %}>
+        <div class="the-method__panel the-method__panel--intro justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="intro" tabindex="-1">
           {%- if section.settings.heading != blank -%}
             {%- render 'heading', content: section.settings.heading, style: 'display-m', html_tag: 'h2', balance_text: true, instant: true -%}
           {%- endif -%}
@@ -108,27 +87,10 @@
             <p class="the-method__tagline">{{ section.settings.tagline }}</p>
           {%- endif -%}
 
-          {%- if require_email_to_start -%}
-            {%- if form.errors -%}
-              {%- capture email_error_message -%}{{ form.errors.translated_fields['email'] }} {{ form.errors.messages['email'] }}{%- endcapture -%}
-              {%- render 'banner', content: email_error_message, status: 'error', text_alignment: 'center' -%}
-            {%- endif -%}
-
-            <div class="the-method__email-field">
-              {%- render 'input', name: 'contact[email]', label: section.settings.email_input_label, type: 'email', required: true, autocomplete: 'email', enterkeyhint: 'send' -%}
-            </div>
-          {%- endif -%}
-
           {%- if section.settings.start_button_text != blank -%}
-            {%- if require_email_to_start -%}
-              <button type="submit" class="button the-method__cta">
-                <button-content class="button__content">{{ section.settings.start_button_text }}</button-content>
-              </button>
-            {%- else -%}
-              <button type="button" class="button the-method__cta" data-the-method-start>
-                <button-content class="button__content">{{ section.settings.start_button_text }}</button-content>
-              </button>
-            {%- endif -%}
+            <button type="button" class="button the-method__cta" data-the-method-start>
+              <button-content class="button__content">{{ section.settings.start_button_text }}</button-content>
+            </button>
           {%- endif -%}
         </div>
 
@@ -140,7 +102,7 @@
             {%- comment -%} Pregunta con tarjetas + ícono (ej. "¿qué quieres mejorar?") {%- endcomment -%}
             {%- when 'question_cards' -%}
               {%- assign step_index = step_index | plus: 1 -%}
-              <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" {% unless step_index == 1 and just_subscribed %}hidden{% endunless %} {{ block.shopify_attributes }}>
+              <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" hidden {{ block.shopify_attributes }}>
                 <h3 id="the-method-q-{{ section.id }}-{{ step_index }}" class="the-method__question">{{ block.settings.question }}</h3>
 
                 <div class="the-method__options the-method__options--cards" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}">
@@ -175,7 +137,7 @@
             {%- comment -%} Pregunta en lista compacta, sin íconos (ej. tipo de piel, sensibilidad) {%- endcomment -%}
             {%- when 'question_compact' -%}
               {%- assign step_index = step_index | plus: 1 -%}
-              <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" {% unless step_index == 1 and just_subscribed %}hidden{% endunless %} {{ block.shopify_attributes }}>
+              <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" hidden {{ block.shopify_attributes }}>
                 <h3 id="the-method-q-{{ section.id }}-{{ step_index }}" class="the-method__question">{{ block.settings.question }}</h3>
 
                 <div class="the-method__options the-method__options--compact" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}">
@@ -203,7 +165,7 @@
             {%- comment -%} Pregunta de escala visual (tono de piel): sin pesos, solo selección {%- endcomment -%}
             {%- when 'question_tone' -%}
               {%- assign step_index = step_index | plus: 1 -%}
-              <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" {% unless step_index == 1 and just_subscribed %}hidden{% endunless %} {{ block.shopify_attributes }}>
+              <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" hidden {{ block.shopify_attributes }}>
                 <h3 id="the-method-q-{{ section.id }}-{{ step_index }}" class="the-method__question">{{ block.settings.question }}</h3>
 
                 <div class="the-method__tone-scale" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}">
@@ -220,7 +182,7 @@
             {%- comment -%} Pregunta de formato: cada opción puede fijar directamente single/duo/combo {%- endcomment -%}
             {%- when 'question_format' -%}
               {%- assign step_index = step_index | plus: 1 -%}
-              <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" {% unless step_index == 1 and just_subscribed %}hidden{% endunless %} {{ block.shopify_attributes }}>
+              <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" hidden {{ block.shopify_attributes }}>
                 <h3 id="the-method-q-{{ section.id }}-{{ step_index }}" class="the-method__question">{{ block.settings.question }}</h3>
 
                 <div class="the-method__options the-method__options--editorial" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}">
@@ -257,7 +219,7 @@
             {%- endcomment -%}
             {%- when 'screening_question' -%}
               {%- assign step_index = step_index | plus: 1 -%}
-              <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" {% unless step_index == 1 and just_subscribed %}hidden{% endunless %} {{ block.shopify_attributes }}>
+              <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" hidden {{ block.shopify_attributes }}>
                 <h3 id="the-method-q-{{ section.id }}-{{ step_index }}" class="the-method__question">{{ block.settings.question }}</h3>
 
                 {%- if block.settings.disclaimer != blank -%}
@@ -381,8 +343,7 @@
       </div>
     </div>
   </div>
-  </div>
-{%- endform -%}
+</div>
 
 {% stylesheet %}
   .the-method {
@@ -496,12 +457,6 @@
 
   .the-method__cta {
     min-width: 12rem;
-    justify-self: center;
-  }
-
-  .the-method__email-field {
-    width: 100%;
-    max-width: 22rem;
     justify-self: center;
   }
 
@@ -1196,24 +1151,6 @@
       "id": "start_button_text",
       "label": "Texto del botón de inicio",
       "default": "Comenzar"
-    },
-    {
-      "type": "header",
-      "content": "Suscripción"
-    },
-    {
-      "type": "checkbox",
-      "id": "require_email_to_start",
-      "label": "Pedir correo para comenzar",
-      "info": "El visitante debe ingresar su correo (se suscribe a tu newsletter) antes de poder iniciar el test.",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "email_input_label",
-      "label": "Etiqueta del campo de correo",
-      "default": "Correo electrónico",
-      "visible_if": "{{ section.settings.require_email_to_start }}"
     },
     {
       "type": "text",
