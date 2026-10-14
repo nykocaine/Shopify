@@ -1,25 +1,21 @@
 {%- liquid
+  # Visibilidad
   assign show_on_mobile = section.settings.show_on_mobile
   assign show_on_desktop = section.settings.show_on_desktop
-
+  assign show_button = true
   if show_on_mobile == false and show_on_desktop == false
     assign show_button = false
-  else
-    assign show_button = true
   endif
 
+  # Agentes / departamentos
   assign agents = section.blocks
-  assign has_agents = false
-  if agents.size > 0
-    assign has_agents = true
-  endif
+  assign has_agents = agents.size > 0
 
+  # Estilo de visualización
   assign display_style = section.settings.display_style
-  assign is_docked = false
-  if display_style == 'docked_tab'
-    assign is_docked = true
-  endif
+  assign is_docked = display_style == 'docked_tab'
 
+  # Lado (izquierda/derecha): ambos modos siempre quedan pegados al borde lateral elegido
   assign side = 'right'
   if is_docked
     if section.settings.dock_position == 'left'
@@ -31,6 +27,7 @@
     endif
   endif
 
+  # Docked Tab: el radio solo va en las esquinas que miran hacia el contenido, nunca hacia el borde de pantalla
   assign dock_radius_tl = 0
   assign dock_radius_tr = 0
   assign dock_radius_bl = 0
@@ -43,6 +40,7 @@
     assign dock_radius_bl = section.settings.dock_border_radius
   endif
 
+  # Sombra (solo floating)
   assign wa_shadow_value = 'none'
   case section.settings.shadow_intensity
     when 'sm'
@@ -53,11 +51,8 @@
       assign wa_shadow_value = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
   endcase
 
-  assign dock_label = section.settings.dock_tab_label
-  if dock_label == blank
-    assign dock_label = 'WhatsApp'
-  endif
-
+  # Textos accesibles
+  assign dock_label = section.settings.dock_tab_label | default: 'WhatsApp'
   assign wa_aria_label = 'Chat on WhatsApp'
   if is_docked
     assign wa_aria_label = dock_label
@@ -87,13 +82,10 @@
       --wa-icon-size: {{ section.settings.icon_size }}px;
       --wa-bg-color: {{ section.settings.background_color }};
       --wa-icon-color: {{ section.settings.icon_color }};
-      --wa-border-radius: {{ section.settings.border_radius }}%;
-      --wa-offset-bottom: {{ section.settings.offset_bottom }}px;
-      --wa-offset-side: {{ section.settings.offset_side }}px;
       --wa-z-index: {{ section.settings.z_index }};
       --wa-agents-radius: {{ section.settings.agents_box_radius }}px;
-      --wa-left: {% if is_docked %}{% if side == 'right' %}auto{% else %}0{% endif %}{% else %}{% if side == 'right' %}auto{% else %}var(--wa-offset-side){% endif %}{% endif %};
-      --wa-right: {% if is_docked %}{% if side == 'right' %}0{% else %}auto{% endif %}{% else %}{% if side == 'right' %}var(--wa-offset-side){% else %}auto{% endif %}{% endif %};
+      --wa-left: {% if is_docked %}{% if side == 'right' %}auto{% else %}0{% endif %}{% else %}{% if side == 'right' %}auto{% else %}var(--container-gutter){% endif %}{% endif %};
+      --wa-right: {% if is_docked %}{% if side == 'right' %}0{% else %}auto{% endif %}{% else %}{% if side == 'right' %}var(--container-gutter){% else %}auto{% endif %}{% endif %};
       --wa-anchor-left: {% if side == 'right' %}auto{% else %}0{% endif %};
       --wa-anchor-right: {% if side == 'right' %}0{% else %}auto{% endif %};
       --wa-shadow: {{ wa_shadow_value }};
@@ -174,11 +166,11 @@
   .vc-whatsapp-button-wrapper {
     position: fixed;
     z-index: var(--wa-z-index);
-    bottom: var(--wa-offset-bottom);
+    bottom: var(--container-gutter);
     left: var(--wa-left);
     right: var(--wa-right);
     width: fit-content;
-    max-width: calc(100vw - (var(--wa-offset-side) * 2));
+    max-width: calc(100vw - (var(--container-gutter) * 2));
   }
 
   .vc-whatsapp-main-container {
@@ -195,7 +187,7 @@
     width: var(--wa-button-size);
     height: var(--wa-button-size);
     background-color: var(--wa-bg-color);
-    border-radius: var(--wa-border-radius);
+    border-radius: 50%;
     box-shadow: var(--wa-shadow);
     text-decoration: none;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -527,13 +519,11 @@
     { "type": "header", "content": "Floating: texto y posición", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "text", "id": "button_text", "label": "Texto del botón (opcional)", "info": "Si se deja en blanco, solo se mostrará el ícono.", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "select", "id": "position", "label": "Posición", "options": [{ "value": "bottom-right", "label": "Abajo a la derecha" }, { "value": "bottom-left", "label": "Abajo a la izquierda" }], "default": "bottom-right", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
-    { "type": "range", "id": "offset_bottom", "label": "Margen inferior", "min": 0, "max": 100, "step": 5, "unit": "px", "default": 20, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
-    { "type": "range", "id": "offset_side", "label": "Margen lateral", "min": 0, "max": 100, "step": 5, "unit": "px", "default": 20, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "paragraph", "content": "El espacio respecto a los bordes de la pantalla se ajusta automáticamente al margen lateral del tema, tanto en escritorio como en móvil.", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
 
     { "type": "header", "content": "Floating: diseño", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "range", "id": "button_size", "label": "Tamaño del botón", "min": 40, "max": 100, "step": 2, "unit": "px", "default": 60, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "range", "id": "icon_size", "label": "Tamaño del ícono", "min": 20, "max": 60, "step": 2, "unit": "px", "default": 30, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
-    { "type": "range", "id": "border_radius", "label": "Radio del borde", "min": 0, "max": 50, "step": 5, "unit": "%", "default": 50, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "color", "id": "background_color", "label": "Color de fondo", "default": "#25D366", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "color", "id": "icon_color", "label": "Color del ícono y texto", "default": "#FFFFFF", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "select", "id": "shadow_intensity", "label": "Intensidad de la sombra", "options": [{ "value": "none", "label": "Ninguna" }, { "value": "sm", "label": "Pequeña" }, { "value": "md", "label": "Mediana" }, { "value": "lg", "label": "Grande" }], "default": "md", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
