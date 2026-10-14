@@ -43,7 +43,7 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
       {%- render 'media', media: video, autoplay: autoplay, muted: true, controls: false, show_play_button: false, playsinline: true, loop: autoplay, sizes: resolved_sizes -%}
 
       {%- capture control_button_style -%}
-        width: var(--control-button-size, 1.75rem); height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, #000000); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, #000000); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, #ffffff);
+        width: var(--control-button-size, 1.75rem); height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, #000000); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, transparent); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, #ffffff);
       {%- endcapture -%}
 
       {%- assign resolved_show_product_button = false -%}
@@ -52,7 +52,7 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
         {%- assign resolved_show_product_button = true -%}
 
         {%- capture product_button_style -%}
-          height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, #000000); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, #000000); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, #ffffff); {% if product_button_type == 'text' %}width: auto; padding-inline: 0.75rem;{% else %}width: var(--control-button-size, 1.75rem);{% endif %}
+          height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, #000000); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, transparent); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, #ffffff); {% if product_button_type == 'text' %}width: auto; padding-inline: 0.75rem;{% else %}width: var(--control-button-size, 1.75rem);{% endif %}
         {%- endcapture -%}
       {%- endif -%}
 
