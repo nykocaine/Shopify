@@ -64,7 +64,15 @@
 
   <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_the_method %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_the_method %} style="border-end-start-radius: {{ section.settings.the_method_border_radius }}px; border-end-end-radius: {{ section.settings.the_method_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="container section-spacing">
-    <div class="the-method" data-the-method data-section-id="{{ section.id }}">
+    {%- comment -%}
+      Con imagen: dos columnas dentro del mismo contenedor floating — el contenido a la
+      izquierda conserva su padding de siempre; la imagen a la derecha no tiene padding propio,
+      así que llega pegada a los bordes del contenedor exterior (que es quien recorta las
+      esquinas via overflow:hidden + radius más arriba). Sin imagen, se ve exactamente igual
+      que antes.
+    {%- endcomment -%}
+    <div class="the-method-layout{% if section.settings.image != blank %} the-method-layout--has-image{% endif %}">
+      <div class="the-method" data-the-method data-section-id="{{ section.id }}">
 
       <div class="the-method__meta">
         <button type="button" class="circle-button the-method__back" data-the-method-back {% unless just_subscribed %}hidden{% endunless %}>
@@ -379,12 +387,45 @@
         </div>
 
       </div>
+      </div>
+
+      {%- if section.settings.image != blank -%}
+        <div class="the-method__media">
+          {{ section.settings.image | image_url: width: 1600 | image_tag: loading: 'lazy', sizes: '(max-width: 749px) 100vw, 50vw', widths: '375, 550, 750, 1100, 1500' }}
+        </div>
+      {%- endif -%}
     </div>
   </div>
   </div>
 {%- endform -%}
 
 {% stylesheet %}
+  .the-method-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  /* Con imagen: dos columnas iguales en desktop — el contenido conserva el padding de .the-method,
+     la imagen no tiene padding propio y llega pegada a los bordes del contenedor exterior (el
+     .color-scheme más arriba), que es quien recorta las esquinas via overflow hidden + radius. */
+  @media screen and (min-width: 750px) {
+    .the-method-layout--has-image {
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+    }
+  }
+
+  .the-method__media {
+    min-height: 16rem;
+  }
+
+  .the-method__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
   .the-method {
     --the-method-gap: var(--container-gutter, 1.5rem);
     display: grid;
@@ -1168,6 +1209,16 @@
       "label": "Corner radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_the_method }}"
+    },
+    {
+      "type": "header",
+      "content": "Imagen"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Imagen",
+      "info": "Si se agrega, la sección se divide en dos: el contenido a la izquierda (con su padding de siempre) y esta imagen a la derecha, pegada a los bordes y heredando el radio de la sección. Sin imagen, se ve igual que antes."
     },
     {
       "type": "header",
