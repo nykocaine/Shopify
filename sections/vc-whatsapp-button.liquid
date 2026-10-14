@@ -9,11 +9,17 @@
 
   # Agentes / departamentos
   assign agents = section.blocks
-  assign has_agents = agents.size > 0
+  assign has_agents = false
+  if agents.size > 0
+    assign has_agents = true
+  endif
 
   # Estilo de visualización
   assign display_style = section.settings.display_style
-  assign is_docked = display_style == 'docked_tab'
+  assign is_docked = false
+  if display_style == 'docked_tab'
+    assign is_docked = true
+  endif
 
   # Lado (izquierda/derecha): ambos modos siempre quedan pegados al borde lateral elegido
   assign side = 'right'
@@ -143,7 +149,7 @@
 {% stylesheet %}
   .vc-whatsapp-button-wrapper {
     position: fixed;
-    z-index: 100;
+    z-index: 106;
     bottom: var(--container-gutter);
     left: var(--wa-left);
     right: var(--wa-right);
@@ -166,7 +172,7 @@
     height: var(--wa-button-size);
     background-color: var(--wa-bg-color);
     border-radius: 50%;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
     text-decoration: none;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     flex-shrink: 0;
@@ -341,7 +347,7 @@
       display: block;
       position: fixed;
       inset: 0;
-      z-index: 99;
+      z-index: 105;
       background: rgb(var(--page-overlay));
       -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
       backdrop-filter: blur(var(--dialog-backdrop-blur));
