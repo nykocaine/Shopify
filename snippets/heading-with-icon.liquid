@@ -1,0 +1,82 @@
+{%- doc -%}
+Renders a heading next to (or above/below) the shared decorative icon (snippets/decorative-icon.liquid):
+one row with the title and, when enabled, the icon. The layout rules live in assets/theme.css
+(.heading-icon-row), so sections only pass the heading they already rendered plus their icon settings.
+
+@param {string} [title_content] - the already rendered heading markup (empty: the row holds only the icon)
+@param {boolean} [show_icon] - whether the icon is shown. When off, the row is a transparent wrapper around the title
+@param {string} [icon_position] - right (default) / left / above / below, relative to the title
+@param {string} [icon_alignment] - left (default) / center / right: where the icon sits along its own axis; never moves the title
+@param {string} [icon_type] - see snippets/decorative-icon.liquid
+@param {number} [icon_size] - see snippets/decorative-icon.liquid
+@param {boolean} [icon_spin] - see snippets/decorative-icon.liquid
+@param {object} [icon_primary_color] - see snippets/decorative-icon.liquid
+@param {object} [icon_secondary_color] - see snippets/decorative-icon.liquid
+@param {object} [icon_border_color] - see snippets/decorative-icon.liquid
+@param {boolean} [plain] - skip the title trim and the icon margin adjustments (only the grid/flex layout applies); for rows that never had them
+@param {string} [icon_margin_block] - margin-block of the icon svg (default: half of the theme's media spacing inside .prose)
+@param {string} [id] - id attribute for the row (eg. when a section needs to style or find one specific row)
+@param {string} [class] - extra class(es) for the row
+{%- enddoc -%}
+
+{%- liquid
+  # icon_alignment only ever moves the icon, never the title. icon_justify_self is the icon's own
+  # justify-self (side-by-side layouts, a grid) or align-self (stacked layouts, a flex column) -
+  # both accept the same start/center/end keywords, so one variable covers either case.
+  assign icon_justify_self = 'start'
+
+  case icon_alignment
+    when 'center'
+      assign icon_justify_self = 'center'
+    when 'right'
+      assign icon_justify_self = 'end'
+  endcase
+
+  # icon_position picks which side of the title the icon sits on. Side by side (left/right), this
+  # is a 2-column grid with one named area per element - the title's column is always "auto" (its own
+  # content width) and the icon's is always "1fr" (the rest of the row, for it to roam across via
+  # icon_justify_self), regardless of which column each lands in, since grid-area ties each element to
+  # its column by name rather than by source order. Stacked (above/below) is a plain flex column
+  # instead - its cross-axis alignment is already per-item independent of source order.
+  assign row_style = ''
+
+  if show_icon
+    assign row_style = '--heading-icon-display: grid; --heading-icon-align-items: center; '
+
+    case icon_position
+      when 'left'
+        assign row_style = row_style | append: "--heading-icon-columns: 1fr auto; --heading-icon-areas: 'icon title'; --heading-icon-justify-self: " | append: icon_justify_self
+      when 'above'
+        assign row_style = '--heading-icon-display: flex; --heading-icon-align-items: flex-start; --heading-icon-direction: column-reverse; --heading-icon-align-self: ' | append: icon_justify_self
+      when 'below'
+        assign row_style = '--heading-icon-display: flex; --heading-icon-align-items: flex-start; --heading-icon-direction: column; --heading-icon-align-self: ' | append: icon_justify_self
+      else
+        assign row_style = row_style | append: "--heading-icon-columns: auto 1fr; --heading-icon-areas: 'title icon'; --heading-icon-justify-self: " | append: icon_justify_self
+    endcase
+
+    if icon_margin_block
+      assign row_style = row_style | append: '; --heading-icon-svg-margin: ' | append: icon_margin_block
+    endif
+  endif
+-%}
+
+<div{% if id %} id="{{ id }}"{% endif %} class="heading-icon-row{% if show_icon %} heading-icon-row--with-icon{% endif %}{% if plain %} heading-icon-row--plain{% endif %}{% if class %} {{ class }}{% endif %}"{% if row_style != blank %} style="{{ row_style }}"{% endif %}>
+  {%- if title_content != blank -%}
+    <div class="heading-icon-row__title">
+      {{- title_content -}}
+    </div>
+  {%- endif -%}
+
+  {%- if show_icon -%}
+    <div class="heading-icon-row__icon">
+      {%- render 'decorative-icon',
+        icon_type: icon_type,
+        icon_size: icon_size,
+        icon_spin: icon_spin,
+        icon_primary_color: icon_primary_color,
+        icon_secondary_color: icon_secondary_color,
+        icon_border_color: icon_border_color
+      -%}
+    </div>
+  {%- endif -%}
+</div>

@@ -7,7 +7,7 @@ own heading instead of duplicating this markup.
 Pair with the ".decorative-icon" rules in assets/theme.css (overflow fix + spin keyframes).
 
 @param {string} [icon_type] - star/lotus/clover/smiley/blob/badge/stamp/swoosh/skincare_era (default star)
-@param {number} [icon_size] - svg width/height in px
+@param {number} [icon_size] - svg width/height in px (default 48)
 @param {boolean} [icon_spin] - whether the icon spins (default true)
 @param {object} [icon_primary_color] - color setting, defaults to #FF6B9D when blank
 @param {object} [icon_secondary_color] - color setting, defaults to #FFD93D when blank
@@ -16,6 +16,7 @@ Pair with the ".decorative-icon" rules in assets/theme.css (overflow fix + spin 
 {%- enddoc -%}
 
 {%- liquid
+  assign icon_size = icon_size | default: 48
   assign icon_primary = '#FF6B9D'
   assign icon_secondary = '#FFD93D'
   assign icon_border = blank
