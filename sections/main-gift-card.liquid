@@ -50,14 +50,12 @@
     <div class="section-split__column align-self-stretch">
       <div class="gift-card">
         <div class="v-stack gap-6">
-          <!-- EXPIRE BANNER -->
           {%- if gift_card.expired or gift_card.enabled == false -%}
             {%- assign banner_error = 'gift_card.issued.expired' | t -%}
             {%- render 'banner', status: 'error', content: banner_error -%}
           {%- endif -%}
 
           <div class="v-stack gap-4">
-            <!-- REMAINING BALANCE -->
             <p class="subheading">{{ 'gift_card.issued.remaining_amount' | t }}</p>
 
             {% if settings.currency_code_enabled %}
@@ -75,10 +73,8 @@
             {%- endif -%}
           </div>
 
-          <!-- REDEEM INFO -->
           <p>{{ 'gift_card.issued.redeem_instructions' | t }}</p>
 
-          <!-- ACTION BUTTONS -->
           <div class="v-stack gap-3">
             <input class="input gift-card__code" type="text" value="{{ gift_card.code | format_code }}" readonly aria-label="{{ 'gift_card.issued.code' | t }}" onclick="this.select()">
 
@@ -110,7 +106,6 @@
 
         {%- if gift_card.pass_url or section.settings.show_qr_code -%}
           <div class="gift-card__pass-cards">
-            <!-- QR CODE AND APPLE PAY -->
             {%- if section.settings.show_qr_code -%}
               <qr-code class="gift-card__qr-code" identifier="{{ gift_card.qr_identifier }}"></qr-code>
             {%- endif -%}

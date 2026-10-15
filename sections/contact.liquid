@@ -81,13 +81,13 @@
           {%- liquid
             if block.type == 'text'
               if block.settings.use_long_text
-                render 'input', name: name, label: block.settings.title, required: block.settings.required, multiline: 5
+                render 'input', name: name, label: field_title, required: block.settings.required, multiline: 5
               else
-                render 'input', type: 'text', name: name, label: block.settings.title, required: block.settings.required
+                render 'input', type: 'text', name: name, label: field_title, required: block.settings.required
               endif
             elsif block.type == 'dropdown' and block.settings.values != blank
               assign values = block.settings.values | split: ','
-              render 'select', option_values: values, show_empty_value: true, name: name, label: block.settings.title, required: true
+              render 'select', option_values: values, show_empty_value: true, name: name, label: field_title, required: block.settings.required
             elsif block.type == 'product' and request.page_type == 'product'
               render 'input', type: 'hidden', name: name, value: product.title
             endif
@@ -499,6 +499,12 @@
           "label": "t:sections.contact.blocks.dropdown.values",
           "info": "t:sections.contact.blocks.dropdown.values_info",
           "default": "value 1, value 2, value 3"
+        },
+        {
+          "type": "checkbox",
+          "id": "required",
+          "label": "t:sections.contact.blocks.text.required",
+          "default": true
         }
       ]
     },
