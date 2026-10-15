@@ -8,11 +8,12 @@
   {%- if section.settings.floating_toolbar -%}
     {%- comment -%}
     Floating mode: same calc(var(--container-gutter) + 0.5rem) formula as sections/reviews.liquid and
-    sections/faq.liquid, applied equally on all four sides so the toolbar reads as a padded card instead
-    of keeping its default, non-uniform padding-inline/padding-block values (theme.css).
+    sections/faq.liquid on the sides; top and bottom use half of it, so the toolbar reads as a compact
+    padded card instead of keeping its default, non-uniform padding values (theme.css).
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .collection__toolbar {
-      padding: calc(var(--container-gutter) + 0.5rem);
+      padding-block: calc((var(--container-gutter) + 0.5rem) / 2);
+      padding-inline: calc(var(--container-gutter) + 0.5rem);
     }
 
     {%- comment -%}
