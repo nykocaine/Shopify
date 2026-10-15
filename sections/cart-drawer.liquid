@@ -138,8 +138,15 @@
         </div>
       {%- else -%}
         <div class="v-stack gap-5">
+          {%- comment -%}Same block as the cart page's order summary: item count and free shipping bar inside a card{%- endcomment -%}
           {%- if settings.cart_show_free_shipping_bar -%}
-            {%- render 'free-shipping-bar' -%}
+            <div class="cart-drawer__summary color-scheme color-scheme--{{ section.settings.summary_color_scheme.id }}">
+              <div class="v-stack gap-2">
+                <span class="subheading">{{ 'cart.general.item_count' | t: count: cart.item_count }}</span>
+
+                {%- render 'free-shipping-bar' -%}
+              </div>
+            </div>
           {%- endif -%}
 
           <div class="v-stack gap-4">
@@ -457,6 +464,12 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "color_scheme",
+      "id": "summary_color_scheme",
+      "label": "t:sections.cart_drawer.summary_color_scheme",
+      "default": "scheme-2"
     },
     {
       "type": "checkbox",
