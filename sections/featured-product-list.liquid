@@ -8,6 +8,16 @@
   }
 
   {%- comment -%}
+  On mobile theme.css gives every promo (but the last) a negative bottom margin of (column gap - row gap) to
+  stack full-width promos. Here the promo is one cell next to the cards, and that negative margin stretches
+  it past its grid area, so it came out taller than the cards (by the difference between the row gap and the
+  column gap) and the carousel's vertical overflow clip cut its rounded bottom corners square.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .product-list__promo:not(:last-child) {
+    margin-block-end: 0;
+  }
+
+  {%- comment -%}
   width: 100% is needed next to height: 100%: the content box also has an inline aspect-ratio, and with a
   definite height and an auto width the browser derives the width from that ratio instead of filling the
   card, so the box (and its image) came out wider than the promo and got clipped on the right - off-center
