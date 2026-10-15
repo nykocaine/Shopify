@@ -23,6 +23,10 @@ body {
   margin: 0;
   position: relative;
   overflow-x: hidden;
+  /* flow-root keeps the first/last section's outer margins (the floating header's top gap and the
+     floating footer's bottom gap) inside <body>. Without it they collapse through <body>, which
+     shifts <body> itself and makes the theme editor draw every section's selection box offset. */
+  display: flow-root;
 }
 
 /* overflow-x: hidden above (the fallback for browsers without `clip` support) turns html/body into
