@@ -698,6 +698,16 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   {%- comment -%}
+  Desktop (1000px and up): the squares are as wide as the row divided by "Items per row (desktop)" - more items
+  per row means smaller squares (height follows, they stay square). Tablets keep 4 per row.
+  {%- endcomment -%}
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
+      flex: 0 0 calc((100% - {{ section.settings.items_per_row_desktop | minus: 1 | times: 0.5 }}rem) / {{ section.settings.items_per_row_desktop }});
+    }
+  }
+
+  {%- comment -%}
   object-fit: cover/display: block for the image case come from the theme's global img rule, and
   the square shape from the existing .aspect-square utility (both in assets/theme.css) - only the
   width (to fill its grid column) and the corner radius are added here.
@@ -991,6 +1001,16 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       "label": "Border color",
       "info": "Leave blank for no border.",
       "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "range",
+      "id": "items_per_row_desktop",
+      "min": 3,
+      "max": 8,
+      "step": 1,
+      "label": "Items per row (desktop)",
+      "info": "More items per row makes the photos and videos smaller. They stay square. Mobile and tablet are not affected.",
+      "default": 5
     },
     {
       "type": "header",
