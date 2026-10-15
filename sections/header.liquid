@@ -41,13 +41,13 @@
     }
 
     {%- comment -%}
-    Transparent header over the first section (same condition theme.css uses): no gap above it, so it
-    sits at the very top while it is transparent. The gap only comes back, as the sticky offset below,
-    once the header is solid. It is not a margin here on purpose: switching a margin on at the moment
-    the header turns solid would shift the whole page; a sticky offset moves only the header.
+    Transparent header over the first section (same condition theme.css uses): at rest it keeps the gap
+    above it (the margin above). While it is scrolled but still transparent, its sticky offset is 0 (see
+    below), so it slides up to the very top instead of hanging at the gap; the gap comes back, as the
+    sticky offset, once the header is solid. The margin never changes, so the page doesn't shift when
+    the header turns solid. The transition animates that sticky offset.
     {%- endcomment -%}
     :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} {
-      margin-block-start: 0;
       transition: transform .2s ease-in-out, visibility .2s ease-in-out, top .2s ease-in-out;
     }
   {%- endif -%}
