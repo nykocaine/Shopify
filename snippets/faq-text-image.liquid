@@ -468,9 +468,22 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
               var captionRow = document.getElementById('{{ media_caption_row_id }}');
               if (!carousel || !captionRow) return;
 
-              carousel.addEventListener('scroll', function () {
+              function syncCaptions() {
+                // The theme editor replaces this markup on every setting change: drop the window listener then.
+                if (!carousel.isConnected) {
+                  window.removeEventListener('resize', syncCaptions);
+                  return;
+                }
+
                 captionRow.scrollLeft = carousel.scrollLeft;
-              }, { passive: true });
+              }
+
+              carousel.addEventListener('scroll', syncCaptions, { passive: true });
+
+              // The carousel can move without a scroll the visitor made (resize/orientation change re-snaps
+              // it, the browser restores a scroll position), which would leave the captions behind.
+              window.addEventListener('resize', syncCaptions);
+              syncCaptions();
             })();
           </script>
         {%- else -%}
@@ -592,6 +605,16 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
 
           #{{ media_carousel_id }} {
             border-radius: {{ media_corner_radius }};
+          }
+
+          {%- comment -%}
+          theme.css's .snap-start also sets scroll-snap-stop: always, which makes the carousel stop at every
+          single slide: a fast swipe can never travel over more than one, which feels stiff on a row where
+          several slides are visible at once. normal lets a fling glide over slides and settle on the nearest
+          snap point (the snap itself, x mandatory, is unchanged).
+          {%- endcomment -%}
+          #{{ media_carousel_id }} > .snap-start {
+            scroll-snap-stop: normal;
           }
 
           #{{ media_caption_row_id }} {
