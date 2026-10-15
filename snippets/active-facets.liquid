@@ -54,7 +54,7 @@ decide to show or not the filter group name
     {%- if request.page_type == 'collection' -%}
       {%- assign default_url = collection.url -%}
     {%- else -%}
-      {%- capture default_url -%}{{ routes.search_url }}?q={{ search.terms }}&type=product&sort_by={{ search.sort_by }}{%- endcapture -%}
+      {%- capture default_url -%}{{ routes.search_url }}?q={{ search.terms | url_encode }}&type=product&sort_by={{ search.sort_by }}{%- endcapture -%}
     {%- endif -%}
 
     <facet-link class="contents">
