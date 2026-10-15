@@ -52,7 +52,7 @@
     the header turns solid. The transition animates that sticky offset.
     {%- endcomment -%}
     :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} {
-      transition: transform .2s ease-in-out, visibility .2s ease-in-out, top var(--header-solid-transition);
+      transition: transform .2s ease-in-out, visibility .2s ease-in-out, top var(--header-solid-transition), background var(--header-solid-transition);
     }
   {%- endif -%}
 
@@ -96,6 +96,21 @@
 
   #shopify-section-{{ section.id }} .header__logo-image {
     transition: opacity var(--header-solid-transition);
+  }
+
+  {%- comment -%}
+  Links and the nav separator carry their own short transitions in theme.css (.2s - .3s), so their text
+  color lagged behind the header's background and logo when it turned solid. Their color/background now
+  follow the same timing; the underline (background-size) keeps its own.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .link,
+  #shopify-section-{{ section.id }} .link-faded,
+  #shopify-section-{{ section.id }} .link-faded-reverse {
+    transition: color var(--header-solid-transition), background-size .3s ease-in-out;
+  }
+
+  #shopify-section-{{ section.id }} .header__secondary-nav-separator {
+    transition: background var(--header-solid-transition);
   }
 
   @media screen and (min-width: 1000px) {
