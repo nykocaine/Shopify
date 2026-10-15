@@ -7,8 +7,15 @@
     grid-column: span 1;
   }
 
+  {%- comment -%}
+  width: 100% is needed next to height: 100%: the content box also has an inline aspect-ratio, and with a
+  definite height and an auto width the browser derives the width from that ratio instead of filling the
+  card, so the box (and its image) came out wider than the promo and got clipped on the right - off-center
+  image and square right corners.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-list__promo .content-box {
     position: relative;
+    width: 100%;
     height: 100%;
     border-radius: var(--product-card-border-radius, 0);
   }
