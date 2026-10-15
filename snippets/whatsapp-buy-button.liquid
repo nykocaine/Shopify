@@ -10,7 +10,6 @@ independent from the rest of the theme's buttons.
 @param {string} [button_style] - "solid" or "link"
 @param {object} [background_color] - color setting object
 @param {object} [text_color] - color setting object
-@param {object} [block] - block context, for theme editor attributes
 {%- enddoc -%}
 
 {%- liquid
@@ -19,9 +18,13 @@ independent from the rest of the theme's buttons.
     assign wa_text = wa_text | append: ' ' | append: product.title | append: ' - ' | append: request.origin | append: product.url
   endif
   assign wa_encoded_text = wa_text | url_encode
-  assign wa_href = 'https://wa.me/' | append: phone_number | append: '?text=' | append: wa_encoded_text
+  # wa.me only accepts digits: tolerate a "+", spaces or dashes typed in the setting
+  assign wa_phone = phone_number | remove: '+' | remove: ' ' | remove: '-'
+  assign wa_href = 'https://wa.me/' | append: wa_phone | append: '?text=' | append: wa_encoded_text
 -%}
 
+{%- comment -%} Without a number the link would be a dead wa.me/?text=..., so nothing is rendered until the block is filled in {%- endcomment -%}
+{%- if wa_phone != blank and button_text != blank -%}
 {%- if button_style == 'link' -%}
   {%- comment -%}
   Same "plain text link" positioning as the product description's show-more/less toggle
@@ -38,7 +41,7 @@ independent from the rest of the theme's buttons.
     }
   </style>
 
-  <a href="{{ wa_href }}" target="_blank" class="link whatsapp-buy-button whatsapp-buy-button--link" {{ block.shopify_attributes }}>
+  <a href="{{ wa_href }}" target="_blank" rel="noopener noreferrer" class="link whatsapp-buy-button whatsapp-buy-button--link">
     {{- button_text -}}
   </a>
 {%- else -%}
@@ -58,7 +61,7 @@ independent from the rest of the theme's buttons.
       size: 'sm',
       background: background_color,
       text_color: text_color,
-      class: 'whatsapp-buy-button',
-      block: block
+      class: 'whatsapp-buy-button'
   -%}
+{%- endif -%}
 {%- endif -%}

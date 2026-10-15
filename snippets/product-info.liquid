@@ -182,16 +182,16 @@ no need to manually pass the section as it is globally available)
               <div class="product-rating-row">
                 <p class="product-rating-row__text">{{ block.settings.side_text }}</p>
                 {%- if product != blank -%}
-                  {%- render 'product-rating', product: product, alignment: 'end', show_empty: block.settings.show_empty, show_placeholder: false, show_single_star: true -%}
+                  {%- render 'product-rating', product: product, alignment: 'end', show_empty: block.settings.show_empty, show_placeholder: false -%}
                 {%- else -%}
-                  {%- render 'product-rating', alignment: 'end', show_placeholder: true, show_single_star: true -%}
+                  {%- render 'product-rating', alignment: 'end', show_placeholder: true -%}
                 {%- endif -%}
               </div>
             {%- else -%}
               {%- if product != blank -%}
-                {%- render 'product-rating', product: product, alignment: alignment, show_empty: block.settings.show_empty, show_placeholder: false, show_single_star: true -%}
+                {%- render 'product-rating', product: product, alignment: alignment, show_empty: block.settings.show_empty, show_placeholder: false -%}
               {%- else -%}
-                {%- render 'product-rating', alignment: alignment, show_placeholder: true, show_single_star: true -%}
+                {%- render 'product-rating', alignment: alignment, show_placeholder: true -%}
               {%- endif -%}
             {%- endif -%}
 
@@ -217,8 +217,7 @@ no need to manually pass the section as it is globally available)
                   custom_icon: block.settings.custom_icon,
                   content: product_description,
                   prose_content: true,
-                  uppercase_title: block.settings.uppercase_title,
-                  block: block
+                  uppercase_title: block.settings.uppercase_title
                 -%}
               {%- elsif context == 'main_product' -%}
                 {%- comment -%}
@@ -542,8 +541,7 @@ no need to manually pass the section as it is globally available)
                 button_text: block.settings.button_text,
                 button_style: block.settings.button_style,
                 background_color: block.settings.background_color,
-                text_color: block.settings.text_color,
-                block: block
+                text_color: block.settings.text_color
             -%}
 
           {%- when 'volume_pricing' -%}
