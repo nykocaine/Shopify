@@ -5039,8 +5039,8 @@ import { animate as animate11 } from "vendor";
 var AnnouncementBar = class extends EffectCarousel {
   createOnChangeAnimationControls(fromSlide, toSlide) {
     return {
-      leaveControls: () => animate11(fromSlide, { opacity: [1, 0], transform: ["translateY(0)", "translateY(-10px)"] }, { duration: 0.25, ease: [0.55, 0.055, 0.675, 0.19] }),
-      enterControls: () => animate11(toSlide, { opacity: [0, 1], transform: ["translateY(10px)", "translateY(0px)"] }, { duration: 0.4, ease: [0.215, 0.61, 0.355, 1] })
+      leaveControls: () => animate11(fromSlide, { opacity: [1, 0], transform: ["translateY(0)", "translateY(-10px)"] }, { duration: 0.4, ease: [0.55, 0.055, 0.675, 0.19] }),
+      enterControls: () => animate11(toSlide, { opacity: [0, 1], transform: ["translateY(10px)", "translateY(0px)"] }, { duration: 0.6, ease: [0.215, 0.61, 0.355, 1] })
     };
   }
 };

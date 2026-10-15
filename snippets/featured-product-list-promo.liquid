@@ -4,6 +4,8 @@ Desktop and mobile images are independent: each variant only renders when its ow
 
 @param {object} block - the promo block to render
 @param {object} section
+@param {string} [sizes] - the `sizes` attribute the section uses for its product cards, so the promo image is requested at card size instead of 100vw
+@param {number} [position] - the promo's visual position in the list; like the product cards, only the first 3 load their images eagerly, the rest lazily
 {%- enddoc -%}
 
 {%- liquid
@@ -22,6 +24,13 @@ Desktop and mobile images are independent: each variant only renders when its ow
   # a product's own media and has no equivalent here) - gives this promo's content-box an intrinsic
   # height so its grid row doesn't collapse when it lands alone in a trailing row (no product-card
   # sibling with an aspect-ratio to establish the row's height).
+  # Same loading rule as product-card.liquid: eager for the first 3 cells of the first 3 sections, lazy after.
+  assign promo_preload = false
+
+  if section.index <= 3 and position != blank and position <= 3
+    assign promo_preload = true
+  endif
+
   case settings.product_card_image_aspect_ratio
     when 'short', 'short_crop'
       assign promo_aspect_ratio = '4 / 3'
@@ -52,7 +61,7 @@ Desktop and mobile images are independent: each variant only renders when its ow
           </div>
         {%- endif -%}
 
-        {%- if block.settings.button_text -%}
+        {%- if block.settings.button_text != blank -%}
           {%- render 'button',
               content: block.settings.button_text,
               href: block.settings.url,
@@ -77,7 +86,7 @@ Desktop and mobile images are independent: each variant only renders when its ow
     {%- if has_desktop_image -%}
       <div class="content-box min-h-full {% if has_mobile_image %}md-max:hidden{% endif %}" style="aspect-ratio: {{ promo_aspect_ratio }};">
         <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }}">
-          {%- render 'media', media: block.settings.image -%}
+          {%- render 'media', media: block.settings.image, sizes: sizes, preload: promo_preload -%}
         </div>
 
         {{- promo_content -}}
@@ -87,7 +96,7 @@ Desktop and mobile images are independent: each variant only renders when its ow
     {%- if has_mobile_image -%}
       <div class="content-box min-h-full {% if has_desktop_image %}md:hidden{% endif %}" style="aspect-ratio: {{ promo_aspect_ratio }};">
         <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }}">
-          {%- render 'media', media: block.settings.mobile_image -%}
+          {%- render 'media', media: block.settings.mobile_image, sizes: sizes, preload: promo_preload -%}
         </div>
 
         {{- promo_content -}}

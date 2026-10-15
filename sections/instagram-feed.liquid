@@ -155,33 +155,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
           {%- endfor -%}
         </scroll-carousel>
 
-        {%- comment -%}
-        Same progress-bar + prev/next pattern as sections/featured-product-list.liquid's own scroll
-        controls (track-scroll-target reads this carousel's live scroll position - the component
-        itself, assets/theme.js, is generic and already works with any scrollable target by id, not
-        just <product-list>). Same show_progress_bar_mobile/desktop toggles and defaults, too.
-        {%- endcomment -%}
-        {%- if section.settings.show_progress_bar_mobile or section.settings.show_progress_bar_desktop -%}
-          <div class="instagram-feed__scroll-controls h-stack gap-4">
-            <progress-bar track-scroll-target="{{ instagram_carousel_id }}" class="progress-bar"></progress-bar>
-
-            <div class="h-stack gap-2">
-              <carousel-prev-button aria-controls="{{ instagram_carousel_id }}">
-                <button disabled class="circle-button circle-button--outline">
-                  <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
-                  {%- render 'icon' with 'chevron-right', direction_aware: true, width: 8 -%}
-                </button>
-              </carousel-prev-button>
-
-              <carousel-next-button aria-controls="{{ instagram_carousel_id }}">
-                <button class="circle-button circle-button--outline">
-                  <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
-                  {%- render 'icon' with 'chevron-right', direction_aware: true, width: 8 -%}
-                </button>
-              </carousel-next-button>
-            </div>
-          </div>
-        {%- endif -%}
+        {%- render 'scroll-controls', target_id: instagram_carousel_id, show_mobile: section.settings.show_progress_bar_mobile, show_desktop: section.settings.show_progress_bar_desktop, class: 'instagram-feed__scroll-controls' -%}
 
         {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple -%}
 
@@ -572,43 +546,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     aspect-ratio: auto;
     border-radius: {{ instagram_corner_radius_px }};
   }
-
-  {%- comment -%}
-  ============================================================
-  SCROLL CONTROLS (progress bar + prev/next, same pattern as sections/featured-product-list.liquid)
-  ============================================================
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__scroll-controls .progress-bar {
-    flex: 1;
-  }
-
-  #shopify-section-{{ section.id }} .instagram-feed__scroll-controls .h-stack {
-    flex-shrink: 0;
-  }
-
-  {%- comment -%}
-  There's no dedicated "chevron-left" icon, so the prev button reuses chevron-right flipped - same
-  trick (and the same reasoning) as sections/featured-product-list.liquid.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__scroll-controls carousel-prev-button .icon-chevron-right {
-    transform: scaleX(-1);
-  }
-
-  {%- unless section.settings.show_progress_bar_mobile -%}
-    @media screen and (max-width: 999px) {
-      #shopify-section-{{ section.id }} .instagram-feed__scroll-controls {
-        display: none;
-      }
-    }
-  {%- endunless -%}
-
-  {%- unless section.settings.show_progress_bar_desktop -%}
-    @media screen and (min-width: 1000px) {
-      #shopify-section-{{ section.id }} .instagram-feed__scroll-controls {
-        display: none;
-      }
-    }
-  {%- endunless -%}
 </style>
 
 {% schema %}

@@ -1,0 +1,30 @@
+{%- comment -%}
+  Progress bar + previous/next buttons for a scrollable carousel (product list, Instagram feed...).
+  The layout lives in assets/theme.css (.scroll-controls), so sections only pass what changes:
+
+  - target_id: id of the scrollable element the bar and the buttons follow
+  - show_mobile / show_desktop: where the controls show; nothing is rendered when both are off
+  - class (optional): extra class for section-specific tweaks, e.g. spacing above the controls
+{%- endcomment -%}
+
+{%- if show_mobile or show_desktop -%}
+  <div class="scroll-controls {{ class }} h-stack gap-4{% unless show_mobile %} md-max:hidden{% endunless %}{% unless show_desktop %} md:hidden{% endunless %}">
+    <progress-bar track-scroll-target="{{ target_id }}" class="progress-bar"></progress-bar>
+
+    <div class="h-stack gap-2">
+      <carousel-prev-button aria-controls="{{ target_id }}">
+        <button disabled class="circle-button circle-button--outline">
+          <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
+          {%- render 'icon' with 'chevron-right', direction_aware: true, width: 8 -%}
+        </button>
+      </carousel-prev-button>
+
+      <carousel-next-button aria-controls="{{ target_id }}">
+        <button class="circle-button circle-button--outline">
+          <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
+          {%- render 'icon' with 'chevron-right', direction_aware: true, width: 8 -%}
+        </button>
+      </carousel-next-button>
+    </div>
+  </div>
+{%- endif -%}
