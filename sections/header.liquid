@@ -32,6 +32,9 @@
        section) so snippets/css-variables.liquid (--sticky-area-height) and theme.css (menu overlay)
        can add it to their offsets and match where the header really sits. */
     --header-top-gap: calc(var(--section-vertical-spacing) / 2);
+    /* Distance from the screen edge once the header is stuck while scrolling: half the section spacing,
+       or a quarter when a sticky announcement bar sits above it (same gap as between the two at rest). */
+    --header-stuck-gap: calc(var(--section-vertical-spacing) / (2 + 2 * var(--announcement-bar-is-sticky, 0)));
     {%- endif %}
   }
 
@@ -115,7 +118,7 @@
   sticky announcement bar's height) so it leaves the screen completely.
   {%- endcomment -%}
   #shopify-section-{{ section.id }}:has(.header.is-hidden) {
-    transform: translateY(calc(-100% - var(--header-top-gap, 0px) - var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px)));
+    transform: translateY(calc(-100% - var(--header-stuck-gap, 0px) - var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px)));
   }
 
   {%- comment -%}
@@ -168,7 +171,7 @@
       {%- endcomment -%}
       #shopify-section-{{ section.id }},
       .shopify-section--announcement-bar ~ #shopify-section-{{ section.id }} {
-        top: calc(var(--header-top-gap) + var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px));
+        top: calc(var(--header-stuck-gap) + var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px));
       }
 
       :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}:has(.header:not(.is-solid)),
@@ -181,7 +184,7 @@
         position: absolute;
         inset-inline: 0;
         inset-block-end: 100%;
-        height: var(--header-top-gap);
+        height: var(--header-stuck-gap);
         background: rgb(var(--page-background));
         pointer-events: none;
         transition: background var(--header-solid-transition);
