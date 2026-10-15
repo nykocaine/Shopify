@@ -5481,11 +5481,11 @@ var HeaderMenuDrawer = class extends DialogElement {
   createEnterAnimationControls() {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timelineSteps = [
-      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.6 }],
+      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.8 }],
       [
         this.getShadowPartByName("content"),
         reduceMotion ? { opacity: [0, 1] } : { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] },
-        { duration: reduceMotion ? 0.2 : 0.9, ease: [0.22, 1, 0.36, 1], at: "<" }
+        { duration: reduceMotion ? 0.2 : 1.2, ease: [0.22, 1, 0.36, 1], at: "<" }
       ]
     ];
     return animateSequence8(timelineSteps);
@@ -5493,11 +5493,11 @@ var HeaderMenuDrawer = class extends DialogElement {
   createLeaveAnimationControls() {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timelineSteps = [
-      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.5 }],
+      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.7 }],
       [
         this.getShadowPartByName("content"),
         reduceMotion ? { opacity: [1, 0] } : { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] },
-        { duration: reduceMotion ? 0.2 : 0.6, ease: [0.4, 0, 1, 1], at: "<" }
+        { duration: reduceMotion ? 0.2 : 0.8, ease: [0.4, 0, 1, 1], at: "<" }
       ]
     ];
     return animateSequence8(timelineSteps);
@@ -5559,10 +5559,7 @@ var HeaderMenuDrawerPanel = class extends HTMLElement {
     if (window.matchMedia("(prefers-reduced-motion: no-preference)").matches) {
       const rtlFlip = document.dir === "rtl" ? -1 : 1;
       if (initial) {
-        return animateSequence8([
-          [this.querySelectorAll(".menu-drawer__panel-body > *"), { opacity: [0, 1], transform: ["translateY(1em)", "translateY(0)"] }, { duration: 0.2, delay: stagger3(0.1, { startDelay: 0.6 }) }],
-          [this.querySelector(".menu-drawer__panel-footer"), { opacity: [0, 1], transform: ["translateY(1em)", "translateY(0)"] }, { duration: 0.2, at: "-0.1", ease: "easeInOut" }]
-        ]);
+        return Promise.resolve();
       } else {
         if (this.hasAttribute("data-main-panel")) {
           return animateSequence8([
