@@ -2343,6 +2343,17 @@ label:focus-within:has(:focus-visible) {
   --section-vertical-spacing-block-start: calc(var(--section-vertical-spacing) + var(--header-height) - 16px);
 }
 
+/* Top rule: whatever sits first in the page content, right under the header group, gets only
+   half of the normal section spacing above it (same as the header and the announcement bar).
+   The transparent-header rule above is more specific and still wins. */
+main > .shopify-section:first-child .section-spacing {
+  --section-vertical-spacing-block-start: calc(var(--section-vertical-spacing) / 2);
+}
+
+main > .shopify-section:first-child .section-floating--block {
+  margin-block-start: calc(var(--section-vertical-spacing) / 2);
+}
+
 .section-spacing--tight {
   padding-block-start: min(3rem, var(--section-disable-padding-collapsing) * var(--section-vertical-spacing-block-start, var(--section-vertical-spacing)));
   padding-block-end: min(3rem, var(--section-vertical-spacing-block-end, var(--section-vertical-spacing)));
