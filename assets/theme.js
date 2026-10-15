@@ -5474,17 +5474,31 @@ var HeaderMenuDrawer = class extends DialogElement {
   get shouldLock() {
     return true;
   }
+  /**
+   * The menu unfolds from the header downwards (the content is revealed top to bottom) while the page behind stays in
+   * place under the overlay. Reduced motion keeps a plain fade.
+   */
   createEnterAnimationControls() {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timelineSteps = [
-      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.2 }],
-      [this.getShadowPartByName("content"), { opacity: [0, 1] }, { duration: 0.25, at: "<" }]
+      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.35 }],
+      [
+        this.getShadowPartByName("content"),
+        reduceMotion ? { opacity: [0, 1] } : { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] },
+        { duration: reduceMotion ? 0.2 : 0.5, ease: [0.22, 1, 0.36, 1], at: "<" }
+      ]
     ];
     return animateSequence8(timelineSteps);
   }
   createLeaveAnimationControls() {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timelineSteps = [
-      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.25 }],
-      [this.getShadowPartByName("content"), { opacity: [1, 0] }, { duration: 0.2, at: "<" }]
+      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.3 }],
+      [
+        this.getShadowPartByName("content"),
+        reduceMotion ? { opacity: [1, 0] } : { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] },
+        { duration: reduceMotion ? 0.2 : 0.35, ease: [0.4, 0, 1, 1], at: "<" }
+      ]
     ];
     return animateSequence8(timelineSteps);
   }
