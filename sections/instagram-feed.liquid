@@ -99,7 +99,9 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             {%- if instagram_block_has_video -%}
               {%- comment -%}
               autoplay: true (muted, looped) instead of the default tap-to-play, matching an
-              Instagram-style feed. show_pause_button stays at its default (true) - the merchant
+              Instagram-style feed. That is the desktop behavior: on mobile the script below removes
+              the autoplay attribute (and the tap-to-reveal class on the controls) before the theme's
+              JS connects, so there videos start on tap and the play / sound / zoom buttons stay visible. show_pause_button stays at its default (true) - the merchant
               wants the manual play/pause toggle visible even though the video autoplays, so a
               visitor can still pause it. reveal_controls_on_tap: true keeps the pause/sound/zoom
               controls hidden until the video itself is tapped, instead of sitting on top of it
@@ -257,6 +259,48 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             });
 
             {%- comment -%}
+            Mobile (up to 699px): nothing autoplays - saves data and battery. Removing the attribute here,
+            while this script still runs before the deferred theme.js defines <video-media>, makes the
+            element behave as a regular tap-to-play video (VideoMedia#connectedCallback) with its poster
+            frame, and dropping the tap-to-reveal class keeps the play/pause, sound and zoom buttons
+            always visible (media-zoom-script.liquid reads that class after this script has run).
+
+            Desktop: videos keep autoplaying, but BaseMedia only starts them the first time they come
+            into view and never stops them. With the carousel scrolling, that would slowly leave every
+            video playing at once, so each one is paused when it leaves the carousel's visible area and
+            resumed when it comes back (only if it was paused here, never if the visitor paused it).
+            {%- endcomment -%}
+            if (window.matchMedia('(max-width: 699px)').matches) {
+              Array.prototype.forEach.call(carousel.querySelectorAll('video-media[autoplay]'), function (video) {
+                video.removeAttribute('autoplay');
+              });
+
+              Array.prototype.forEach.call(carousel.querySelectorAll('.carousel-video-controls--tap-to-reveal'), function (element) {
+                element.classList.remove('carousel-video-controls--tap-to-reveal');
+              });
+            } else if ('IntersectionObserver' in window) {
+              var visibilityObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                  var video = entry.target;
+
+                  if (entry.isIntersecting) {
+                    if (video.hasAttribute('data-auto-paused') && typeof video.play === 'function') {
+                      video.removeAttribute('data-auto-paused');
+                      video.play();
+                    }
+                  } else if (video.playing && typeof video.pause === 'function') {
+                    video.setAttribute('data-auto-paused', '');
+                    video.pause();
+                  }
+                });
+              });
+
+              Array.prototype.forEach.call(carousel.querySelectorAll('video-media[autoplay]'), function (video) {
+                visibilityObserver.observe(video);
+              });
+            }
+
+            {%- comment -%}
             <video-media autoplay> (assets/theme.js, BaseMedia#connectedCallback) only calls
             .play() once an IntersectionObserver first reports it as visible - that observer is set
             up when each element connects, which (since theme.js is deferred) happens AFTER this
@@ -295,6 +339,185 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             });
           })();
         </script>
+
+        {%- if section.settings.autoscroll and instagram_has_multiple -%}
+          {%- comment -%}
+          Auto-scroll: advances one card at a time every autoscroll_interval seconds, rewinding to the
+          start after the last one. The motion is a short eased (ease-in-out) animation driven by
+          requestAnimationFrame instead of scrollTo({ behavior: 'smooth' }), whose speed and curve are
+          browser-defined and feel abrupt next to scroll-snap; snapping is switched off while it runs and
+          restored at the end, at an exact snap point, so nothing jumps. Its duration grows with the
+          distance (the rewind is slower than a single step).
+
+          It never fights the visitor: it waits while the pointer is over the carousel, a finger is
+          touching it, something inside has focus, the lightbox is open, the section is off-screen, the tab
+          is hidden, or the visitor scrolled it themselves a moment ago. On mobile it also waits while a
+          video is playing (there, anything playing was started by the visitor). It is disabled entirely
+          for prefers-reduced-motion and right-to-left pages.
+          {%- endcomment -%}
+          <script>
+            (function () {
+              var carousel = document.getElementById('{{ instagram_carousel_id }}');
+              var lightbox = document.getElementById('{{ instagram_lightbox_id }}');
+
+              if (!carousel || !lightbox) return;
+              if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+              if (window.getComputedStyle(carousel).direction === 'rtl') return;
+
+              var intervalMs = {{ section.settings.autoscroll_interval | default: 4 | times: 1000 }};
+              var mobileQuery = window.matchMedia('(max-width: 699px)');
+              var timer = null;
+              var frame = null;
+              var animating = false;
+              var hovering = false;
+              var touching = false;
+              var focused = false;
+              var visible = true;
+              var lastInteraction = 0;
+
+              function easeInOutCubic(t) {
+                return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+              }
+
+              function nextTarget() {
+                var max = carousel.scrollWidth - carousel.clientWidth;
+
+                if (max <= 2) return null;
+
+                var current = carousel.scrollLeft;
+
+                if (current >= max - 2) return 0;
+
+                var left = carousel.getBoundingClientRect().left;
+                var cells = carousel.children;
+
+                for (var i = 0; i < cells.length; i++) {
+                  var position = cells[i].getBoundingClientRect().left - left + current;
+
+                  if (position > current + 2) return Math.min(position, max);
+                }
+
+                return max;
+              }
+
+              function stopAnimation() {
+                if (frame) cancelAnimationFrame(frame);
+
+                frame = null;
+                animating = false;
+                carousel.style.scrollSnapType = '';
+              }
+
+              function animateTo(target) {
+                var from = carousel.scrollLeft;
+                var distance = target - from;
+
+                if (Math.abs(distance) < 1) return schedule();
+
+                var duration = Math.min(1600, 700 + Math.abs(distance) * 0.35);
+                var start = null;
+
+                animating = true;
+                carousel.style.scrollSnapType = 'none';
+
+                function step(timestamp) {
+                  if (start === null) start = timestamp;
+
+                  var progress = Math.min(1, (timestamp - start) / duration);
+
+                  carousel.scrollLeft = from + distance * easeInOutCubic(progress);
+
+                  if (progress < 1 && animating) {
+                    frame = requestAnimationFrame(step);
+                  } else {
+                    var completed = progress >= 1;
+
+                    stopAnimation();
+
+                    if (completed) schedule();
+                  }
+                }
+
+                frame = requestAnimationFrame(step);
+              }
+
+              function canRun() {
+                if (!visible || document.hidden || hovering || touching || focused) return false;
+                if (lightbox.classList.contains('is-lightbox-visible')) return false;
+                if (Date.now() - lastInteraction < 1500) return false;
+                if (mobileQuery.matches && carousel.querySelector('video-media[playing]')) return false;
+
+                return true;
+              }
+
+              function tick() {
+                var target = canRun() ? nextTarget() : null;
+
+                if (target === null) return schedule();
+
+                animateTo(target);
+              }
+
+              function schedule() {
+                clearTimeout(timer);
+                timer = setTimeout(tick, intervalMs);
+              }
+
+              function interrupt() {
+                lastInteraction = Date.now();
+                stopAnimation();
+              }
+
+              carousel.addEventListener('pointerenter', function (event) {
+                if (event.pointerType === 'mouse') hovering = true;
+              });
+
+              carousel.addEventListener('pointerleave', function (event) {
+                if (event.pointerType === 'mouse') {
+                  hovering = false;
+                  schedule();
+                }
+              });
+
+              carousel.addEventListener('touchstart', function () {
+                touching = true;
+                interrupt();
+              }, { passive: true });
+
+              ['touchend', 'touchcancel'].forEach(function (name) {
+                carousel.addEventListener(name, function () {
+                  touching = false;
+                  lastInteraction = Date.now();
+                  schedule();
+                }, { passive: true });
+              });
+
+              carousel.addEventListener('wheel', interrupt, { passive: true });
+              carousel.addEventListener('pointerdown', interrupt);
+
+              carousel.addEventListener('scroll', function () {
+                if (!animating) lastInteraction = Date.now();
+              }, { passive: true });
+
+              carousel.addEventListener('focusin', function () {
+                focused = true;
+              });
+
+              carousel.addEventListener('focusout', function () {
+                focused = false;
+                schedule();
+              });
+
+              if ('IntersectionObserver' in window) {
+                new IntersectionObserver(function (entries) {
+                  visible = entries[0].isIntersecting;
+                }, { threshold: 0.3 }).observe(carousel);
+              }
+
+              schedule();
+            })();
+          </script>
+        {%- endif -%}
 
         {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id -%}
 
@@ -797,6 +1020,28 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       "id": "show_progress_bar_desktop",
       "label": "Show scroll controls on desktop",
       "default": false
+    },
+    {
+      "type": "header",
+      "content": "Auto-scroll"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoscroll",
+      "label": "Scroll automatically",
+      "info": "Moves the carousel one item at a time with a smooth animation. It pauses while the visitor hovers, touches or scrolls it, and is skipped for visitors who prefer reduced motion.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoscroll_interval",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "label": "Time between moves",
+      "default": 4,
+      "visible_if": "{{ section.settings.autoscroll }}"
     }
   ],
   "blocks": [
