@@ -8,12 +8,18 @@
   {%- if section.settings.floating_toolbar -%}
     {%- comment -%}
     Floating mode: same calc(var(--container-gutter) + 0.5rem) formula as sections/reviews.liquid and
-    sections/faq.liquid on the sides; top and bottom use three quarters of it, so the toolbar reads as a compact
+    sections/faq.liquid on the sides; top and bottom use three quarters of it (half from 700px up), so the toolbar reads as a compact
     padded card instead of keeping its default, non-uniform padding values (theme.css).
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .collection__toolbar {
       padding-block: calc((var(--container-gutter) + 0.5rem) * 0.75);
       padding-inline: calc(var(--container-gutter) + 0.5rem);
+    }
+
+    @media screen and (min-width: 700px) {
+      #shopify-section-{{ section.id }} .collection__toolbar {
+        padding-block: calc((var(--container-gutter) + 0.5rem) / 2);
+      }
     }
 
     {%- comment -%}
@@ -49,6 +55,12 @@
         padding-block-start: calc((var(--container-gutter) + 0.5rem) * 0.75 + 1px);
         will-change: transform;
         transition: transform var(--header-solid-transition, .45s cubic-bezier(.4, 0, .2, 1)), visibility var(--header-solid-transition, .45s cubic-bezier(.4, 0, .2, 1));
+      }
+
+      @media screen and (min-width: 700px) {
+        #shopify-section-{{ section.id }} .collection__toolbar {
+          padding-block-start: calc((var(--container-gutter) + 0.5rem) / 2 + 1px);
+        }
       }
 
       {%- comment -%}
