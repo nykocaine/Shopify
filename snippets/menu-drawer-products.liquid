@@ -1,0 +1,108 @@
+{%- doc -%}
+Renders the products card shown on top of the main menu drawer panel (see snippets/main-menu-drawer.liquid):
+a rounded container with an optional row of collection tabs, the product list (max 5) and an optional button.
+
+With the collection tabs off it lists the products picked by hand in the block; with them on, each tab lists
+the first products of one of the collections picked in the block.
+
+@param {object} block - the "drawer_products" block of the header section
+{%- enddoc -%}
+
+{%- liquid
+  assign max_products = 5
+  assign use_tabs = false
+
+  if block.settings.show_collection_tabs
+    for i in (1..4)
+      assign collection_key = 'collection_' | append: i
+      if block.settings[collection_key].products_count > 0
+        assign use_tabs = true
+        break
+      endif
+    endfor
+  endif
+-%}
+
+{%- capture products_html -%}
+  {%- if use_tabs -%}
+    {%- assign tab_index = 0 -%}
+
+    <div class="menu-drawer-products__tabs scroll-area" role="tablist">
+      {%- for i in (1..4) -%}
+        {%- assign collection_key = 'collection_' | append: i -%}
+        {%- assign collection = block.settings[collection_key] -%}
+
+        {%- if collection.products_count > 0 -%}
+          <button type="button" role="tab" class="menu-drawer-products__tab" data-menu-drawer-products-tab="{{ i }}" aria-selected="{% if tab_index == 0 %}true{% else %}false{% endif %}">
+            {{- collection.title -}}
+          </button>
+          {%- assign tab_index = tab_index | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    {%- assign tab_index = 0 -%}
+
+    {%- for i in (1..4) -%}
+      {%- assign collection_key = 'collection_' | append: i -%}
+      {%- assign collection = block.settings[collection_key] -%}
+
+      {%- if collection.products_count > 0 -%}
+        <div class="menu-drawer-products__list" role="tabpanel" data-menu-drawer-products-panel="{{ i }}" {% unless tab_index == 0 %}hidden{% endunless %}>
+          {%- for product in collection.products limit: max_products -%}
+            {%- render 'menu-drawer-products-item', product: product -%}
+          {%- endfor -%}
+        </div>
+        {%- assign tab_index = tab_index | plus: 1 -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- else -%}
+    {%- if block.settings.products.size > 0 -%}
+      <div class="menu-drawer-products__list">
+        {%- for product in block.settings.products limit: max_products -%}
+          {%- render 'menu-drawer-products-item', product: product -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- if products_html contains 'menu-drawer-products__item' -%}
+  <div class="menu-drawer-products" {{ block.shopify_attributes }}>
+    <div class="menu-drawer-products__card color-scheme color-scheme--{{ block.settings.color_scheme.id }}">
+      {{- products_html -}}
+    </div>
+
+    {%- if block.settings.button_label != blank and block.settings.button_url != blank -%}
+      <div class="menu-drawer-products__button">
+        {%- render 'button', content: block.settings.button_label, href: block.settings.button_url, style: 'outline' -%}
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- if use_tabs -%}
+    <script>
+      if (!window.menuDrawerProductsTabs) {
+        window.menuDrawerProductsTabs = true;
+
+        document.addEventListener('click', (event) => {
+          const tab = event.target.closest('[data-menu-drawer-products-tab]');
+
+          if (!tab) {
+            return;
+          }
+
+          const card = tab.closest('.menu-drawer-products__card');
+
+          card.querySelectorAll('[data-menu-drawer-products-tab]').forEach((item) => {
+            item.setAttribute('aria-selected', item === tab ? 'true' : 'false');
+          });
+
+          card.querySelectorAll('[data-menu-drawer-products-panel]').forEach((panel) => {
+            panel.hidden = panel.dataset.menuDrawerProductsPanel !== tab.dataset.menuDrawerProductsTab;
+          });
+        });
+      }
+    </script>
+  {%- endif -%}
+{%- endif -%}

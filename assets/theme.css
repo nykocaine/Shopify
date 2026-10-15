@@ -7458,6 +7458,69 @@ shopify-account::part(signed-out-avatar) {
   justify-content: space-between;
 }
 
+/* Products card on top of the main panel (snippets/menu-drawer-products.liquid). Same radius as the drawer itself
+   (--drawer-border-radius); typography comes from .product-title / .product-subtitle, as in the product cards. */
+.menu-drawer-products {
+  margin-block-end: 2rem;
+}
+
+.menu-drawer-products__card {
+  border-radius: var(--drawer-border-radius);
+  padding: 1rem;
+}
+
+.menu-drawer-products__tabs {
+  display: flex;
+  gap: 1.25rem;
+  margin-block-end: 1rem;
+}
+
+.menu-drawer-products__tab {
+  flex-shrink: 0;
+  opacity: .5;
+  transition: opacity .3s ease-in-out;
+}
+
+.menu-drawer-products__tab[aria-selected="true"] {
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: .4em;
+}
+
+.menu-drawer-products__list {
+  display: grid;
+  gap: .5rem;
+}
+
+.menu-drawer-products__item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .5rem;
+}
+
+.menu-drawer-products__image {
+  flex-shrink: 0;
+  width: 3.5rem;
+}
+
+.menu-drawer-products__image img {
+  width: 100%;
+  height: auto;
+}
+
+.menu-drawer-products__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.menu-drawer-products__button {
+  display: flex;
+  justify-content: center;
+  margin-block-start: 1.25rem;
+}
+
 .menu-drawer .menu-promo {
   margin-inline: calc(-1 * var(--menu-drawer-padding-inline));
 }

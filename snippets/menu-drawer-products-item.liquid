@@ -1,0 +1,22 @@
+{%- doc -%}
+One product row of the menu drawer products card (see snippets/menu-drawer-products.liquid): thumbnail on the left,
+title and subtitle (the product's "custom.subtitle" metafield, same one the product cards use) on the right.
+
+@param {object} product - the product to show
+{%- enddoc -%}
+
+<a href="{{ product.url }}" class="menu-drawer-products__item">
+  <span class="menu-drawer-products__image">
+    {%- if product.featured_image != blank -%}
+      {{- product.featured_image | image_url: width: 160 | image_tag: sizes: '56px', widths: '80, 160', loading: 'lazy', alt: product.title -}}
+    {%- endif -%}
+  </span>
+
+  <span class="menu-drawer-products__text">
+    <span class="product-title text-base">{{ product.title }}</span>
+
+    {%- if product.metafields.custom.subtitle != blank -%}
+      <span class="product-subtitle text-base" style="color: rgb(var(--text-color))">{{ product.metafields.custom.subtitle }}</span>
+    {%- endif -%}
+  </span>
+</a>
