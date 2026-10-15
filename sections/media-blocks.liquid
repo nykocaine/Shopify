@@ -223,15 +223,27 @@
       at exactly the same point as before - same value (including the padding-collapsing formula,
       still driven by --section-disable-padding-collapsing), just as margin.
     {%- endcomment -%}
-    #shopify-section-{{ section.id }} > div {
-      display: flow-root;
-    }
+    {%- if section.settings.floating_media_blocks -%}
+      {%- comment -%}
+      Floating: the cards carry the visual weight and the wrapper is only a frame, so the top spacing is left to
+      collapse out of the section (no flow-root) and becomes real outer margin - the theme editor doesn't select
+      it and no section-colored band sits above the cards. The bottom spacing is already outer margin
+      (.section-floating--block-end).
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .section-spacing {
+        padding-block: 0;
+        margin-block-start: calc(var(--section-disable-padding-collapsing) * var(--section-vertical-spacing-block-start, var(--section-vertical-spacing)));
+      }
+    {%- else -%}
+      #shopify-section-{{ section.id }} > div {
+        display: flow-root;
+      }
 
-    #shopify-section-{{ section.id }} .section-spacing {
-      padding-block-start: 0;
-      padding-block-end: 0;
-      margin-block-start: calc(var(--section-disable-padding-collapsing) * var(--section-vertical-spacing-block-start, var(--section-vertical-spacing)));
-    }
+      #shopify-section-{{ section.id }} .section-spacing {
+        padding-block-start: 0;
+        margin-block-start: calc(var(--section-disable-padding-collapsing) * var(--section-vertical-spacing-block-start, var(--section-vertical-spacing)));
+      }
+    {%- endif -%}
 
     {%- comment -%}
     Info panel: heading on top, then a list of label/content rows below it, each row edited as its
@@ -918,7 +930,6 @@
 
               {%- when 'empty_item' -%}
                 <div class="media-blocks__item color-scheme color-scheme--{{ block.settings.color_scheme.id }} md-max:hidden" {{ block.shopify_attributes }}>
-                  <!-- Empty item -->
                 </div>
 
               {%- when 'faq' -%}
@@ -1203,7 +1214,7 @@
                   -%}
                 </style>
 
-                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: calc(var(--container-gutter) + 0.25rem);" {{ block.shopify_attributes }}>
+                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="padding: calc(var(--container-gutter) + 0.5rem);" {{ block.shopify_attributes }}>
                   <div class="v-stack gap-4" id="{{ carousel_wrapper_id }}">
                     <div style="border-radius: var(--media-blocks-corner-radius); overflow: hidden;">
                     <product-list id="{{ carousel_dom_id }}" cell-selector=".snap-start" class="scroll-area snap-x">
