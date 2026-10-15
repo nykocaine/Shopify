@@ -247,9 +247,10 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             }
 
             {%- comment -%}
-            Videos always lead, images always follow - shuffled independently within each group
-            (still a fresh order every page load), then concatenated video-first instead of one
-            shuffle across everything, which could land a video anywhere including last.
+            Videos and images are shuffled independently within each group (still a fresh order every page
+            load) and then interleaved: the videos are spread evenly through the row, starting with one
+            (video, image, video, image... when there are as many of each; with fewer videos they are evenly
+            spaced between the images), instead of one shuffle across everything, which could clump them.
             {%- endcomment -%}
             var videoCells = [];
             var otherCells = [];
@@ -265,7 +266,16 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             shuffle(videoCells);
             shuffle(otherCells);
 
-            var cells = videoCells.concat(otherCells);
+            var cells = new Array(videoCells.length + otherCells.length);
+            var nextImage = 0;
+
+            videoCells.forEach(function (cell, index) {
+              cells[Math.floor(index * cells.length / videoCells.length)] = cell;
+            });
+
+            for (var slot = 0; slot < cells.length; slot++) {
+              if (!cells[slot]) cells[slot] = otherCells[nextImage++];
+            }
 
             cells.forEach(function (cell, index) {
               var openButton = cell.querySelector('open-lightbox-button');
