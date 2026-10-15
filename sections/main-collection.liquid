@@ -8,11 +8,11 @@
   {%- if section.settings.floating_toolbar -%}
     {%- comment -%}
     Floating mode: same calc(var(--container-gutter) + 0.5rem) formula as sections/reviews.liquid and
-    sections/faq.liquid on the sides; top and bottom use half of it, so the toolbar reads as a compact
+    sections/faq.liquid on the sides; top and bottom use three quarters of it, so the toolbar reads as a compact
     padded card instead of keeping its default, non-uniform padding values (theme.css).
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .collection__toolbar {
-      padding-block: calc((var(--container-gutter) + 0.5rem) / 2);
+      padding-block: calc((var(--container-gutter) + 0.5rem) * 0.75);
       padding-inline: calc(var(--container-gutter) + 0.5rem);
     }
 
@@ -32,6 +32,26 @@
     #shopify-section-{{ section.id }} .collection {
       padding-block-end: 0;
     }
+
+    {%- if section.settings.sticky_toolbar -%}
+      {%- comment -%}
+      Sticky toolbar glued to the header. --sticky-offset (snippets/css-variables.liquid) is already the
+      header's bottom edge while it is visible and drops to the announcement bar's height when the header
+      hides on scroll, so the toolbar follows the header exactly; its top transitions with the same
+      timing as the header's slide. Sits under the header (z-index 4) and over the product cards.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .collection__toolbar {
+        position: sticky;
+        top: var(--sticky-offset);
+        z-index: 2;
+        transition: top var(--header-solid-transition, .4s ease);
+      }
+
+      {%- comment -%} The sidebar filters stick below the toolbar too (--collection-toolbar-height is set by the script at the end of the section). {%- endcomment -%}
+      #shopify-section-{{ section.id }} .collection__sidebar {
+        top: calc(var(--sticky-area-height) + var(--collection-toolbar-height, 0px) + 20px);
+      }
+    {%- endif -%}
   {%- endif -%}
 
   #shopify-section-{{ section.id }} .product-list .product-list__promo {
@@ -206,6 +226,17 @@ on desktop based on the settings
   </facets-drawer>
 {%- endif -%}
 
+{%- if section.settings.floating_toolbar and section.settings.sticky_toolbar -%}
+  <script>
+    (() => {
+      const section = document.getElementById('shopify-section-{{ section.id }}');
+      const toolbar = section && section.querySelector('.collection__toolbar');
+      if (!toolbar || !window.ResizeObserver) return;
+      new ResizeObserver(() => section.style.setProperty('--collection-toolbar-height', `${toolbar.offsetHeight}px`)).observe(toolbar);
+    })();
+  </script>
+{%- endif -%}
+
 {% schema %}
 {
   "name": "t:sections.main_collection.name",
@@ -234,6 +265,14 @@ on desktop based on the settings
       "label": "Barra de herramientas flotante",
       "info": "Pega la barra de herramientas al encabezado (sin esquinas redondeadas arriba) y agrega margen abajo y a los lados, usando el espaciado entre secciones y el margen lateral global de la tienda.",
       "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky_toolbar",
+      "label": "Barra de herramientas fija junto al encabezado",
+      "info": "Se queda pegada debajo del encabezado al hacer scroll y se oculta y reaparece junto con él.",
+      "default": false,
+      "visible_if": "{{ section.settings.floating_toolbar }}"
     },
     {
       "type": "range",
