@@ -43,25 +43,6 @@
     margin-top: var(--section-vertical-spacing);
   }
 
-  #shopify-section-{{ section.id }} .featured-product-list__scroll-controls .progress-bar {
-    flex: 1;
-  }
-
-  #shopify-section-{{ section.id }} .featured-product-list__scroll-controls .h-stack {
-    flex-shrink: 0;
-  }
-
-  {%- comment -%}
-  There's no dedicated "chevron-left" icon, so the prev button reuses chevron-right flipped. This
-  `transform` composes with (doesn't fight) the `direction_aware` icon param's own `scale: -1` in RTL
-  (assets/theme.css `[dir="rtl"] .icon--direction-aware`) - `scale` and `transform` are separate CSS
-  properties that both apply, so the two horizontal flips cancel out in RTL, correctly leaving the
-  icon pointing the same way "next" does there.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .featured-product-list__scroll-controls carousel-prev-button .icon-chevron-right {
-    transform: scaleX(-1);
-  }
-
   /*
    * .product-card has a global "scroll-snap-align: start" rule (assets/theme.css),
    * which makes the carousel engine (ScrollCarousel.cellAlign) align the active
@@ -73,22 +54,6 @@
   #shopify-section-{{ section.id }} product-list .product-list__promo {
     scroll-snap-align: center;
   }
-
-  {%- unless section.settings.show_progress_bar_mobile -%}
-    @media screen and (max-width: 999px) {
-      #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
-        display: none;
-      }
-    }
-  {%- endunless -%}
-
-  {%- unless section.settings.show_progress_bar_desktop -%}
-    @media screen and (min-width: 1000px) {
-      #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
-        display: none;
-      }
-    }
-  {%- endunless -%}
 
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} {
@@ -173,27 +138,7 @@
           {%- endfor -%}
         </product-list>
 
-        {%- if section.settings.show_progress_bar_mobile or section.settings.show_progress_bar_desktop -%}
-          <div class="featured-product-list__scroll-controls h-stack gap-4">
-            <progress-bar track-scroll-target="{{ product_list_id }}" class="progress-bar"></progress-bar>
-
-            <div class="h-stack gap-2">
-              <carousel-prev-button aria-controls="{{ product_list_id }}">
-                <button disabled class="circle-button circle-button--outline">
-                  <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
-                  {%- render 'icon' with 'chevron-right', direction_aware: true, width: 8 -%}
-                </button>
-              </carousel-prev-button>
-
-              <carousel-next-button aria-controls="{{ product_list_id }}">
-                <button class="circle-button circle-button--outline">
-                  <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
-                  {%- render 'icon' with 'chevron-right', direction_aware: true, width: 8 -%}
-                </button>
-              </carousel-next-button>
-            </div>
-          </div>
-        {%- endif -%}
+        {%- render 'scroll-controls', target_id: product_list_id, show_mobile: section.settings.show_progress_bar_mobile, show_desktop: section.settings.show_progress_bar_desktop, class: 'featured-product-list__scroll-controls' -%}
     </div>
   </div>
 </div>

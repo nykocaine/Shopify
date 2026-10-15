@@ -5020,6 +5020,24 @@ table caption {
   margin-inline: auto;
 }
 
+/* snippets/scroll-controls.liquid: progress bar + previous/next buttons under a carousel. Showing/hiding
+   per breakpoint is done in the markup with the md:hidden / md-max:hidden utilities. */
+.scroll-controls .progress-bar {
+  flex: 1;
+}
+
+.scroll-controls .h-stack {
+  flex-shrink: 0;
+}
+
+/* There's no dedicated "chevron-left" icon, so the prev button reuses chevron-right flipped. This
+   `transform` composes with (doesn't fight) the direction_aware icon's own `scale: -1` in RTL
+   (`[dir="rtl"] .icon--direction-aware`): scale and transform are separate properties, so the two flips
+   cancel out in RTL and the icon points the same way "next" does there. */
+.scroll-controls carousel-prev-button .icon-chevron-right {
+  transform: scaleX(-1);
+}
+
 [data-tooltip] {
   --tooltip-text-color: var(--text-color);
   --tooltip-background: var(--background);
