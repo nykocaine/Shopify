@@ -24,7 +24,7 @@
     --header-is-sticky: {% if section.settings.enable_sticky %}1{% else %}0{% endif %};
     --header-is-visible: 1;
     /* Softer, slightly slower timing for everything that changes when the header turns solid (background,
-       text color, logo swap, the gap above it). theme.css uses a fixed .2s for each, which read as an abrupt
+       text color, logo swap, the gap above it) and for its hide-on-scroll slide. theme.css uses a fixed .2s for each, which read as an abrupt
        blink when they all fire at once. */
     --header-solid-transition: .45s cubic-bezier(.4, 0, .2, 1);
     {%- if section.settings.floating_header %}
@@ -52,7 +52,7 @@
     the header turns solid. The transition animates that sticky offset.
     {%- endcomment -%}
     :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} {
-      transition: transform .2s ease-in-out, visibility .2s ease-in-out, top var(--header-solid-transition), background var(--header-solid-transition);
+      transition: transform var(--header-solid-transition), visibility var(--header-solid-transition), top var(--header-solid-transition), background var(--header-solid-transition);
     }
   {%- endif -%}
 
@@ -96,6 +96,15 @@
 
   #shopify-section-{{ section.id }} .header__logo-image {
     transition: opacity var(--header-solid-transition);
+  }
+
+  {%- comment -%}
+  Hide-on-scroll slide (the header leaving/returning on scroll direction) uses the same softer timing
+  instead of theme.css's .2s. visibility is transitioned with it so the header stays visible for the
+  whole slide out and only switches off at the end.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} {
+    transition: transform var(--header-solid-transition), visibility var(--header-solid-transition);
   }
 
   {%- comment -%}
