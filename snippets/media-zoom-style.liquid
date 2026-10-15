@@ -235,6 +235,13 @@ outside #{{ lightbox_id }} entirely, so they need the class on themselves to be 
 }
 
 {%- comment -%}
+The expanded media has no fade/scale rule of its own: it always sits in its final, centered state, and
+snippets/media-zoom-script.liquid animates it from/to the thumbnail's own box with a transform (the
+open/close "zoom"), so it grows out of - and shrinks back into - the exact spot it was tapped in, instead
+of disappearing from the grid and popping up (and back) somewhere else.
+{%- endcomment -%}
+
+{%- comment -%}
 .content-box > * (theme.css) sets isolation: isolate on .content-box__background-media, which traps
 any z-index/position: fixed inside it to compete only within that local stacking context - it would
 never be able to render above anything outside .content-box no matter how high its own z-index is.
@@ -283,13 +290,6 @@ area without cropping, and rounded to match the item's own corners.
   border-radius: {{ resolved_corner_radius }};
   scale: 1;
   opacity: 1;
-  transition: scale .25s ease, opacity .25s ease;
-}
-
-#{{ wrapper_id }} video-media.is-lightbox-expanded:not(.is-lightbox-visible),
-#{{ wrapper_id }} img.is-lightbox-expanded:not(.is-lightbox-visible) {
-  scale: .92;
-  opacity: 0;
 }
 
 {%- comment -%}
@@ -486,9 +486,7 @@ happens instantly instead of animated.
   #{{ lightbox_id }} .media-lightbox__backdrop,
   #{{ lightbox_id }} .media-lightbox__close,
   #{{ lightbox_id }} .media-lightbox__prev,
-  #{{ lightbox_id }} .media-lightbox__next,
-  #{{ wrapper_id }} video-media.is-lightbox-expanded,
-  #{{ wrapper_id }} img.is-lightbox-expanded {
+  #{{ lightbox_id }} .media-lightbox__next {
     transition: none;
   }
 }

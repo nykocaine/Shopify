@@ -251,6 +251,10 @@ progress bar) are simply skipped when no carousel_id is given.
       function expandCell(cell, continuePlayingWithSound) {
         var media = getCellMedia(cell);
 
+        // The expanded media leaves the cell's flow (position: fixed): keeping the cell's box means the
+        // grid doesn't collapse or shift under it, and the thumbnail's slot is still there to land back in.
+        cell.style.minHeight = cell.offsetHeight + 'px';
+
         if (media.videoMedia) {
           var video = media.videoMedia.querySelector('video');
           var wasPlaying = video && !video.paused;
@@ -306,12 +310,55 @@ progress bar) are simply skipped when no carousel_id is given.
           media.image.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
         }
 
+        activeCell.style.minHeight = '';
         activeCell = null;
 
         return wasPlaying;
       }
 
       var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // The open/close "zoom": the expanded media is already centered in its final state (see
+      // media-zoom-style.liquid), so this only animates a transform between that final box and the box
+      // of the thumbnail it came from (FLIP). A uniform scale (by width) is used so nothing stretches;
+      // when the two boxes have different proportions (a cropped 4:5 thumbnail vs. the whole photo) a
+      // clip-path trims the media to the thumbnail's shape at the start/end of the animation.
+      var zoomEase = 'cubic-bezier(0.22, 1, 0.36, 1)';
+      var zoomDuration = 420;
+      var activeZoom = null;
+
+      function zoomKeyframes(thumbRect, finalRect) {
+        var scale = thumbRect.width / finalRect.width;
+        var shiftX = (thumbRect.left + thumbRect.width / 2) - (finalRect.left + finalRect.width / 2);
+        var shiftY = (thumbRect.top + thumbRect.height / 2) - (finalRect.top + finalRect.height / 2);
+        var trim = Math.max(0, (finalRect.height - thumbRect.height / scale) / 2) / finalRect.height * 100;
+        var radius = parseFloat(window.getComputedStyle(activeCell || document.body).borderRadius) || 0;
+
+        return [
+          {
+            transform: 'translate(' + shiftX + 'px, ' + shiftY + 'px) scale(' + scale + ')',
+            clipPath: 'inset(' + trim + '% 0 ' + trim + '% 0 round ' + (radius / scale) + 'px)'
+          },
+          { transform: 'none', clipPath: 'inset(0% 0 0% 0 round ' + radius + 'px)' }
+        ];
+      }
+
+      function playZoom(element, thumbRect, finalRect, reverse) {
+        if (activeZoom) {
+          activeZoom.cancel();
+        }
+
+        var animation = element.animate(zoomKeyframes(thumbRect, finalRect), {
+          duration: zoomDuration,
+          easing: zoomEase,
+          fill: 'both',
+          direction: reverse ? 'reverse' : 'normal'
+        });
+
+        activeZoom = animation;
+
+        return animation;
+      }
 
       function openLightbox(index) {
         var cell = cells[index];
@@ -326,86 +373,105 @@ progress bar) are simply skipped when no carousel_id is given.
           carousel.removeEventListener('carousel:change', scheduleAdvance);
         }
 
+        openedCell = cell;
+
+        var thumbnail = getCellMedia(cell);
+        var thumbnailElement = thumbnail.videoMedia || thumbnail.image;
+        var thumbRect = thumbnailElement ? thumbnailElement.getBoundingClientRect() : null;
+
+        // Removing the page scrollbar would otherwise shift the whole page sideways by its width.
+        document.documentElement.style.scrollbarGutter = 'stable';
         document.documentElement.style.overflow = 'hidden';
         lightbox.hidden = false;
 
         var media = expandCell(cell);
+        var expandedElement = media.videoMedia || media.image;
 
-        // Two rAFs: the first lets the browser actually paint the just-removed [hidden] / just-added
-        // is-lightbox-expanded "entering" state (scaled down, transparent - see media-zoom-style.liquid)
-        // - adding "is-lightbox-visible" in the very same frame would get coalesced into that first
-        // paint instead of transitioning from it. The second rAF is where the settled state actually
-        // gets applied, so the fade/scale-in transition has a real "from" frame to animate out of.
+        if (!prefersReducedMotion && thumbRect && expandedElement && thumbRect.width > 0) {
+          var finalRect = expandedElement.getBoundingClientRect();
+
+          if (finalRect.width > 0 && finalRect.height > 0) {
+            playZoom(expandedElement, thumbRect, finalRect, false).onfinish = function() {
+              if (activeZoom && activeCell === cell) {
+                activeZoom.cancel();
+                activeZoom = null;
+              }
+            };
+          }
+        }
+
+        // The backdrop and buttons fade in with a class added one frame later, so that fade is a real
+        // transition from their hidden state instead of being coalesced into the first paint.
         requestAnimationFrame(function() {
-          requestAnimationFrame(function() {
-            lightbox.classList.add('is-lightbox-visible');
-            setMediaVisible(media, true);
-          });
+          lightbox.classList.add('is-lightbox-visible');
+          setMediaVisible(media, true);
         });
       }
 
+      var isClosing = false;
+      var openedCell = null;
+
       function closeLightbox() {
+        if (isClosing || !activeCell) {
+          return;
+        }
+
+        isClosing = true;
+
         var finalCell = activeCell;
-        var media = finalCell ? getCellMedia(finalCell) : null;
+        var media = getCellMedia(finalCell);
+        var element = media.videoMedia || media.image;
 
         function finish() {
+          if (activeZoom) {
+            activeZoom.cancel();
+            activeZoom = null;
+          }
+
           collapseCell();
           lightbox.hidden = true;
           document.documentElement.style.overflow = '';
+          document.documentElement.style.scrollbarGutter = '';
+          isClosing = false;
 
           if (carousel) {
             carousel.addEventListener('carousel:change', scheduleAdvance);
-
-            // Catches up the carousel to wherever the visitor ended up navigating inside the lightbox
-            // (next/prev never move the carousel's own scroll position while it's open).
-            if (finalCell && finalCell !== carousel.selectedCell) {
-              carousel.select(cells.indexOf(finalCell), { instant: true });
-            }
-
             scheduleAdvance();
           }
         }
 
-        lightbox.classList.remove('is-lightbox-visible');
+        // Catches up the carousel when the visitor navigated (next/prev) to an item that isn't on screen
+        // (next/prev never move the carousel's own scroll position while it's open) BEFORE measuring
+        // where the media has to land, so the target is the slot's real position on screen. Closing on
+        // the item that was tapped, or on one that is already visible, never scrolls anything.
+        if (carousel && finalCell !== openedCell) {
+          var carouselRect = carousel.getBoundingClientRect();
+          var cellRect = finalCell.getBoundingClientRect();
 
-        if (media) {
-          setMediaVisible(media, false);
+          if (cellRect.left < carouselRect.left - 1 || cellRect.right > carouselRect.right + 1) {
+            carousel.select(cells.indexOf(finalCell), { instant: true });
+          }
         }
 
-        if (prefersReducedMotion) {
+        var finalRect = element ? element.getBoundingClientRect() : null;
+        var slotRect = finalCell.getBoundingClientRect();
+
+        lightbox.classList.remove('is-lightbox-visible');
+        setMediaVisible(media, false);
+
+        if (prefersReducedMotion || !finalRect || finalRect.width === 0 || slotRect.width === 0) {
           finish();
           return;
         }
 
-        // Only actually collapses/hides once the fade/scale-out transition has finished playing, so
-        // the backdrop and media visibly animate away instead of vanishing the instant Close is
-        // clicked. transitionend is scoped to the backdrop specifically (always present, unlike
-        // prev/next); the timeout is a safety net for the rare case it never fires (eg. there was
-        // nothing to transition from because the open animation hadn't settled yet).
-        var backdrop = lightbox.querySelector('.media-lightbox__backdrop');
-        var done = false;
+        var animation = playZoom(element, slotRect, finalRect, true);
 
-        function onTransitionEnd(event) {
-          if (event.target !== backdrop || done) {
-            return;
+        animation.onfinish = finish;
+        animation.oncancel = function() {
+          if (isClosing) {
+            finish();
           }
-
-          done = true;
-          backdrop.removeEventListener('transitionend', onTransitionEnd);
-          finish();
-        }
-
-        backdrop.addEventListener('transitionend', onTransitionEnd);
-
-        setTimeout(function() {
-          if (done) {
-            return;
-          }
-
-          done = true;
-          backdrop.removeEventListener('transitionend', onTransitionEnd);
-          finish();
-        }, 300);
+        };
       }
 
       function showRelativeSlide(offset) {
