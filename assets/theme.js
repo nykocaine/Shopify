@@ -3434,6 +3434,10 @@ var ProductGallery = class extends HTMLElement {
     __privateSet(this, _photoSwipeInstance, new PhotoSwipeLightbox({
       pswpModule: () => import("photoswipe"),
       bgOpacity: 1,
+      // Softer than PhotoSwipe's defaults (333ms, cubic-bezier(.4,0,.22,1)); media-zoom-script.liquid uses the same values
+      showAnimationDuration: 480,
+      hideAnimationDuration: 480,
+      easing: "cubic-bezier(0.42, 0, 0.2, 1)",
       mainClass: `color-scheme--${this.getAttribute("zoom-color-scheme-id")}`,
       // This outputs the CSS variables for the color scheme
       maxZoomLevel: parseInt(this.getAttribute("allow-zoom")) || 3,

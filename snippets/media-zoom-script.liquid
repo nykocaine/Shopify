@@ -323,11 +323,12 @@ progress bar) are simply skipped when no carousel_id is given.
       // of the thumbnail it came from (FLIP). A uniform scale (by width) is used so nothing stretches;
       // when the two boxes have different proportions (a cropped 4:5 thumbnail vs. the whole photo) a
       // clip-path trims the media to the thumbnail's shape at the start/end of the animation.
-      // Same duration and curve as the product gallery's zoom (PhotoSwipe's defaults), so every zoom in the
-      // theme moves the same way. Closing plays the keyframes backwards by swapping them, not with a
-      // reversed animation: that would also reverse the curve, making the close start slow and end abruptly.
-      var zoomEase = 'cubic-bezier(0.4, 0, 0.22, 1)';
-      var zoomDuration = 333;
+      // Same duration and curve as the product gallery's zoom (set in its PhotoSwipe options, assets/theme.js),
+      // so every zoom in the theme moves the same way. Closing plays the keyframes backwards by swapping
+      // them, not with a reversed animation: that would also reverse the curve, making the close start
+      // slow and end abruptly.
+      var zoomEase = 'cubic-bezier(0.42, 0, 0.2, 1)';
+      var zoomDuration = 480;
       var activeZoom = null;
 
       function zoomKeyframes(thumbRect, finalRect) {
