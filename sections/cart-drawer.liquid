@@ -138,17 +138,6 @@
         </div>
       {%- else -%}
         <div class="v-stack gap-5">
-          {%- comment -%}Same block as the cart page's order summary: item count and free shipping bar inside a card{%- endcomment -%}
-          {%- if settings.cart_show_free_shipping_bar -%}
-            <div class="cart-drawer__summary color-scheme color-scheme--{{ section.settings.summary_color_scheme.id }}">
-              <div class="v-stack gap-2">
-                <span class="subheading">{{ 'cart.general.item_count' | t: count: cart.item_count }}</span>
-
-                {%- render 'free-shipping-bar' -%}
-              </div>
-            </div>
-          {%- endif -%}
-
           <div class="v-stack gap-4">
             {%- comment -%}TRUST BADGES{%- endcomment -%}
             {%- assign trust_badges_block = section.blocks | where: 'type', 'trust_badges' | first -%}
@@ -342,6 +331,15 @@
 
           <div class="cart-drawer__footer-inner">
             <div class="v-stack gap-4">
+              {%- comment -%}Same order as the cart page's order summary: item count and free shipping bar, then the DNI field, discount, totals and checkout{%- endcomment -%}
+              {%- if settings.cart_show_free_shipping_bar -%}
+                <div class="v-stack gap-2">
+                  <span class="subheading">{{ 'cart.general.item_count' | t: count: cart.item_count }}</span>
+
+                  {%- render 'free-shipping-bar' -%}
+                </div>
+              {%- endif -%}
+
               {%- render 'cart-dni-field' -%}
 
               {%- if section.settings.show_terms_of_service_checkbox -%}
@@ -464,12 +462,6 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
-    },
-    {
-      "type": "color_scheme",
-      "id": "summary_color_scheme",
-      "label": "t:sections.cart_drawer.summary_color_scheme",
-      "default": "scheme-2"
     },
     {
       "type": "checkbox",
