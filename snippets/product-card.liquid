@@ -23,6 +23,7 @@ based on your desired layout (and remove most of the settings associated), and t
 @param {boolean} [show_swatches] - show or not the swatches. The swatch type is inferred from setting, and will default to true if nothing is set
 @param {boolean} [force_no_border] - if set to true, no border will be added around cards, even if the global setting ask to
 @param {string} [sizes] - the value of the sizes attribute (because it depends of the context, it should be calculated outside)
+@param {string} [part] - "media" renders only the image part of the card (inside the <product-card> element), "info" only the text part (inside a plain div): used by sections that scroll the two in separate, synced tracks. By default the whole card is rendered
 @param {string} [prefix_id] - an optional prefix being used to prefix all the inputs. This is useful when we have to output multiple product card on the same page, to avoid any ID conflicts
 @param {string} [quick_buy_context]
 @param {object} [block]
@@ -37,6 +38,15 @@ based on your desired layout (and remove most of the settings associated), and t
   assign show_quick_buy = show_quick_buy | default: settings.product_card_show_quick_buy, allow_false: true
   assign show_secondary_image = show_secondary_image | default: settings.product_card_show_secondary_image, allow_false: true
   assign show_swatches = show_swatches | default: settings.product_card_show_color_swatches, allow_false: true
+
+  assign render_media = true
+  assign render_info = true
+
+  if part == 'media'
+    assign render_info = false
+  elsif part == 'info'
+    assign render_media = false
+  endif
 
   if allow_highlight and product.metafields.custom.highlight_card.value
     assign highlight_card = true
@@ -133,13 +143,18 @@ based on your desired layout (and remove most of the settings associated), and t
   endunless
 -%}
 
+{%- if render_media -%}
 <product-card class="{{ product_card_classes }} color-scheme color-scheme--{{ color_scheme.id }}" {% if reveal and settings.stagger_products %}reveal-on-scroll="true"{% endif %} handle="{{ product.handle | escape }}">
+{%- else -%}
+<div class="{{ product_card_classes }} color-scheme color-scheme--{{ color_scheme.id }}">
+{%- endif -%}
   {%- comment -%}
   --------------------------------------------------------------------------------------------------------------------
   PRODUCT MEDIA
   --------------------------------------------------------------------------------------------------------------------
   {%- endcomment -%}
 
+  {%- if render_media -%}
   <div class="product-card__figure" {% if figure_aspect_ratio %}style="aspect-ratio: {{ figure_aspect_ratio }};"{% endif %}>
     {%- if show_badges and show_badges_along_info != true -%}
       {%- render 'product-badges',
@@ -277,6 +292,7 @@ based on your desired layout (and remove most of the settings associated), and t
       </div>
     {%- endif -%}
   </div>
+  {%- endif -%}
 
   {%- comment -%}
   --------------------------------------------------------------------------------------------------------------------
@@ -340,6 +356,7 @@ based on your desired layout (and remove most of the settings associated), and t
     endcase
   -%}
 
+  {%- if render_info -%}
   <div class="product-card__info {% if settings.product_card_info_position == 'inside' %}align-self-{{ settings.product_card_info_vertical_alignment }}{% endif %}">
     <div class="{{ info_alignment_class }}">
       <div class="{% if settings.product_card_info_horizontal_alignment == 'split' %}contents{% else %}v-stack gap-0.5{% endif %}">
@@ -398,8 +415,13 @@ based on your desired layout (and remove most of the settings associated), and t
       {%- endif -%}
     </div>
   </div>
+  {%- endif -%}
 
-  {%- if swatches != blank and settings.product_card_swatches_position == 'inside' and show_swatches_along_info == false -%}
+  {%- if render_media and render_info and swatches != blank and settings.product_card_swatches_position == 'inside' and show_swatches_along_info == false -%}
     {{- swatches -}}
   {%- endif -%}
+{%- if render_media -%}
 </product-card>
+{%- else -%}
+</div>
+{%- endif -%}
