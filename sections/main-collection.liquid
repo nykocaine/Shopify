@@ -47,8 +47,17 @@
         z-index: 2;
         margin-block-start: -1px;
         padding-block-start: calc((var(--container-gutter) + 0.5rem) * 0.75 + 1px);
-        transform: translateY(calc((var(--header-is-visible, 1) - 1) * var(--header-is-sticky, 0) * (var(--header-stuck-gap, 0px) + var(--header-height, 0px))));
+        will-change: transform;
         transition: transform var(--header-solid-transition, .45s cubic-bezier(.4, 0, .2, 1));
+      }
+
+      {%- comment -%}
+      Triggered by the very same state as the header's own slide (.header.is-hidden, see sections/header.liquid),
+      not by a custom property on :root, so both start in the same style recalculation and the toolbar
+      isn't delayed by re-resolving an inherited variable across the whole page.
+      {%- endcomment -%}
+      :root:has(.shopify-section--header .header.is-hidden) #shopify-section-{{ section.id }} .collection__toolbar {
+        transform: translateY(calc(-1 * var(--header-is-sticky, 0) * (var(--header-stuck-gap, 0px) + var(--header-height, 0px))));
       }
 
       {%- comment -%} The sidebar filters stick below the toolbar too (--collection-toolbar-height is set by the script at the end of the section). {%- endcomment -%}
