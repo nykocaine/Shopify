@@ -14,6 +14,23 @@
     #shopify-section-{{ section.id }} .collection__toolbar {
       padding: calc(var(--container-gutter) + 0.5rem);
     }
+
+    {%- comment -%}
+    Spacing below the toolbar and below the whole collection is a full section spacing, as outer margin
+    (not padding): the gap to the product grid sits between the toolbar and the grid, and the gap to the
+    footer sits outside the section's colored background, so the theme editor doesn't select either.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .collection__toolbar {
+      margin-block-end: var(--section-vertical-spacing);
+    }
+
+    #shopify-section-{{ section.id }} > .color-scheme {
+      margin-block-end: var(--section-vertical-spacing);
+    }
+
+    #shopify-section-{{ section.id }} .collection {
+      padding-block-end: 0;
+    }
   {%- endif -%}
 
   #shopify-section-{{ section.id }} .product-list .product-list__promo {
