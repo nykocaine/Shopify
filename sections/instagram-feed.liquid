@@ -42,6 +42,22 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   # of repeating "section.settings.instagram_feed_border_radius | append: 'px'" inline at each call
   # site - every image, video and the carousel frame itself then shares this exact same string.
   assign instagram_corner_radius_px = section.settings.instagram_feed_border_radius | append: 'px'
+
+  # Auto-scroll needs more than one card; the speed setting maps to pixels per second
+  assign instagram_autoscroll = false
+
+  if section.settings.autoscroll and instagram_has_multiple
+    assign instagram_autoscroll = true
+  endif
+
+  case section.settings.autoscroll_speed
+    when 'slow'
+      assign instagram_autoscroll_speed = 30
+    when 'fast'
+      assign instagram_autoscroll_speed = 70
+    else
+      assign instagram_autoscroll_speed = 45
+  endcase
 -%}
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {{ instagram_corner_radius_px }}; overflow: hidden;"{% endif %}>
@@ -157,7 +173,10 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
           {%- endfor -%}
         </scroll-carousel>
 
-        {%- render 'scroll-controls', target_id: instagram_carousel_id, show_mobile: section.settings.show_progress_bar_mobile, show_desktop: section.settings.show_progress_bar_desktop, class: 'instagram-feed__scroll-controls' -%}
+        {%- comment -%}The progress bar and arrows make no sense on an endless, self-moving row, so they only show when auto-scroll is off{%- endcomment -%}
+        {%- unless instagram_autoscroll -%}
+  {%- render 'scroll-controls', target_id: instagram_carousel_id, show_mobile: section.settings.show_progress_bar_mobile, show_desktop: section.settings.show_progress_bar_desktop, class: 'instagram-feed__scroll-controls' -%}
+        {%- endunless -%}
 
         {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple -%}
 
@@ -340,20 +359,22 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
           })();
         </script>
 
-        {%- if section.settings.autoscroll and instagram_has_multiple -%}
+        {%- if instagram_autoscroll -%}
           {%- comment -%}
-          Auto-scroll: advances one card at a time every autoscroll_interval seconds, rewinding to the
-          start after the last one. The motion is a short eased (ease-in-out) animation driven by
-          requestAnimationFrame instead of scrollTo({ behavior: 'smooth' }), whose speed and curve are
-          browser-defined and feel abrupt next to scroll-snap; snapping is switched off while it runs and
-          restored at the end, at an exact snap point, so nothing jumps. Its duration grows with the
-          distance (the rewind is slower than a single step).
+          Auto-scroll as a conveyor belt: the row moves left at a constant, slow speed, forever, with no
+          stops between cards. Each frame advances a float position by speed * elapsed time (so the speed
+          is the same on any refresh rate); when the first card has completely left the visible area it is
+          moved to the end of the row and the position is shifted back by exactly its width, which the eye
+          can't notice, so the row never ends. Cards are moved, not cloned, so there are no duplicated
+          videos or lightbox items. It needs enough cards to be wider than the viewport plus one card;
+          otherwise it does nothing.
 
-          It never fights the visitor: it waits while the pointer is over the carousel, a finger is
-          touching it, something inside has focus, the lightbox is open, the section is off-screen, the tab
-          is hidden, or the visitor scrolled it themselves a moment ago. On mobile it also waits while a
-          video is playing (there, anything playing was started by the visitor). It is disabled entirely
-          for prefers-reduced-motion and right-to-left pages.
+          It stops only when the visitor takes over: while a pointer or finger is pressed on the row (which
+          includes tapping a photo or a video), while they scroll it themselves (plus a short moment
+          after), while something inside has focus, while the lightbox is open, and on mobile while a
+          video they started is playing. It also rests while the section is off-screen or the tab is hidden,
+          and is disabled for prefers-reduced-motion and right-to-left pages. Snapping is off (see the
+          style above) so it can move continuously.
           {%- endcomment -%}
           <script>
             (function () {
@@ -364,157 +385,117 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
               if (window.getComputedStyle(carousel).direction === 'rtl') return;
 
-              var intervalMs = {{ section.settings.autoscroll_interval | default: 4 | times: 1000 }};
+              var speed = {{ instagram_autoscroll_speed }};
               var mobileQuery = window.matchMedia('(max-width: 699px)');
-              var timer = null;
-              var frame = null;
-              var animating = false;
-              var hovering = false;
-              var touching = false;
+              var position = carousel.scrollLeft;
+              var assigned = position;
+              var shifted = false;
+              var previousTimestamp = null;
+              var pressing = false;
               var focused = false;
               var visible = true;
               var lastInteraction = 0;
 
-              function easeInOutCubic(t) {
-                return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+              function shift(fraction) {
+                Array.prototype.forEach.call(carousel.children, function (cell) {
+                  cell.style.transform = fraction ? 'translate3d(' + (-fraction) + 'px, 0, 0)' : '';
+                });
+
+                shifted = fraction !== 0;
               }
 
-              function nextTarget() {
-                var max = carousel.scrollWidth - carousel.clientWidth;
+              function release() {
+                if (shifted) shift(0);
 
-                if (max <= 2) return null;
-
-                var current = carousel.scrollLeft;
-
-                if (current >= max - 2) return 0;
-
-                var left = carousel.getBoundingClientRect().left;
-                var cells = carousel.children;
-
-                for (var i = 0; i < cells.length; i++) {
-                  var position = cells[i].getBoundingClientRect().left - left + current;
-
-                  if (position > current + 2) return Math.min(position, max);
-                }
-
-                return max;
-              }
-
-              function stopAnimation() {
-                if (frame) cancelAnimationFrame(frame);
-
-                frame = null;
-                animating = false;
-                carousel.style.scrollSnapType = '';
-              }
-
-              function animateTo(target) {
-                var from = carousel.scrollLeft;
-                var distance = target - from;
-
-                if (Math.abs(distance) < 1) return schedule();
-
-                var duration = Math.min(1600, 700 + Math.abs(distance) * 0.35);
-                var start = null;
-
-                animating = true;
-                carousel.style.scrollSnapType = 'none';
-
-                function step(timestamp) {
-                  if (start === null) start = timestamp;
-
-                  var progress = Math.min(1, (timestamp - start) / duration);
-
-                  carousel.scrollLeft = from + distance * easeInOutCubic(progress);
-
-                  if (progress < 1 && animating) {
-                    frame = requestAnimationFrame(step);
-                  } else {
-                    var completed = progress >= 1;
-
-                    stopAnimation();
-
-                    if (completed) schedule();
-                  }
-                }
-
-                frame = requestAnimationFrame(step);
+                position = carousel.scrollLeft;
+                assigned = position;
               }
 
               function canRun() {
-                if (!visible || document.hidden || hovering || touching || focused) return false;
-                if (lightbox.classList.contains('is-lightbox-visible')) return false;
-                if (Date.now() - lastInteraction < 1500) return false;
-                if (mobileQuery.matches && carousel.querySelector('video-media[playing]')) return false;
+                var now = Date.now();
 
-                return true;
-              }
+                if (!visible || document.hidden || pressing || focused) return false;
 
-              function tick() {
-                var target = canRun() ? nextTarget() : null;
-
-                if (target === null) return schedule();
-
-                animateTo(target);
-              }
-
-              function schedule() {
-                clearTimeout(timer);
-                timer = setTimeout(tick, intervalMs);
-              }
-
-              function interrupt() {
-                lastInteraction = Date.now();
-                stopAnimation();
-              }
-
-              carousel.addEventListener('pointerenter', function (event) {
-                if (event.pointerType === 'mouse') hovering = true;
-              });
-
-              carousel.addEventListener('pointerleave', function (event) {
-                if (event.pointerType === 'mouse') {
-                  hovering = false;
-                  schedule();
+                if (lightbox.classList.contains('is-lightbox-visible') || (mobileQuery.matches && carousel.querySelector('video-media[playing]'))) {
+                  lastInteraction = now;
+                  return false;
                 }
+
+                return now - lastInteraction > 1200;
+              }
+
+              function frame(timestamp) {
+                requestAnimationFrame(frame);
+
+                var elapsed = previousTimestamp === null ? 0 : Math.min(timestamp - previousTimestamp, 64);
+
+                previousTimestamp = timestamp;
+
+                if (!canRun()) {
+                  release();
+                  return;
+                }
+
+                var first = carousel.firstElementChild;
+                var step = first.getBoundingClientRect().width + (parseFloat(window.getComputedStyle(carousel).columnGap) || 0);
+
+                if (carousel.scrollWidth - carousel.clientWidth <= step + 4) return;
+
+                position += speed * elapsed / 1000;
+
+                if (position >= step) {
+                  carousel.appendChild(first);
+                  position -= step;
+                }
+
+                {%- comment -%}
+                scrollLeft only takes whole pixels on standard-density screens, which made the row advance in
+                visible 1px hops; the whole part goes to scrollLeft and the remainder is applied as a
+                translate on the cells (composited, so sub-pixel smooth). The translate is removed whenever
+                the row stops, because a transformed ancestor would break the lightbox's fixed positioning.
+                {%- endcomment -%}
+                var whole = Math.floor(position);
+
+                carousel.scrollLeft = whole;
+                assigned = whole;
+                shift(position - whole);
+              }
+
+              carousel.addEventListener('pointerdown', function () {
+                pressing = true;
+                release();
               });
 
-              carousel.addEventListener('touchstart', function () {
-                touching = true;
-                interrupt();
-              }, { passive: true });
+              ['pointerup', 'pointercancel'].forEach(function (name) {
+                window.addEventListener(name, function () {
+                  if (!pressing) return;
 
-              ['touchend', 'touchcancel'].forEach(function (name) {
-                carousel.addEventListener(name, function () {
-                  touching = false;
+                  pressing = false;
                   lastInteraction = Date.now();
-                  schedule();
-                }, { passive: true });
+                });
               });
-
-              carousel.addEventListener('wheel', interrupt, { passive: true });
-              carousel.addEventListener('pointerdown', interrupt);
 
               carousel.addEventListener('scroll', function () {
-                if (!animating) lastInteraction = Date.now();
+                if (Math.abs(carousel.scrollLeft - assigned) > 1.5) lastInteraction = Date.now();
               }, { passive: true });
 
               carousel.addEventListener('focusin', function () {
                 focused = true;
+                release();
               });
 
               carousel.addEventListener('focusout', function () {
                 focused = false;
-                schedule();
+                lastInteraction = Date.now();
               });
 
               if ('IntersectionObserver' in window) {
                 new IntersectionObserver(function (entries) {
                   visible = entries[0].isIntersecting;
-                }, { threshold: 0.3 }).observe(carousel);
+                }, { threshold: 0.1 }).observe(carousel);
               }
 
-              schedule();
+              requestAnimationFrame(frame);
             })();
           </script>
         {%- endif -%}
@@ -698,6 +679,12 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     overflow-y: hidden;
     display: flex;
   }
+
+  {%- if instagram_autoscroll -%}
+    #shopify-section-{{ section.id }} .instagram-feed__carousel {
+      scroll-snap-type: none;
+    }
+  {%- endif -%}
 
   #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
     flex: 0 0 calc((100% - .5rem) / 2);
@@ -1029,18 +1016,19 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       "type": "checkbox",
       "id": "autoscroll",
       "label": "Scroll automatically",
-      "info": "Moves the carousel one item at a time with a smooth animation. It pauses while the visitor hovers, touches or scrolls it, and is skipped for visitors who prefer reduced motion.",
+      "info": "The row moves continuously, like a conveyor belt, and loops forever. It stops while the visitor presses, drags or opens an item, and is skipped for visitors who prefer reduced motion. The scroll controls above are hidden while this is on.",
       "default": true
     },
     {
-      "type": "range",
-      "id": "autoscroll_interval",
-      "min": 2,
-      "max": 10,
-      "step": 1,
-      "unit": "s",
-      "label": "Time between moves",
-      "default": 4,
+      "type": "select",
+      "id": "autoscroll_speed",
+      "label": "Speed",
+      "options": [
+        { "value": "slow", "label": "Slow" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "fast", "label": "Fast" }
+      ],
+      "default": "medium",
       "visible_if": "{{ section.settings.autoscroll }}"
     }
   ],
