@@ -72,8 +72,7 @@
 
       {%- if section.settings.display_mode != 'marquee' -%}
         {%- comment -%}
-        Same duration/easing as the theme's own height animation (AccordionDisclosure in theme.js: 0.25s,
-        easeInOut) - the script below sets an explicit height on this element so it can transition instead
+        Same duration as the message's fade-out in AnnouncementBar (theme.js: 0.4s) - the script below sets an explicit height on this element so it can transition instead
         of jumping between however tall each message naturally is.
 
         grid-template-rows: 100% is the actual fix for vertical centering: theme.css's own rule leaves row
@@ -87,7 +86,7 @@
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .announcement-bar__message-list {
           grid-template-rows: 100%;
-          transition: height .25s ease-in-out;
+          transition: height .4s ease-in-out;
           overflow: hidden;
         }
       {%- endif -%}
