@@ -144,7 +144,7 @@
           {%- endcomment -%}
           {%- unless has_categories -%}
             {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank or section.settings.button_text != blank -%}
-              <div class="prose {% if section.settings.layout == 'stacked' %}prose-justify-center{% endif %}">
+              <div class="prose">
                 {%- render 'subheading', content: section.settings.subheading -%}
                 {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.title_tag, html_tag: 'h2' -%}
 
@@ -169,8 +169,11 @@
       {%- endif -%}
     {%- endcapture -%}
 
+    {%- comment -%}faq--full-width adds the gap below the header: only when stacked and there is a header to separate from.{%- endcomment -%}
+    {%- assign section_header_markup = section_header | strip -%}
+
     {%- capture section_content -%}
-      <div class="faq">
+      <div class="faq{% if section.settings.layout != 'split' and section_header_markup != blank %} faq--full-width{% endif %}">
         <div class="faq__content faq-block__list{{ questions_card_class }}"{{ questions_card_style }}>
           {%- for block in section.blocks -%}
             {%- case block.type -%}
@@ -228,25 +231,16 @@
       another). On mobile --container-gutter is small (~10px), so gutter + 0.5rem everywhere keeps
       the floating card's content (both the title/subtitle/paragraph column and the questions
       column) comfortably off the card edges on every screen size, not just below 700px.
-      Split layout: .section-split__column owns every side. Stacked layout: .section-spacing owns the
-      block padding, .container owns the inline padding.
+      Split layout: .section-split__column owns every side. Stacked layout and categories layout:
+      .faq__container (below) owns every side.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .section-split__column {
         padding: calc(var(--container-gutter) + 0.5rem);
       }
 
-      #shopify-section-{{ section.id }} .section-spacing {
-        padding-block: calc(var(--container-gutter) + 0.5rem);
-      }
-
-      #shopify-section-{{ section.id }} .section-spacing .container {
-        padding-inline: calc(var(--container-gutter) + 0.5rem);
-      }
-
       {%- comment -%}
-      The categories layout's own container (.faq__container, below) gets equal padding on all four
-      sides - calc(var(--container-gutter) + 0.5rem) - now that it no longer sits inside
-      .section-spacing (removed, along with its own padding-block).
+      The container of the categories layout and of the stacked layout (.faq__container, below) gets
+      equal padding on all four sides - calc(var(--container-gutter) + 0.5rem).
 
       .container's own global rule (theme.css) also sets margin-inline-start/end to center itself
       once its parent is wider than --container-max-width - real margin, invisible on narrow
@@ -288,8 +282,7 @@
         padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
       }
 
-      #shopify-section-{{ section.id }}:first-child .section-split__column:not(.section-split__column--image),
-      #shopify-section-{{ section.id }}:first-child .section-spacing {
+      #shopify-section-{{ section.id }}:first-child .section-split__column:not(.section-split__column--image) {
         padding-block-start: calc((var(--container-gutter) + 0.5rem) * 3);
       }
 
@@ -643,7 +636,7 @@
       the full-width questions block below it are the same shape either way, so there is no
       meaningful "split" (title in one column, content in another) left once content must span the
       full width. Uses .container (own padding/margin overrides above) directly, without
-      .section-spacing's block padding or .section-split/.section-stack's narrower max-width.
+      .section-split's narrower max-width.
       {%- endcomment -%}
       <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_faq %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_faq %} style="border-radius: {{ section.settings.faq_border_radius }}px; overflow: hidden;"{% endif %}>
         <div class="container faq__container">
@@ -764,14 +757,14 @@
         </div>
       </div>
     {%- else -%}
+      {%- comment -%}
+      Stacked without categories: the same left-aligned, full-width container the categories layout uses
+      (title on top, questions below, equal padding on all four sides) - not a narrow centered column.
+      {%- endcomment -%}
       <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_faq %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_faq %} style="border-radius: {{ section.settings.faq_border_radius }}px; overflow: hidden;"{% endif %}>
-        <div class="section-spacing">
-          <div class="container">
-            <div class="section-stack max-w-lg mx-auto text-center">
-              {{- section_header -}}
-              {{- section_content -}}
-            </div>
-          </div>
+        <div class="container faq__container">
+          {{- section_header -}}
+          {{- section_content -}}
         </div>
       </div>
     {%- endif -%}
