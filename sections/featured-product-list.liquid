@@ -66,13 +66,6 @@
       --product-list-column-count: {{ section.settings.products_per_row_desktop }};
     }
   }
-
-  {%- comment -%}
-  Bottom spacing now comes purely from .section-spacing--tight's own padding-block-end (theme.css,
-  capped at the same min(3rem, ...) this used to hardcode as a margin) - letting it stay padding
-  means it automatically collapses against the next section like every other regular section does,
-  instead of a fixed margin that always added its own gap regardless of what follows.
-  {%- endcomment -%}
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product_list %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_product_list %} style="border-radius: {{ section.settings.product_list_border_radius }}px; overflow: hidden;"{% endif %}>
@@ -111,7 +104,7 @@
               {%- endif -%}
 
               {%- assign visual_position = visual_position | plus: 1 -%}
-              {%- render 'featured-product-list-promo', block: block, section: section -%}
+              {%- render 'featured-product-list-promo', block: block, section: section, sizes: sizes, position: visual_position -%}
             {%- endfor -%}
 
             {%- assign visual_position = visual_position | plus: 1 -%}
@@ -134,7 +127,8 @@
               {%- continue -%}
             {%- endif -%}
 
-            {%- render 'featured-product-list-promo', block: block, section: section -%}
+            {%- assign visual_position = visual_position | plus: 1 -%}
+            {%- render 'featured-product-list-promo', block: block, section: section, sizes: sizes, position: visual_position -%}
           {%- endfor -%}
         </product-list>
 
