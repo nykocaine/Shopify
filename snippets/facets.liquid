@@ -17,7 +17,7 @@ Display the facets for a given resource.
 
 <facets-form {% if update_on_change %}update-on-change{% endif %} section-id="{{ section.id }}">
   <form id="{{ form_id }}" method="GET" action="{{ request.path }}" class="facets" {% if hash %}scroll-to="{{ hash }}"{% endif %}>
-    {%- render 'active-facets', source: collection, hash: hash -%}
+    {%- render 'active-facets', source: source, hash: hash -%}
 
     {%- comment -%}We always reset to the first page so that when criteria change, the page is restored to the first one{%- endcomment -%}
     <input type="hidden" name="page" value="">
@@ -97,21 +97,11 @@ Display the facets for a given resource.
                   if filter.presentation == 'image'
                     assign wrapper_class_list = 'image-filter-list'
                   elsif filter.presentation == 'swatch' or color_label_list contains downcase_label
-                    case settings.color_swatch_shape
-                      when 'circle'
-                        if swatch_selector_size == 'sm'
-                          assign wrapper_class_list = 'h-stack gap-3 wrap'
-                        else
-                          assign wrapper_class_list = 'h-stack gap-4 wrap'
-                        endif
-
-                      else
-                        if swatch_selector_size == 'sm'
-                          assign wrapper_class_list = 'h-stack gap-3 wrap'
-                        else
-                          assign wrapper_class_list = 'h-stack gap-4 wrap'
-                        endif
-                    endcase
+                    if swatch_selector_size == 'sm'
+                      assign wrapper_class_list = 'h-stack gap-3 wrap'
+                    else
+                      assign wrapper_class_list = 'h-stack gap-4 wrap'
+                    endif
                   else
                     assign wrapper_class_list = 'v-stack gap-2.5'
                   endif

@@ -16,12 +16,12 @@
     }
   {%- endif -%}
 
-  .product-list .product-list__promo {
+  #shopify-section-{{ section.id }} .product-list .product-list__promo {
     display: flex;
     flex-direction: column;
   }
 
-  .product-list .product-list__promo > * {
+  #shopify-section-{{ section.id }} .product-list .product-list__promo > * {
     flex-grow: 1;
   }
 
@@ -30,12 +30,10 @@
   }
 
   {%- comment -%}
-  Fixed (not viewport-scaled, not theme-wide "Product listing spacing") gap between cards, matching
-  sections/featured-product-list.liquid's gap so collection grids and featured product lists look
-  consistent. Set directly on .product-list (not just the --product-list-column-gap variable it reads
-  from) and !important, for the same reason as featured-product-list.liquid: any current or future
-  .product-list--carousel variant reassigns the whole `grid` shorthand, which can silently drop a
-  plain column-gap override.
+  Fixed gap between cards (not viewport-scaled, not the theme-wide "Product listing spacing"), matching
+  sections/featured-product-list.liquid. Set directly on .product-list with !important because a
+  .product-list--carousel variant reassigns the whole `grid` shorthand, which can drop a plain
+  column-gap override.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-list {
     --product-list-column-gap: 0.625rem;
