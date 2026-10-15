@@ -1,19 +1,20 @@
-{%- comment -%}
-Product images inherit the drawer's own corner radius (--drawer-border-radius, Theme settings >
-Drawers), instead of a new independent value, so they stay in sync with the drawer shell.
-{%- endcomment -%}
-<style>
-  #shopify-section-{{ section.id }} .line-item__media {
-    border-radius: var(--drawer-border-radius);
-    overflow: hidden;
-  }
-</style>
-
 {%- if request.page_type != 'cart' -%}
+  {%- comment -%}
+  Product images inherit the drawer's own corner radius (--drawer-border-radius, Theme settings >
+  Drawers), instead of a new independent value, so they stay in sync with the drawer shell.
+  Not emitted on the cart page, where the drawer itself isn't rendered.
+  {%- endcomment -%}
+  <style>
+    #shopify-section-{{ section.id }} .line-item__media {
+      border-radius: var(--drawer-border-radius);
+      overflow: hidden;
+    }
+  </style>
+
   <cart-drawer id="cart-drawer" class="drawer drawer--cart drawer--no-bordered-header color-scheme color-scheme--{{ section.settings.color_scheme.id }}" aria-label="{{ 'cart.general.title' | t | escape }}" handle-editor-events>
     {%- comment -%}HEADER PART{%- endcomment -%}
     <div class="text-with-icon" slot="header">
-      <h2 class="h7" style="font-size: var(--text-base);">your formulas {% unless cart.empty? %}({{ cart.item_count }}){% endunless %}</h2>
+      <h2 class="h7 text-base">{{ 'cart.general.drawer_title' | t }} {% unless cart.empty? %}({{ cart.item_count }}){% endunless %}</h2>
     </div>
 
     {%- comment -%}
@@ -109,7 +110,7 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
           <div class="v-stack gap-4">
             {%- comment -%}TRUST BADGES{%- endcomment -%}
             {%- assign trust_badges_block = section.blocks | where: 'type', 'trust_badges' | first -%}
-            
+
             {%- if trust_badges_block != blank -%}
               {%- assign rendered_item_count = 0 -%}
 
@@ -131,7 +132,7 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
                       {%- endif -%}
                     {%- endcapture -%}
 
-                    <div class="offer-item justify-items-start" {{ trust_badges_block.shopify_attributes }}>
+                    <div class="offer-item justify-items-start">
                       <div class="h-stack gap-2">
                         {%- render 'icon', image: trust_badges_block.settings[icon_setting], width: trust_badges_block.settings[icon_width_setting] -%}
                         {{- subheading -}}
@@ -148,7 +149,7 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
               {%- endcapture -%}
 
               {%- if rendered_item_count > 0 -%}
-                <div class="offer-carousel {% if rendered_item_count > 1 %}offer-carousel--navigation-inline{% endif %}" style="{% render 'surface', background: trust_badges_block.settings.background, text_color: trust_badges_block.settings.text_color %}">
+                <div class="offer-carousel {% if rendered_item_count > 1 %}offer-carousel--navigation-inline{% endif %}" style="{% render 'surface', background: trust_badges_block.settings.background, text_color: trust_badges_block.settings.text_color %}" {{ trust_badges_block.shopify_attributes }}>
                   <scroll-carousel id="carousel-{{ trust_badges_block.id }}" class="offer-carousel__scroller scroll-area">
                     {{- trust_badge_items -}}
                   </scroll-carousel>
@@ -194,7 +195,7 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
                       {%- endfor -%}
                     </scroll-carousel>
                   {%- endcapture -%}
-                  
+
                   {%- if recommendations_count > 0 -%}
                     <div class="cart-drawer__cross-sell">
                       <div class="h-stack justify-between gap-2">
@@ -238,14 +239,14 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
           {%- render 'icon' with 'cart' -%}
           <span class="subheading">{{ 'cart.general.title' | t }}</span>
         </button>
-    
+
         <div slot="tabpanel" {% if cart.empty? %}class="align-self-center"{% endif %}>{{- cart_content -}}</div>
-    
+
         <button type="button" slot="tab">
           {%- render 'icon' with 'gift' -%}
           <span class="subheading tab-pills__dot-indicator">{{- 'cart.general.offers' | t -}}</span>
         </button>
-    
+
         <div slot="tabpanel">{{- offers_content -}}</div>
       </x-tabs>
     {%- else -%}
@@ -261,7 +262,7 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
               {%- if section.settings.show_cart_note -%}
                 <x-drawer-popover class="drawer-popover" id="cart-drawer-order-note-popover">
                   <p slot="header" class="subheading">{{ 'cart.general.order_note' | t }}</p>
-                  
+
                   <div class="form">
                     {%- assign field_label = 'cart.general.add_order_note' | t -%}
 
@@ -285,7 +286,7 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
               {%- if section.settings.show_shipping_estimator -%}
                 <x-drawer-popover class="drawer-popover" id="cart-drawer-shipping-estimator-popover">
                   <p slot="header" class="subheading">{{ 'cart.shipping_estimator.estimate_shipping' | t }}</p>
-                  
+
                   {%- render 'shipping-estimator' -%}
                 </x-drawer-popover>
 
@@ -300,7 +301,7 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
           <div class="cart-drawer__footer-inner">
             <div class="v-stack gap-4">
               {%- if section.settings.show_terms_of_service_checkbox -%}
-                <!-- TERMS BOX -->
+                {%- comment -%}TERMS BOX{%- endcomment -%}
                 <div class="checkbox-control text-xs">
                   <input id="cart-drawer-terms-of-service" type="checkbox" class="checkbox" required value="1">
 
@@ -312,7 +313,7 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
                 </div>
               {%- endif -%}
 
-              <!-- TOTALS -->
+              {%- comment -%}TOTALS{%- endcomment -%}
               {%- if section.settings.allow_discount_application or cart.cart_level_discount_applications.size > 0 -%}
                 <div class="v-stack gap-2">
                   {%- if section.settings.allow_discount_application -%}
@@ -339,10 +340,10 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
 
               <div class="h-stack justify-between gap-4">
                 <span class="medium uppercase">{{ 'cart.general.total' | t }}</span>
-                <span class="medium">{{ cart.total_price | money_with_currency }}</span>
+                <span class="medium">{% if settings.currency_code_enabled %}{{ cart.total_price | money_with_currency }}{% else %}{{ cart.total_price | money }}{% endif %}</span>
               </div>
 
-              <!-- BUTTONS -->
+              {%- comment -%}BUTTONS{%- endcomment -%}
               <div class="v-stack gap-3">
                 <div class="button-group button-group--same-width w-full">
                   {%- liquid
@@ -410,7 +411,7 @@ Drawers), instead of a new independent value, so they stay in sync with the draw
       "type": "paragraph",
       "content": "t:sections.cart_drawer.page_info"
     },
-   { 
+   {
       "type": "paragraph",
       "content": "t:sections.cart_drawer.free_shipping_bar_info"
     },
