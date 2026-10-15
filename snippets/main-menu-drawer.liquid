@@ -28,6 +28,13 @@ mobile, and for desktop on "drawer" mode.
 
   <header-menu-drawer-panel id="menu-drawer-panel-main" data-main-panel class="menu-drawer__panel">
     <div class="menu-drawer__panel-body">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'drawer_products' -%}
+          {%- render 'menu-drawer-products', block: block -%}
+          {%- break -%}
+        {%- endif -%}
+      {%- endfor -%}
+
       {%- if primary_menu.links.size > 0 -%}
         <ul class="v-stack gap-3 faded-linklist unstyled-list">
           {%- for link in primary_menu.links -%}

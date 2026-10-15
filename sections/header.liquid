@@ -1301,6 +1301,74 @@
           "visible_if": "{{ block.settings.promo_6_product == blank }}"
         }
       ]
+    },
+    {
+      "type": "drawer_products",
+      "name": "t:sections.header.blocks.drawer_products.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "t:sections.header.blocks.drawer_products.info"
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:sections.header.blocks.drawer_products.color_scheme",
+          "default": "scheme-2"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_collection_tabs",
+          "label": "t:sections.header.blocks.drawer_products.show_collection_tabs",
+          "info": "t:sections.header.blocks.drawer_products.show_collection_tabs_info",
+          "default": false
+        },
+        {
+          "type": "collection",
+          "id": "collection_1",
+          "label": "t:sections.header.blocks.drawer_products.collection",
+          "visible_if": "{{ block.settings.show_collection_tabs }}"
+        },
+        {
+          "type": "collection",
+          "id": "collection_2",
+          "label": "t:sections.header.blocks.drawer_products.collection",
+          "visible_if": "{{ block.settings.show_collection_tabs }}"
+        },
+        {
+          "type": "collection",
+          "id": "collection_3",
+          "label": "t:sections.header.blocks.drawer_products.collection",
+          "visible_if": "{{ block.settings.show_collection_tabs }}"
+        },
+        {
+          "type": "collection",
+          "id": "collection_4",
+          "label": "t:sections.header.blocks.drawer_products.collection",
+          "visible_if": "{{ block.settings.show_collection_tabs }}"
+        },
+        {
+          "type": "product_list",
+          "id": "products",
+          "label": "t:sections.header.blocks.drawer_products.products",
+          "info": "t:sections.header.blocks.drawer_products.products_info",
+          "limit": 5,
+          "visible_if": "{{ block.settings.show_collection_tabs == false }}"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "t:sections.header.blocks.drawer_products.button_label",
+          "default": "Ver tienda"
+        },
+        {
+          "type": "url",
+          "id": "button_url",
+          "label": "t:sections.header.blocks.drawer_products.button_url",
+          "info": "t:sections.header.blocks.drawer_products.button_url_info"
+        }
+      ]
     }
   ]
 }
