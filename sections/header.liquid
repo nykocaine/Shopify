@@ -108,6 +108,17 @@
   }
 
   {%- comment -%}
+  theme.css hides the header with translateY(-100%), which only moves it up by its own height. Now that the
+  gap above a floating header is a margin (outside the section), the header sits that far below the top
+  of the screen, so -100% left its bottom strip visible until visibility switched off at the end of the
+  slide - it looked like it paused and then snapped away. Slide it out by its height plus that gap (plus a
+  sticky announcement bar's height) so it leaves the screen completely.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }}:has(.header.is-hidden) {
+    transform: translateY(calc(-100% - var(--header-top-gap, 0px) - var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px)));
+  }
+
+  {%- comment -%}
   Links and the nav separator carry their own short transitions in theme.css (.2s - .3s), so their text
   color lagged behind the header's background and logo when it turned solid. Their color/background now
   follow the same timing; the underline (background-size) keeps its own.
