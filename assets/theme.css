@@ -2368,6 +2368,15 @@ main > .shopify-section:first-child .section-floating--block {
   padding-block-end: calc((var(--section-vertical-spacing-block-end, var(--section-vertical-spacing))) * 2.5);
 }
 
+/* Same spacing as .section-spacing--tight, but as the section's outer margin instead of inner padding, so the
+   space belongs to no section (the theme editor doesn't select it) and adapts to the neighbours the same way:
+   it keeps the .section-spacing class, so the padding-collapsing logic above still applies. */
+.section-spacing.section-spacing--outside {
+  padding-block: 0;
+  margin-block-start: min(3rem, var(--section-disable-padding-collapsing) * var(--section-vertical-spacing-block-start, var(--section-vertical-spacing)));
+  margin-block-end: min(3rem, var(--section-vertical-spacing-block-end, var(--section-vertical-spacing)));
+}
+
 .section-header {
   margin-inline: var(--container-gutter);
   grid-template-columns: minmax(0, 1fr);
