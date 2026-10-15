@@ -23,7 +23,23 @@
   :root {
     --header-is-sticky: {% if section.settings.enable_sticky %}1{% else %}0{% endif %};
     --header-is-visible: 1;
+    {%- if section.settings.floating_header %}
+    /* Gap above the floating header: half the section vertical spacing. Defined on :root (not on the
+       section) so snippets/css-variables.liquid (--sticky-area-height) and theme.css (menu overlay)
+       can add it to their offsets and match where the header really sits. */
+    --header-top-gap: calc(var(--section-vertical-spacing) / 2);
+    {%- endif %}
   }
+
+  {%- if section.settings.floating_header -%}
+    {%- comment -%}
+    When the announcement bar is on the page, the gap between it and the header is half of the usual
+    half-section gap (a quarter of the section spacing).
+    {%- endcomment -%}
+    :root:has(.shopify-section--announcement-bar .announcement-bar-wrapper) {
+      --header-top-gap: calc(var(--section-vertical-spacing) / 4);
+    }
+  {%- endif -%}
 
   #shopify-section-{{ section.id }} {
     {%- case section.settings.mobile_layout -%}
@@ -42,23 +58,12 @@
     --header-menu-gap: {{ section.settings.menu_items_spacing }}px;
     --header-icons-gap: {{ section.settings.icons_spacing }}px;
     {%- if section.settings.floating_header -%}
-      /* The gap above the floating header is half the section vertical spacing. It is a margin
-         (not padding) so it sits outside the section and the theme editor doesn't highlight it. */
-      --header-top-gap: calc(var(--section-vertical-spacing) / 2);
+      /* The gap above the floating header (--header-top-gap, see :root above) is a margin, not
+         padding, so it sits outside the section and the theme editor doesn't highlight it. */
       margin-block-start: var(--header-top-gap);
       position: relative;
     {%- endif -%}
   }
-
-  {%- if section.settings.floating_header -%}
-    {%- comment -%}
-    When the announcement bar is on the page, the gap between it and the header is half of the usual
-    half-section gap (a quarter of the section spacing). Not rendered => the full half gap above stays.
-    {%- endcomment -%}
-    .shopify-section--announcement-bar:has(.announcement-bar-wrapper) + #shopify-section-{{ section.id }} {
-      --header-top-gap: calc(var(--section-vertical-spacing) / 4);
-    }
-  {%- endif -%}
 
   {%- comment -%}
   Same lateral bump as footer/reviews/faq - only the sides (header-padding-block is left alone,

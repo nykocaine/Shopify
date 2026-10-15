@@ -23,6 +23,10 @@ body {
   margin: 0;
   position: relative;
   overflow-x: hidden;
+  /* flow-root keeps the first/last section's outer margins (the floating header's top gap and the
+     floating footer's bottom gap) inside <body>. Without it they collapse through <body>, which
+     shifts <body> itself and makes the theme editor draw every section's selection box offset. */
+  display: flow-root;
 }
 
 /* overflow-x: hidden above (the fallback for browsers without `clip` support) turns html/body into
@@ -7228,7 +7232,7 @@ shopify-account::part(signed-out-avatar) {
   pointer-events: none;
   position: fixed;
   inset: 0;
-  inset-block-start: calc(var(--announcement-bar-height, 0px) + var(--header-height, 0px) + var(--countdown-condensed-height, 0px));
+  inset-block-start: calc(var(--announcement-bar-height, 0px) + var(--header-top-gap, 0px) + var(--header-height, 0px) + var(--countdown-condensed-height, 0px));
 }
 
 .mega-menu .link-reversed {
