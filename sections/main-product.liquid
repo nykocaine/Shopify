@@ -443,48 +443,6 @@
     {%- endunless -%}
 
     {%- comment -%}
-    .section-floating--block-end's own margin-block-end (shared by every floating section in the theme) uses
-    --container-gutter, a different token than --section-vertical-spacing. Overriding it here, scoped to this
-    section only, to twice the section spacing value instead, without touching the shared utility class used
-    elsewhere.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .section-floating--block-end {
-      margin-block-end: calc(var(--section-vertical-spacing) * 2);
-    }
-
-    {%- comment -%}
-    The *2 above only makes sense when the next section independently contributes its own
-    padding-block-start that needs collapsing away (the ".section-spacing" case the rule below and
-    theme.css's own :has() mechanism both target). When the next section is ALSO a floating section
-    (eg. Featured Tabs with its own "Floating" setting on, or Instagram Feed/Reviews/Password which use
-    ".section-floating--block" instead), it never contributes a padding-block-start of its own - floating
-    sections only ever use margin, never padding, on that edge - so there's nothing left to collapse, and
-    the *2 just becomes a literal double gap (the ".section-floating--block" cases additionally carry their
-    own top margin, which only naturally collapses with this one down to the smaller of the two instead of
-    adding on top - but starting from *2 that smaller value is still the oversized one). Halving it back
-    down to the theme's normal single inter-section spacing in that specific case only. Checking for the
-    base ".section-floating" class (rather than just "--block-end") so this also catches the "--block" variants.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }}:has(+ .shopify-section .section-floating) .section-floating--block-end {
-      margin-block-end: var(--section-vertical-spacing);
-    }
-
-    {%- comment -%}
-    Without this, the gap below doubles up: this section contributes the margin-block-end above, and the next
-    section (if it uses the standard ".container.section-spacing" pattern) independently adds its own full
-    padding-block-start on top of it — margin and padding never collapse with each other in CSS. The theme's
-    own --section-enable-padding-collapsing mechanism (theme.css, used between two regular .section-spacing
-    sections with matching backgrounds) never recognizes ".section-floating--block-end" as a "previous section
-    already spacing-aware" input, so it doesn't kick in here either. Forcing it to 1 (unconditionally, not
-    gated by matching background like the standard mechanism) zeroes the next section's padding-block-start,
-    leaving only the margin above as the single gap — matching the constant, unconditional gap used above the
-    product page.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} + .shopify-section:has(.section-spacing) {
-      --section-enable-padding-collapsing: 1;
-    }
-
-    {%- comment -%}
     Both cards are fully rounded and get their own padding at every breakpoint, not just desktop, since on
     mobile they're separate stacked cards and each needs all 4 corners. overflow:hidden only goes on the
     gallery frame: it doesn't wrap product-info, which uses position:sticky and breaks under any ancestor
@@ -1067,7 +1025,7 @@
       "type": "checkbox",
       "id": "show_icon",
       "label": "Show spinning icon",
-      "info": "A decorative icon shown over the top-left corner of the first-image column (desktop only, same as the static image itself).",
+      "info": "A decorative icon shown over a top corner of the first-image column (desktop only, same as the static image itself).",
       "default": false,
       "visible_if": "{{ section.settings.desktop_show_first_image_column }}"
     },
