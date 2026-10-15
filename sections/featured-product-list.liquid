@@ -3,8 +3,16 @@
     align-items: stretch;
   }
 
+  {%- comment -%}
+  From 700px theme.css makes the promo a grid container. Its single column is "auto", which can grow to fit
+  its content: the content box's inline aspect-ratio plus height: 100% pushes that column wider than the
+  card (height x ratio), so on desktop the image box was wider than the promo and its right side was
+  clipped - the photo looked cut and pushed to the right. minmax(0, 1fr) pins the column to the card width.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-list__promo {
     grid-column: span 1;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
   }
 
   {%- comment -%}
