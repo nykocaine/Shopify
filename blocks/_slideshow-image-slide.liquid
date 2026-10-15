@@ -2,6 +2,7 @@
   {%- liquid
     assign is_first = false
     assign block_index = section.blocks | find_index: 'id', block.id
+    assign slide_number = block_index | plus: 1
 
     for section_block in section.blocks
       if block.id == section_block.id and forloop.first
@@ -37,11 +38,11 @@
 {%- endcapture -%}
 
 {%- if block.settings.slide_link != blank -%}
-  <a href="{{ block.settings.slide_link }}" class="slideshow__slide {% if is_first %}is-selected{% endif %} {% if block.settings.split_image != blank %}h-full{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" data-slide-type="image" role="group" {{ block.shopify_attributes }}>
+  <a href="{{ block.settings.slide_link }}" class="slideshow__slide {% if is_first %}is-selected{% endif %} {% if block.settings.split_image != blank %}h-full{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" data-slide-type="image" role="group" aria-roledescription="slide" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: slide_number, count: section.blocks.size | escape }}" {{ block.shopify_attributes }}>
     {{- slide -}}
   </a>
 {%- else -%}
-  <div class="slideshow__slide {% if is_first %}is-selected{% endif %} {% if block.settings.split_image != blank %}h-full{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" data-slide-type="image" role="group" {{ block.shopify_attributes }}>
+  <div class="slideshow__slide {% if is_first %}is-selected{% endif %} {% if block.settings.split_image != blank %}h-full{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" data-slide-type="image" role="group" aria-roledescription="slide" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: slide_number, count: section.blocks.size | escape }}" {{ block.shopify_attributes }}>
     {{- slide -}}
   </div>
 {%- endif -%}
@@ -67,7 +68,7 @@
       "type": "image_picker",
       "id": "split_image",
       "label": "t:sections.slideshow.blocks.image.split_image",
-      "info": "t:sections.slideshow.blocks.image.split_image_size_recommendation",
+      "info": "t:sections.slideshow.blocks.image.split_image_size_recommendation"
     },
     {
       "type": "image_picker",

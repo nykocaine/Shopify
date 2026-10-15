@@ -1,6 +1,7 @@
 {%- capture slide -%}
   {%- liquid
     assign is_first = false
+    assign slide_number = section.blocks | find_index: 'id', block.id | plus: 1
 
     for section_block in section.blocks
       if block.id == section_block.id and forloop.first
@@ -35,11 +36,11 @@
 {%- endcapture -%}
 
 {%- if block.settings.slide_link != blank -%}
-  <a href="{{ block.settings.slide_link }}" class="slideshow__slide {% if is_first %}is-selected{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" data-slide-type="video" role="group" {{ block.shopify_attributes }}>
+  <a href="{{ block.settings.slide_link }}" class="slideshow__slide {% if is_first %}is-selected{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" data-slide-type="video" role="group" aria-roledescription="slide" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: slide_number, count: section.blocks.size | escape }}" {{ block.shopify_attributes }}>
     {{- slide -}}
   </a>
 {%- else -%}
-  <div class="slideshow__slide {% if is_first %}is-selected{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" data-slide-type="video" role="group" {{ block.shopify_attributes }}>
+  <div class="slideshow__slide {% if is_first %}is-selected{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" data-slide-type="video" role="group" aria-roledescription="slide" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: slide_number, count: section.blocks.size | escape }}" {{ block.shopify_attributes }}>
     {{- slide -}}
   </div>
 {%- endif -%}
