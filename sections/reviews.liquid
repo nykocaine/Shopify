@@ -133,7 +133,7 @@ to the first 5 of the newly sorted order.
                     endif
                 endcase
               -%}
-              <div class="review-card color-scheme color-scheme--{{ section.settings.card_color_scheme.id }}" data-rating="{{ block.settings.rating }}" data-days-ago="{{ review_date_days }}" {{ block.shopify_attributes }}>
+              <div class="review-card" data-rating="{{ block.settings.rating }}" data-days-ago="{{ review_date_days }}" {{ block.shopify_attributes }}>
                 <div class="review-card__side">
                   <div class="review-card__reviewer">
                     <span class="review-card__name">{{ block.settings.reviewer_name }}</span>
@@ -576,16 +576,19 @@ to the first 5 of the newly sorted order.
   #shopify-section-{{ section.id }} .reviews__list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
   }
 
   #shopify-section-{{ section.id }} .review-card {
     grid-template-columns: 220px minmax(0, 1fr);
     gap: 2rem;
-    padding: calc(var(--container-gutter) + 0.5rem);
-    border-radius: {{ section.settings.reviews_border_radius }}px;
+    padding-block: 2rem;
+    border-block-end: 1px solid rgb(var(--border-color));
     transition: opacity .35s ease, transform .35s ease;
     display: grid;
+  }
+
+  #shopify-section-{{ section.id }} .review-card:last-child {
+    border-block-end: none;
   }
 
   #shopify-section-{{ section.id }} .review-card--revealing {
@@ -923,12 +926,6 @@ to the first 5 of the newly sorted order.
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
-    },
-    {
-      "type": "color_scheme",
-      "id": "card_color_scheme",
-      "label": "Review card color scheme",
-      "default": "scheme-2"
     },
     {
       "type": "checkbox",
