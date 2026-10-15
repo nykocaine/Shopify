@@ -78,6 +78,16 @@
     scroll-snap-align: start;
   }
 
+  /*
+   * ScrollCarousel computes where to scroll from each card's offsetLeft, which is measured from the nearest
+   * positioned ancestor - the page itself when none is. The distance between the page edge and the carousel
+   * (the section's side margin) was therefore added to every move, pushing the card that many pixels under
+   * the left edge. Making the carousel its own positioned ancestor measures from its own edge instead.
+   */
+  #shopify-section-{{ section.id }} product-list {
+    position: relative;
+  }
+
   {%- if section.settings.floating_product_list -%}
     {%- comment -%}
     Floating card: the products go edge to edge on the sides and the card has no padding at the bottom
