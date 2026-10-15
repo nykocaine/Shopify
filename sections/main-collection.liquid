@@ -35,16 +35,20 @@
 
     {%- if section.settings.sticky_toolbar -%}
       {%- comment -%}
-      Sticky toolbar glued to the header. --sticky-offset (snippets/css-variables.liquid) is already the
-      header's bottom edge while it is visible and drops to the announcement bar's height when the header
-      hides on scroll, so the toolbar follows the header exactly; its top transitions with the same
-      timing as the header's slide. Sits under the header (z-index 4) and over the product cards.
+      Sticky toolbar glued to the header. It sticks at the header's fully visible position
+      (--sticky-area-height) and, when the header hides on scroll, slides up by the header's height with
+      the same transform + timing as the header's own slide (sections/header.liquid), so both move on
+      the compositor in lockstep. It overlaps the header's last pixel (z-index below the header's) so
+      sub-pixel rounding of the header's height can never leave a visible seam between them.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .collection__toolbar {
         position: sticky;
-        top: var(--sticky-offset);
+        top: calc(var(--sticky-area-height) - 1px);
         z-index: 2;
-        transition: top var(--header-solid-transition, .4s ease);
+        margin-block-start: -1px;
+        padding-block-start: calc((var(--container-gutter) + 0.5rem) * 0.75 + 1px);
+        transform: translateY(calc((var(--header-is-visible, 1) - 1) * var(--header-is-sticky, 0) * (var(--header-stuck-gap, 0px) + var(--header-height, 0px))));
+        transition: transform var(--header-solid-transition, .45s cubic-bezier(.4, 0, .2, 1));
       }
 
       {%- comment -%} The sidebar filters stick below the toolbar too (--collection-toolbar-height is set by the script at the end of the section). {%- endcomment -%}
