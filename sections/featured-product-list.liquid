@@ -109,7 +109,7 @@
   }
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product_list %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_product_list %} style="border-radius: {{ section.settings.product_list_border_radius }}px; overflow: hidden;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product_list %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_product_list %} style="border-radius: {{ section.settings.product_list_border_radius }}px {{ section.settings.product_list_border_radius }}px 0 0; overflow: hidden;"{% endif %}>
   <div class="container">
     <div class="section-spacing section-spacing--tight{% unless section.settings.floating_product_list %} section-spacing--outside{% endunless %}">
         {%- assign product_list_id = 'product-list-' | append: section.id -%}
