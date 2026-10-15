@@ -1,17 +1,9 @@
 {%- if section.blocks.size > 0 -%}
   <style>
-    {%- unless section.settings.allow_transparent_header -%}
-      {%- comment -%}
-      Half-section gap between the header and the slideshow. It sits on <main> instead of on this
-      section as a margin: a top margin on the first section collapses through <main> and the theme
-      editor then draws this section's blue selection box shifted from where it really is.
-      {%- endcomment -%}
-      main:has(> #shopify-section-{{ section.id }}:first-child) {
-        padding-block-start: calc(var(--section-vertical-spacing) / 2);
-      }
-    {%- endunless -%}
-
     #shopify-section-{{ section.id }} {
+      {%- unless section.settings.allow_transparent_header -%}
+        margin-block-start: calc(var(--section-vertical-spacing) / 2);
+      {%- endunless -%}
       margin-block-end: var(--section-vertical-spacing);
       {%- if section.settings.transition_type != 'fade' -%}
         --slideshow-background: {{ section.settings.background.rgb }};
