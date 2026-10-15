@@ -3539,6 +3539,8 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 
 .product-card {
   --product-card-inner-padding: 1rem;
+  /* Same inner padding as the FAQ / reviews / footer containers, on all four sides of the card's text. */
+  --product-card-info-padding: calc(var(--container-gutter) + 0.5rem);
   scroll-snap-align: start;
   overflow-wrap: anywhere;
   isolation: isolate;
@@ -3702,16 +3704,18 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 }
 
 .product-card__info {
-  padding-block: var(--product-card-inner-padding);
-  padding-inline: 0;
+  padding: var(--product-card-info-padding);
 }
 
-.product-card--info-outside.product-card--blends .product-card__info {
-  padding-block-end: 0;
+/* The text under the image is transparent even when the card has a color scheme: the scheme's background
+   moves to the image area (figure), so the info block shows whatever the section behind it has. */
+.product-card--info-outside {
+  background: transparent;
 }
 
-.product-card--info-outside.product-card--blends .product-card__info.product-card__info--flush {
-  padding-inline: 0;
+.product-card--info-outside .product-card__figure {
+  background-color: rgb(var(--background));
+  background-image: var(--background-gradient);
 }
 
 .product-card__info .product-card__swatch-list {
@@ -3739,11 +3743,6 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 @media screen and (min-width: 700px) {
   .product-card {
     --product-card-inner-padding: 0.85rem;
-  }
-
-  .product-card__info {
-    padding-inline: 0;
-    padding-block-end: calc(var(--product-card-inner-padding) + 0.5rem);
   }
 }
 
@@ -3906,10 +3905,6 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   -webkit-text-decoration-color: rgb(var(--button-text-color));
   text-decoration-color: rgb(var(--button-text-color));
   pointer-events: none;
-}
-
-.product-card--info-outside .product-card__info {
-  padding-block-start: 1rem;
 }
 
 .product-card--info-inside .product-card__info {
