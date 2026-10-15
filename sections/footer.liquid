@@ -143,21 +143,25 @@
   and gives .footer__block--links / .footer__block--social_menu flex-shrink: 0 (never shrink). With
   4 blocks, once their natural/max widths no longer all fit on one line, the non-shrinking blocks
   hold their ground and something else gets pushed to a second row instead - the "one menu drops
-  down" behaviour. Switching to flex-wrap: nowrap and letting every block shrink (min-width: 0, so
-  their content can wrap onto multiple lines instead) keeps all 4 on a single row at any desktop
-  width, while still sizing each block to its own content (via max-width) rather than forcing equal
-  columns.
+  down" behaviour. From 1000px, flex-wrap: nowrap and letting every block shrink keeps all 4 on a
+  single row at any desktop width, while still sizing each block to its own content (via max-width)
+  rather than forcing equal columns. A block never shrinks below its longest word / widest control
+  (min-width: min-content), so text can't overflow into the next column or out of the footer card.
+  Between 700px and 1000px (tablets) a single row would squeeze the blocks below that, so the row
+  keeps wrapping like theme.css does and the blocks keep readable widths.
   {%- endcomment -%}
   @media screen and (min-width: 700px) {
-    #shopify-section-{{ section.id }} .footer__block-list {
-      flex-wrap: nowrap;
-    }
-
     #shopify-section-{{ section.id }} .footer__block,
     #shopify-section-{{ section.id }} .footer__block--links,
     #shopify-section-{{ section.id }} .footer__block--social_menu {
       flex-shrink: 1;
-      min-width: 0;
+      min-width: min-content;
+    }
+  }
+
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} .footer__block-list {
+      flex-wrap: nowrap;
     }
   }
 </style>
@@ -338,7 +342,7 @@
                               assign social_icon = 'vimeo'
                             elsif link_url_downcase contains 'wechat.com' or link_title_downcase contains 'wechat'
                               assign social_icon = 'wechat'
-                            elsif link_url_downcase contains 'line.me' or link_title_downcase contains 'line'
+                            elsif link_url_downcase contains 'line.me' or link_title_downcase == 'line'
                               assign social_icon = 'line'
                             elsif link_url_downcase contains 'reddit.com' or link_title_downcase contains 'reddit'
                               assign social_icon = 'reddit'
