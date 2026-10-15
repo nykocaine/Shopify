@@ -53,28 +53,29 @@ This component is used in product listing and product page to render the badges 
       endif
     -%}
 
-    {%- if product.compare_at_price > product.price -%}
-      {%- if settings.product_card_discount_mode == 'percentage' -%}
-        {%- assign savings = variant.compare_at_price | minus: variant.price | times: 100.0 | divided_by: variant.compare_at_price | round | append: '%' -%}
-      {%- else -%}
-        {%- capture savings -%}{{ variant.compare_at_price | minus: variant.price | money }}{%- endcapture -%}
+    {%- if show_on_sale_badge -%}
+      {%- comment -%}Only computed when this variant really has a compare-at price (a blank one would divide by zero){%- endcomment -%}
+      {%- if variant.compare_at_price > variant.price -%}
+        {%- if settings.product_card_discount_mode == 'percentage' -%}
+          {%- assign savings = variant.compare_at_price | minus: variant.price | times: 100.0 | divided_by: variant.compare_at_price | round | append: '%' -%}
+        {%- else -%}
+          {%- capture savings -%}{{ variant.compare_at_price | minus: variant.price | money }}{%- endcapture -%}
+        {%- endif -%}
       {%- endif -%}
 
-      {%- if show_on_sale_badge -%}
-        <on-sale-badge class="badge badge--on-sale {% if vertical_text %}vertical-text{% endif %}">
-          {%- liquid
-            if context == 'product'
+      <on-sale-badge class="badge badge--on-sale {% if vertical_text %}vertical-text{% endif %}">
+        {%- liquid
+          if context == 'product'
+            echo 'product.general.discount_badge_html' | t: savings: savings
+          elsif context == 'card'
+            if product.compare_at_price_varies or variant.compare_at_price == blank
+              echo 'product.general.on_sale_badge' | t
+            else
               echo 'product.general.discount_badge_html' | t: savings: savings
-            elsif context == 'card'
-              if product.compare_at_price_varies or variant.compare_at_price == blank
-                echo 'product.general.on_sale_badge' | t
-              else
-                echo 'product.general.discount_badge_html' | t: savings: savings
-              endif
             endif
-          -%}
-        </on-sale-badge>
-      {%- endif -%}
+          endif
+        -%}
+      </on-sale-badge>
     {%- endif -%}
   {%- endif -%}
 {%- endcapture -%}

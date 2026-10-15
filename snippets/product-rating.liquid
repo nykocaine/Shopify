@@ -1,11 +1,9 @@
 {%- doc -%}
-This component generates a review badge from the product metafields information.
+This component generates a review badge from the product metafields information: the numeric rating followed by one star.
 
 @param {object} [product] - the product from which ratings are extracted
 @param {boolean} [show_empty] - if set to true, the theme shows a 0.0 if there are no rating yet
 @param {boolean} [show_placeholder] - if set to true, show random value (useful for the product card placeholder)
-@param {boolean} [show_single_star] - if set to true, only one star is shown (otherwise, the number of scale)
-@param {string} [display_mode] - either "rating" (e.g.: 3.5) or "count" (e.g.: 4 reviews). This parameter is no longer used.
 @param {string} [alignment] - can be "start", "center" or "end" (default to start)
 {%- enddoc -%}
 
@@ -34,47 +32,19 @@ This component generates a review badge from the product metafields information.
 
 {%- unless hide_rating -%}
   {%- assign rating_display = rating_value | times: 1.0 | round: 1 -%}
-  <div class="rating-badge {% if show_single_star %}rating-badge--single{% endif %} {% if alignment %}justify-{{ alignment }}{% endif %}">
-    {%- comment -%}
-    show_single_star mode: just the numeric rating followed by one star (e.g. "4.9 ★"), no per-star scale
-    and no review count. The full star scale + "(count)" is kept for any caller that doesn't opt in.
-    {%- endcomment -%}
-    {%- if show_single_star -%}
-      <span class="rating-badge__value subheading">{{ rating_display }}</span>
-    {%- endif -%}
+  <div class="rating-badge rating-badge--single {% if alignment %}justify-{{ alignment }}{% endif %}">
+    <span class="rating-badge__value subheading">{{ rating_display }}</span>
 
     <div
       class="rating-badge__stars"
       role="img"
       aria-label="{{ 'general.rating.info' | t: rating_value: rating_value, rating_max: rating_max }}"
     >
-      {%- liquid
-        if show_single_star
-          if rating_count == 0
-            render 'icon' with 'star-rating-empty'
-          else
-            render 'icon' with 'star-rating'
-          endif
-        else
-          for i in (1..rating_max)
-            assign half_threshold = i | minus: 0.5
-
-            if rating_count == 0
-              render 'icon' with 'star-rating-empty'
-            elsif rating_value >= i
-              render 'icon' with 'star-rating'
-            elsif rating_value >= half_threshold
-              render 'icon' with 'star-rating-half'
-            else
-              render 'icon' with 'star-rating-empty'
-            endif
-          endfor
-        endif
-      -%}
+      {%- if rating_count == 0 -%}
+        {%- render 'icon' with 'star-rating-empty' -%}
+      {%- else -%}
+        {%- render 'icon' with 'star-rating' -%}
+      {%- endif -%}
     </div>
-
-    {%- unless show_single_star -%}
-      <span class="subheading">({{ rating_count }})</span>
-    {%- endunless -%}
   </div>
 {%- endunless -%}
