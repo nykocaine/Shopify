@@ -292,6 +292,33 @@
     }
   {%- endif -%}
 
+  {%- if section.settings.show_icon and section.settings.show_icon_mobile and product.media.size > 0 -%}
+    {%- comment -%}
+    Same badge as the desktop first-image column's, over the same top corner of the gallery card on mobile/tablet
+    (hidden from 1000px up, where the static first image carries it instead). The frame needs to be the
+    positioning context; it already clips (overflow: hidden) when floating.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-gallery-icon {
+      top: .75rem;
+      {% if section.settings.icon_corner == 'right' %}right: .75rem;{% else %}left: .75rem;{% endif %}
+      z-index: 2;
+      position: absolute;
+      pointer-events: none;
+    }
+
+    @media screen and (max-width: 999px) {
+      #shopify-section-{{ section.id }} .product-gallery-frame {
+        position: relative;
+      }
+    }
+
+    @media screen and (min-width: 1000px) {
+      #shopify-section-{{ section.id }} .product-gallery-icon {
+        display: none;
+      }
+    }
+  {%- endif -%}
+
   {%- comment -%}
   Block 1's own inner padding, every mode and breakpoint alike: same container-gutter-based formula as
   the floating card padding in sections/reviews.liquid and sections/faq.liquid (--container-gutter +
@@ -806,6 +833,19 @@
                 thumbnail_border_radius: section.settings.thumbnail_border_radius,
                 move_to_second_media_id: move_to_second_media_id
             -%}
+
+            {%- if section.settings.show_icon and section.settings.show_icon_mobile -%}
+              <div class="product-gallery-icon">
+                {%- render 'decorative-icon',
+                  icon_type: section.settings.icon_type,
+                  icon_size: section.settings.icon_size,
+                  icon_spin: section.settings.icon_spin,
+                  icon_primary_color: section.settings.icon_primary_color,
+                  icon_secondary_color: section.settings.icon_secondary_color,
+                  icon_border_color: section.settings.icon_border_color
+                -%}
+              </div>
+            {%- endif -%}
           </div>
         {%- endif -%}
 
@@ -1018,16 +1058,22 @@
     },
     {
       "type": "header",
-      "content": "Decorative icon",
-      "visible_if": "{{ section.settings.desktop_show_first_image_column }}"
+      "content": "Decorative icon"
     },
     {
       "type": "checkbox",
       "id": "show_icon",
       "label": "Show spinning icon",
-      "info": "A decorative icon shown over a top corner of the first-image column (desktop only, same as the static image itself).",
+      "info": "A decorative icon shown over a top corner of the first-image column (desktop, when \"Show first image as its own column\" is on).",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icon_mobile",
+      "label": "Show icon on the mobile gallery",
+      "info": "Also shows the icon over the same top corner of the gallery on mobile and tablet (below 1000px).",
       "default": false,
-      "visible_if": "{{ section.settings.desktop_show_first_image_column }}"
+      "visible_if": "{{ section.settings.show_icon }}"
     },
     {
       "type": "select",
@@ -1049,7 +1095,7 @@
         { "value": "ticket", "label": "Ticket" }
       ],
       "default": "phone",
-      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
+      "visible_if": "{{ section.settings.show_icon }}"
     },
     {
       "type": "range",
@@ -1060,35 +1106,35 @@
       "unit": "px",
       "label": "Icon size",
       "default": 32,
-      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
+      "visible_if": "{{ section.settings.show_icon }}"
     },
     {
       "type": "checkbox",
       "id": "icon_spin",
       "label": "Spin icon",
       "default": true,
-      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
+      "visible_if": "{{ section.settings.show_icon }}"
     },
     {
       "type": "color",
       "id": "icon_primary_color",
       "label": "Primary color",
       "default": "#FF6B9D",
-      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
+      "visible_if": "{{ section.settings.show_icon }}"
     },
     {
       "type": "color",
       "id": "icon_secondary_color",
       "label": "Secondary color",
       "default": "#FFD93D",
-      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
+      "visible_if": "{{ section.settings.show_icon }}"
     },
     {
       "type": "color",
       "id": "icon_border_color",
       "label": "Border color",
       "info": "Leave blank for no border.",
-      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
+      "visible_if": "{{ section.settings.show_icon }}"
     },
     {
       "type": "select",
@@ -1099,7 +1145,7 @@
         { "value": "right", "label": "Top right" }
       ],
       "default": "left",
-      "visible_if": "{{ section.settings.desktop_show_first_image_column and section.settings.show_icon }}"
+      "visible_if": "{{ section.settings.show_icon }}"
     },
     {
       "type": "range",
