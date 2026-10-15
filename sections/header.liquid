@@ -42,9 +42,9 @@
     --header-menu-gap: {{ section.settings.menu_items_spacing }}px;
     --header-icons-gap: {{ section.settings.icons_spacing }}px;
     {%- if section.settings.floating_header -%}
-      /* The only gap above the floating header is half the section vertical spacing.
-         It lives on the sticky section wrapper, so the gap stays while scrolling. */
-      padding-block-start: calc(var(--section-vertical-spacing) / 2);
+      /* The gap above the floating header is half the section vertical spacing. It is a margin
+         (not padding) so it sits outside the section and the theme editor doesn't highlight it. */
+      margin-block-start: calc(var(--section-vertical-spacing) / 2);
       position: relative;
     {%- endif -%}
   }
@@ -86,6 +86,27 @@
     .shopify-section--announcement-bar ~ #shopify-section-{{ section.id }} {
       top: calc(var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px));
     }
+
+    {%- if section.settings.floating_header -%}
+      {%- comment -%}
+      Once stuck, keep the same half-section gap above the header that it has at the top of the page,
+      and paint that gap with the page background so content doesn't show through it while scrolling.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }},
+      .shopify-section--announcement-bar ~ #shopify-section-{{ section.id }} {
+        top: calc(var(--section-vertical-spacing) / 2 + var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px));
+      }
+
+      #shopify-section-{{ section.id }}::before {
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        inset-block-end: 100%;
+        height: calc(var(--section-vertical-spacing) / 2);
+        background: rgb(var(--page-background));
+        pointer-events: none;
+      }
+    {%- endif -%}
   {%- endif -%}
 
   {%- if section.settings.logo != blank -%}
@@ -166,6 +187,10 @@
        pinned to the top. */
     #shopify-section-{{ section.id }} {
       position: static !important;
+    }
+
+    #shopify-section-{{ section.id }}::before {
+      display: none;
     }
   {%- endif -%}
 </style>
