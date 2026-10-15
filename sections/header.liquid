@@ -39,6 +39,17 @@
     :root:has(.shopify-section--announcement-bar .announcement-bar-wrapper) {
       --header-top-gap: calc(var(--section-vertical-spacing) / 4);
     }
+
+    {%- comment -%}
+    Transparent header over the first section (same condition theme.css uses): no gap above it, so it
+    sits at the very top while it is transparent. The gap only comes back, as the sticky offset below,
+    once the header is solid. It is not a margin here on purpose: switching a margin on at the moment
+    the header turns solid would shift the whole page; a sticky offset moves only the header.
+    {%- endcomment -%}
+    :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} {
+      margin-block-start: 0;
+      transition: transform .2s ease-in-out, visibility .2s ease-in-out, top .2s ease-in-out;
+    }
   {%- endif -%}
 
   #shopify-section-{{ section.id }} {
@@ -111,6 +122,11 @@
       #shopify-section-{{ section.id }},
       .shopify-section--announcement-bar ~ #shopify-section-{{ section.id }} {
         top: calc(var(--header-top-gap) + var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px));
+      }
+
+      :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}:has(.header:not(.is-solid)),
+      :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) .shopify-section--announcement-bar ~ #shopify-section-{{ section.id }}:has(.header:not(.is-solid)) {
+        top: calc(var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px));
       }
 
       #shopify-section-{{ section.id }}::before {
