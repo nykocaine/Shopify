@@ -576,19 +576,17 @@ to the first 5 of the newly sorted order.
   #shopify-section-{{ section.id }} .reviews__list {
     display: flex;
     flex-direction: column;
+    gap: 1rem;
   }
 
   #shopify-section-{{ section.id }} .review-card {
     grid-template-columns: 220px minmax(0, 1fr);
     gap: 2rem;
-    padding-block: 2rem;
-    border-block-end: 1px solid rgb(var(--border-color));
+    padding: calc(var(--container-gutter) + 0.5rem);
+    border: 1px solid rgb(var(--border-color));
+    border-radius: {{ section.settings.reviews_border_radius }}px;
     transition: opacity .35s ease, transform .35s ease;
     display: grid;
-  }
-
-  #shopify-section-{{ section.id }} .review-card:last-child {
-    border-block-end: none;
   }
 
   #shopify-section-{{ section.id }} .review-card--revealing {
