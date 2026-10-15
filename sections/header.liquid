@@ -121,6 +121,16 @@
         height: var(--header-top-gap);
         background: rgb(var(--page-background));
         pointer-events: none;
+        transition: background .2s ease-in-out;
+      }
+
+      {%- comment -%}
+      Transparent header over the first section (same condition theme.css uses to make the header
+      transparent): while it hasn't turned solid yet, this gap stays transparent too, so no white band
+      shows above it during the first scroll. It is painted once the header is solid.
+      {%- endcomment -%}
+      :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}:has(.header:not(.is-solid))::before {
+        background: transparent;
       }
     {%- endif -%}
   {%- endif -%}
