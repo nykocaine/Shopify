@@ -2566,18 +2566,16 @@ var Drawer = class extends DialogElement {
     return this.getAttribute("open-from") || "right";
   }
   createEnterAnimationControls() {
-    let contentTransform = this.openFrom === "right" ? ["translateX(calc(var(--transform-logical-flip) * 100%)", "translateX(0)"] : ["translateX(calc(-1 * var(--transform-logical-flip) * 100%)", "translateX(0)"];
     this.getShadowPartByName("content").style.marginInlineStart = this.openFrom === "right" ? "auto" : "0";
     return animateSequence2([
-      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.25, ease: "easeInOut" }],
-      [this.getShadowPartByName("content"), { opacity: [0, 1], transform: contentTransform }, { duration: 0.45, at: "-0.15", ease: [0.86, 0, 0.07, 1] }]
+      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.35, ease: "easeInOut" }],
+      [this.getShadowPartByName("content"), { opacity: [0, 1], transform: ["translateY(0.75rem) scale(0.98)", "translateY(0) scale(1)"] }, { duration: 0.45, at: "-0.2", ease: [0.22, 1, 0.36, 1] }]
     ]);
   }
   createLeaveAnimationControls() {
-    let contentTransform = this.openFrom === "right" ? ["translateX(0)", "translateX(calc(var(--transform-logical-flip) * 100%)"] : ["translateX(0)", "translateX(calc(-1 * var(--transform-logical-flip) * 100%)"];
     return animateSequence2([
-      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.45, ease: "easeInOut" }],
-      [this.getShadowPartByName("content"), { opacity: [1, 0], transform: contentTransform }, { duration: 0.45, at: "<", ease: [0.86, 0, 0.07, 1] }]
+      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.3, ease: "easeInOut" }],
+      [this.getShadowPartByName("content"), { opacity: [1, 0], transform: ["translateY(0) scale(1)", "translateY(0.5rem) scale(0.99)"] }, { duration: 0.3, at: "<", ease: [0.4, 0, 1, 1] }]
     ]);
   }
 };
