@@ -14,7 +14,6 @@ based on your desired layout (and remove most of the settings associated), and t
 @param {boolean} [reveal] - if set to true, the card will be revealed on scroll through animation
 @param {number} [position] - the position of the card in the list. If specified, the theme will eagerly load the first 3 cards images
 @param {object} [color_scheme] - the color scheme to use (if none is set, it defaults to the default card scheme)
-@param {object} [section_color_scheme] - the color scheme of the section, which is used to calculate if the card blends or not with the section
 @param {boolean} [allow_highlight] - if set to true, this card is allowed to be highlighted (shown bigger) if the "custom.highlight_card" metafield is set
 @param {boolean} [show_badges] - show or not the badges (default to true if nothing is set)
 @param {boolean} [show_rating] - show or not the rating. If nothing is set, the theme uses the default product card setting
@@ -32,7 +31,6 @@ based on your desired layout (and remove most of the settings associated), and t
 
 {%- liquid
   assign color_scheme = color_scheme | default: settings.product_card_color_scheme
-  assign section_color_scheme = section_color_scheme | default: section.settings.color_scheme | default: settings.default_color_scheme
   assign show_badges = show_badges | default: true, allow_false: true
   assign show_rating = show_rating | default: settings.product_card_show_rating, allow_false: true
   assign show_vendor = show_vendor | default: settings.product_card_show_vendor, allow_false: true
@@ -74,13 +72,6 @@ based on your desired layout (and remove most of the settings associated), and t
     assign product_card_classes = product_card_classes | append: ' product-card--info-outside'
   else
     assign product_card_classes = product_card_classes | append: ' product-card--info-inside'
-  endif
-
-  # In this condition, we try to detect if the color scheme of the card has the same background as the section. If yes, we have to
-  # remove some padding in the info. We do not try to handle every possible conditions (especially with gradients), as this would
-  # make this code extremely complex for a very limited use case
-  if settings.product_listing_spacing != 'none' and color_scheme == section_color_scheme and section_color_scheme.settings.background_gradient == blank or color_scheme.settings.background == section_color_scheme.settings.background or color_scheme.settings.background == 'rgba(0,0,0,0)'
-    assign product_card_classes = product_card_classes | append: ' product-card--blends'
   endif
 
   case settings.product_card_style
@@ -349,7 +340,7 @@ based on your desired layout (and remove most of the settings associated), and t
     endcase
   -%}
 
-  <div class="product-card__info {% if settings.product_card_info_position == 'inside' %}align-self-{{ settings.product_card_info_vertical_alignment }}{% endif %} {% if settings.product_listing_spacing == 'medium' or settings.product_listing_spacing == 'large' %}product-card__info--flush{% endif %}">
+  <div class="product-card__info {% if settings.product_card_info_position == 'inside' %}align-self-{{ settings.product_card_info_vertical_alignment }}{% endif %}">
     <div class="{{ info_alignment_class }}">
       <div class="{% if settings.product_card_info_horizontal_alignment == 'split' %}contents{% else %}v-stack gap-0.5{% endif %}">
         <div class="v-stack gap-2.5">
