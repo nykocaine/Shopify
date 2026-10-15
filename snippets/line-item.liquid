@@ -48,7 +48,7 @@ This component renders a single line item product information, and is used on or
           {%- if line_item.selling_plan_allocation -%}
             <p class="subheading text-subdued">{{ line_item.selling_plan_allocation.selling_plan.name }}</p>
           {%- endif -%}
-          
+
           {%- unless line_item.properties == empty -%}
             <ul role="list">
               {%- for property in line_item.properties -%}
@@ -89,7 +89,7 @@ This component renders a single line item product information, and is used on or
         {%- if show_quantity_selector -%}
           <div class="line-item__quantity-selector">
             <div class="h-stack gap-5">
-              {%- render 'quantity-selector', line_item: line_item, show_rules: false -%}
+              {%- render 'quantity-selector', line_item: line_item -%}
 
               <a href="{{ line_item.url_to_remove }}" class="line-item__remove-button">
                 <span class="sr-only">{{ 'cart.general.remove_item' | t: title: line_item.title }}</span>

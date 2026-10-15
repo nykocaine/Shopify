@@ -24,9 +24,10 @@ being eligible for free shipping.
   assign calculated_total_price = calculated_total_price | minus: total_cart_discount
 -%}
 
-{%- if cart.requires_shipping -%}
+{%- comment -%}Nothing to show without a threshold (a blank one would read as 0 and always say "reached"){%- endcomment -%}
+{%- if cart.requires_shipping and cart_free_shipping_threshold > 0 -%}
   <free-shipping-bar class="free-shipping-bar v-stack gap-2">
-    {%- if calculated_total_price > cart_free_shipping_threshold -%}
+    {%- if calculated_total_price >= cart_free_shipping_threshold -%}
       <span>{{ 'cart.free_shipping_bar.limit_reached_html' | t }}</span>
     {%- else -%}
       {%- assign remaining_amount = cart_free_shipping_threshold | minus: calculated_total_price | money -%}
