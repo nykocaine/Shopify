@@ -5518,6 +5518,9 @@ onSwitchToPanel_fn = async function(panelId) {
   }
   const fromPanel = this.querySelector(`header-menu-drawer-panel.is-visible`);
   const toPanel = this.querySelector(`header-menu-drawer-panel#${panelId}`);
+  if (!fromPanel || !toPanel) {
+    return;
+  }
   __privateSet(this, _isTransitioningPanel, true);
   const hidePromise = fromPanel.hide();
   const showPromise = toPanel.show({ initial: false });
