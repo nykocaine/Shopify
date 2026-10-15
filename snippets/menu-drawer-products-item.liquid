@@ -3,9 +3,10 @@ One product row of the menu drawer products card (see snippets/menu-drawer-produ
 title and subtitle (the product's "custom.subtitle" metafield, same one the product cards use) on the right.
 
 @param {object} product - the product to show
+@param {object} color_scheme - the color scheme of the product container
 {%- enddoc -%}
 
-<a href="{{ product.url }}" class="menu-drawer-products__item">
+<a href="{{ product.url }}" class="menu-drawer-products__item color-scheme color-scheme--{{ color_scheme.id }}">
   <span class="menu-drawer-products__image">
     {%- if product.featured_image != blank -%}
       {{- product.featured_image | image_url: width: 160 | image_tag: sizes: '56px', widths: '80, 160', loading: 'lazy', alt: product.title -}}

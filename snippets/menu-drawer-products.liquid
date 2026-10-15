@@ -1,9 +1,9 @@
 {%- doc -%}
-Renders the products card shown on top of the main menu drawer panel (see snippets/main-menu-drawer.liquid):
-a rounded container with an optional row of collection tabs, the product list (max 5) and an optional button.
+Renders the products shown on top of the main menu drawer panel (see snippets/main-menu-drawer.liquid): an optional row
+of tabs and the product list (max 5), each product in its own rounded container, plus an optional button.
 
-With the collection tabs off it lists the products picked by hand in the block; with them on, each tab lists
-the first products of one of the collections picked in the block.
+With the tabs off it lists the products picked in the block; with them on, each tab has its own title and its own
+hand-picked products (a tab without title or products is skipped).
 
 @param {object} block - the "drawer_products" block of the header section
 {%- enddoc -%}
@@ -12,10 +12,11 @@ the first products of one of the collections picked in the block.
   assign max_products = 5
   assign use_tabs = false
 
-  if block.settings.show_collection_tabs
+  if block.settings.show_tabs
     for i in (1..4)
-      assign collection_key = 'collection_' | append: i
-      if block.settings[collection_key].products_count > 0
+      assign title_key = 'tab_' | append: i | append: '_title'
+      assign products_key = 'tab_' | append: i | append: '_products'
+      if block.settings[title_key] != blank and block.settings[products_key].size > 0
         assign use_tabs = true
         break
       endif
@@ -29,12 +30,12 @@ the first products of one of the collections picked in the block.
 
     <div class="menu-drawer-products__tabs scroll-area" role="tablist">
       {%- for i in (1..4) -%}
-        {%- assign collection_key = 'collection_' | append: i -%}
-        {%- assign collection = block.settings[collection_key] -%}
+        {%- assign title_key = 'tab_' | append: i | append: '_title' -%}
+        {%- assign products_key = 'tab_' | append: i | append: '_products' -%}
 
-        {%- if collection.products_count > 0 -%}
+        {%- if block.settings[title_key] != blank and block.settings[products_key].size > 0 -%}
           <button type="button" role="tab" class="menu-drawer-products__tab" data-menu-drawer-products-tab="{{ i }}" aria-selected="{% if tab_index == 0 %}true{% else %}false{% endif %}">
-            {{- collection.title -}}
+            {{- block.settings[title_key] -}}
           </button>
           {%- assign tab_index = tab_index | plus: 1 -%}
         {%- endif -%}
@@ -44,32 +45,30 @@ the first products of one of the collections picked in the block.
     {%- assign tab_index = 0 -%}
 
     {%- for i in (1..4) -%}
-      {%- assign collection_key = 'collection_' | append: i -%}
-      {%- assign collection = block.settings[collection_key] -%}
+      {%- assign title_key = 'tab_' | append: i | append: '_title' -%}
+      {%- assign products_key = 'tab_' | append: i | append: '_products' -%}
 
-      {%- if collection.products_count > 0 -%}
+      {%- if block.settings[title_key] != blank and block.settings[products_key].size > 0 -%}
         <div class="menu-drawer-products__list" role="tabpanel" data-menu-drawer-products-panel="{{ i }}" {% unless tab_index == 0 %}hidden{% endunless %}>
-          {%- for product in collection.products limit: max_products -%}
-            {%- render 'menu-drawer-products-item', product: product -%}
+          {%- for product in block.settings[products_key] limit: max_products -%}
+            {%- render 'menu-drawer-products-item', product: product, color_scheme: block.settings.color_scheme -%}
           {%- endfor -%}
         </div>
         {%- assign tab_index = tab_index | plus: 1 -%}
       {%- endif -%}
     {%- endfor -%}
-  {%- else -%}
-    {%- if block.settings.products.size > 0 -%}
-      <div class="menu-drawer-products__list">
-        {%- for product in block.settings.products limit: max_products -%}
-          {%- render 'menu-drawer-products-item', product: product -%}
-        {%- endfor -%}
-      </div>
-    {%- endif -%}
+  {%- elsif block.settings.products.size > 0 -%}
+    <div class="menu-drawer-products__list">
+      {%- for product in block.settings.products limit: max_products -%}
+        {%- render 'menu-drawer-products-item', product: product, color_scheme: block.settings.color_scheme -%}
+      {%- endfor -%}
+    </div>
   {%- endif -%}
 {%- endcapture -%}
 
 {%- if products_html contains 'menu-drawer-products__item' -%}
   <div class="menu-drawer-products" {{ block.shopify_attributes }}>
-    <div class="menu-drawer-products__card color-scheme color-scheme--{{ block.settings.color_scheme.id }}">
+    <div class="menu-drawer-products__body">
       {{- products_html -}}
     </div>
 
@@ -92,13 +91,13 @@ the first products of one of the collections picked in the block.
             return;
           }
 
-          const card = tab.closest('.menu-drawer-products__card');
+          const body = tab.closest('.menu-drawer-products__body');
 
-          card.querySelectorAll('[data-menu-drawer-products-tab]').forEach((item) => {
+          body.querySelectorAll('[data-menu-drawer-products-tab]').forEach((item) => {
             item.setAttribute('aria-selected', item === tab ? 'true' : 'false');
           });
 
-          card.querySelectorAll('[data-menu-drawer-products-panel]').forEach((panel) => {
+          body.querySelectorAll('[data-menu-drawer-products-panel]').forEach((panel) => {
             panel.hidden = panel.dataset.menuDrawerProductsPanel !== tab.dataset.menuDrawerProductsTab;
           });
         });
