@@ -11,6 +11,41 @@
     }
   </style>
 
+  {%- if section.settings.mobile_only -%}
+    {%- comment -%}
+    "Show only on mobile": the global cart type stays "drawer", but on screens wider than 699px the theme is
+    told it is something else, which is what its add-to-cart code reads each time (a getter, so resizing the
+    window is handled): the "page" type goes to the cart page, "message" shows a toast. The header cart icon
+    would still open this drawer through its aria-controls, so on larger screens its click is stopped in the
+    capture phase, before the theme's own listener, and the link just opens the cart page.
+    {%- endcomment -%}
+    <script>
+      (function () {
+        var settings = window.themeVariables && window.themeVariables.settings;
+
+        if (!settings || settings.cartType !== 'drawer') return;
+
+        var desktopType = {{ section.settings.desktop_behavior | default: 'page' | json }};
+        var mobileQuery = window.matchMedia('(max-width: 699px)');
+
+        Object.defineProperty(settings, 'cartType', {
+          configurable: true,
+          get: function () {
+            return mobileQuery.matches ? 'drawer' : desktopType;
+          }
+        });
+
+        document.addEventListener('click', function (event) {
+          if (mobileQuery.matches || !event.target.closest) return;
+
+          if (event.target.closest('[aria-controls="cart-drawer"]')) {
+            event.stopPropagation();
+          }
+        }, true);
+      })();
+    </script>
+  {%- endif -%}
+
   <cart-drawer id="cart-drawer" class="drawer drawer--cart drawer--no-bordered-header color-scheme color-scheme--{{ section.settings.color_scheme.id }}" aria-label="{{ 'cart.general.title' | t | escape }}" handle-editor-events>
     {%- comment -%}HEADER PART{%- endcomment -%}
     <div class="text-with-icon" slot="header">
@@ -453,6 +488,24 @@
       "label": "t:sections.cart_drawer.show_terms_of_service_checkbox",
       "info": "t:sections.cart_drawer.show_terms_of_service_checkbox_info",
       "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_only",
+      "label": "t:sections.cart_drawer.mobile_only",
+      "info": "t:sections.cart_drawer.mobile_only_info",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "desktop_behavior",
+      "label": "t:sections.cart_drawer.desktop_behavior",
+      "options": [
+        { "value": "page", "label": "t:sections.cart_drawer.desktop_behavior_options.page" },
+        { "value": "message", "label": "t:sections.cart_drawer.desktop_behavior_options.message" }
+      ],
+      "default": "page",
+      "visible_if": "{{ section.settings.mobile_only }}"
     },
     {
       "type": "checkbox",
