@@ -5462,6 +5462,7 @@ var HeaderMenuDrawer = class extends DialogElement {
     __privateAdd(this, _isTransitioningPanel, false);
     this.addEventListener("dialog:before-show", __privateMethod(this, _HeaderMenuDrawer_instances, onBeforeShow_fn).bind(this));
     this.addEventListener("dialog:after-hide", __privateMethod(this, _HeaderMenuDrawer_instances, onAfterHide_fn2).bind(this));
+    this.addEventListener("dialog:after-show", __privateMethod(this, _HeaderMenuDrawer_instances, calculateOffsets_fn).bind(this));
     __privateGet(this, _delegate7).on("click", "[data-panel-toggle]", (event, target) => __privateMethod(this, _HeaderMenuDrawer_instances, onSwitchToPanel_fn).call(this, target.getAttribute("aria-controls")));
     if (window.onscrollend !== void 0) {
       window.addEventListener("scrollend", __privateMethod(this, _HeaderMenuDrawer_instances, calculateOffsets_fn).bind(this));
@@ -5496,6 +5497,7 @@ _HeaderMenuDrawer_instances = new WeakSet();
  */
 onBeforeShow_fn = function() {
   __privateMethod(this, _HeaderMenuDrawer_instances, calculateOffsets_fn).call(this);
+  requestAnimationFrame(() => __privateMethod(this, _HeaderMenuDrawer_instances, calculateOffsets_fn).call(this));
   if (matchesMediaQuery("md-max")) {
     const header = document.querySelector("x-header");
     this._wasHeaderSolidBeforeOpen = header?.classList.contains("is-solid") ?? false;
@@ -5533,7 +5535,8 @@ calculateOffsets_fn = function() {
     return;
   }
   const header = document.querySelector("x-header");
-  const offsetTop = header ? Math.max(header.getBoundingClientRect().bottom, 0) : 0;
+  const dpr = window.devicePixelRatio || 1;
+  const offsetTop = header ? Math.max(Math.round(header.getBoundingClientRect().bottom * dpr) / dpr, 0) : 0;
   this.style.setProperty("--menu-offset-top", `${offsetTop}px`);
 };
 var HeaderMenuDrawerPanel = class extends HTMLElement {
