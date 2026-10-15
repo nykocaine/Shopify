@@ -23,6 +23,10 @@
   :root {
     --header-is-sticky: {% if section.settings.enable_sticky %}1{% else %}0{% endif %};
     --header-is-visible: 1;
+    /* Softer, slightly slower timing for everything that changes when the header turns solid (background,
+       text color, logo swap, the gap above it). theme.css uses a fixed .2s for each, which read as an abrupt
+       blink when they all fire at once. */
+    --header-solid-transition: .45s cubic-bezier(.4, 0, .2, 1);
     {%- if section.settings.floating_header %}
     /* Gap above the floating header: half the section vertical spacing. Defined on :root (not on the
        section) so snippets/css-variables.liquid (--sticky-area-height) and theme.css (menu overlay)
@@ -48,7 +52,7 @@
     the header turns solid. The transition animates that sticky offset.
     {%- endcomment -%}
     :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} {
-      transition: transform .2s ease-in-out, visibility .2s ease-in-out, top .2s ease-in-out;
+      transition: transform .2s ease-in-out, visibility .2s ease-in-out, top var(--header-solid-transition);
     }
   {%- endif -%}
 
@@ -84,6 +88,14 @@
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .header {
     --header-padding-inline: calc(var(--container-gutter) + 0.5rem);
+  }
+
+  #shopify-section-{{ section.id }} .header {
+    transition: background var(--header-solid-transition), color var(--header-solid-transition), border-color var(--header-solid-transition);
+  }
+
+  #shopify-section-{{ section.id }} .header__logo-image {
+    transition: opacity var(--header-solid-transition);
   }
 
   @media screen and (min-width: 1000px) {
@@ -137,7 +149,7 @@
         height: var(--header-top-gap);
         background: rgb(var(--page-background));
         pointer-events: none;
-        transition: background .2s ease-in-out;
+        transition: background var(--header-solid-transition);
       }
 
       {%- comment -%}
