@@ -13,8 +13,7 @@ This component is used to show the product gallery (used in product page and fea
 @param {number} [gallery_border_radius] - if set, rounds the bottom corners of the image carousel on mobile
 @param {number} [thumbnail_border_radius] - if set, rounds the corners of the gallery thumbnails
 @param {string} [class] - extra class applied on the container
-@param {boolean} [skip_first_media] - if set to true, product.media's first item is left out of the gallery entirely (used when it's already shown elsewhere, eg. main-product.liquid's separate first-image card)
-@param {number} [move_to_second_media_id] - if set, this media's id is kept in the gallery but repositioned to the second slide (instead of being removed by skip_first_media) and hidden - itself and its scroll-marker - at desktop widths (min-width: 1000px), where it's shown elsewhere instead (eg. main-product.liquid's separate first-image column)
+@param {number} [move_to_second_media_id] - if set, this media's id is kept in the gallery but repositioned to the second slide and hidden - itself and its scroll-marker - at desktop widths (min-width: 1000px), where it's shown elsewhere instead (eg. main-product.liquid's separate first-image column)
 @param {object} [section]
 {%- enddoc -%}
 
@@ -35,7 +34,7 @@ This component is used to show the product gallery (used in product page and fea
   {%- if move_to_second_media_id != blank -%}
     {%- comment -%}
     move_to_second_media_id keeps this media (and its scroll-marker, if controls show one per item) in
-    the gallery - unlike skip_first_media, which removes it entirely - so it can sit at the second slide
+    the gallery so it can sit at the second slide
     on mobile; desktop hides both here instead, since it's shown elsewhere there (eg. main-product.liquid's
     separate first-image column). data-media-id on the slide already exists below; scroll-marker buttons
     (thumbnails/lines/dots further down) carry the same attribute specifically so this can target the
@@ -362,13 +361,8 @@ only way to do it on Shopify right now.
   assign product_gallery_carousel_id = 'product-gallery-carousel-' | append: product.id | append: '-' | append: section.id
   assign filtered_indexes = null | sort
 
-  # gallery_media is what every loop below actually renders/counts - product.media itself, unless
-  # skip_first_media asks to drop the first item (only when there's more than 1 item to begin with, so
-  # the gallery never ends up with zero slides).
+  # gallery_media is what every loop below actually renders/counts.
   assign gallery_media = product.media
-  if skip_first_media and product.media.size > 1
-    assign gallery_media = product.media | slice: 1, product.media.size
-  endif
 
   # Rotate gallery_media so default_media (the selected variant's featured media - whichever slide the
   # carousel actually opens on, via .is-initial/ScrollCarousel) becomes its first item, keeping the rest
@@ -470,12 +464,7 @@ only way to do it on Shopify right now.
   # for <carousel-caption> (bar_controls) - same "#"-stripping as each slide's own data-caption below,
   # so the very first paint (before any carousel:change fires) already matches what the JS would set.
   #
-  # Uses gallery_media.first rather than default_media directly: when default_media was found above,
-  # the rotation already made it gallery_media's first item, so this is the same media. But when
-  # skip_first_media has excluded default_media from gallery_media entirely (main-product.liquid's
-  # separate first-image card, whose image IS default_media), default_media_position stays -1 and no
-  # rotation happens - falling back to gallery_media.first keeps the caption/counter matching whatever
-  # slide is actually shown first, instead of describing an image that isn't even in the carousel.
+  # Uses gallery_media.first (effective_default_media) so the caption/counter always match the slide actually shown first.
   if product != blank
     assign media_count = gallery_media.size
     assign default_media_index = 0
