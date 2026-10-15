@@ -1,0 +1,50 @@
+{%- doc -%}
+The "DNI / RUC / CE" field shown in the cart page summary and in the cart drawer footer. It is saved as the cart
+attribute "dni_ruc_ce" and carried into checkout's native "Company" field.
+
+@param {string} [form] - id of the cart form the fields belong to, when they are rendered outside of it (the cart page). Leave blank inside the form (the cart drawer).
+@param {object} [section]
+{%- enddoc -%}
+
+{%- render 'input', name: 'attributes[dni_ruc_ce]', label: 'DNI / RUC / CE', placeholder: 'DNI / RUC / CE', value: cart.attributes['dni_ruc_ce'], form: form -%}
+
+{%- comment -%}
+Carries the DNI/RUC/CE value into checkout's native "Company" field. checkout[shipping_address][company]
+is a Shopify-recognized field name: when the cart form is submitted with a submit button named
+"checkout", Shopify forwards any checkout[...]-namespaced fields in that same submission to pre-fill the
+corresponding checkout field - no app or Plus checkout.liquid access needed, since this is a real
+(non-AJAX) form POST, not the cart API.
+{%- endcomment -%}
+<input type="hidden" name="checkout[shipping_address][company]" value="{{ cart.attributes['dni_ruc_ce'] }}" {% if form %}form="{{ form }}"{% endif %} data-dni-checkout-prefill>
+
+{%- comment -%}
+One script for every place this field is rendered (it can be on the page more than once over time, and the cart
+drawer replaces its content after each cart change), so it listens on the document and only registers once:
+- on every keystroke the hidden checkout field follows the input, so clicking "Checkout" right away never sends
+  the previous value;
+- when the field loses focus the value is also saved on the cart, so it survives the cart drawer being
+  re-rendered by a quantity change or a removed item.
+{%- endcomment -%}
+<script>
+  if (!window.__cartDniField) {
+    window.__cartDniField = true;
+
+    document.addEventListener('input', function (event) {
+      if (!event.target.matches || !event.target.matches('[name="attributes[dni_ruc_ce]"]')) return;
+
+      Array.prototype.forEach.call(document.querySelectorAll('[data-dni-checkout-prefill]'), function (target) {
+        target.value = event.target.value;
+      });
+    });
+
+    document.addEventListener('change', function (event) {
+      if (!event.target.matches || !event.target.matches('[name="attributes[dni_ruc_ce]"]')) return;
+
+      fetch(window.Shopify.routes.root + 'cart/update.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ attributes: { dni_ruc_ce: event.target.value } })
+      }).catch(function () {});
+    });
+  }
+</script>
