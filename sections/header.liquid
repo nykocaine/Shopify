@@ -42,10 +42,9 @@
     --header-menu-gap: {{ section.settings.menu_items_spacing }}px;
     --header-icons-gap: {{ section.settings.icons_spacing }}px;
     {%- if section.settings.floating_header -%}
-      /* Match the floating footer: the only gap above the header is the global side
-         margin (--container-gutter), same value the footer uses for padding-block-end.
+      /* The only gap above the floating header is half the section vertical spacing.
          It lives on the sticky section wrapper, so the gap stays while scrolling. */
-      padding-block-start: var(--container-gutter);
+      padding-block-start: calc(var(--section-vertical-spacing) / 2);
       position: relative;
     {%- endif -%}
   }
