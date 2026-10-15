@@ -50,13 +50,13 @@ mobile, and for desktop on "drawer" mode.
                 <a href="{{ link.url }}" class="h4 w-full">{{ link.title }}</a>
               {%- else -%}
                 <button type="button" class="h4 text-start w-full" data-panel-toggle aria-controls="menu-drawer-panel-{{ forloop.index }}">
-                  <div class="h-stack gap-3 sm:gap-5">
+                  <span class="h-stack gap-3 sm:gap-5">
                     {{- link.title -}}
 
                     {%- if show_nested_menu_indicator -%}
                       {%- render 'icon' with 'big-arrow-right', class: 'shrink-0 capped-icon' -%}
                     {%- endif -%}
-                  </div>
+                  </span>
                 </button>
               {%- endif -%}
             </li>
@@ -120,7 +120,7 @@ mobile, and for desktop on "drawer" mode.
                 <shopify-account menu="{{ section.settings.customer_account_menu }}"></shopify-account>
               {%- else -%}
                 <a href="{{ routes.account_login_url }}">
-                  <div class="h-stack gap-2 5">
+                  <div class="h-stack gap-2.5">
                     {%- render 'icon' with 'account', mobile_width: 16, width: section.settings.desktop_icon_size -%}
                     <span class="subheading">{{- 'header.general.account' | t -}}</span>
                   </div>
