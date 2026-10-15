@@ -1,41 +1,5 @@
 {%- liquid
   assign text_alignment = 'start'
-
-  # icon_alignment only ever moves the icon, never the title. icon_justify_self is the icon's own
-  # justify-self (side-by-side layouts, a grid) or align-self (stacked layouts, a flex column) -
-  # both accept the same start/center/end keywords, so one variable covers either case.
-  assign icon_justify_self = 'start'
-
-  case section.settings.icon_alignment
-    when 'center'
-      assign icon_justify_self = 'center'
-    when 'right'
-      assign icon_justify_self = 'end'
-  endcase
-
-  # icon_position picks which side of the title the icon sits on. Side by side (left/right), this
-  # is a 2-column grid with one named area per element - the title's area/column is always "auto"
-  # (its own content width) and the icon's is always "1fr" (the rest of the row, for it to roam
-  # across via icon_justify_self above), regardless of which column each lands in, since grid-area
-  # ties each element to its column by name rather than by source order. Stacked (above/below) is a
-  # plain flex column instead - its cross-axis alignment (align-items/align-self) is already
-  # per-item independent of source order, so no grid trick is needed there.
-  assign icon_display = 'grid'
-  assign icon_grid_template_columns = 'auto 1fr'
-  assign icon_grid_template_areas = '"title icon"'
-  assign icon_flex_direction = 'column'
-
-  case section.settings.icon_position
-    when 'left'
-      assign icon_grid_template_columns = '1fr auto'
-      assign icon_grid_template_areas = '"icon title"'
-    when 'above'
-      assign icon_display = 'flex'
-      assign icon_flex_direction = 'column-reverse'
-    when 'below'
-      assign icon_display = 'flex'
-      assign icon_flex_direction = 'column'
-  endcase
 -%}
 
   {%- capture section_header -%}
@@ -46,26 +10,24 @@
           {%- render 'subheading', content: section.settings.subheading -%}
 
           {%- if section.settings.title != blank or section.settings.show_icon -%}
-            <div class="contact-heading-row">
+            {%- capture contact_title -%}
               {%- if section.settings.title != blank -%}
-                <div class="contact-heading-row__title">
-                  {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.heading_size, html_tag: 'h2' -%}
-                </div>
+                {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.heading_size, html_tag: 'h2' -%}
               {%- endif -%}
+            {%- endcapture -%}
 
-              {%- if section.settings.show_icon -%}
-                <div class="contact-heading-row__icon">
-                  {%- render 'decorative-icon',
-                    icon_type: section.settings.icon_type,
-                    icon_size: section.settings.icon_size,
-                    icon_spin: section.settings.icon_spin,
-                    icon_primary_color: section.settings.icon_primary_color,
-                    icon_secondary_color: section.settings.icon_secondary_color,
-                    icon_border_color: section.settings.icon_border_color
-                  -%}
-                </div>
-              {%- endif -%}
-            </div>
+            {%- render 'heading-with-icon',
+              title_content: contact_title,
+              show_icon: section.settings.show_icon,
+              icon_position: section.settings.icon_position,
+              icon_alignment: section.settings.icon_alignment,
+              icon_type: section.settings.icon_type,
+              icon_size: section.settings.icon_size,
+              icon_spin: section.settings.icon_spin,
+              icon_primary_color: section.settings.icon_primary_color,
+              icon_secondary_color: section.settings.icon_secondary_color,
+              icon_border_color: section.settings.icon_border_color
+            -%}
           {%- endif -%}
 
           {%- comment -%} Full section width (no max-w-sm cap), so the text isn't inset with what looks
@@ -169,82 +131,6 @@
     #shopify-section-{{ section.id }} .section-spacing .container {
       --container-gutter-context: 0px;
     }
-
-    {%- comment -%}
-    Entirely skipped when the icon is off - the row is then just a transparent wrapper around the
-    title, which keeps behaving exactly like the title did on its own.
-
-    With the icon on: side by side, this is a 2-column grid - the title's own column is always
-    "auto" (sized to the title alone), so icon_justify_self can move the icon around its "1fr"
-    column without ever resizing or shifting the title's column. Stacked, it's a flex column
-    instead, whose per-item align-self (set on the icon element itself, not here) does the same job
-    without touching the title's own position either.
-
-    align-items differs by layout because the cross axis means something different in each: side by
-    side (grid), it's vertical, so "center" centers whichever of title/icon is shorter against the
-    taller one, making the row's own height hug the taller element exactly instead of carrying extra
-    space. Stacked (flex column), the cross axis is horizontal instead - that's icon_justify_self's
-    job (as align-self, per item), so the row keeps flex-start there to match the title's own
-    left-aligned default.
-    {%- endcomment -%}
-    {%- if section.settings.show_icon -%}
-      #shopify-section-{{ section.id }} .contact-heading-row {
-        display: {{ icon_display }};
-        {%- if icon_display == 'grid' -%}
-          grid-template-columns: {{ icon_grid_template_columns }};
-          grid-template-areas: {{ icon_grid_template_areas }};
-          align-items: center;
-        {%- else -%}
-          flex-direction: {{ icon_flex_direction }};
-          align-items: flex-start;
-        {%- endif -%}
-        gap: .5rem;
-      }
-
-      #shopify-section-{{ section.id }} .contact-heading-row__title {
-        grid-area: title;
-      }
-
-      {%- comment -%}
-      Trims the heading's own box down to its actual glyphs (cap height to baseline), removing the
-      invisible leading space a line box normally carries above/below the text. Has to land on the
-      heading tag itself (the element the 'heading' snippet renders, e.g. its <h2>) rather than on
-      .contact-heading-row__title above - that's just an empty wrapper div with no text/line box of
-      its own, so text-box there trimmed nothing and the row kept the heading's full line-height
-      leading, offsetting it from the icon's top edge and padding out the row's height beyond
-      whichever element (title or icon) is actually tallest.
-
-      margin-block-start: 0 is needed for the same two-levels-deep reason: .prose's heading spacing
-      system (assets/theme.css) zeroes out a heading's top margin only when it's .prose's own direct
-      child or one div-wrapper deep - here the heading sits two wrappers deep (.contact-heading-row >
-      .contact-heading-row__title > the heading), past what that exemption reaches, so .prose still
-      hands it a non-zero margin-block-start that nothing cancels, nudging it down inside the row.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .contact-heading-row__title > * {
-        text-box: trim-both cap alphabetic;
-        margin-block-start: 0;
-      }
-
-      #shopify-section-{{ section.id }} .contact-heading-row__icon {
-        grid-area: icon;
-        {%- if icon_display == 'grid' -%}
-          justify-self: {{ icon_justify_self }};
-        {%- else -%}
-          align-self: {{ icon_justify_self }};
-        {%- endif -%}
-      }
-
-      {%- comment -%}
-      Same leftover-.prose-spacing issue as the title above, but for media: .prose hands any svg
-      margin-block: var(--prose-media-spacing) (top and bottom alike) regardless of nesting depth,
-      and the icon's own svg (inside snippets/decorative-icon.liquid's wrapper div) sits well past
-      the one-level exemption that would normally zero it out. Halving rather than zeroing it, per
-      request, instead of matching the title's full reset above.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .contact-heading-row__icon svg {
-        margin-block: calc(var(--prose-media-spacing) / 2);
-      }
-    {%- endif -%}
   </style>
 
   {%- if section.settings.image != blank -%}

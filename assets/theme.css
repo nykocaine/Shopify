@@ -11213,6 +11213,46 @@ figcaption {
   }
 }
 
+/* snippets/heading-with-icon.liquid: a heading next to / above / below the decorative icon. The snippet sets
+   the per-instance layout (grid or flex, side by side or stacked) as --heading-icon-* custom properties on
+   the row; everything else is shared here. Without the icon the row is a plain wrapper around the title
+   (no rules apply), which keeps behaving exactly like the title did on its own. */
+.heading-icon-row--with-icon {
+  display: var(--heading-icon-display);
+  grid-template-columns: var(--heading-icon-columns);
+  grid-template-areas: var(--heading-icon-areas);
+  flex-direction: var(--heading-icon-direction);
+  align-items: var(--heading-icon-align-items);
+  gap: .5rem;
+}
+
+.heading-icon-row--with-icon > .heading-icon-row__title {
+  grid-area: title;
+}
+
+/* Trims the heading's own box down to its actual glyphs (cap height to baseline), removing the invisible
+   leading space a line box normally carries above/below the text, so the row hugs whichever of title and
+   icon is taller. It has to land on the heading tag itself (the element the 'heading' snippet renders),
+   not on the empty wrapper div above it. margin-block-start: 0 is needed for the same two-levels-deep
+   reason: .prose zeroes a heading's top margin only when it is its own direct child or one div-wrapper
+   deep, and here the heading sits two wrappers deep, past that exemption. */
+.heading-icon-row--with-icon:not(.heading-icon-row--plain) > .heading-icon-row__title > * {
+  text-box: trim-both cap alphabetic;
+  margin-block-start: 0;
+}
+
+.heading-icon-row--with-icon > .heading-icon-row__icon {
+  grid-area: icon;
+  justify-self: var(--heading-icon-justify-self, normal);
+  align-self: var(--heading-icon-align-self, auto);
+}
+
+/* Same leftover-.prose-spacing issue as the title, but for media: .prose gives any svg margin-block:
+   var(--prose-media-spacing) regardless of nesting depth. Halved rather than zeroed. */
+.heading-icon-row--with-icon:not(.heading-icon-row--plain) > .heading-icon-row__icon svg {
+  margin-block: var(--heading-icon-svg-margin, calc(var(--prose-media-spacing) / 2));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .decorative-icon--spin svg {
     animation: none;

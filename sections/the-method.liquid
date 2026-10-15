@@ -18,32 +18,6 @@
 
   assign require_email_to_start = section.settings.require_email_to_start
   assign newsletter_form_id = 'the-method-newsletter-' | append: section.id
-
-  # Ícono decorativo del título — mismo patrón que sections/contact.liquid (snippets/decorative-icon.liquid).
-  assign icon_justify_self = 'start'
-  case section.settings.icon_alignment
-    when 'center'
-      assign icon_justify_self = 'center'
-    when 'right'
-      assign icon_justify_self = 'end'
-  endcase
-
-  assign icon_display = 'grid'
-  assign icon_grid_template_columns = 'auto 1fr'
-  assign icon_grid_template_areas = '"title icon"'
-  assign icon_flex_direction = 'column'
-
-  case section.settings.icon_position
-    when 'left'
-      assign icon_grid_template_columns = '1fr auto'
-      assign icon_grid_template_areas = '"icon title"'
-    when 'above'
-      assign icon_display = 'flex'
-      assign icon_flex_direction = 'column-reverse'
-    when 'below'
-      assign icon_display = 'flex'
-      assign icon_flex_direction = 'column'
-  endcase
 -%}
 
 <style>
@@ -60,37 +34,6 @@
   #shopify-section-{{ section.id }} .container.section-spacing {
     margin-inline: 0;
     padding: calc(var(--container-gutter) + 0.5rem);
-  }
-
-  {%- comment -%}
-  Fila título + ícono decorativo (sections/contact.liquid's .contact-heading-row, mismo patrón):
-  depende de section.settings.icon_position/icon_alignment, así que necesita el mismo mecanismo
-  de <style> por instancia de arriba, no {% stylesheet %}.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .the-method-heading-row {
-    display: {{ icon_display }};
-    {%- if icon_display == 'grid' -%}
-      grid-template-columns: {{ icon_grid_template_columns }};
-      grid-template-areas: {{ icon_grid_template_areas }};
-      align-items: center;
-    {%- else -%}
-      flex-direction: {{ icon_flex_direction }};
-      align-items: flex-start;
-    {%- endif -%}
-    gap: .5rem;
-  }
-
-  #shopify-section-{{ section.id }} .the-method-heading-row__title {
-    grid-area: title;
-  }
-
-  #shopify-section-{{ section.id }} .the-method-heading-row__icon {
-    grid-area: icon;
-    {%- if icon_display == 'grid' -%}
-      justify-self: {{ icon_justify_self }};
-    {%- else -%}
-      align-self: {{ icon_justify_self }};
-    {%- endif -%}
   }
 </style>
 
@@ -159,26 +102,25 @@
 
         <div class="the-method__panel the-method__panel--intro justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="intro" tabindex="-1" {% if just_subscribed %}hidden{% endif %}>
           {%- if section.settings.heading != blank or section.settings.show_icon -%}
-            <div class="the-method-heading-row">
+            {%- capture method_title -%}
               {%- if section.settings.heading != blank -%}
-                <div class="the-method-heading-row__title">
-                  {%- render 'heading', content: section.settings.heading, style: section.settings.heading_size, html_tag: 'h2', balance_text: true, instant: true -%}
-                </div>
+                {%- render 'heading', content: section.settings.heading, style: section.settings.heading_size, html_tag: 'h2', balance_text: true, instant: true -%}
               {%- endif -%}
+            {%- endcapture -%}
 
-              {%- if section.settings.show_icon -%}
-                <div class="the-method-heading-row__icon">
-                  {%- render 'decorative-icon',
-                    icon_type: section.settings.icon_type,
-                    icon_size: section.settings.icon_size,
-                    icon_spin: section.settings.icon_spin,
-                    icon_primary_color: section.settings.icon_primary_color,
-                    icon_secondary_color: section.settings.icon_secondary_color,
-                    icon_border_color: section.settings.icon_border_color
-                  -%}
-                </div>
-              {%- endif -%}
-            </div>
+            {%- render 'heading-with-icon',
+              title_content: method_title,
+              show_icon: section.settings.show_icon,
+              plain: true,
+              icon_position: section.settings.icon_position,
+              icon_alignment: section.settings.icon_alignment,
+              icon_type: section.settings.icon_type,
+              icon_size: section.settings.icon_size,
+              icon_spin: section.settings.icon_spin,
+              icon_primary_color: section.settings.icon_primary_color,
+              icon_secondary_color: section.settings.icon_secondary_color,
+              icon_border_color: section.settings.icon_border_color
+            -%}
           {%- endif -%}
 
           {%- if section.settings.tagline != blank -%}

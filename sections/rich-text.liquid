@@ -111,112 +111,7 @@
                 -%}
 
                 {%- capture heading_title_content -%}
-                  {%- if block.settings.show_icon -%}
-                    {%- liquid
-                      # Same decorative-icon-next-to-title pattern as sections/contact.liquid
-                      # (.contact-heading-row, snippets/decorative-icon.liquid), just scoped per
-                      # block instead of per section since rich-text's heading is a block.
-                      assign icon_justify_self = 'start'
-                      case block.settings.icon_alignment
-                        when 'center'
-                          assign icon_justify_self = 'center'
-                        when 'right'
-                          assign icon_justify_self = 'end'
-                      endcase
-
-                      assign icon_display = 'grid'
-                      assign icon_grid_template_columns = 'auto 1fr'
-                      assign icon_grid_template_areas = '"title icon"'
-                      assign icon_flex_direction = 'column'
-
-                      case block.settings.icon_position
-                        when 'left'
-                          assign icon_grid_template_columns = '1fr auto'
-                          assign icon_grid_template_areas = '"icon title"'
-                        when 'above'
-                          assign icon_display = 'flex'
-                          assign icon_flex_direction = 'column-reverse'
-                        when 'below'
-                          assign icon_display = 'flex'
-                          assign icon_flex_direction = 'column'
-                      endcase
-                    -%}
-
-                    <style>
-                      {%- comment -%}
-                      Scoped with #shopify-section-{{ section.id }}-{{ block.id }} rather than just
-                      the section id (sections/contact.liquid's approach) - rich-text's heading is a
-                      repeatable BLOCK, not a single section-level title, so more than one heading
-                      block (each with its own icon position/alignment) can exist in the same section.
-                      {%- endcomment -%}
-                      #shopify-section-{{ section.id }}-{{ block.id }} {
-                        display: {{ icon_display }};
-                        {%- if icon_display == 'grid' -%}
-                          grid-template-columns: {{ icon_grid_template_columns }};
-                          grid-template-areas: {{ icon_grid_template_areas }};
-                          align-items: center;
-                        {%- else -%}
-                          flex-direction: {{ icon_flex_direction }};
-                          align-items: flex-start;
-                        {%- endif -%}
-                        gap: .5rem;
-                      }
-
-                      #shopify-section-{{ section.id }}-{{ block.id }} .rich-text-heading-row__title {
-                        grid-area: title;
-                      }
-
-                      {%- comment -%}
-                      Same two-levels-deep .prose spacing fix as sections/contact.liquid's
-                      .contact-heading-row__title > * rule: the heading sits past .prose's
-                      one-wrapper-deep margin exemption, so its own top margin needs resetting here.
-                      {%- endcomment -%}
-                      #shopify-section-{{ section.id }}-{{ block.id }} .rich-text-heading-row__title > * {
-                        text-box: trim-both cap alphabetic;
-                        margin-block-start: 0;
-                      }
-
-                      #shopify-section-{{ section.id }}-{{ block.id }} .rich-text-heading-row__icon {
-                        grid-area: icon;
-                        {%- if icon_display == 'grid' -%}
-                          justify-self: {{ icon_justify_self }};
-                        {%- else -%}
-                          align-self: {{ icon_justify_self }};
-                        {%- endif -%}
-                      }
-
-                      #shopify-section-{{ section.id }}-{{ block.id }} .rich-text-heading-row__icon svg {
-                        margin-block: 0;
-                      }
-                    </style>
-
-                    <div class="rich-text-heading-row" id="shopify-section-{{ section.id }}-{{ block.id }}">
-                      <div class="rich-text-heading-row__title">
-                        {%- render 'heading',
-                          content: block.settings.text,
-                          html_tag: block.settings.html_tag,
-                          highlight_effect: block.settings.highlight_effect,
-                          highlight_accent_color: block.settings.highlight_accent_color,
-                          highlight_text_color: block.settings.highlight_text_color,
-                          style: block.settings.heading_tag,
-                          indent: block.settings.indent,
-                          balance_text: true,
-                          block: block
-                        -%}
-                      </div>
-
-                      <div class="rich-text-heading-row__icon">
-                        {%- render 'decorative-icon',
-                          icon_type: block.settings.icon_type,
-                          icon_size: block.settings.icon_size,
-                          icon_spin: block.settings.icon_spin,
-                          icon_primary_color: block.settings.icon_primary_color,
-                          icon_secondary_color: block.settings.icon_secondary_color,
-                          icon_border_color: block.settings.icon_border_color
-                        -%}
-                      </div>
-                    </div>
-                  {%- else -%}
+                  {%- capture heading_text_markup -%}
                     {%- render 'heading',
                       content: block.settings.text,
                       html_tag: block.settings.html_tag,
@@ -228,6 +123,28 @@
                       balance_text: true,
                       block: block
                     -%}
+                  {%- endcapture -%}
+
+                  {%- if block.settings.show_icon -%}
+                    {%- comment -%}
+                    Same decorative-icon-next-to-title row as sections/contact.liquid, just per block instead of
+                    per section since rich-text's heading is a block (snippets/heading-with-icon.liquid).
+                    {%- endcomment -%}
+                    {%- render 'heading-with-icon',
+                      title_content: heading_text_markup,
+                      show_icon: true,
+                      icon_margin_block: '0',
+                      icon_position: block.settings.icon_position,
+                      icon_alignment: block.settings.icon_alignment,
+                      icon_type: block.settings.icon_type,
+                      icon_size: block.settings.icon_size,
+                      icon_spin: block.settings.icon_spin,
+                      icon_primary_color: block.settings.icon_primary_color,
+                      icon_secondary_color: block.settings.icon_secondary_color,
+                      icon_border_color: block.settings.icon_border_color
+                    -%}
+                  {%- else -%}
+                    {{- heading_text_markup -}}
                   {%- endif -%}
                 {%- endcapture -%}
 
