@@ -80,27 +80,6 @@
     scroll-snap-align: center;
   }
 
-  {%- if section.settings.floating_product_list and section.settings.sync_captions and section.settings.stack_products_mobile == false and section.settings.stack_products_desktop == false -%}
-    {%- comment -%}
-    Synced captions mode: the carousel holds only the images (one grid row per card) and its own element, the
-    scroll area, gets the rounded corners, so the clip keeps all four corners rounded while the products pass
-    by. The captions row below has the same grid, no scrolling of its own (its scroll position is mirrored by
-    the script at the bottom of the section) and no clipping radius.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} product-list,
-    #shopify-section-{{ section.id }} .featured-product-list__captions {
-      --product-card-row-count: 1;
-    }
-
-    #shopify-section-{{ section.id }} product-list {
-      border-radius: {{ section.settings.product_card_border_radius }}px;
-    }
-
-    #shopify-section-{{ section.id }} .featured-product-list__captions {
-      overflow: hidden;
-    }
-  {%- endif -%}
-
   {%- if section.settings.floating_product_list -%}
     {%- comment -%}
     Floating card: the products go edge to edge on the sides and the card has no padding at the bottom
@@ -147,28 +126,7 @@
           endif
         -%}
 
-        {%- comment -%}
-        Synced captions mode (floating card, carousel on both breakpoints only): the images scroll in the
-        carousel (rounded window, like the FAQ media carousel) and the names/prices live in a separate row
-        below that mirrors its scroll position. Anything else renders the whole card in one carousel.
-        {%- endcomment -%}
-        {%- liquid
-          assign use_split = false
-          assign captions_id = 'product-captions-' | append: section.id
-          assign tracks = 'all' | split: ','
-
-          if section.settings.floating_product_list and section.settings.sync_captions and section.settings.stack_products_mobile == false and section.settings.stack_products_desktop == false
-            assign use_split = true
-            assign tracks = 'media,info' | split: ','
-          endif
-        -%}
-
-        {%- for track in tracks -%}
-        {%- if track == 'info' -%}
-        <div id="{{ captions_id }}" class="product-list product-list--carousel featured-product-list__captions" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;">
-        {%- else -%}
         <product-list id="{{ product_list_id }}" cell-selector=".product-card, .product-list__promo" class="product-list {{ product_list_class }}" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;">
-        {%- endif -%}
           {%- comment -%} Tablet divisor matches --product-list-column-count: 2 at the 700px breakpoint above, not products_per_row_desktop - keep in sync with that rule. {%- endcomment -%}
           {%- capture sizes -%}(max-width: 699px) calc(100vw / {{ section.settings.products_per_row_mobile }} - 40px), (max-width: 999px) calc(100vw / 2 - 64px), calc((100vw - 96px) / {{ section.settings.products_per_row_desktop }}){%- endcapture -%}
 
@@ -187,25 +145,15 @@
               {%- endif -%}
 
               {%- assign visual_position = visual_position | plus: 1 -%}
-              {%- if track == 'info' -%}
-                <div class="product-list__promo-caption"></div>
-              {%- else -%}
-                {%- render 'featured-product-list-promo', block: block, section: section, sizes: sizes, position: visual_position -%}
-              {%- endif -%}
+              {%- render 'featured-product-list-promo', block: block, section: section, sizes: sizes, position: visual_position -%}
             {%- endfor -%}
 
             {%- assign visual_position = visual_position | plus: 1 -%}
-            {%- if use_split -%}
-              {%- render 'product-card', product: product, reveal: true, sizes: sizes, position: visual_position, part: track, show_quick_buy: false, show_swatches: false -%}
-            {%- else -%}
-              {%- render 'product-card', product: product, reveal: true, sizes: sizes, position: visual_position -%}
-            {%- endif -%}
+            {%- render 'product-card', product: product, reveal: true, sizes: sizes, position: visual_position -%}
           {%- else -%}
-            {%- if track != 'info' -%}
-              {%- for i in (1..4) -%}
-                {%- render 'product-card-placeholder', loop_index: i -%}
-              {%- endfor -%}
-            {%- endif -%}
+            {%- for i in (1..4) -%}
+              {%- render 'product-card-placeholder', loop_index: i -%}
+            {%- endfor -%}
           {%- endfor -%}
 
           {%- comment -%}
@@ -221,32 +169,9 @@
             {%- endif -%}
 
             {%- assign visual_position = visual_position | plus: 1 -%}
-            {%- if track == 'info' -%}
-              <div class="product-list__promo-caption"></div>
-            {%- else -%}
-              {%- render 'featured-product-list-promo', block: block, section: section, sizes: sizes, position: visual_position -%}
-            {%- endif -%}
+            {%- render 'featured-product-list-promo', block: block, section: section, sizes: sizes, position: visual_position -%}
           {%- endfor -%}
-        {%- if track == 'info' -%}
-        </div>
-        {%- else -%}
         </product-list>
-        {%- endif -%}
-        {%- endfor -%}
-
-        {%- if use_split -%}
-          <script>
-            (function () {
-              var carousel = document.getElementById('{{ product_list_id }}');
-              var captions = document.getElementById('{{ captions_id }}');
-              if (!carousel || !captions) return;
-
-              carousel.addEventListener('scroll', function () {
-                captions.scrollLeft = carousel.scrollLeft;
-              }, { passive: true });
-            })();
-          </script>
-        {%- endif -%}
 
         {%- render 'scroll-controls', target_id: product_list_id, show_mobile: section.settings.show_progress_bar_mobile, show_desktop: section.settings.show_progress_bar_desktop, class: 'featured-product-list__scroll-controls' -%}
     </div>
@@ -286,14 +211,6 @@
       "label": "Corner radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_product_list }}"
-    },
-    {
-      "type": "checkbox",
-      "id": "sync_captions",
-      "label": "Nombres y precios en una fila sincronizada",
-      "info": "Solo con Floating y carrusel en móvil y escritorio. Las imágenes van en un carrusel con las cuatro esquinas redondeadas y los nombres y precios en una fila aparte que lo sigue. Los colores de muestra y la compra rápida se desactivan.",
-      "default": false,
-      "visible_if": "{{ section.settings.floating_product_list and section.settings.stack_products_mobile == false and section.settings.stack_products_desktop == false }}"
     },
     {
       "type": "product_list",
