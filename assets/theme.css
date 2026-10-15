@@ -1253,6 +1253,12 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   display: block;
 }
 
+/* Gap above and below a floating drawer: half the section spacing, the same distance the page keeps above the
+   header and below the footer. Used by the mobile floating cart/search drawers and the bottom of the menu drawer. */
+:root {
+  --drawer-block-gap: calc(var(--section-vertical-spacing) / 2);
+}
+
 .drawer {
   --drawer-header-padding-block: min(1.25rem, var(--container-gutter));
   --drawer-header-padding-inline: min(1.25rem, var(--container-gutter));
@@ -5969,7 +5975,7 @@ product-rerender {
 
   .drawer-mobile-centered :is(.drawer--cart, .drawer--search)::part(content) {
     position: absolute;
-    inset: var(--container-gutter);
+    inset: var(--drawer-block-gap) var(--container-gutter);
     margin: 0 !important;
     margin-inline-start: 0 !important;
     margin-inline-end: 0 !important;
@@ -7342,7 +7348,7 @@ shopify-account::part(signed-out-avatar) {
 }
 
 /* Mobile menu drawer: below 999px it drops down right below the header, leaving the header and anything above it
-   (announcement bar, countdown bar) visible, with --container-gutter margins on the sides and the bottom (so it
+   (announcement bar, countdown bar) visible, with --container-gutter margins on the sides and --drawer-block-gap at the bottom (so it
    no longer touches the viewport's bottom edge), and rounded bottom corners (--drawer-border-radius) to match.
    position: fixed (not absolute) + --menu-offset-top (a CSS var written by HeaderMenuDrawer's
    calculateOffsets_fn in theme.js, using the header's own getBoundingClientRect().bottom - a live, direct
@@ -7368,7 +7374,7 @@ shopify-account::part(signed-out-avatar) {
   .menu-drawer::part(content) {
     position: fixed;
     inset-block-start: var(--menu-offset-top, 0px);
-    inset-block-end: var(--container-gutter);
+    inset-block-end: var(--drawer-block-gap);
     inset-inline: var(--container-gutter);
     width: auto;
     max-width: none;
@@ -7384,7 +7390,7 @@ shopify-account::part(signed-out-avatar) {
 
   .drawer-mobile-centered .menu-drawer::part(content) {
     position: fixed;
-    inset: var(--container-gutter);
+    inset: var(--drawer-block-gap) var(--container-gutter);
     margin: 0;
     width: auto;
     max-width: none;
@@ -7408,7 +7414,7 @@ shopify-account::part(signed-out-avatar) {
   .drawer-mobile-centered .menu-drawer::part(content) {
     position: fixed;
     inset-block-start: var(--menu-offset-top, 0px);
-    inset-block-end: var(--container-gutter);
+    inset-block-end: var(--drawer-block-gap);
     inset-inline: var(--container-gutter);
     border-radius: 0 0 var(--drawer-border-radius) var(--drawer-border-radius);
   }
