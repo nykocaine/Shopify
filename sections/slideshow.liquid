@@ -23,6 +23,16 @@
     }
 
     {%- comment -%}
+    A heading with its decorative icon is a full-width row (title on one side, the icon on the other), so inside a
+    centered or end-aligned slide the title would stay at the start while the rest of the text follows the slide.
+    Shrinking the row to its content lets the prose rules (margin-inline: auto on its children) place it like any
+    other text block.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .slideshow__slide .prose > .heading-icon-row {
+      width: fit-content;
+    }
+
+    {%- comment -%}
     Matches the existing .min-h-fill convention (assets/theme.css): subtract the sticky header/
     announcement bar area from the svh height, since that's real occupied space above the fold on
     every page except when this section is both first AND allows a transparent header - there, the
