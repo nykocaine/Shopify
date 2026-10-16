@@ -244,6 +244,43 @@ progress bar) are simply skipped when no carousel_id is given.
         }
       }
 
+      // Fixes the expanded box's size up front (see --lightbox-w / --lightbox-ratio in
+      // media-zoom-style.liquid) from the media's natural dimensions: the video's own once its metadata
+      // is in, else its poster's, else - last resort - the thumbnail's box. Without it a not-yet-loaded
+      // video opens tiny and grows when its metadata arrives.
+      function setLightboxSize(element, media) {
+        var width = 0;
+        var height = 0;
+
+        if (media.videoMedia) {
+          var video = media.videoMedia.querySelector('video');
+          var poster = media.videoMedia.querySelector('img');
+
+          if (video && video.videoWidth) {
+            width = video.videoWidth;
+            height = video.videoHeight;
+          } else if (poster && poster.naturalWidth) {
+            width = poster.naturalWidth;
+            height = poster.naturalHeight;
+          }
+        } else if (element.naturalWidth) {
+          width = element.naturalWidth;
+          height = element.naturalHeight;
+        }
+
+        if (!width || !height) {
+          var rect = element.getBoundingClientRect();
+
+          width = rect.width;
+          height = rect.height;
+        }
+
+        if (width && height) {
+          element.style.setProperty('--lightbox-w', width + 'px');
+          element.style.setProperty('--lightbox-ratio', width / height);
+        }
+      }
+
       // continuePlayingWithSound is only passed by next/prev, never the initial open: undefined means
       // "leave it exactly as it already is" - nothing autoplays, so a never-played video expands
       // paused, matching how it already looked before the lightbox opened. Returns the resolved media
@@ -254,6 +291,8 @@ progress bar) are simply skipped when no carousel_id is given.
         // The expanded media leaves the cell's flow (position: fixed): keeping the cell's box means the
         // grid doesn't collapse or shift under it, and the thumbnail's slot is still there to land back in.
         cell.style.minHeight = cell.offsetHeight + 'px';
+
+        setLightboxSize(media.videoMedia || media.image, media);
 
         if (media.videoMedia) {
           var video = media.videoMedia.querySelector('video');
@@ -302,12 +341,16 @@ progress bar) are simply skipped when no carousel_id is given.
 
           media.videoMedia.pause();
           media.videoMedia.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
+          media.videoMedia.style.removeProperty('--lightbox-w');
+          media.videoMedia.style.removeProperty('--lightbox-ratio');
 
           if (media.controlsGroup) {
             media.controlsGroup.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
           }
         } else if (media.image) {
           media.image.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
+          media.image.style.removeProperty('--lightbox-w');
+          media.image.style.removeProperty('--lightbox-ratio');
         }
 
         activeCell.style.minHeight = '';
@@ -396,6 +439,13 @@ progress bar) are simply skipped when no carousel_id is given.
         var media = expandCell(cell);
         var expandedElement = media.videoMedia || media.image;
 
+        // The controls group jumps from its thumbnail spot to the viewport corner the moment it is
+        // expanded: starting it at opacity 0 without a transition (instead of fading down from 1) keeps
+        // that jump from ever being seen. The transition is handed back with the fade-in below.
+        if (media.controlsGroup) {
+          media.controlsGroup.style.transition = 'none';
+        }
+
         if (!prefersReducedMotion && thumbRect && expandedElement && thumbRect.width > 0) {
           var finalRect = expandedElement.getBoundingClientRect();
 
@@ -412,6 +462,10 @@ progress bar) are simply skipped when no carousel_id is given.
         // The backdrop and buttons fade in with a class added one frame later, so that fade is a real
         // transition from their hidden state instead of being coalesced into the first paint.
         requestAnimationFrame(function() {
+          if (media.controlsGroup) {
+            media.controlsGroup.style.transition = '';
+          }
+
           lightbox.classList.add('is-lightbox-visible');
           setMediaVisible(media, true);
         });
