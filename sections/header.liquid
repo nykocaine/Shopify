@@ -96,9 +96,6 @@
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .header {
     --header-padding-inline: calc(var(--container-gutter) + 0.5rem);
-  }
-
-  #shopify-section-{{ section.id }} .header {
     transition: background var(--header-solid-transition), color var(--header-solid-transition), border-color var(--header-solid-transition);
   }
 
@@ -308,10 +305,10 @@
         <span class="sr-only">{{ shop.name }}</span>
 
         {%- assign alt_text = section.settings.logo.alt | default: shop.name -%}
-        {{- section.settings.logo | image_url: width: section.settings.logo.width | image_tag: sizes: sizes, widths: widths, alt: alt_text, class: 'header__logo-image' -}}
+        {{- section.settings.logo | image_url: width: section.settings.logo.width | image_tag: sizes: sizes, widths: widths, alt: alt_text, fetchpriority: 'high', class: 'header__logo-image' -}}
 
         {%- if section.settings.transparent_logo -%}
-          {{- section.settings.transparent_logo | image_url: width: section.settings.transparent_logo.width | image_tag: sizes: sizes, widths: widths, class: 'header__logo-image header__logo-image--transparent' -}}
+          {{- section.settings.transparent_logo | image_url: width: section.settings.transparent_logo.width | image_tag: sizes: sizes, widths: widths, alt: '', class: 'header__logo-image header__logo-image--transparent' -}}
         {%- endif -%}
       {%- else -%}
         <p class="header__logo-text heading">{{ shop.name }}</p>
@@ -371,7 +368,7 @@
               <span></span>
             </div>
 
-            <span class="subheading md-max:hidden">Menu</span>
+            <span class="subheading md-max:hidden">{{ 'header.general.menu' | t }}</span>
           </div>
         </button>
 
@@ -669,7 +666,13 @@
   carries the extra padding-block-start for the header's white gutter). Measuring the wrong one here is what
   desynced the transparent-header compensation padding from the header's actual height on floating headers.
   {%- endcomment -%}
-  document.documentElement.style.setProperty('--header-height', `${Math.round(document.querySelector('#shopify-section-{{ section.id }} .header').clientHeight)}px`);
+  (function() {
+    var header = document.querySelector('#shopify-section-{{ section.id }} .header');
+
+    if (header) {
+      document.documentElement.style.setProperty('--header-height', Math.round(header.clientHeight) + 'px');
+    }
+  })();
 </script>
 
 {% schema %}
