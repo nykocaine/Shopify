@@ -307,6 +307,28 @@ to the first 5 of the newly sorted order.
         {%- render 'input', type: 'text', name: 'contact[Review title]', label: 'Agregar un título', show_label_as_block: true, placeholder: 'Resume tu experiencia', required: true, maxlength: 80 -%}
         {%- render 'input', name: 'contact[body]', label: 'Escribe una reseña', show_label_as_block: true, placeholder: 'Cuéntanos qué te gusta o qué no te gusta.', multiline: 5, required: true, minlength: 10, maxlength: 1500, show_max_characters_count: true -%}
 
+        {%- comment -%}
+        The same details every published review shows next to its text (skin type, age, main concern, previous
+        peel experience), all optional. Not the product: the review belongs to the page it is written on.
+        Option lists are split from a comma separated string, so no option may contain a comma.
+        {%- endcomment -%}
+        {%- assign review_skin_types = 'Normal,Mixta,Grasa,Seca,Sensible' | split: ',' -%}
+        {%- assign review_ages = '18 - 24,25 - 34,35 - 44,45 - 54,55 o más' | split: ',' -%}
+        {%- assign review_concerns = 'Textura irregular,Manchas,Poros dilatados,Opacidad,Cicatrices de acné,Arrugas,Otra' | split: ',' -%}
+        {%- assign review_experiences = 'Primera vez,Ya lo había probado antes' | split: ',' -%}
+
+        <p class="review-form__section-note">Cuéntanos sobre ti (opcional)</p>
+
+        <div class="fieldset-row">
+          {%- render 'select', option_values: review_skin_types, show_empty_value: true, name: 'contact[Tipo de piel]', label: 'Tipo de piel' -%}
+          {%- render 'select', option_values: review_ages, show_empty_value: true, name: 'contact[Edad]', label: 'Edad' -%}
+        </div>
+
+        <div class="fieldset-row">
+          {%- render 'select', option_values: review_concerns, show_empty_value: true, name: 'contact[Preocupación principal]', label: 'Preocupación principal' -%}
+          {%- render 'select', option_values: review_experiences, show_empty_value: true, name: 'contact[Experiencia previa con peelings]', label: 'Experiencia previa con peelings' -%}
+        </div>
+
         <div class="fieldset-row">
           {%- render 'input', type: 'text', name: 'contact[name]', label: 'Nombre', value: review_name, required: true, autocomplete: 'name', maxlength: 60 -%}
           {%- render 'input', type: 'email', name: 'contact[email]', label: 'Correo electrónico', value: review_email, required: true, autocomplete: 'email' -%}
@@ -768,6 +790,10 @@ to the first 5 of the newly sorted order.
     position: absolute;
     inset-block-end: 0;
     inset-inline-start: 50%;
+  }
+
+  #shopify-section-{{ section.id }} .review-form__section-note {
+    margin: 0;
   }
 
   #shopify-section-{{ section.id }} .review-form__privacy-note {
