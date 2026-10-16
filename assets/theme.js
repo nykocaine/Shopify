@@ -4693,11 +4693,11 @@ var Tabs = class extends HTMLElement {
    */
   async transition(fromPanel, toPanel) {
     if (this.getAttribute("transition") === "unfold") {
-      // Same top-to-bottom unfold the drawers use (clip-path revealed from the top edge down), slower and smoother than the drawers
+      // Same top-to-bottom unfold the drawers use (clip-path revealed from the top edge down, same 1.2s and curve as createUnfoldAnimationControls)
       fromPanel.hidden = true;
       toPanel.hidden = false;
       toPanel.style.willChange = "clip-path";
-      await animate8(toPanel, { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] }, { duration: 1, ease: [0.4, 0, 0.2, 1] });
+      await animate8(toPanel, { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] }, { duration: 1.2, ease: [0.22, 1, 0.36, 1] });
       toPanel.style.willChange = "";
       toPanel.style.clipPath = "";
       return;
