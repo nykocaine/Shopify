@@ -288,7 +288,7 @@ progress bar) are simply skipped when no carousel_id is given.
       }
 
       // ---- Playback scrubber (lightbox videos only) ------------------------------------------------------
-      // A thin line along the bottom of the expanded video, between the logo and the controls: a soft wave
+      // A thin line along the bottom edge of the expanded video, edge to edge: a soft wave
       // that flows while the video plays, solid up to the playhead and faint after it. A dot (that
       // "breathes") marks the current moment. Dragging along it seeks, the wave swells and the time shows
       // above the dot. It is a child of the <video-media>, so it moves, zooms and slides with the video.
@@ -335,7 +335,7 @@ progress bar) are simply skipped when no carousel_id is given.
           state.svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
         }
 
-        var padding = 6;
+        var padding = 3;
         var duration = state.video.duration;
         var ratio = isFinite(duration) && duration > 0 ? Math.min(1, state.video.currentTime / duration) : 0;
         var playing = !state.video.paused && !state.video.ended;
@@ -373,7 +373,7 @@ progress bar) are simply skipped when no carousel_id is given.
         }
 
         var rect = state.root.getBoundingClientRect();
-        var padding = 6;
+        var padding = 3;
         var ratio = (event.clientX - rect.left - padding) / Math.max(1, rect.width - padding * 2);
 
         state.video.currentTime = Math.min(1, Math.max(0, ratio)) * duration;
