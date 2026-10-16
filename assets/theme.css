@@ -5956,11 +5956,11 @@ product-rerender {
 
 
 @media screen and (max-width: 999px) {
-  .drawer-mobile-centered :is(.drawer--cart, .drawer--search, .drawer--facets)::part(overlay) {
+  .drawer-mobile-centered :is(.drawer--cart, .drawer--search)::part(overlay) {
     background: var(--drawer-mobile-overlay-color, rgb(var(--page-overlay)));
   }
 
-  .drawer-mobile-centered :is(.drawer--cart, .drawer--search, .drawer--facets)::part(content) {
+  .drawer-mobile-centered :is(.drawer--cart, .drawer--search)::part(content) {
     position: absolute;
     inset: var(--drawer-block-gap) var(--container-gutter);
     margin: 0 !important;
@@ -5969,6 +5969,35 @@ product-rerender {
     width: auto;
     max-width: none;
     height: auto;
+    background: var(--drawer-mobile-box-color, rgb(var(--background)));
+    background-image: none;
+    border-radius: var(--drawer-border-radius);
+    overflow: hidden;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+  }
+}
+
+/* Filters drawer on mobile and tablet: a bottom sheet that takes the lower half of the screen and slides up from the
+   bottom (the slide itself is FacetsDrawer in theme.js), floating with the same side margin and bottom gap as the
+   centered cart/search drawers. The overlay (the veil and its blur) is removed so the page stays visible and sharp
+   behind it; tapping outside still closes it, since the overlay element is still there, just invisible. Declared
+   without the .drawer-mobile-centered prefix on purpose so it applies whether or not "Center drawers on mobile" is on,
+   and after the cart/search rule above so it wins over it for this drawer. */
+@media screen and (max-width: 999px) {
+  .drawer--facets::part(overlay) {
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .drawer--facets::part(content) {
+    position: absolute;
+    inset: auto var(--container-gutter) var(--drawer-block-gap) var(--container-gutter);
+    margin: 0 !important;
+    width: auto;
+    max-width: none;
+    height: 50dvh;
+    max-height: 50dvh;
     background: var(--drawer-mobile-box-color, rgb(var(--background)));
     background-image: none;
     border-radius: var(--drawer-border-radius);

@@ -2769,6 +2769,29 @@ var FacetsDrawer = class extends Drawer {
     this.addEventListener("reset", this.hide);
     this.addEventListener("facet:update", this.hide);
   }
+  /**
+   * Below 1000px the drawer is a half-height bottom sheet (see .drawer--facets in theme.css): it slides up from the
+   * bottom edge instead of fading in. The overlay has no visible veil there, so only the content moves.
+   */
+  get isBottomSheet() {
+    return window.matchMedia("(max-width: 999px)").matches;
+  }
+  createEnterAnimationControls() {
+    if (!this.isBottomSheet) {
+      return super.createEnterAnimationControls();
+    }
+    return animateSequence2([
+      [this.getShadowPartByName("content"), { transform: ["translateY(calc(100% + 2rem))", "translateY(0)"] }, { duration: 0.5, ease: [0.32, 0.72, 0, 1] }]
+    ]);
+  }
+  createLeaveAnimationControls() {
+    if (!this.isBottomSheet) {
+      return super.createLeaveAnimationControls();
+    }
+    return animateSequence2([
+      [this.getShadowPartByName("content"), { transform: ["translateY(0)", "translateY(calc(100% + 2rem))"] }, { duration: 0.35, ease: [0.4, 0, 0.2, 1] }]
+    ]);
+  }
 };
 if (!window.customElements.get("facets-drawer")) {
   window.customElements.define("facets-drawer", FacetsDrawer);
