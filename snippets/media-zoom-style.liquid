@@ -42,8 +42,8 @@ the resting thumbnail, which that rule doesn't cover.
 }
 
 {%- comment -%}
-Videos only (media-zoom-slide.liquid adds .has-video-logo + the --video-logo vars only when the header has a
-transparent-header logo): that logo, small, bottom-left, at 70% opacity. A pseudo-element of the video-media itself,
+Videos only (media-zoom-slide.liquid adds .has-video-logo to video items; sections/header.liquid defines --video-logo
+on :root only when the header has a transparent-header logo, so without one nothing is drawn): that logo, small, bottom-left, at 70% opacity. A pseudo-element of the video-media itself,
 so it stays on the video wherever it goes (thumbnail, zoom animation, lightbox, vertical feed).
 {%- endcomment -%}
 #{{ wrapper_id }} .has-video-logo video-media::after {

@@ -38,19 +38,7 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
 -%}
 
 <div class="content-box h-full min-h-{{ mobile_block_size }} md:min-h-{{ block_size }}" style="border-radius: {{ corner_radius }}; overflow: hidden;" {% if as_lightbox_cell %}data-media-cell{% endif %}>
-  {%- comment -%}
-  Videos only: the white logo the header uses while it is transparent, small in the bottom-left corner at 70% opacity
-  (drawn as video-media::after in media-zoom-style.liquid, so it zooms with the video into the lightbox).
-  {%- endcomment -%}
-  {%- assign video_logo = sections['header'].settings.transparent_logo -%}
-  {%- assign video_logo_style = '' -%}
-
-  {%- if video != blank and video_logo != blank -%}
-    {%- assign video_logo_url = video_logo | image_url: width: 400 -%}
-    {%- capture video_logo_style -%}--video-logo: url('{{ video_logo_url }}');{%- endcapture -%}
-  {%- endif -%}
-
-  <div class="content-box__background-media {% if video != blank %}carousel-video-tap-to-play{% endif %}{% if video_logo_style != blank %} has-video-logo{% endif %}"{% if video_logo_style != blank %} style="{{ video_logo_style }}"{% endif %}>
+  <div class="content-box__background-media {% if video != blank %}carousel-video-tap-to-play has-video-logo{% endif %}">
     {%- if video != blank -%}
       {%- render 'media', media: video, autoplay: autoplay, muted: true, controls: false, show_play_button: false, playsinline: true, loop: autoplay, sizes: resolved_sizes -%}
 
