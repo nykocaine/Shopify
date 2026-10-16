@@ -6033,6 +6033,82 @@ product-rerender {
   }
 }
 
+/* Filters panel on desktop: not a modal drawer but a block that sits inside the filter toolbar (FacetsDrawer in theme.js
+   moves it there on open) and unfolds downward from it, pushing the product grid down. No overlay, no blur, no scroll
+   lock. The toolbar wraps so the panel takes a full row below the bar; the toolbar's own overflow + bottom radius then
+   round the bottom corners of bar and panel together, and the top corners stay square, so the two read as one piece
+   whose bottom edge only exists once the panel is open. A sticky toolbar carries the panel with it. The panel is a
+   compact band (capped height, scrolls inside) with the filter groups side by side, aligned to the bar's own side
+   padding, the title at the start and the close button at the end. */
+@media screen and (min-width: 1000px) {
+  .collection__toolbar {
+    flex-wrap: wrap;
+  }
+
+  .drawer--facets::part(base) {
+    inset: auto;
+    flex: 0 0 100%;
+    order: 10;
+    width: 100%;
+    pointer-events: auto;
+    position: static;
+  }
+
+  .drawer--facets::part(overlay) {
+    display: none;
+  }
+
+  .drawer--facets::part(content) {
+    position: static;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: min(45vh, 26rem);
+    margin: 0 !important;
+    background: transparent;
+    border-block-start: 1px solid rgb(var(--border-color));
+  }
+
+  .drawer--facets::part(header) {
+    padding-inline: 0;
+    padding-block: .75rem;
+  }
+
+  .drawer--facets::part(body) {
+    padding-inline: 0;
+    padding-block: .5rem 1rem;
+  }
+
+  .drawer--facets::part(footer) {
+    padding-inline: 0;
+    padding-block: 1rem;
+  }
+
+  .drawer--facets .facets {
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    align-items: start;
+    column-gap: 2.5rem;
+    display: grid;
+  }
+
+  .drawer--facets .facets > .active-facets {
+    grid-column: 1 / -1;
+    padding-block: 0 1rem;
+    justify-content: flex-start;
+  }
+
+  .drawer--facets .facets .accordion,
+  .drawer--facets .facets .facets__availability-control {
+    box-shadow: none;
+  }
+
+  .drawer--facets [slot="footer"] .button-group {
+    width: auto !important;
+    min-width: 22rem;
+    margin-inline-start: auto;
+  }
+}
+
 .drawer--cart .tab-pills {
   grid-template-rows: auto minmax(0, 1fr);
 }

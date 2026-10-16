@@ -2770,17 +2770,63 @@ var FacetsDrawer = class extends Drawer {
     this.addEventListener("facet:update", this.hide);
   }
   /**
+   * From 1000px up the filters are not a modal drawer anymore: the panel is a block that lives inside the filter toolbar
+   * (see .drawer--facets in theme.css) and unfolds downward from it, pushing the product grid down, with no overlay, no
+   * scroll lock and no focus trap. The toolbar can be sticky, so the panel travels with it.
+   */
+  get isInline() {
+    return window.matchMedia("(min-width: 1000px)").matches;
+  }
+  get shouldLock() {
+    return !this.isInline;
+  }
+  get shouldAppendToBody() {
+    return !this.isInline;
+  }
+  get shouldTrapFocus() {
+    return !this.isInline;
+  }
+  async show(options) {
+    if (this.isInline) {
+      const toolbar = document.querySelector(".collection__toolbar");
+      if (toolbar && this.parentElement !== toolbar) {
+        toolbar.append(this);
+      }
+      // The panel takes the toolbar's colors instead of the drawer color scheme, so both read as one piece
+      this.classList.remove("color-scheme");
+    } else {
+      this.classList.add("color-scheme");
+    }
+    return super.show(options);
+  }
+  /**
    * Below 1000px the drawer is a half-height panel that hangs from the bottom edge of the filter toolbar and unfolds
    * downward from there (see .drawer--facets in theme.css), instead of fading in. The toolbar's current bottom edge is
    * measured on every open (it can be sticky, or scrolled away) and handed to the CSS as --facets-drawer-top. The
    * overlay has no visible veil there, so only the content moves.
    */
   get isDropdownSheet() {
-    return window.matchMedia("(max-width: 999px)").matches;
+    return !this.isInline;
   }
   createEnterAnimationControls() {
-    if (!this.isDropdownSheet) {
-      return super.createEnterAnimationControls();
+    if (this.isInline) {
+      // Every filter group is shown open, side by side, instead of as a list of collapsed accordions
+      this.querySelectorAll("details").forEach((details) => {
+        details.open = true;
+        details.closest("accordion-disclosure")?.classList.add("is-open");
+      });
+      const content = this.getShadowPartByName("content");
+      content.style.height = "";
+      const height = content.getBoundingClientRect().height;
+      content.style.overflow = "hidden";
+      const controls = animateSequence2([
+        [content, { height: ["0px", `${height}px`] }, { duration: 0.45, ease: [0.22, 1, 0.36, 1] }]
+      ]);
+      controls.then(() => {
+        content.style.height = "";
+        content.style.overflow = "";
+      });
+      return controls;
     }
     const toolbar = document.querySelector(".collection__toolbar");
     const top = toolbar ? Math.max(0, Math.round(toolbar.getBoundingClientRect().bottom)) : 0;
@@ -2801,11 +2847,20 @@ var FacetsDrawer = class extends Drawer {
     return controls;
   }
   createLeaveAnimationControls() {
-    if (!this.isDropdownSheet) {
-      return super.createLeaveAnimationControls();
-    }
     const content = this.getShadowPartByName("content");
     const overlay = this.getShadowPartByName("overlay");
+    if (this.isInline) {
+      const height = content.getBoundingClientRect().height;
+      content.style.overflow = "hidden";
+      const controls = animateSequence2([
+        [content, { height: [`${height}px`, "0px"] }, { duration: 0.35, ease: [0.33, 0, 0.2, 1] }]
+      ]);
+      controls.then(() => {
+        content.style.height = "";
+        content.style.overflow = "";
+      });
+      return controls;
+    }
     content.style.willChange = overlay.style.willChange = "clip-path";
     const options = { duration: 0.4, ease: [0.33, 0, 0.2, 1] };
     const fold = { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] };
