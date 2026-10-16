@@ -205,11 +205,7 @@ note that this may have impact on different places.
     --product-list-column-gap: {% if settings.product_listing_spacing == 'none' %}0px{% else %}var(--item-gap-inline){% endif %};
     --product-list-padding-inline: clamp(0px, var(--product-list-column-gap), min(1.75rem, var(--product-list-column-gap)));
 
-    {%- if settings.product_card_info_position == 'outside' -%}
-      --product-list-row-gap: {% if settings.product_listing_spacing == 'none' %}0px{% elsif settings.product_listing_spacing == 'x-small' %}1.5rem{% elsif settings.product_listing_spacing == 'small' %}1.75rem{% elsif settings.product_listing_spacing == 'medium' %}2rem{% else %}2.25rem{% endif %};
-    {%- else -%}
-      --product-list-row-gap: var(--product-list-column-gap);
-    {%- endif -%}
+    --product-list-row-gap: var(--product-list-column-gap);
 
     /* Other sizes */
     --header-group-height: calc(var(--announcement-bar-height, 0px) + var(--countdown-condensed-height, 0px) + var(--header-height, 0px));
@@ -420,11 +416,6 @@ note that this may have impact on different places.
       /* Font sizes */
       --button-font-size: {{ settings.button_font_size_desktop | divided_by: 16.0 }}rem;
 
-      /* Product listing gaps */
-      {%- if settings.product_card_info_position == 'outside' -%}
-        --product-list-row-gap: {% if settings.product_listing_spacing == 'none' %}0px{% elsif settings.product_listing_spacing == 'x-small' %}2rem{% elsif settings.product_listing_spacing == 'small' %}2.5rem{% elsif settings.product_listing_spacing == 'medium' %}3rem{% else %}4rem{% endif %};
-      {%- else -%}
-      {%- endif -%}
     }
   }
 

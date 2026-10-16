@@ -678,7 +678,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   further down), not how many items fit per row.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__carousel {
-    gap: .5rem;
+    gap: var(--item-gap-inline);
     width: 100%;
     min-width: 0;
     max-width: 100%;
@@ -694,13 +694,13 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- endif -%}
 
   #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
-    flex: 0 0 calc((100% - .5rem) / 2);
+    flex: 0 0 calc((100% - var(--item-gap-inline)) / 2);
     min-width: 0;
   }
 
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
-      flex: 0 0 calc((100% - 1.5rem) / 4);
+      flex: 0 0 calc((100% - 3 * var(--item-gap-inline)) / 4);
     }
   }
 
@@ -710,7 +710,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- endcomment -%}
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
-      flex: 0 0 calc((100% - {{ section.settings.items_per_row_desktop | minus: 1 | times: 0.5 }}rem) / {{ section.settings.items_per_row_desktop }});
+      flex: 0 0 calc((100% - {{ section.settings.items_per_row_desktop | minus: 1 }} * var(--item-gap-inline)) / {{ section.settings.items_per_row_desktop }});
     }
   }
 
