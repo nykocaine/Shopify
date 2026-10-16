@@ -244,44 +244,56 @@ progress bar) are simply skipped when no carousel_id is given.
         }
       }
 
-      // Fixes the expanded box's size up front (see --lightbox-w / --lightbox-ratio in
-      // media-zoom-style.liquid) from the media's natural dimensions: the video's own once its metadata
-      // is in, else its poster's, else - last resort - the thumbnail's box. Without it a not-yet-loaded
-      // video opens tiny and grows when its metadata arrives.
-      function setLightboxSize(element, media) {
-        var width = 0;
-        var height = 0;
+      // Fixes the expanded box's SHAPE up front (see --lightbox-ratio in media-zoom-style.liquid): the box
+      // always fills the available area at that ratio, so it never depends on how many pixels happen to be
+      // loaded - the thumbnail's small srcset image, a 400px poster or a not-yet-loaded video used to make
+      // the box start small and jump to a bigger one later (or differ from one item to the next).
+      // The ratio comes from data that is on the page from the start, most reliable first: the media's
+      // real aspect ratio (video-media's --aspect-ratio), the width/height attributes of the <video> /
+      // <img> (the full-size file's), then whatever is loaded. The thumbnail's own box is the last resort
+      // only because a cropped thumbnail has a different shape.
+      function readRatio(element, media) {
+        var ratio = 0;
+        var sourceElement = element;
 
         if (media.videoMedia) {
-          var video = media.videoMedia.querySelector('video');
-          var poster = media.videoMedia.querySelector('img');
+          ratio = parseFloat(media.videoMedia.style.getPropertyValue('--aspect-ratio'));
+          sourceElement = media.videoMedia.querySelector('video');
 
-          if (video && video.videoWidth) {
-            width = video.videoWidth;
-            height = video.videoHeight;
-          } else if (poster && poster.naturalWidth) {
-            width = poster.naturalWidth;
-            height = poster.naturalHeight;
+          if (!ratio && sourceElement && sourceElement.videoWidth) {
+            ratio = sourceElement.videoWidth / sourceElement.videoHeight;
           }
-        } else if (element.naturalWidth) {
-          width = element.naturalWidth;
-          height = element.naturalHeight;
         }
 
-        if (!width || !height) {
+        if (!ratio && sourceElement) {
+          var attributeWidth = parseFloat(sourceElement.getAttribute('width'));
+          var attributeHeight = parseFloat(sourceElement.getAttribute('height'));
+
+          ratio = attributeWidth && attributeHeight ? attributeWidth / attributeHeight : 0;
+        }
+
+        if (!ratio && element.naturalWidth) {
+          ratio = element.naturalWidth / element.naturalHeight;
+        }
+
+        if (!ratio) {
           var rect = element.getBoundingClientRect();
 
-          width = rect.width;
-          height = rect.height;
+          ratio = rect.height ? rect.width / rect.height : 0;
         }
 
-        if (width && height) {
+        return ratio;
+      }
+
+      function setLightboxSize(element, media) {
+        var ratio = readRatio(element, media);
+
+        if (ratio) {
           // Also on the controls group: on desktop it is pinned to the media box's own corner (see
-          // media-zoom-style.liquid), which it can only compute from the same two values.
+          // media-zoom-style.liquid), which it can only compute from the same value.
           [element, media.controlsGroup].forEach(function(target) {
             if (target) {
-              target.style.setProperty('--lightbox-w', width + 'px');
-              target.style.setProperty('--lightbox-ratio', width / height);
+              target.style.setProperty('--lightbox-ratio', ratio);
             }
           });
         }
@@ -498,6 +510,17 @@ progress bar) are simply skipped when no carousel_id is given.
         cell.style.minHeight = cell.offsetHeight + 'px';
 
         setLightboxSize(element, media);
+
+        // A photo is shown far bigger than its thumbnail: let the browser pick a matching file from its
+        // srcset (the thumbnail's `sizes` would keep it on the small one) and start loading it now, even
+        // when it was lazy - the neighbouring photo is expanded off screen before it slides in.
+        if (media.image) {
+          element.dataset.lightboxSizes = element.getAttribute('sizes') || '';
+          element.dataset.lightboxLoading = element.getAttribute('loading') || '';
+          element.setAttribute('sizes', '100vw');
+          element.setAttribute('loading', 'eager');
+        }
+
         element.classList.add('is-lightbox-expanded');
 
         if (media.controlsGroup) {
@@ -531,16 +554,36 @@ progress bar) are simply skipped when no carousel_id is given.
           media.videoMedia.pause();
         }
 
+        if (element && media.image && 'lightboxSizes' in element.dataset) {
+          [['sizes', element.dataset.lightboxSizes], ['loading', element.dataset.lightboxLoading]].forEach(function(pair) {
+            if (pair[1]) {
+              element.setAttribute(pair[0], pair[1]);
+            } else {
+              element.removeAttribute(pair[0]);
+            }
+          });
+
+          delete element.dataset.lightboxSizes;
+          delete element.dataset.lightboxLoading;
+        }
+
+        if (media.videoMedia) {
+          var collapsedVideo = media.videoMedia.querySelector('video');
+
+          if (collapsedVideo && 'lightboxLoop' in collapsedVideo.dataset) {
+            collapsedVideo.loop = collapsedVideo.dataset.lightboxLoop === 'on';
+            delete collapsedVideo.dataset.lightboxLoop;
+          }
+        }
+
         if (element) {
           element.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
-          element.style.removeProperty('--lightbox-w');
           element.style.removeProperty('--lightbox-ratio');
           element.style.transform = '';
         }
 
         if (media.controlsGroup) {
           media.controlsGroup.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
-          media.controlsGroup.style.removeProperty('--lightbox-w');
           media.controlsGroup.style.removeProperty('--lightbox-ratio');
         }
 
@@ -550,6 +593,7 @@ progress bar) are simply skipped when no carousel_id is given.
       // Plays the video of the item that is now on screen, like a feed does. soundOn is only passed
       // when moving between items (undefined = leave the sound exactly as it already is): a freshly
       // encountered video otherwise always starts muted, so the previous one's choice is carried over.
+      // It loops while it is in the lightbox (a feed never stops on its own).
       function startPlayback(media, soundOn) {
         if (!media.videoMedia) {
           return;
@@ -558,13 +602,68 @@ progress bar) are simply skipped when no carousel_id is given.
         var video = media.videoMedia.querySelector('video');
         var soundButton = media.controlsGroup ? media.controlsGroup.querySelector('.carousel-video-sound-toggle') : null;
 
-        if (video && soundButton && soundOn !== undefined && !video.muted !== soundOn) {
+        if (!video) {
+          return;
+        }
+
+        if (!('lightboxLoop' in video.dataset)) {
+          video.dataset.lightboxLoop = video.loop ? 'on' : 'off';
+        }
+
+        video.loop = true;
+
+        if (soundButton && soundOn !== undefined && !video.muted !== soundOn) {
           soundButton.click();
         }
 
-        if (video) {
+        media.videoMedia.player.play();
+
+        // video-media answers a refused play() (the browser blocks autoplay WITH sound when the visitor
+        // has not interacted in a way it accepts) by switching to the browser's own controls and leaving
+        // the video paused. Better to keep it moving: mute it and play again, once. The sound button is
+        // there to turn it back on.
+        setTimeout(function() {
+          var stillShown = media.videoMedia.classList.contains('is-lightbox-expanded');
+
+          if (!stillShown || !video.paused || (activeCell && getCellMedia(activeCell).videoMedia !== media.videoMedia)) {
+            return;
+          }
+
+          if (!video.muted && soundButton) {
+            soundButton.click();
+          }
+
+          media.videoMedia.removeAttribute('suspended');
+
+          if (video.controls && !media.videoMedia.hasAttribute('controls')) {
+            video.controls = false;
+          }
+
           media.videoMedia.player.play();
-        }
+        }, 300);
+      }
+
+      // Starts fetching the items right before and after the active one, so they are ready when the visitor
+      // moves on: photos pick their bigger file, videos buffer.
+      function warmNeighbours() {
+        var index = cells.indexOf(activeCell);
+
+        [index - 1, index + 1].forEach(function(neighbourIndex) {
+          var neighbour = cells[neighbourIndex];
+
+          if (!neighbour) {
+            return;
+          }
+
+          var neighbourMedia = getCellMedia(neighbour);
+          var neighbourVideo = neighbourMedia.videoMedia ? neighbourMedia.videoMedia.querySelector('video') : null;
+
+          if (neighbourVideo && neighbourVideo.preload !== 'auto') {
+            neighbourVideo.preload = 'auto';
+          } else if (neighbourMedia.image && neighbourMedia.image.loading === 'lazy') {
+            neighbourMedia.image.loading = 'eager';
+          }
+        });
       }
 
       // Returns the resolved media object so callers can drive setMediaVisible() on it without looking
@@ -702,6 +801,7 @@ progress bar) are simply skipped when no carousel_id is given.
         var expandedElement = media.videoMedia || media.image;
 
         updateNavButtons();
+        warmNeighbours();
         startScrubberLoop();
 
         // The controls group jumps from its thumbnail spot to the viewport corner the moment it is
@@ -917,6 +1017,7 @@ progress bar) are simply skipped when no carousel_id is given.
 
         activeCell = incoming;
         updateNavButtons();
+        warmNeighbours();
 
         finishing.onfinish = function() {
           cancelSlideAnimations();
