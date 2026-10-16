@@ -41,6 +41,24 @@ the resting thumbnail, which that rule doesn't cover.
   border-radius: {{ resolved_corner_radius }} !important;
 }
 
+{%- comment -%}
+Videos only (media-zoom-slide.liquid adds .has-video-logo + the --video-logo vars only when the header has a
+transparent-header logo): that logo, small, bottom-left, at 70% opacity. A pseudo-element of the video-media itself,
+so it stays on the video wherever it goes (thumbnail, zoom animation, lightbox, vertical feed).
+{%- endcomment -%}
+#{{ wrapper_id }} .has-video-logo video-media::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0.75rem;
+  inset-block-end: 0.75rem;
+  z-index: 2;
+  width: min(3.5rem, 25%);
+  aspect-ratio: var(--video-logo-ratio, 1);
+  background: var(--video-logo) center / contain no-repeat;
+  opacity: .7;
+  pointer-events: none;
+}
+
 #{{ wrapper_id }} video-media > img {
   z-index: 1;
   transition: opacity .3s ease;
