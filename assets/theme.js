@@ -6096,8 +6096,21 @@ var NewsletterPopup = class extends Modal {
   connectedCallback() {
     super.connectedCallback();
     if (this.shouldAppearAutomatically) {
-      setTimeout(() => this.show(), this.apparitionDelay);
+      setTimeout(() => this.showWhenIdle(), this.apparitionDelay);
     }
+  }
+  /**
+   * The popup waits for any other dialog (menu, search, cart...) to be closed instead of opening on top of it
+   */
+  showWhenIdle() {
+    if (this.open) {
+      return;
+    }
+    if (document.documentElement.classList.contains("lock")) {
+      setTimeout(() => this.showWhenIdle(), 3e3);
+      return;
+    }
+    this.show();
   }
   get apparitionDelay() {
     return parseInt(this.getAttribute("apparition-delay") || 0) * 1e3;
