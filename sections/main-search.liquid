@@ -134,6 +134,24 @@
   {%- endif -%}
 
   {%- comment -%}
+  Result panels for blog posts / pages / products are fetched after the page loads when the search returns several
+  types. While one is empty it used to collapse to nothing and then push everything down when it filled in (a visible
+  jump, and a blink every time the section was re-rendered). It is now a block that keeps a minimum height until its
+  content arrives.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} search-result-panel {
+    display: block;
+  }
+
+  #shopify-section-{{ section.id }} search-result-panel[hidden] {
+    display: none;
+  }
+
+  #shopify-section-{{ section.id }} search-result-panel[load-from-url]:empty {
+    min-height: 50vh;
+  }
+
+  {%- comment -%}
   Filter bar: same look and options as the collection page's toolbar (its own color scheme, optional floating and
   sticky-to-header modes), ported from sections/main-collection.liquid.
   {%- endcomment -%}
@@ -170,6 +188,25 @@
     #shopify-section-{{ section.id }} .collection {
       padding-block-end: 0;
     }
+
+    {%- comment -%}
+    The toolbar already leaves a full section spacing below it (margin above), so the heading block that follows
+    drops its own top padding instead of stacking a second gap on top of that one.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .collection__toolbar + .section-spacing {
+      padding-block-start: 0;
+    }
+
+    {%- if section.settings.floating_search -%}
+      {%- comment -%}
+      Inside the floating search card the toolbar sits within the card's own inset (see the floating search block
+      above), so it must not add its own side margin or it would be indented twice and stop lining up with the heading
+      and the results.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .collection__toolbar {
+        margin-inline: 0;
+      }
+    {%- endif -%}
 
     {%- if section.settings.sticky_toolbar -%}
       {%- comment -%}
@@ -323,8 +360,9 @@
       {%- endcapture -%}
 
       {%- comment -%}Same toolbar as the collection page (snippets/collection-toolbar.liquid): the results count (or the result-type tabs when the search returns several types) on the left, filter and sort on the right{%- endcomment -%}
+      {%- comment -%}Filter/sort only make sense for products, and only when there is something to filter or sort by{%- endcomment -%}
       {%- assign search_toolbar_hide_faceting = true -%}
-      {%- if search.types contains 'product' -%}
+      {%- if search.types contains 'product' and search.filters.size > 0 or search.types contains 'product' and search.sort_options.size > 1 -%}
         {%- assign search_toolbar_hide_faceting = false -%}
       {%- endif -%}
 
