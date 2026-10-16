@@ -3569,7 +3569,7 @@ registerLightboxUi_fn = function() {
     order: 2,
     isButton: true,
     html: `
-      <svg aria-hidden="true" focusable="false" fill="none" width="16" style="width: var(--control-icon-size, 16px)" class="icon" viewBox="0 0 16 16">
+      <svg aria-hidden="true" focusable="false" fill="none" class="icon icon--control" viewBox="0 0 16 16">
         <path d="m4.5 4.5 7 7m0-7-7 7" stroke="currentColor" stroke-linecap="round" style="stroke-width: var(--icon-stroke-width, 1px)"/>
       </svg>
       `,
@@ -3585,7 +3585,7 @@ registerLightboxUi_fn = function() {
       order: 1,
       isButton: true,
       html: `
-        <svg aria-hidden="true" focusable="false" fill="none" width="16" style="width: var(--control-icon-size, 16px)" class="icon icon--direction-aware" viewBox="0 0 16 16">
+        <svg aria-hidden="true" focusable="false" fill="none" class="icon icon--control icon--direction-aware" viewBox="0 0 16 16">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width: var(--icon-stroke-width, 1px)" d="M9.5 4 5.5 8l4 4"/>
         </svg>
         `,
@@ -3600,7 +3600,7 @@ registerLightboxUi_fn = function() {
       order: 3,
       isButton: true,
       html: `
-        <svg aria-hidden="true" focusable="false" fill="none" width="16" style="width: var(--control-icon-size, 16px)" class="icon icon--direction-aware" viewBox="0 0 16 16">
+        <svg aria-hidden="true" focusable="false" fill="none" class="icon icon--control icon--direction-aware" viewBox="0 0 16 16">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width: var(--icon-stroke-width, 1px)" d="m6.5 4 4 4-4 4"/>
         </svg>
         `,

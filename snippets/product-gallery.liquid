@@ -197,27 +197,6 @@ This component is used to show the product gallery (used in product page and fea
       display: grid;
       place-items: center;
     }
-
-    {%- comment -%}
-    icon.liquid hardcodes stroke-width="1.5" on chevron-right, and the theme's global icon thickness
-    setting (settings.icon_stroke_width) still read too heavy next to zoom-plus's "+" (a filled shape, not
-    a stroke, so it doesn't scale with that setting at all). Matched by ratio instead: zoom-plus's bar is
-    1 unit thick in its own 15-unit viewBox (theme.js icon.liquid), rendered at width 16 -> ~1.07px apparent.
-    chevron-right's viewBox is 9 units wide, rendered here at width 12 (a 1.33x scale-up), so a stroke-width
-    of ~0.8 units scales up to that same ~1.07px, matching the "+"'s visual weight. Overriding via CSS (wins
-    over the SVG's own presentation attribute) instead of changing the shared icon.liquid definition, which
-    every other chevron-right/chevron-down usage in the theme (selects, accordions, etc.) also relies on.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .product-gallery__nav-button .icon path {
-      stroke-width: .8;
-    }
-
-    {%- comment -%}
-    icon.liquid has no "chevron-left" - flipping chevron-right's own SVG here instead of adding one.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} carousel-prev-button .icon {
-      transform: rotate(180deg);
-    }
   {%- endif -%}
 
   {%- comment -%}
@@ -538,7 +517,7 @@ only way to do it on Shopify right now.
               {%- if enable_image_zoom and section.settings.desktop_media_layout contains 'grid' and media.media_type == 'image' -%}
                 <open-lightbox-button aria-controls="{{ product_gallery_carousel_id}}" class="block sm-max:hidden" image-index="{{ image_index }}">
                   <button class="product-zoom-button">
-                    {%- render 'icon' with 'zoom-plus', width: 16 -%}
+                    {%- render 'icon' with 'zoom-plus' -%}
                     <span class="product-zoom-button__label">{{ 'product.gallery.zoom' | t }}</span>
                   </button>
                 </open-lightbox-button>
@@ -562,26 +541,21 @@ only way to do it on Shopify right now.
 
       {%- comment -%}
       Replaces the old mouse-following <custom-cursor> click-to-navigate overlay: two static prev/next
-      buttons pinned to the bottom-left corner instead. Bare chevron-right SVGs (icon.liquid has no
-      chevron-left - carousel-prev-button's is flipped 180deg via CSS above), no button background - only
-      for desktop_layout "carousel", since grid layouts show every slide at once and have no single
-      "current slide" to step through.
-
-      width: 14.4 (not the earlier 12) makes the rendered SVG the same height as zoom-plus below: chevron-
-      right's viewBox is 9 wide / 10 tall, so at width 14.4 the auto-scaled height is 14.4 * 10/9 = 16px,
-      matching zoom-plus's own 16px-tall render (viewBox 15x15, rendered at width: 16) exactly.
+      buttons pinned to the bottom-left corner instead. Bare arrow icons (same control icon set and size as
+      the zoom button), no button background - only for desktop_layout "carousel", since grid layouts show
+      every slide at once and have no single "current slide" to step through.
       {%- endcomment -%}
       {%- if desktop_layout == 'carousel' and product != blank and gallery_media.size > 1 -%}
         <div class="product-gallery__nav-buttons flex gap-4">
           <carousel-prev-button aria-controls="{{ product_gallery_carousel_id }}">
             <button type="button" class="product-gallery__nav-button">
-              {%- render 'icon' with 'chevron-right', width: 14.4 -%}
+              {%- render 'icon' with 'arrow-left', direction_aware: true -%}
             </button>
           </carousel-prev-button>
 
           <carousel-next-button aria-controls="{{ product_gallery_carousel_id }}">
             <button type="button" class="product-gallery__nav-button">
-              {%- render 'icon' with 'chevron-right', width: 14.4 -%}
+              {%- render 'icon' with 'arrow-right', direction_aware: true -%}
             </button>
           </carousel-next-button>
         </div>
@@ -590,7 +564,7 @@ only way to do it on Shopify right now.
       {%- if enable_image_zoom -%}
         <open-lightbox-button aria-controls="{{ product_gallery_carousel_id}}" {% if section.settings.desktop_media_layout contains 'grid' %}class="sm:hidden"{% endif %}>
           <button class="product-zoom-button">
-            {%- render 'icon' with 'zoom-plus', width: 16 -%}
+            {%- render 'icon' with 'zoom-plus' -%}
             <span class="product-zoom-button__label">{{ 'product.gallery.zoom' | t }}</span>
           </button>
         </open-lightbox-button>
@@ -687,7 +661,7 @@ only way to do it on Shopify right now.
           {%- if product != blank -%}
             <carousel-prev-button class="tap-area" aria-controls="{{ product_gallery_carousel_id }}">
               <button type="button">
-                {%- render 'icon' with 'arrow-left', width: 9, direction_aware: true -%}
+                {%- render 'icon' with 'arrow-left', direction_aware: true -%}
               </button>
             </carousel-prev-button>
 
@@ -699,7 +673,7 @@ only way to do it on Shopify right now.
 
             <carousel-next-button type="button" class="tap-area" aria-controls="{{ product_gallery_carousel_id }}">
               <button type="button">
-                {%- render 'icon' with 'arrow-right', width: 9, direction_aware: true -%}
+                {%- render 'icon' with 'arrow-right', direction_aware: true -%}
               </button>
             </carousel-next-button>
           {%- else -%}
