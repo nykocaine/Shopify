@@ -4,28 +4,32 @@ size (columns x rows), border radius, "mobile as product card", overlay, and opt
 snippets/product-list.liquid, both for a block placed before a given product and for a block placed after the last one.
 
 @param {object} block - the image or video block to render
-@param {boolean} [preload] - whether a video should preload eagerly
+@param {boolean} [preload] - whether the media should load eagerly (a video preloads, an image is not lazy-loaded)
+@param {string} [sizes] - the `sizes` attribute of the media, so it is requested at card size instead of 100vw
+@param {number} [radius] - corner radius in px, overriding the block's own "border_radius" setting (for sections that set the radius for all their cards)
 {%- enddoc -%}
 
 {%- comment -%}The block's media is its image or its video depending on the type. Both promo types share the same card options (radius, "mobile as product card"), and the "no media" outline applies to either, not only to an image block{%- endcomment -%}
 {%- assign promo_media = block.settings.image -%}
+{%- assign promo_size = block.settings.size | default: '1_1' -%}
+{%- assign promo_radius = radius | default: block.settings.border_radius | default: 0 -%}
 
 {%- if block.type == 'video' -%}
   {%- assign promo_media = block.settings.video -%}
 {%- endif -%}
 
-<div class="product-list__promo {% if block.settings.mobile_as_product_card %}product-list__promo--mobile-card{% endif %} {% if promo_media == blank and settings.product_listing_spacing == 'none' %}outline{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {% if settings.stagger_products %}reveal-on-scroll="true"{% endif %} style="--product-list-promo-row-span: {{ block.settings.size | split: '_' | last }}; --product-list-promo-column-span: {{ block.settings.size | split: '_' | first }}; border-radius: {{ block.settings.border_radius | default: 0 }}px; overflow: hidden;" {{ block.shopify_attributes }}>
+<div class="product-list__promo {% if block.settings.mobile_as_product_card %}product-list__promo--mobile-card{% endif %} {% if promo_media == blank and settings.product_listing_spacing == 'none' %}outline{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {% if settings.stagger_products %}reveal-on-scroll="true"{% endif %} style="--product-list-promo-row-span: {{ promo_size | split: '_' | last }}; --product-list-promo-column-span: {{ promo_size | split: '_' | first }}; border-radius: {{ promo_radius }}px; overflow: hidden;" {{ block.shopify_attributes }}>
   <div class="content-box min-h-full">
     <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }}">
       {%- liquid
         if block.type == 'image'
           if block.settings.image != blank
-            render 'media', media: block.settings.image, mobile_media: block.settings.mobile_image
+            render 'media', media: block.settings.image, mobile_media: block.settings.mobile_image, sizes: sizes, preload: preload
           endif
 
         elsif block.type == 'video'
           if block.settings.video != blank
-            render 'media', media: block.settings.video, mobile_media: block.settings.mobile_video, autoplay: true, loop: true, muted: true, controls: false, preload: preload, show_play_button: false
+            render 'media', media: block.settings.video, mobile_media: block.settings.mobile_video, autoplay: true, loop: true, muted: true, controls: false, preload: preload, sizes: sizes, show_play_button: false
           endif
         endif
       -%}

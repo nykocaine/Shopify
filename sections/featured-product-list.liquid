@@ -1,4 +1,32 @@
+{%- liquid
+  # Same fixed ratio product-card.liquid pins its figure to ('natural' depends on a product's own media and has no
+  # equivalent here, so it falls back to square): gives an image / video block an intrinsic card-sized height, so its
+  # row doesn't collapse when it lands alone in a trailing row (no product card beside it to set the height).
+  case settings.product_card_image_aspect_ratio
+    when 'short', 'short_crop'
+      assign promo_aspect_ratio = '4 / 3'
+    when 'portrait', 'portrait_crop'
+      assign promo_aspect_ratio = '4 / 5'
+    when 'tall', 'tall_crop'
+      assign promo_aspect_ratio = '2 / 3'
+    else
+      assign promo_aspect_ratio = '1'
+  endcase
+-%}
+
 <style>
+  #shopify-section-{{ section.id }} .product-list__promo .content-box {
+    aspect-ratio: {{ promo_aspect_ratio }};
+  }
+
+  {%- comment -%}A video is wrapped in <video-media>, which sizes itself from the video's own ratio: here it fills the card, cropped with object-fit: cover, like an image{%- endcomment -%}
+  #shopify-section-{{ section.id }} .product-list__promo .content-box__background-media video-media {
+    aspect-ratio: auto;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+  }
+
   #shopify-section-{{ section.id }} .product-list:not(.product-list--carousel) {
     align-items: stretch;
   }
@@ -153,7 +181,9 @@
               {%- endif -%}
 
               {%- assign visual_position = visual_position | plus: 1 -%}
-              {%- render 'featured-product-list-promo', block: block, section: section, sizes: sizes, position: visual_position -%}
+              {%- assign promo_preload = false -%}
+              {%- if section.index <= 3 and visual_position <= 3 -%}{%- assign promo_preload = true -%}{%- endif -%}
+              {%- render 'product-list-promo', block: block, sizes: sizes, radius: section.settings.product_card_border_radius, preload: promo_preload -%}
             {%- endfor -%}
 
             {%- assign visual_position = visual_position | plus: 1 -%}
@@ -177,7 +207,9 @@
             {%- endif -%}
 
             {%- assign visual_position = visual_position | plus: 1 -%}
-            {%- render 'featured-product-list-promo', block: block, section: section, sizes: sizes, position: visual_position -%}
+            {%- assign promo_preload = false -%}
+            {%- if section.index <= 3 and visual_position <= 3 -%}{%- assign promo_preload = true -%}{%- endif -%}
+            {%- render 'product-list-promo', block: block, sizes: sizes, radius: section.settings.product_card_border_radius, preload: promo_preload -%}
           {%- endfor -%}
         </product-list>
 
@@ -290,9 +322,13 @@
   ],
   "blocks": [
     {
-      "type": "promo",
-      "name": "t:sections.featured_product_list.blocks.promo.name",
+      "type": "image",
+      "name": "t:sections.main_collection.blocks.image.name",
       "settings": [
+        {
+          "type": "paragraph",
+          "content": "t:sections.main_collection.blocks.image.info"
+        },
         {
           "type": "color_scheme",
           "id": "color_scheme",
@@ -311,14 +347,14 @@
         {
           "type": "image_picker",
           "id": "image",
-          "label": "t:sections.featured_product_list.intro_image_desktop",
-          "info": "t:sections.featured_product_list.intro_image_info"
+          "label": "t:global.image.image",
+          "info": "t:sections.main_collection.blocks.image.image_size_recommendation"
         },
         {
           "type": "image_picker",
           "id": "mobile_image",
-          "label": "t:sections.featured_product_list.intro_image_mobile",
-          "info": "t:sections.featured_product_list.intro_image_mobile_info"
+          "label": "t:global.image.mobile_image",
+          "info": "t:sections.main_collection.blocks.image.mobile_image_size_recommendation"
         },
         {
           "type": "color",
@@ -387,19 +423,40 @@
         {
           "type": "inline_richtext",
           "id": "subheading",
-          "label": "t:global.text.subheading"
+          "label": "t:global.text.subheading",
+          "default": "Subtitle"
         },
         {
           "type": "inline_richtext",
           "id": "heading",
           "label": "t:global.text.heading",
-          "default": "The essentials"
+          "default": "Title"
         },
         {
           "type": "select",
           "id": "heading_size",
           "label": "t:global.text.heading_size",
           "options": [
+            {
+              "value": "display-xl",
+              "label": "Display XL"
+            },
+            {
+              "value": "display-l",
+              "label": "Display L"
+            },
+            {
+              "value": "display-m",
+              "label": "Display M"
+            },
+            {
+              "value": "h1",
+              "label": "XX-Large"
+            },
+            {
+              "value": "h2",
+              "label": "X-Large"
+            },
             {
               "value": "h3",
               "label": "Large"
@@ -421,18 +478,19 @@
               "label": "XX-Small"
             }
           ],
-          "default": "h5"
+          "default": "h2"
         },
         {
           "type": "richtext",
           "id": "content",
           "label": "t:global.text.content",
-          "default": "<p>Share details of your store's product selection, or share a story that speaks to your customers.</p>"
+          "default": "<p>Write some content to promote a product or a temporary offer in your collections.</p>"
         },
         {
           "type": "text",
           "id": "button_text",
-          "label": "t:global.text.button_text"
+          "label": "t:global.text.button_text",
+          "default": "Button"
         },
         {
           "type": "url",
@@ -463,15 +521,212 @@
               "label": "t:global.text.button_style_options.link"
             }
           ],
-          "default": "outline"
+          "default": "solid"
         }
       ]
-    }
-  ],
-  "presets": [
+    },
     {
-      "name": "t:sections.featured_product_list.name",
-      "category": "t:global.categories.products"
+      "type": "video",
+      "name": "t:sections.main_collection.blocks.video.name",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "t:sections.main_collection.blocks.video.info"
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-2"
+        },
+        {
+          "type": "range",
+          "id": "position",
+          "label": "t:sections.main_collection.blocks.general.position",
+          "info": "t:sections.main_collection.blocks.general.position_info",
+          "min": 1,
+          "max": 50,
+          "default": 3
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "t:global.video.video",
+          "info": "t:global.video.video_info"
+        },
+        {
+          "type": "video",
+          "id": "mobile_video",
+          "label": "t:global.video.mobile_video"
+        },
+        {
+          "type": "color",
+          "id": "overlay_color",
+          "label": "t:global.colors.image_overlay_color",
+          "default": "#000000"
+        },
+        {
+          "type": "range",
+          "id": "overlay_opacity",
+          "label": "t:global.colors.image_overlay_opacity",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 20
+        },
+        {
+          "type": "header",
+          "content": "t:global.text.content"
+        },
+        {
+          "type": "select",
+          "id": "content_position",
+          "label": "t:global.position.content_position",
+          "options": [
+            {
+              "value": "place-self-start",
+              "label": "t:global.position.top_left"
+            },
+            {
+              "value": "place-self-start-center",
+              "label": "t:global.position.top_center"
+            },
+            {
+              "value": "place-self-start-end",
+              "label": "t:global.position.top_right"
+            },
+            {
+              "value": "place-self-center-start",
+              "label": "t:global.position.middle_left"
+            },
+            {
+              "value": "place-self-center",
+              "label": "t:global.position.middle_center"
+            },
+            {
+              "value": "place-self-center-end",
+              "label": "t:global.position.middle_right"
+            },
+            {
+              "value": "place-self-end-start",
+              "label": "t:global.position.bottom_left"
+            },
+            {
+              "value": "place-self-end-center",
+              "label": "t:global.position.bottom_center"
+            },
+            {
+              "value": "place-self-end",
+              "label": "t:global.position.bottom_right"
+            }
+          ],
+          "default": "place-self-end-start"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "subheading",
+          "label": "t:global.text.subheading",
+          "default": "Subtitle"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "heading",
+          "label": "t:global.text.heading",
+          "default": "Title"
+        },
+        {
+          "type": "select",
+          "id": "heading_size",
+          "label": "t:global.text.heading_size",
+          "options": [
+            {
+              "value": "display-xl",
+              "label": "Display XL"
+            },
+            {
+              "value": "display-l",
+              "label": "Display L"
+            },
+            {
+              "value": "display-m",
+              "label": "Display M"
+            },
+            {
+              "value": "h1",
+              "label": "XX-Large"
+            },
+            {
+              "value": "h2",
+              "label": "X-Large"
+            },
+            {
+              "value": "h3",
+              "label": "Large"
+            },
+            {
+              "value": "h4",
+              "label": "Medium"
+            },
+            {
+              "value": "h5",
+              "label": "Small"
+            },
+            {
+              "value": "h6",
+              "label": "X-Small"
+            },
+            {
+              "value": "h7",
+              "label": "XX-Small"
+            }
+          ],
+          "default": "h2"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "t:global.text.content",
+          "default": "<p>Write some content to promote a product or a temporary offer in your collections.</p>"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "t:global.text.button_text",
+          "default": "Button"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "t:global.text.link"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_in_new_tab",
+          "label": "t:global.text.open_in_new_tab",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "style",
+          "label": "t:global.text.style",
+          "options": [
+            {
+              "value": "outline",
+              "label": "t:global.text.button_style_options.outline"
+            },
+            {
+              "value": "solid",
+              "label": "t:global.text.button_style_options.solid"
+            },
+            {
+              "value": "link",
+              "label": "t:global.text.button_style_options.link"
+            }
+          ],
+          "default": "solid"
+        }
+      ]
     }
   ]
 }
