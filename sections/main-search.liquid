@@ -80,6 +80,17 @@
     }
   }
 
+  {%- comment -%}
+  No-results / empty search: the message is centered both ways in the available space (grid + place-items) instead of
+  hanging from a fixed top padding.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .container > .empty-state:not(.empty-state--sm) {
+    display: grid;
+    place-items: center;
+    min-height: 60vh;
+    text-align: center;
+  }
+
   {%- if section.settings.floating_search -%}
     {%- comment -%}
     Floating mode: this section becomes its own rounded card, so it needs a real inner inset on all
@@ -347,10 +358,13 @@
             <p>{{ 'search.general.no_results' | t: terms: search.terms }}</p>
           {%- endif -%}
 
+          {%- comment -%}With a query that found nothing, only the message is shown (the header search and the search drawer are the way to try again); the field stays only when no search was made at all, so the page isn't left with nothing to do{%- endcomment -%}
+          {%- unless search.performed -%}
           <form class="max-w-xs md:max-w-md" action="{{ routes.search_url }}" method="get" role="search">
             <label for="search-page-input-empty" class="sr-only">{{ 'search.general.search_placeholder' | t }}</label>
             <input id="search-page-input-empty" type="search" name="q" class="search-form__input input" placeholder="{{ 'search.general.search_placeholder' | t }}" autocomplete="off" autocorrect="off">
           </form>
+          {%- endunless -%}
         </div>
       </div>
     </div>
