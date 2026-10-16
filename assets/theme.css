@@ -6173,6 +6173,16 @@ product-rerender {
     transform: none !important;
     visibility: visible !important;
   }
+
+  /* Same timing for the header, the bar and the panel (0.4s, ease-in-out, the panel's own motion in FacetsDrawer): when the
+     panel opens while the header or the bar were slid away, they come back on the same clock as the panel unfolds, instead
+     of on their own slower scroll-hide timing, which read as the top and the bottom being out of step. */
+  :root[data-facets-open] .shopify-section--header,
+  :root[data-facets-open] .collection__toolbar {
+    transition-duration: .4s !important;
+    transition-timing-function: cubic-bezier(.4, 0, .2, 1) !important;
+    transition-delay: 0s !important;
+  }
 }
 
 .drawer--cart .tab-pills {

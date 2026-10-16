@@ -2853,12 +2853,16 @@ var FacetsDrawer = class extends Drawer {
       content.style.height = "";
       const height = content.getBoundingClientRect().height;
       content.style.overflow = "hidden";
+      // Opening and closing share the same duration and curve so the way down and the way back up
+      // are mirror images, and the panel fades with its height: the content never appears abruptly.
+      content.style.opacity = "0";
       const controls = animateSequence2([
-        [content, { height: ["0px", `${height}px`] }, { duration: 0.45, ease: [0.22, 1, 0.36, 1] }]
+        [content, { height: ["0px", `${height}px`], opacity: [0, 1] }, { duration: 0.4, ease: [0.4, 0, 0.2, 1] }]
       ]);
       controls.then(() => {
         content.style.height = "";
         content.style.overflow = "";
+        content.style.opacity = "";
       });
       return controls;
     }
@@ -2900,11 +2904,12 @@ var FacetsDrawer = class extends Drawer {
       const height = content.getBoundingClientRect().height;
       content.style.overflow = "hidden";
       const controls = animateSequence2([
-        [content, { height: [`${height}px`, "0px"] }, { duration: 0.35, ease: [0.33, 0, 0.2, 1] }]
+        [content, { height: [`${height}px`, "0px"], opacity: [1, 0] }, { duration: 0.4, ease: [0.4, 0, 0.2, 1] }]
       ]);
       controls.then(() => {
         content.style.height = "";
         content.style.overflow = "";
+        content.style.opacity = "";
       });
       return controls;
     }
