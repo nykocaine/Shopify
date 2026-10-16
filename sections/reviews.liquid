@@ -391,6 +391,15 @@ to the first 5 of the newly sorted order.
     The body part normally scrolls as a whole; here the form scrolls on its own (.review-modal__scroll) so the header
     and the close button stay put. The header reserves room at its end for the close button.
     {%- endcomment -%}
+    {%- comment -%}
+    Inner padding: the same one every floating container uses (container gutter + 0.5rem), at every width, instead of
+    the generic modal's fixed 1.25rem / 3rem. The ID selector beats .modal's own values for these variables.
+    {%- endcomment -%}
+    #{{ write_review_modal_id }}.modal--write-review {
+      --modal-body-padding-block: calc(var(--container-gutter) + 0.5rem);
+      --modal-body-padding-inline: calc(var(--container-gutter) + 0.5rem);
+    }
+
     #{{ write_review_modal_id }}.modal--write-review::part(body) {
       overflow: hidden;
       grid-template-rows: auto minmax(0, 1fr);
