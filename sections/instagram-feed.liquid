@@ -117,11 +117,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               autoplay: true (muted, looped) instead of the default tap-to-play, matching an
               Instagram-style feed. That is the desktop behavior: on mobile the script below removes
               the autoplay attribute (and the tap-to-reveal class on the controls) before the theme's
-              JS connects, so there videos start on tap and the play / sound / zoom buttons stay visible. show_pause_button stays at its default (true) - the merchant
-              wants the manual play/pause toggle visible even though the video autoplays, so a
-              visitor can still pause it. reveal_controls_on_tap: true keeps the pause/sound/zoom
-              controls hidden until the video itself is tapped, instead of sitting on top of it
-              permanently.
+              JS connects, so there videos start on tap and the play / sound / zoom buttons stay visible. On desktop those
+              controls are hidden by CSS (see the 700px rule below): the videos just play.
               {%- endcomment -%}
               <div class="snap-start" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
                 {%- render 'media-zoom-slide',
@@ -714,6 +711,16 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
       flex: 0 0 calc((100% - {{ section.settings.items_per_row_desktop | minus: 1 | times: 0.5 }}rem) / {{ section.settings.items_per_row_desktop }});
+    }
+  }
+
+  {%- comment -%}
+  Desktop (700px and up): the videos play by themselves, so there are no video controls at all - no play/pause,
+  sound or zoom buttons. On mobile (below 700px) they stay visible, since nothing autoplays there.
+  {%- endcomment -%}
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .carousel-video-controls {
+      display: none;
     }
   }
 
