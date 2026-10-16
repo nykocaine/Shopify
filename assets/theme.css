@@ -1293,17 +1293,24 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 
 .drawer::part(header) {
   --distance-to-bleed: var(--drawer-header-padding-inline);
-  text-align: center;
+  text-align: start;
   padding: var(--drawer-header-padding-block) var(--drawer-header-padding-inline);
   border-block-end: 1px solid rgb(var(--border-color));
-  place-items: center;
+  place-items: center start;
   display: grid;
 }
 
+/* Drawers: the title sits at the start (left) and the close button at the end (right). Both share the header's single
+   grid cell, so the title keeps room on its end side for the button instead of running under it. */
 .drawer::part(close-button) {
   grid-area: 1 / 1;
-  justify-self: start;
+  justify-self: end;
   position: relative;
+}
+
+.drawer [slot="header"] {
+  padding-inline-end: calc(var(--control-button-size, 1.75rem) + .75rem);
+  text-align: start;
 }
 
 .drawer::part(body) {
@@ -1361,7 +1368,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 
 .drawer-popover::part(close-button) {
   grid-area: 1 / -1;
-  justify-self: start;
+  justify-self: end;
   position: relative;
 }
 
