@@ -18,10 +18,18 @@
 {% endcomment %}
 
 {%- capture provider_summary -%}
-  <p>{{ 'libro_reclamaciones.aviso.provider_label' | t }}: {{ section.settings.provider_business_name }}</p>
-  <p>RUC: {{ section.settings.provider_ruc }}</p>
-  <p>{{ 'libro_reclamaciones.aviso.address_label' | t }}: {{ section.settings.provider_address }}</p>
-  <p>{{ 'libro_reclamaciones.aviso.email_label' | t }}: {{ section.settings.provider_email }}</p>
+  {%- if section.settings.provider_business_name != blank -%}
+    <p>{{ 'libro_reclamaciones.aviso.provider_label' | t }}: {{ section.settings.provider_business_name }}</p>
+  {%- endif -%}
+  {%- if section.settings.provider_ruc != blank -%}
+    <p>RUC: {{ section.settings.provider_ruc }}</p>
+  {%- endif -%}
+  {%- if section.settings.provider_address != blank -%}
+    <p>{{ 'libro_reclamaciones.aviso.address_label' | t }}: {{ section.settings.provider_address }}</p>
+  {%- endif -%}
+  {%- if section.settings.provider_email != blank -%}
+    <p>{{ 'libro_reclamaciones.aviso.email_label' | t }}: {{ section.settings.provider_email }}</p>
+  {%- endif -%}
 {%- endcapture -%}
 
 {%- capture section_header -%}
@@ -131,17 +139,17 @@
           {%- assign document_type_options = document_type_values | split: ',' -%}
           {%- render 'select', option_values: document_type_options, show_empty_value: true, name: 'contact[Tipo de documento]', label: document_type_label, required: true -%}
 
-          {%- render 'input', type: 'text', name: 'contact[Número de documento]', label: document_number_label, required: true, pattern: '\d{8}|[A-Za-z0-9]{6,12}', minlength: 6, maxlength: 12 -%}
+          {%- render 'input', type: 'text', name: 'contact[Número de documento]', label: document_number_label, required: true, pattern: '[A-Za-z0-9]{6,12}', minlength: 6, maxlength: 12 -%}
         </div>
 
         <div class="fieldset-row">
           {%- render 'input', type: 'text', name: 'contact[Domicilio]', label: address_label, required: true, maxlength: 200 -%}
-          {%- render 'input', type: 'tel', name: 'contact[Teléfono]', label: phone_label, required: true, pattern: '[0-9+()\-\s]{6,20}', autocomplete: 'tel' -%}
+          {%- render 'input', type: 'tel', name: 'contact[Teléfono]', label: phone_label, required: true, pattern: '[0-9+\(\)\-\s]{6,20}', autocomplete: 'tel' -%}
         </div>
 
         <div class="fieldset-row">
           {%- render 'input', type: 'text', name: 'contact[Descripción del bien o servicio]', label: product_service_label, required: true, maxlength: 200 -%}
-          {%- render 'input', type: 'number', name: 'contact[Monto reclamado]', label: amount_label -%}
+          {%- render 'input', type: 'text', name: 'contact[Monto reclamado]', label: amount_label, pattern: '\d+([.,]\d{1,2})?', maxlength: 12, autocomplete: 'off' -%}
         </div>
 
         {%- render 'input', name: 'contact[Detalle del reclamo o queja]', label: detail_label, multiline: 6, required: true, minlength: 20, maxlength: 2000, show_max_characters_count: true -%}
@@ -156,9 +164,7 @@
           </div>
         </div>
 
-        <div class="checkbox-control">
-          {%- render 'checkbox', name: 'contact[Declaración de conformidad y consentimiento]', value: 'Acepto', label: consent_label, required: true, id_prefix: 'consent' -%}
-        </div>
+        {%- render 'checkbox', name: 'contact[Declaración de conformidad y consentimiento]', value: 'Acepto', label: consent_label, required: true, id_prefix: 'consent' -%}
       </div>
 
       <div class="v-stack gap-3">

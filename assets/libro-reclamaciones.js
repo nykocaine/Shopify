@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var STORAGE_KEY = 'rythoLibroReclamacionesLastSubmission';
+  var STORAGE_KEY = 'libroReclamacionesLastSubmission';
 
   var form = document.getElementById('libro-reclamaciones-form');
 
@@ -40,18 +40,25 @@
       form.addEventListener('input', updateSubmitState);
       form.addEventListener('change', updateSubmitState);
       updateSubmitState();
+
+      // Coming back to the page from the browser history (bfcache) restores the button as the submit handler left it
+      // (disabled and busy), so it is reset here.
+      window.addEventListener('pageshow', function () {
+        submitButton.removeAttribute('aria-busy');
+        updateSubmitState();
+      });
     }
 
     form.addEventListener('submit', function () {
       var now = new Date();
-      var rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+      var rand = Math.random().toString(36).slice(2, 8).toUpperCase();
       var code = 'RC-' + now.getFullYear() + pad(now.getMonth() + 1) + pad(now.getDate()) + '-' + rand;
 
       var codeField = document.getElementById('rc-code');
       var dateField = document.getElementById('rc-datetime');
 
       if (codeField) codeField.value = code;
-      if (dateField) dateField.value = now.toISOString();
+      if (dateField) dateField.value = formatLimaDate(now);
 
       var typeField = form.querySelector('[name="contact[Tipo de solicitud]"]');
 
@@ -121,6 +128,15 @@
       window.addEventListener('afterprint', function () {
         document.body.classList.remove('rc-printing');
       });
+    }
+  }
+
+  // The registration time is stored in Peruvian time (the store's market), not in the visitor's own timezone or UTC.
+  function formatLimaDate(date) {
+    try {
+      return date.toLocaleString('es-PE', { timeZone: 'America/Lima', hour12: false }) + ' (hora de Lima)';
+    } catch (error) {
+      return date.toISOString();
     }
   }
 
