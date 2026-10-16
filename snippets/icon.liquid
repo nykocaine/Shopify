@@ -105,6 +105,28 @@ To render an icon made of an image, you need to explicitly pass the image, and t
         <path fill="none" stroke="currentColor" d="m2 2 8 8m0-8-8 8"/>
       </svg>
 
+    {%- comment -%} Media control icons (video controls + media lightbox): same 16x16 box, stroke width and round caps/joins as volume/slideshow-pause/slideshow-play so they read as one set {%- endcomment -%}
+
+    {%- when 'control-close' -%}
+      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
+        <path stroke="currentColor" stroke-linecap="round" stroke-width="{{ settings.icon_stroke_width }}" d="m4.5 4.5 7 7m0-7-7 7"/>
+      </svg>
+
+    {%- when 'control-zoom' -%}
+      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
+        <path stroke="currentColor" stroke-linecap="round" stroke-width="{{ settings.icon_stroke_width }}" d="M8 3.5v9M3.5 8h9"/>
+      </svg>
+
+    {%- when 'control-arrow-left' -%}
+      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="{{ settings.icon_stroke_width }}" d="M9.5 4 5.5 8l4 4"/>
+      </svg>
+
+    {%- when 'control-arrow-right' -%}
+      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="{{ settings.icon_stroke_width }}" d="m6.5 4 4 4-4 4"/>
+      </svg>
+
     {%- when 'close' -%}
       <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 10 }}" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" fill="none" viewBox="0 0 10 10">
         <path stroke="currentColor" d="m1 1 8 8m0-8L1 9" />
@@ -221,13 +243,13 @@ To render an icon made of an image, you need to explicitly pass the image, and t
 
     {%- when 'volume' -%}
       <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 14 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
-        <path fill="currentColor" d="M1 6h2.5L7 3v10L3.5 10H1V6Z"/>
+        <path fill="currentColor" stroke="currentColor" stroke-width="{{ settings.icon_stroke_width }}" stroke-linejoin="round" d="M2 6.5h2L7 4v8l-3-2.5H2v-3Z"/>
         <path stroke="currentColor" stroke-width="{{ settings.icon_stroke_width }}" stroke-linecap="round" d="M10.5 5.5a4 4 0 0 1 0 5M12.5 3.5a7 7 0 0 1 0 9"/>
       </svg>
 
     {%- when 'volume-off' -%}
       <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 14 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
-        <path fill="currentColor" d="M1 6h2.5L7 3v10L3.5 10H1V6Z"/>
+        <path fill="currentColor" stroke="currentColor" stroke-width="{{ settings.icon_stroke_width }}" stroke-linejoin="round" d="M2 6.5h2L7 4v8l-3-2.5H2v-3Z"/>
         <path stroke="currentColor" stroke-width="{{ settings.icon_stroke_width }}" stroke-linecap="round" d="m10.5 5.5 4 5m0-5-4 5"/>
       </svg>
 
