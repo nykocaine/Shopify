@@ -6057,6 +6057,9 @@ product-rerender {
 @media screen and (min-width: 1000px) {
   .collection__toolbar {
     flex-wrap: wrap;
+    /* The bar's padding only exists at its outer edges, so the panel (a second row) sat flush against the bar's row and read
+       as overlapping it. Same distance as the bar's own vertical padding between the row and the panel. */
+    row-gap: calc((var(--container-gutter) + .5rem) / 2);
   }
 
   .drawer--facets::part(base) {
