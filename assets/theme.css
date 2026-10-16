@@ -6159,32 +6159,24 @@ product-rerender {
   }
 }
 
-/* While the panel is open, the header and the bar (with the panel inside it) stay pinned at the top as the page scrolls:
-   the header does not slide away (hide on scroll) and the bar sticks even when its "sticky" option is off. Everything
-   returns to normal once the panel closes (FacetsDrawer sets and clears data-facets-open on <html>). */
+/* While the filters are open, the header and the bar (with the panel inside it) do not follow the scroll: they are released
+   from their sticky behavior and stay in their place in the page, so they scroll away like any other content. The header does
+   not slide (hide on scroll) either. Everything returns to normal once the panel closes (FacetsDrawer sets and clears
+   data-facets-open on <html>). */
 :root[data-facets-open] .shopify-section--header {
+  position: relative !important;
+  top: auto !important;
   transform: none !important;
   visibility: visible !important;
+  transition: none !important;
 }
 
 :root[data-facets-open] .collection__toolbar {
-  position: sticky;
-  top: calc(var(--sticky-area-height, 0px) - 1px);
-  z-index: 2;
+  position: relative !important;
+  top: auto !important;
   transform: none !important;
   visibility: visible !important;
-  /* A soft edge so the page content does not slide flush under the bar while it is pinned */
-  box-shadow: 0 .75rem 1.25rem -.75rem rgb(0 0 0 / .22);
-}
-
-/* Same timing for the header, the bar and the panel (0.4s, ease-in-out, the panel's own motion in FacetsDrawer): when the
-   panel opens while the header or the bar were slid away, they come back on the same clock as the panel unfolds, instead
-   of on their own slower scroll-hide timing, which read as the top and the bottom being out of step. */
-:root[data-facets-open] .shopify-section--header,
-:root[data-facets-open] .collection__toolbar {
-  transition-duration: .4s !important;
-  transition-timing-function: cubic-bezier(.4, 0, .2, 1) !important;
-  transition-delay: 0s !important;
+  transition: none !important;
 }
 
 .drawer--cart .tab-pills {

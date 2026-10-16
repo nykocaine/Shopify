@@ -2820,7 +2820,14 @@ var FacetsDrawer = class extends Drawer {
   }
   async show(options) {
     this._mode = this.#currentMode();
+    // While open, the header and the bar stay in their place in the page instead of following the scroll (theme.css). They
+    // are released from sticky right here, so if they had scrolled out of view the page is brought back to them first.
     document.documentElement.setAttribute("data-facets-open", "");
+    const bar = document.querySelector(".collection__toolbar");
+    if (bar && bar.getBoundingClientRect().top < 0) {
+      const header = document.querySelector(".shopify-section--header");
+      window.scrollTo({ top: Math.max(0, window.scrollY + bar.getBoundingClientRect().top - (header ? header.offsetHeight : 0)), behavior: "instant" });
+    }
     if (this.isInline) {
       const toolbar = document.querySelector(".collection__toolbar");
       if (toolbar && this.parentElement !== toolbar) {
@@ -2867,16 +2874,7 @@ var FacetsDrawer = class extends Drawer {
       return controls;
     }
     const toolbar = document.querySelector(".collection__toolbar");
-    // The header and the bar are pinned while the panel is open, so the sheet hangs from where the bar will rest, not
-    // from where it is right now (it may be scrolled away, slid up or mid-transition): the untransformed top, but never
-    // above the pinned position under the header.
-    let top = 0;
-    if (toolbar) {
-      const rect = toolbar.getBoundingClientRect();
-      const translateY = new DOMMatrix(getComputedStyle(toolbar).transform).m42 || 0;
-      const stickyTop = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sticky-area-height")) || 0) - 1;
-      top = Math.max(0, Math.round(Math.max(rect.top - translateY, stickyTop) + rect.height));
-    }
+    const top = toolbar ? Math.max(0, Math.round(toolbar.getBoundingClientRect().bottom)) : 0;
     this.style.setProperty("--facets-drawer-top", `${top}px`);
     const content = this.getShadowPartByName("content");
     const overlay = this.getShadowPartByName("overlay");
