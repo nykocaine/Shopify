@@ -202,6 +202,48 @@
       height: 100%;
       border-radius: inherit;
     }
+
+    {%- comment -%}
+    Containment, so a card-sized promo can never be wider than its grid cell or overflow it: the cell stretches over its
+    full column (an aspect-ratio makes grid items stop stretching by default, so the width would otherwise come from the
+    content), nothing inside may grow it past that (min-width: 0), and the text is fitted to a half-width card: tighter
+    padding, wrapping, a capped heading size and a full-width button.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card {
+      justify-self: stretch;
+      align-self: stretch;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card .content-box,
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card .content-box__background-media {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card .content-box {
+      --content-box-spacing: .875rem;
+    }
+
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card .prose,
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card .prose > * {
+      min-width: 0;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6, .display-m, .display-l, .display-xl) {
+      font-size: clamp(1rem, 5.5vw, 1.375rem);
+      line-height: 1.15;
+    }
+
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card .button {
+      max-width: 100%;
+      width: 100%;
+      padding-inline: .5rem;
+    }
   }
 
   {%- comment -%}
