@@ -2574,7 +2574,7 @@ if (!window.customElements.get("dialog-close-button")) {
 // revealed together from top to bottom on open, and fold back up on close. The close uses an in-out curve (an ease-in
 // one ends abruptly) and is shorter than the open, and the layers are promoted while it runs to avoid flicker. The clip-path is cleared once the opening finishes, so it
 // can't leave the content clipped (focus rings, shadows). Reduced motion keeps a plain fade.
-function createUnfoldAnimationControls(animateSequence, overlay, content, opening) {
+function createUnfoldAnimationControls(animateSequence, overlay, content, opening, { fadeOverlay = false } = {}) {
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const hidden = "inset(0 0 100% 0)";
   const shown = "inset(0 0 0% 0)";
@@ -2584,9 +2584,14 @@ function createUnfoldAnimationControls(animateSequence, overlay, content, openin
     // The close starts moving right away (an in-out curve sits still for the first moments, which reads as a delay)
     ease: opening ? [0.22, 1, 0.36, 1] : [0.33, 0, 0.2, 1]
   };
-  overlay.style.willChange = content.style.willChange = reduceMotion ? "opacity" : "clip-path";
+  overlay.style.willChange = reduceMotion || fadeOverlay ? "opacity" : "clip-path";
+  content.style.willChange = reduceMotion ? "opacity" : "clip-path";
+  // A dialog that doesn't hang from the top of the screen (the centered newsletter popup) fades its overlay instead of
+  // unfolding it: the overlay's top-to-bottom front and the dialog's own front are at different heights, so the
+  // two would not look in sync.
+  const overlayKeyframes = fadeOverlay ? { opacity: opening ? [0, 1] : [1, 0] } : keyframes;
   const controls = animateSequence([
-    [overlay, keyframes, options],
+    [overlay, overlayKeyframes, options],
     [content, keyframes, { ...options, at: "<" }]
   ]);
   controls.then(() => {
@@ -6156,10 +6161,10 @@ var NewsletterPopup = class extends Modal {
   }
   // Same top-to-bottom unfold as the drawers (see createUnfoldAnimationControls)
   createEnterAnimationControls() {
-    return createUnfoldAnimationControls(animateSequence4, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), true);
+    return createUnfoldAnimationControls(animateSequence4, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), true, { fadeOverlay: true });
   }
   createLeaveAnimationControls() {
-    return createUnfoldAnimationControls(animateSequence4, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), false);
+    return createUnfoldAnimationControls(animateSequence4, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), false, { fadeOverlay: true });
   }
   get shouldAppearAutomatically() {
     return !(localStorage.getItem("theme:popup-filled") === "true" || this.hasAttribute("only-once") && localStorage.getItem("theme:popup-appeared") === "true");
