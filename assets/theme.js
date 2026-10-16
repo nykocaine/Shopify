@@ -2546,6 +2546,31 @@ if (!window.customElements.get("dialog-close-button")) {
   window.customElements.define("dialog-close-button", DialogCloseButton);
 }
 
+// Shared "unfold" transition (menu, search and cart drawers): the overlay (blur + backdrop color) and the content are
+// revealed together from top to bottom on open, and fold back up on close. The close uses an in-out curve (an ease-in
+// one ends abruptly) and is slightly shorter than the open. The clip-path is cleared once the opening finishes, so it
+// can't leave the content clipped (focus rings, shadows). Reduced motion keeps a plain fade.
+function createUnfoldAnimationControls(animateSequence, overlay, content, opening) {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const hidden = "inset(0 0 100% 0)";
+  const shown = "inset(0 0 0% 0)";
+  const keyframes = reduceMotion ? { opacity: opening ? [0, 1] : [1, 0] } : { clipPath: opening ? [hidden, shown] : [shown, hidden] };
+  const options = {
+    duration: reduceMotion ? 0.2 : opening ? 1.2 : 1,
+    ease: opening ? [0.22, 1, 0.36, 1] : [0.65, 0, 0.35, 1]
+  };
+  const controls = animateSequence([
+    [overlay, keyframes, options],
+    [content, keyframes, { ...options, at: "<" }]
+  ]);
+  if (opening) {
+    controls.then(() => {
+      overlay.style.clipPath = "";
+      content.style.clipPath = "";
+    });
+  }
+  return controls;
+}
 // js/common/overlay/drawer.js
 import { animateSequence as animateSequence2 } from "vendor";
 var Drawer = class extends DialogElement {
@@ -2575,8 +2600,9 @@ var Drawer = class extends DialogElement {
   createEnterAnimationControls() {
     this.getShadowPartByName("content").style.marginInlineStart = this.openFrom === "right" ? "auto" : "0";
     if (this.unfolds) {
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      return animateSequence2([
+      return createUnfoldAnimationControls(animateSequence2, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), true);
+    }
+    return animateSequence2([
         [
           this.getShadowPartByName("overlay"),
           reduceMotion ? { opacity: [0, 1] } : { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] },
@@ -2596,8 +2622,9 @@ var Drawer = class extends DialogElement {
   }
   createLeaveAnimationControls() {
     if (this.unfolds) {
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      return animateSequence2([
+      return createUnfoldAnimationControls(animateSequence2, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), false);
+    }
+    return animateSequence2([
         [
           this.getShadowPartByName("overlay"),
           reduceMotion ? { opacity: [1, 0] } : { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] },
@@ -5512,32 +5539,13 @@ var HeaderMenuDrawer = class extends DialogElement {
     return true;
   }
   /**
-   * The menu unfolds from the header downwards (the content is revealed top to bottom) while the page behind stays in
-   * place under the overlay. Reduced motion keeps a plain fade.
+   * The menu unfolds from the header downwards, together with its overlay (see createUnfoldAnimationControls).
    */
   createEnterAnimationControls() {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timelineSteps = [
-      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.8 }],
-      [
-        this.getShadowPartByName("content"),
-        reduceMotion ? { opacity: [0, 1] } : { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] },
-        { duration: reduceMotion ? 0.2 : 1.2, ease: [0.22, 1, 0.36, 1], at: "<" }
-      ]
-    ];
-    return animateSequence8(timelineSteps);
+    return createUnfoldAnimationControls(animateSequence8, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), true);
   }
   createLeaveAnimationControls() {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timelineSteps = [
-      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.7 }],
-      [
-        this.getShadowPartByName("content"),
-        reduceMotion ? { opacity: [1, 0] } : { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] },
-        { duration: reduceMotion ? 0.2 : 0.8, ease: [0.4, 0, 1, 1], at: "<" }
-      ]
-    ];
-    return animateSequence8(timelineSteps);
+    return createUnfoldAnimationControls(animateSequence8, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), false);
   }
 };
 _delegate7 = new WeakMap();
