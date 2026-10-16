@@ -369,8 +369,8 @@ based on your desired layout (and remove most of the settings associated), and t
                 {{- product.title -}}
               </a>
               {%- if product.metafields.custom.subtitle -%}
-                {%- comment -%} Full-opacity body text color, unlike .product-subtitle's own muted .7 alpha (kept for the rating row text elsewhere) {%- endcomment -%}
-                <div class="product-subtitle text-base" style="color: rgb(var(--text-color))">{{ product.metafields.custom.subtitle }}</div>
+                {%- comment -%} Supporting text: the soft gray of .product-subtitle (70% of the text color), so the title and the price stand out {%- endcomment -%}
+                <div class="product-subtitle text-base">{{ product.metafields.custom.subtitle }}</div>
               {%- endif -%}
             </div>
 
@@ -383,7 +383,7 @@ based on your desired layout (and remove most of the settings associated), and t
         {%- if settings.product_card_info_horizontal_alignment == 'split' -%}
           {%- render 'price-list', product: product, context: 'card' -%}
         {%- else -%}
-          <div class="v-stack gap-1">
+          <div class="v-stack gap-1 product-card__price-block">
             {%- render 'price-list', product: product, context: 'card' -%}
 
             {%- if show_rating -%}
