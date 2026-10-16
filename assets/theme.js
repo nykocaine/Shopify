@@ -2820,7 +2820,7 @@ var FacetsDrawer = class extends Drawer {
   }
   async show(options) {
     this._mode = this.#currentMode();
-    document.documentElement.toggleAttribute("data-facets-open", this.isInline);
+    document.documentElement.setAttribute("data-facets-open", "");
     if (this.isInline) {
       const toolbar = document.querySelector(".collection__toolbar");
       if (toolbar && this.parentElement !== toolbar) {
@@ -2867,7 +2867,16 @@ var FacetsDrawer = class extends Drawer {
       return controls;
     }
     const toolbar = document.querySelector(".collection__toolbar");
-    const top = toolbar ? Math.max(0, Math.round(toolbar.getBoundingClientRect().bottom)) : 0;
+    // The header and the bar are pinned while the panel is open, so the sheet hangs from where the bar will rest, not
+    // from where it is right now (it may be scrolled away, slid up or mid-transition): the untransformed top, but never
+    // above the pinned position under the header.
+    let top = 0;
+    if (toolbar) {
+      const rect = toolbar.getBoundingClientRect();
+      const translateY = new DOMMatrix(getComputedStyle(toolbar).transform).m42 || 0;
+      const stickyTop = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sticky-area-height")) || 0) - 1;
+      top = Math.max(0, Math.round(Math.max(rect.top - translateY, stickyTop) + rect.height));
+    }
     this.style.setProperty("--facets-drawer-top", `${top}px`);
     const content = this.getShadowPartByName("content");
     const overlay = this.getShadowPartByName("overlay");
