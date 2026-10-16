@@ -94,6 +94,17 @@
   is already var(--container-gutter) at every breakpoint (no existing mobile/desktop mismatch to
   fix here), so this just gives it the same +0.5rem extra room used everywhere else.
   {%- endcomment -%}
+  {%- comment -%}
+  Going back to transparent (scrolling up to the top of the page) uses a longer, gentler ease-in-out than
+  turning solid (scrolling down). The same timing for both made the return read as a quick blink: the
+  background, text color and logo cross-fade all finish together, so it needs more time to feel smooth.
+  Set on the section wrapper (via :has) instead of on .header so the wrapper's own transitions (floating
+  header's top offset and the gap above it) stay in step with the header's.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }}:has(.header:not(.is-solid)) {
+    --header-solid-transition: .75s cubic-bezier(.45, 0, .25, 1);
+  }
+
   #shopify-section-{{ section.id }} .header {
     --header-padding-inline: calc(var(--container-gutter) + 0.5rem);
     transition: background var(--header-solid-transition), color var(--header-solid-transition), border-color var(--header-solid-transition);
