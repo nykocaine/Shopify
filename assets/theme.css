@@ -4804,9 +4804,10 @@ table caption {
   scale: -1;
 }
 
-/* The control icon set (close, arrows, zoom +): one size everywhere, from Theme Settings > Controls > Icon size.
+/* The control icon set (icon.liquid adds .icon--control to close, arrows, zoom +, volume, play/pause):
+   one size everywhere, from Theme Settings > Controls > Icon size - no caller sets a size of its own.
    content-box so a button's own padding around the icon (eg. the gallery's zoom button) never shrinks it. */
-.icon-close, .icon-arrow-left, .icon-arrow-right, .icon-big-arrow-left, .icon-big-arrow-right, .icon-back-arrow, .icon-zoom-plus {
+.icon--control {
   box-sizing: content-box;
   width: var(--control-icon-size, 16px);
 }
@@ -5014,14 +5015,6 @@ table caption {
 
 .scroll-controls .h-stack {
   flex-shrink: 0;
-}
-
-/* There's no dedicated "chevron-left" icon, so the prev button reuses chevron-right flipped. This
-   `transform` composes with (doesn't fight) the direction_aware icon's own `scale: -1` in RTL
-   (`[dir="rtl"] .icon--direction-aware`): scale and transform are separate properties, so the two flips
-   cancel out in RTL and the icon points the same way "next" does there. */
-.scroll-controls carousel-prev-button .icon-chevron-right {
-  transform: scaleX(-1);
 }
 
 [data-tooltip] {
@@ -8985,10 +8978,6 @@ shopify-account::part(signed-out-avatar) {
 
 .slideshow__autoplay-button > * {
   grid-area: 1 / -1;
-}
-
-.slideshow__autoplay-button .icon {
-  width: var(--control-icon-size, 14px);
 }
 
 @media screen and (min-width: 700px) {
