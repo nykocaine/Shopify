@@ -2769,6 +2769,30 @@ var FacetsDrawer = class extends Drawer {
     this.addEventListener("reset", this.hide);
     this.addEventListener("facet:update", this.hide);
   }
+  connectedCallback() {
+    super.connectedCallback();
+    // Rotating a phone or resizing the window across 1000px while the filters are open must keep them visible. The two
+    // modes are built differently (a block inside the toolbar vs a modal layer on the body), so the open dialog is
+    // closed and reopened, without animation, in the mode that matches the new width.
+    this._breakpointQuery = window.matchMedia("(min-width: 1000px)");
+    this._onBreakpointChange = async () => {
+      if (!this.open || this._reconfiguring) {
+        return;
+      }
+      this._reconfiguring = true;
+      try {
+        await this.hide();
+        await this.show({ animate: false });
+      } finally {
+        this._reconfiguring = false;
+      }
+    };
+    this._breakpointQuery.addEventListener("change", this._onBreakpointChange);
+  }
+  disconnectedCallback() {
+    this._breakpointQuery?.removeEventListener("change", this._onBreakpointChange);
+    super.disconnectedCallback();
+  }
   /**
    * From 1000px up the filters are not a modal drawer anymore: the panel is a block that lives inside the filter toolbar
    * (see .drawer--facets in theme.css) and unfolds downward from it, pushing the product grid down, with no overlay, no
@@ -2847,6 +2871,13 @@ var FacetsDrawer = class extends Drawer {
     return controls;
   }
   createLeaveAnimationControls() {
+    const controls = this.createLeaveAnimation();
+    if (this._reconfiguring) {
+      controls.complete();
+    }
+    return controls;
+  }
+  createLeaveAnimation() {
     const content = this.getShadowPartByName("content");
     const overlay = this.getShadowPartByName("overlay");
     if (this.isInline) {
