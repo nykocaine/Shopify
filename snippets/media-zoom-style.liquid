@@ -46,6 +46,10 @@ Videos only (media-zoom-slide.liquid adds .has-video-logo to video items; sectio
 on :root only when the header has a transparent-header logo, so without one nothing is drawn): that logo, small, bottom-left, at 70% opacity. A pseudo-element of the video-media itself,
 so it stays on the video wherever it goes (thumbnail, zoom animation, lightbox, vertical feed).
 {%- endcomment -%}
+#{{ wrapper_id }} .has-video-logo video-media.is-lightbox-expanded::after {
+  inset-block-end: 1.75rem;
+}
+
 #{{ wrapper_id }} .has-video-logo video-media::after {
   content: "";
   position: absolute;
@@ -469,8 +473,8 @@ an inward margin that keeps the whole button inside the media box's rounded corn
 
 {%- comment -%}
 Playback scrubber (lightbox videos only, built by media-zoom-script.liquid as a child of <video-media>, so it
-travels with the video). Sits on the bottom line, between the logo on the left and the controls on the right
-(each is 0.75rem from its corner), and uses the controls' icon color. Hidden everywhere except in the lightbox.
+travels with the video). Runs edge to edge along the bottom of the video, with the logo (left) and the controls
+(right) sitting just above it, and uses the controls' icon color. Hidden everywhere except in the lightbox.
 {%- endcomment -%}
 #{{ wrapper_id }} .lightbox-scrubber {
   display: none;
@@ -480,14 +484,22 @@ travels with the video). Sits on the bottom line, between the logo on the left a
   display: block;
   position: absolute;
   z-index: 3;
-  inset-inline-start: calc(0.75rem + min(3.5rem, 25%) + 0.75rem);
-  inset-inline-end: calc(0.75rem + var(--control-button-size, 1.75rem) + 0.75rem);
-  inset-block-end: 0.75rem;
-  height: var(--control-button-size, 1.75rem);
+  inset-inline: 0;
+  inset-block-end: 0;
+  height: 1.25rem;
   color: var(--control-button-icon-color, #ffffff);
   cursor: pointer;
   touch-action: none;
   filter: drop-shadow(0 0 2px rgb(0 0 0 / .45));
+}
+
+{%- comment -%}
+A taller invisible touch area above the thin line, so it is easy to grab without making the line itself bigger.
+{%- endcomment -%}
+#{{ wrapper_id }} .lightbox-scrubber::before {
+  content: "";
+  position: absolute;
+  inset: -0.75rem 0 0;
 }
 
 #{{ wrapper_id }} .lightbox-scrubber__svg {
@@ -604,7 +616,7 @@ to only ever be visible once relocated into the controls slot, which doesn't app
 }
 
 {%- comment -%}
-Pinned to the media box's own bottom-right corner (same 0.75rem inset the video's logo has on the bottom-left),
+Pinned to the media box's own bottom-right corner (same inset the video's logo has on the bottom-left, 1.75rem up so both clear the scrubber),
 so the logo and these controls sit on one line. The box is computed from the same --lightbox-w / --lightbox-ratio
 the media itself is sized with (media-zoom-script.liquid sets them on both). Mobile has its own fixed box, below.
 {%- endcomment -%}
@@ -616,7 +628,7 @@ the media itself is sized with (media-zoom-script.liquid sets them on both). Mob
   inset-inline-start: 50%;
   inset-block-start: 50%;
   transform: none;
-  translate: calc(var(--lightbox-box-w) / 2 - 100% - 0.75rem) calc(var(--lightbox-box-h) / 2 - 100% - 0.75rem);
+  translate: calc(var(--lightbox-box-w) / 2 - 100% - 0.75rem) calc(var(--lightbox-box-h) / 2 - 100% - 1.75rem);
 }
 
 {%- comment -%}
@@ -643,7 +655,7 @@ bottom-right corner instead of the screen's.
     inset-inline-end: auto;
     inset-inline-start: 50%;
     inset-block-start: 50%;
-    translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(var(--lightbox-media-h) / 2 - 100% - 0.75rem);
+    translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(var(--lightbox-media-h) / 2 - 100% - 1.75rem);
   }
 }
 
