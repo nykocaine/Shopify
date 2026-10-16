@@ -368,6 +368,12 @@ collapsed.
 {%- comment -%}
 Overrides circle-button--xl's own --button-size (2.5rem/3rem) so close/prev/next all match the same
 --control-button-size (Theme settings > Global > Controls) the play/pause/sound buttons already use.
+
+The lightbox is a vertical feed (see the "Vertical feed" part of media-zoom-script.liquid): prev/next are
+an up/down pair stacked at the right edge, centered vertically, like a short-video player's. They keep
+the theme's left/right arrow icons, just turned a quarter turn (the "<" points up, the ">" down) - the
+rotation is done here, with the individual `rotate` property, so the icon itself is untouched and
+direction_aware's own RTL flip isn't involved.
 {%- endcomment -%}
 #{{ lightbox_id }} .media-lightbox__prev,
 #{{ lightbox_id }} .media-lightbox__next {
@@ -376,10 +382,32 @@ Overrides circle-button--xl's own --button-size (2.5rem/3rem) so close/prev/next
   z-index: 1000;
   position: fixed;
   inset-block-start: 50%;
-  translate: 0 -50%;
+  inset-inline-end: 1rem;
   opacity: 1;
   scale: 1;
   transition: opacity .2s ease, scale .2s ease;
+}
+
+#{{ lightbox_id }} .media-lightbox__prev {
+  translate: 0 calc(-100% - 0.375rem);
+}
+
+#{{ lightbox_id }} .media-lightbox__next {
+  translate: 0 0.375rem;
+}
+
+#{{ lightbox_id }} .media-lightbox__prev .icon,
+#{{ lightbox_id }} .media-lightbox__next .icon {
+  rotate: 90deg;
+}
+
+{%- comment -%}
+First/last item: nothing further in that direction (the feed doesn't wrap around).
+{%- endcomment -%}
+#{{ lightbox_id }} .media-lightbox__prev[disabled],
+#{{ lightbox_id }} .media-lightbox__next[disabled] {
+  opacity: .35;
+  pointer-events: none;
 }
 
 #{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__close,
@@ -389,16 +417,8 @@ Overrides circle-button--xl's own --button-size (2.5rem/3rem) so close/prev/next
   scale: .8;
 }
 
-#{{ lightbox_id }} .media-lightbox__prev {
-  inset-inline-start: 1rem;
-}
-
-#{{ lightbox_id }} .media-lightbox__next {
-  inset-inline-end: 1rem;
-}
-
 {%- comment -%}
-Mobile only: pins close/prev/next to the media box's own corners (using the same --lightbox-media-w/h
+Mobile only: pins close/prev/next to the media box's own right edge (using the same --lightbox-media-w/h
 it's sized with) instead of the screen's. Not applied on desktop, where the media isn't a fixed-size
 box so there's no fixed edge of its own to pin to.
 
@@ -421,12 +441,24 @@ an inward margin that keeps the whole button inside the media box's rounded corn
   }
 
   #{{ lightbox_id }} .media-lightbox__prev {
-    translate: calc(var(--lightbox-media-w) / -2 + 0.75rem) -50%;
+    translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(-100% - 0.375rem);
   }
 
   #{{ lightbox_id }} .media-lightbox__next {
-    translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) -50%;
+    translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) 0.375rem;
   }
+}
+
+{%- comment -%}
+The feed is driven by vertical drags: the browser must not treat them as page scroll/zoom or select the
+media, and the media is never draggable as a native image.
+{%- endcomment -%}
+#{{ lightbox_id }} .media-lightbox__backdrop,
+#{{ wrapper_id }} video-media.is-lightbox-expanded,
+#{{ wrapper_id }} img.is-lightbox-expanded {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 {%- comment -%}
@@ -467,6 +499,7 @@ to only ever be visible once relocated into the controls slot, which doesn't app
   inset-block-end: var(--drawer-body-padding-block, min(2rem, var(--container-gutter)));
   inset-inline-end: var(--drawer-body-padding-inline, min(2rem, var(--container-gutter)));
   inset-block-start: auto;
+  flex-direction: column;
   transition: opacity .2s ease;
 }
 
