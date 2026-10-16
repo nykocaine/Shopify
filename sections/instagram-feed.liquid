@@ -725,6 +725,40 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   {%- comment -%}
+  Flush controls: when the merchant's control button background (Color scheme > Controls) is fully
+  transparent, the play/pause, sound and zoom icons have nothing to sit on, so the usual breathing room
+  (1rem offset from the video's edges, circle-button's fixed square, zoom icon's .75rem padding) just
+  looks like a gap. In the thumbnail only, drop all of it so the icons sit right against the video's
+  inner edges. The expanded lightbox state (.is-lightbox-expanded) is left untouched.
+  {%- endcomment -%}
+  {%- assign instagram_control_bg = section.settings.color_scheme.settings.control_button_background_color -%}
+  {%- if instagram_control_bg == blank -%}
+    {%- assign instagram_control_bg = settings.control_button_background_color -%}
+  {%- endif -%}
+  {%- if instagram_control_bg != blank and instagram_control_bg.alpha == 0 -%}
+    #shopify-section-{{ section.id }} .carousel-video-controls:not(.is-lightbox-expanded) {
+      inset-block-start: 0;
+      inset-inline-end: 0;
+      gap: 0;
+    }
+
+    #shopify-section-{{ section.id }} .carousel-video-controls:not(.is-lightbox-expanded) > * {
+      width: auto !important;
+      height: auto !important;
+      padding: 0;
+    }
+
+    #shopify-section-{{ section.id }} .content-box:not(:has(.is-lightbox-expanded)) .product-zoom-button {
+      inset-block-end: 0;
+      inset-inline-end: 0;
+    }
+
+    #shopify-section-{{ section.id }} .content-box:not(:has(.is-lightbox-expanded)) .product-zoom-button .icon {
+      padding: 0;
+    }
+  {%- endif -%}
+
+  {%- comment -%}
   object-fit: cover/display: block for the image case come from the theme's global img rule, and
   the square shape from the existing .aspect-square utility (both in assets/theme.css) - only the
   width (to fill its grid column) and the corner radius are added here.
