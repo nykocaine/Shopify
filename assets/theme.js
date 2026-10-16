@@ -2619,13 +2619,42 @@ var Modal = class extends DialogElement {
   get shadowDomTemplate() {
     return document.getElementById("modal-default-template");
   }
+  /**
+   * A modal with the "unfold" attribute is revealed top to bottom (same effect as the menu drawer) instead of sliding
+   * up. Reduced motion keeps a plain fade.
+   */
+  get unfolds() {
+    return this.hasAttribute("unfold");
+  }
   createEnterAnimationControls() {
+    if (this.unfolds) {
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      return animateSequence4([
+        [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.8 }],
+        [
+          this.getShadowPartByName("content"),
+          reduceMotion ? { opacity: [0, 1] } : { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] },
+          { duration: reduceMotion ? 0.2 : 1.2, ease: [0.22, 1, 0.36, 1], at: "<" }
+        ]
+      ]);
+    }
     return animateSequence4([
       [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.25 }],
       [this.getShadowPartByName("content"), { opacity: [0, 1], transform: ["translateY(40px)", "translateY(0)"] }, { duration: 0.25, at: "-0.15" }]
     ]);
   }
   createLeaveAnimationControls() {
+    if (this.unfolds) {
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      return animateSequence4([
+        [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.7 }],
+        [
+          this.getShadowPartByName("content"),
+          reduceMotion ? { opacity: [1, 0] } : { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] },
+          { duration: reduceMotion ? 0.2 : 0.8, ease: [0.4, 0, 1, 1], at: "<" }
+        ]
+      ]);
+    }
     return animateSequence4([
       [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.15 }],
       [this.getShadowPartByName("content"), { opacity: [1, 0], transform: ["translateY(0)", "translateY(40px)"] }, { duration: 0.15, at: "<" }]
