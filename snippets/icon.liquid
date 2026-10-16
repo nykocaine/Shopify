@@ -42,16 +42,6 @@ To render an icon made of an image, you need to explicitly pass the image, and t
   {%- case icon -%}
     {%- comment -%} UI {%- endcomment -%}
 
-    {%- when 'big-arrow-left' -%}
-      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 36 }}" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 36 36">
-        <path fill="none" stroke="currentColor" stroke-width="{{ stroke_width | default: 2 }}" d="M35 18H3M19.5 34.5 3 18 19.5 1.5"/>
-      </svg>
-
-    {%- when 'big-arrow-right' -%}
-      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 36 }}" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 36 36">
-        <path fill="none" stroke="currentColor" stroke-width="{{ stroke_width | default: 2 }}" d="M1 18h32M16.5 1.5 33 18 16.5 34.5"/>
-      </svg>
-
     {%- when 'chevron-down' -%}
       <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 10 }}" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 10 9">
         <path fill="none" stroke="currentColor" stroke-width="1.5" d="m1 2.5 4 4 4-4" />
@@ -107,19 +97,14 @@ To render an icon made of an image, you need to explicitly pass the image, and t
         <path stroke="currentColor" stroke-linecap="round" stroke-width="{{ settings.icon_stroke_width }}" d="M8 3.5v9M3.5 8h9"/>
       </svg>
 
-    {%- when 'arrow-left' -%}
+    {%- when 'arrow-left', 'big-arrow-left', 'back-arrow' -%}
       <svg aria-hidden="true" focusable="false" width="16" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="{{ settings.icon_stroke_width }}" d="M9.5 4 5.5 8l4 4"/>
       </svg>
 
-    {%- when 'arrow-right' -%}
+    {%- when 'arrow-right', 'big-arrow-right' -%}
       <svg aria-hidden="true" focusable="false" width="16" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="{{ settings.icon_stroke_width }}" d="m6.5 4 4 4-4 4"/>
-      </svg>
-
-    {%- when 'back-arrow' -%}
-      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 10 }}" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" fill="none" viewBox="0 0 10 11">
-        <path stroke="currentColor" d="M5.5 1 1 5.5m0 0L5.5 10M1 5.5h9" />
       </svg>
 
     {%- when 'accordion-small-arrow' -%}
@@ -128,8 +113,8 @@ To render an icon made of an image, you need to explicitly pass the image, and t
       </svg>
 
     {%- when 'accordion-arrow' -%}
-      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 14 }}" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" fill="none" viewBox="0 0 14 14">
-        <path fill="none" stroke="currentColor" stroke-width="1.5" d="m13 6-6 6m0 0L1 6m6 6V0"/>
+      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 14 }}" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" fill="none" viewBox="0 0 16 16">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="{{ settings.icon_stroke_width }}" d="m4 6 4 4 4-4"/>
       </svg>
 
     {%- when 'accordion-plus' -%}
