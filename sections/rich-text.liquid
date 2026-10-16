@@ -79,6 +79,17 @@
       .shopify-section:has(+ #shopify-section-{{ section.id }}) .section-spacing {
         padding-block-end: 0;
       }
+
+      {%- comment -%}
+      The gap above this section is its own padding-top, always one full section spacing (what separates it from a
+      slideshow). The theme's padding-collapsing logic (theme.css) removes that padding whenever the previous
+      section already carries its own bottom padding - which the rules above cancel too - so after such a section
+      the text used to touch it with no gap at all. Same value the generic rule uses, so the half spacing for a
+      first section under the header and the transparent header compensation still apply through the variable.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .container.section-spacing {
+        padding-block-start: var(--section-vertical-spacing-block-start, var(--section-vertical-spacing));
+      }
     </style>
   {%- endif -%}
 
