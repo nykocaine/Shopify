@@ -1,0 +1,63 @@
+{%- doc -%}
+Renders one promo block (an image or a video) inside a product list, with the same options as a product card slot:
+size (columns x rows), border radius, "mobile as product card", overlay, and optional text and button. It is used by
+snippets/product-list.liquid, both for a block placed before a given product and for a block placed after the last one.
+
+@param {object} block - the image or video block to render
+@param {boolean} [preload] - whether a video should preload eagerly
+{%- enddoc -%}
+
+{%- comment -%}The block's media is its image or its video depending on the type. Both promo types share the same card options (radius, "mobile as product card"), and the "no media" outline applies to either, not only to an image block{%- endcomment -%}
+{%- assign promo_media = block.settings.image -%}
+
+{%- if block.type == 'video' -%}
+  {%- assign promo_media = block.settings.video -%}
+{%- endif -%}
+
+<div class="product-list__promo {% if block.settings.mobile_as_product_card %}product-list__promo--mobile-card{% endif %} {% if promo_media == blank and settings.product_listing_spacing == 'none' %}outline{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {% if settings.stagger_products %}reveal-on-scroll="true"{% endif %} style="--product-list-promo-row-span: {{ block.settings.size | split: '_' | last }}; --product-list-promo-column-span: {{ block.settings.size | split: '_' | first }}; border-radius: {{ block.settings.border_radius | default: 0 }}px; overflow: hidden;" {{ block.shopify_attributes }}>
+  <div class="content-box min-h-full">
+    <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }}">
+      {%- liquid
+        if block.type == 'image'
+          if block.settings.image != blank
+            render 'media', media: block.settings.image, mobile_media: block.settings.mobile_image
+          endif
+
+        elsif block.type == 'video'
+          if block.settings.video != blank
+            render 'media', media: block.settings.video, mobile_media: block.settings.mobile_video, autoplay: true, loop: true, muted: true, controls: false, preload: preload, show_play_button: false
+          endif
+        endif
+      -%}
+    </div>
+
+    {%- if block.settings.heading != blank or block.settings.content != blank or block.settings.subheading != blank -%}
+      <div class="{{ block.settings.content_position }}">
+        <div class="prose prose-justify-{{ block.settings.content_position | split: '-' | last }}">
+          {%- if block.settings.subheading != blank -%}
+            {%- render 'subheading', content: block.settings.subheading -%}
+          {%- endif -%}
+
+          {%- if block.settings.heading != blank -%}
+            {%- render 'heading', content: block.settings.heading, style: block.settings.heading_size -%}
+          {%- endif -%}
+
+          {%- if block.settings.content != blank -%}
+            <div class="max-w-xs">
+              {{- block.settings.content -}}
+            </div>
+          {%- endif -%}
+
+          {%- if block.settings.button_text != blank -%}
+            {%- render 'button',
+                content: block.settings.button_text,
+                href: block.settings.url,
+                style: block.settings.style,
+                external: block.settings.open_in_new_tab
+            -%}
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
