@@ -2577,7 +2577,11 @@ var Drawer = class extends DialogElement {
     if (this.unfolds) {
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       return animateSequence2([
-        [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.8, ease: "easeInOut" }],
+        [
+          this.getShadowPartByName("overlay"),
+          reduceMotion ? { opacity: [0, 1] } : { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] },
+          { duration: reduceMotion ? 0.2 : 1.2, ease: [0.22, 1, 0.36, 1] }
+        ],
         [
           this.getShadowPartByName("content"),
           reduceMotion ? { opacity: [0, 1] } : { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] },
@@ -2594,7 +2598,11 @@ var Drawer = class extends DialogElement {
     if (this.unfolds) {
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       return animateSequence2([
-        [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.7, ease: "easeInOut" }],
+        [
+          this.getShadowPartByName("overlay"),
+          reduceMotion ? { opacity: [1, 0] } : { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] },
+          { duration: reduceMotion ? 0.2 : 0.8, ease: [0.4, 0, 1, 1] }
+        ],
         [
           this.getShadowPartByName("content"),
           reduceMotion ? { opacity: [1, 0] } : { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] },
