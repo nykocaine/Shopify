@@ -320,7 +320,7 @@ to the first 5 of the newly sorted order.
     endif
   -%}
 
-  <x-modal id="{{ write_review_modal_id }}" append-to-body unfold {% if has_form_feedback %}open{% endif %} class="modal modal--lg modal--write-review color-scheme color-scheme--{{ write_review_block.settings.color_scheme.id }}" {{ write_review_block.shopify_attributes }}>
+  <x-modal id="{{ write_review_modal_id }}" append-to-body {% if has_form_feedback %}open{% endif %} class="modal modal--lg modal--write-review color-scheme color-scheme--{{ write_review_block.settings.color_scheme.id }}" {{ write_review_block.shopify_attributes }}>
     {%- if write_review_block.settings.title != blank -%}
       <div class="prose">
         {%- comment -%}
@@ -583,17 +583,11 @@ to the first 5 of the newly sorted order.
     gap: 2rem;
     padding-block: 2rem;
     border-block-end: 1px solid rgb(var(--border-color));
-    transition: opacity .35s ease, transform .35s ease;
     display: grid;
   }
 
   #shopify-section-{{ section.id }} .review-card:last-child {
     border-block-end: none;
-  }
-
-  #shopify-section-{{ section.id }} .review-card--revealing {
-    opacity: 0;
-    transform: translateY(16px);
   }
 
   #shopify-section-{{ section.id }} .review-card__side {
@@ -801,19 +795,46 @@ to the first 5 of the newly sorted order.
     var initialCount = 1;
     var pageSize = 5;
     var visibleCount = initialCount;
+    var previousVisibleCount = initialCount;
 
     {%- comment -%}
-    Fades + slides in only the cards a "Ver más" click actually newly reveals (not the initial batch, not a
-    sort change - those would look odd re-animating on every interaction). The card is unhidden first, then
-    the "revealing" class (opacity/translateY starting state) is added and forced to reflow before removing
-    it next frame, so the browser has a real starting frame to transition away from instead of jumping.
+    "Ver más" / "Ver menos" unfold the list instead of popping the cards in or out (same top-to-bottom reveal as
+    the menu drawer): the list's height is animated between its old and new size while it clips its content, so
+    the new cards are uncovered from top to bottom. Opening applies the change first and animates up to the new
+    height; closing keeps the cards visible while the height shrinks and only then applies the change (otherwise
+    they would vanish before the list started folding). Sorting does not animate. Reduced motion skips it.
     {%- endcomment -%}
-    function revealCard(card) {
-      card.hidden = false;
-      card.classList.add('review-card--revealing');
-      void card.offsetWidth;
-      requestAnimationFrame(function () {
-        card.classList.remove('review-card--revealing');
+    var isAnimating = false;
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function animateList(applyChange, opening) {
+      var fromHeight = list.offsetHeight;
+      var duration = opening ? 1200 : 800;
+      var easing = opening ? 'cubic-bezier(0.22, 1, 0.36, 1)' : 'cubic-bezier(0.4, 0, 1, 1)';
+
+      applyChange();
+      var toHeight = list.offsetHeight;
+
+      if (reduceMotion.matches || fromHeight === toHeight) {
+        return;
+      }
+
+      if (!opening) {
+        // Put the cards back for the duration of the fold; the change is re-applied when it finishes.
+        visibleCount = previousVisibleCount;
+        updateVisibility();
+      }
+
+      isAnimating = true;
+      list.style.overflow = 'hidden';
+
+      list.animate({ height: [fromHeight + 'px', toHeight + 'px'] }, { duration: duration, easing: easing }).finished.then(function () {
+        list.style.overflow = '';
+        isAnimating = false;
+
+        if (!opening) {
+          applyChange();
+        }
       });
     }
 
@@ -822,22 +843,13 @@ to the first 5 of the newly sorted order.
     whatever order sorting last put the cards in - "cards" itself is never reassigned, only the live DOM
     order is (via appendChild in applySort below).
     {%- endcomment -%}
-    function updateVisibility(animateReveal) {
+    function updateVisibility() {
       var currentCards = list ? Array.prototype.slice.call(list.querySelectorAll('.review-card')) : [];
 
       currentCards.forEach(function (card, index) {
         var shouldBeVisible = index < visibleCount;
 
-        if (shouldBeVisible && card.hidden) {
-          if (animateReveal) {
-            revealCard(card);
-          } else {
-            card.hidden = false;
-          }
-        } else if (!shouldBeVisible) {
-          card.hidden = true;
-          card.classList.remove('review-card--revealing');
-        }
+        card.hidden = !shouldBeVisible;
       });
 
       if (loadMoreButton) {
@@ -887,16 +899,27 @@ to the first 5 of the newly sorted order.
 
     if (loadMoreButton) {
       loadMoreButton.addEventListener('click', function () {
+        if (isAnimating) return;
+
         var totalCards = list ? list.querySelectorAll('.review-card').length : 0;
-        visibleCount = Math.min(visibleCount + pageSize, totalCards);
-        updateVisibility(true);
+
+        animateList(function () {
+          visibleCount = Math.min(visibleCount + pageSize, totalCards);
+          updateVisibility();
+        }, true);
       });
     }
 
     if (loadLessButton) {
       loadLessButton.addEventListener('click', function () {
-        visibleCount = initialCount;
-        updateVisibility(false);
+        if (isAnimating) return;
+
+        previousVisibleCount = visibleCount;
+
+        animateList(function () {
+          visibleCount = initialCount;
+          updateVisibility();
+        }, false);
       });
     }
 
