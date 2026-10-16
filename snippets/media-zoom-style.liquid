@@ -275,7 +275,17 @@ add its class here too rather than going back to `*`.
 Drawer-style framing: the expanded media is centered with padding on every side (same tokens
 .drawer::part(body) uses) instead of filling the screen edge to edge, sized to fit within that padded
 area without cropping, and rounded to match the item's own corners.
+
+Its size is never left to the browser ("auto" would size a video by whatever it has loaded so far and
+let it grow once its metadata arrives): media-zoom-script.liquid sets --lightbox-w (the media's natural
+width) and --lightbox-ratio (its natural width / height) before the zoom starts, so the box is final
+from the first frame - the thumbnail-to-lightbox zoom lands on it exactly and nothing resizes afterwards.
 {%- endcomment -%}
+#{{ wrapper_id }} {
+  --lightbox-media-w: 96vw;
+  --lightbox-media-h: 96vh;
+}
+
 #{{ wrapper_id }} video-media.is-lightbox-expanded,
 #{{ wrapper_id }} img.is-lightbox-expanded {
   position: fixed;
@@ -283,10 +293,11 @@ area without cropping, and rounded to match the item's own corners.
   inset-block-start: 50%;
   inset-inline-start: 50%;
   translate: -50% -50%;
-  width: auto;
+  width: min(var(--lightbox-w, var(--lightbox-media-w)), var(--lightbox-media-w), calc(var(--lightbox-media-h) * var(--lightbox-ratio, 1)));
   height: auto;
-  max-width: 96vw;
-  max-height: 96vh;
+  aspect-ratio: var(--lightbox-ratio, auto);
+  max-width: none;
+  max-height: none;
   border-radius: {{ resolved_corner_radius }};
   scale: 1;
   opacity: 1;
@@ -325,11 +336,6 @@ collapsed.
     width: 100%;
     height: 100%;
     object-fit: cover;
-  }
-
-  #{{ wrapper_id }} img.is-lightbox-expanded {
-    max-width: var(--lightbox-media-w);
-    max-height: var(--lightbox-media-h);
   }
 }
 
@@ -461,6 +467,21 @@ to only ever be visible once relocated into the controls slot, which doesn't app
   inset-block-end: var(--drawer-body-padding-block, min(2rem, var(--container-gutter)));
   inset-inline-end: var(--drawer-body-padding-inline, min(2rem, var(--container-gutter)));
   inset-block-start: auto;
+  transition: opacity .2s ease;
+}
+
+{%- comment -%}
+Fades with the backdrop and close/prev/next buttons instead of popping in beside the still-zooming
+video on open, and sitting in the corner until the zoom ends on close:
+media-zoom-script.liquid toggles is-lightbox-visible on this group together with the lightbox's.
+{%- endcomment -%}
+#{{ wrapper_id }} .carousel-video-controls.is-lightbox-expanded:not(.is-lightbox-visible) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+#{{ wrapper_id }} .carousel-video-controls.is-lightbox-expanded.is-lightbox-visible {
+  transition-delay: .3s;
 }
 
 {%- comment -%}
