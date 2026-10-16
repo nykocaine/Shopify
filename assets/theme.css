@@ -6047,26 +6047,20 @@ product-rerender {
   }
 }
 
-/* Filters panel on desktop: not a modal drawer but a block that sits inside the filter toolbar (FacetsDrawer in theme.js
-   moves it there on open) and unfolds downward from it, pushing the product grid down. No overlay, no blur, no scroll
-   lock. The toolbar wraps so the panel takes a full row below the bar; the toolbar's own overflow + bottom radius then
-   round the bottom corners of bar and panel together, and the top corners stay square, so the two read as one piece
-   whose bottom edge only exists once the panel is open. A sticky toolbar carries the panel with it. The panel is a
-   compact band (capped height, scrolls inside) with the filter groups side by side, aligned to the bar's own side
-   padding, the title at the start and the close button at the end. */
+/* Filters panel on desktop: not a modal drawer but a block that FacetsDrawer (theme.js) places right after the filter toolbar
+   on open, and that unfolds downward from there, pushing the product grid down. No overlay, no blur, no scroll lock. As on
+   mobile, it is its own card: separated from the toolbar by a small gap (.5rem), with its own background and the four
+   corners rounded (--drawer-border-radius), while the toolbar keeps its own rounded bottom edge. The toolbar's bottom margin
+   (the spacing to the grid) collapses with the panel's negative top margin down to that gap, and the panel's bottom margin
+   gives the spacing to the grid back. The panel is a compact band (capped height, scrolls inside) with the filter groups
+   side by side, the title at the start and the close button at the end. */
 @media screen and (min-width: 1000px) {
-  .collection__toolbar {
-    flex-wrap: wrap;
-    /* The bar's padding only exists at its outer edges, so the panel (a second row) sat flush against the bar's row and read
-       as overlapping it. Same distance as the bar's own vertical padding between the row and the panel. */
-    row-gap: calc((var(--container-gutter) + .5rem) / 2);
-  }
-
   .drawer--facets::part(base) {
     inset: auto;
-    flex: 0 0 100%;
-    order: 10;
-    width: 100%;
+    width: auto;
+    margin-block-start: calc(.5rem - var(--facets-toolbar-margin, 0px));
+    margin-block-end: var(--facets-toolbar-margin, 0px);
+    margin-inline: var(--facets-toolbar-margin-inline, 0px);
     pointer-events: auto;
     position: static;
   }
@@ -6082,12 +6076,14 @@ product-rerender {
     height: auto;
     max-height: min(45vh, 26rem);
     margin: 0 !important;
-    border-block-start: 1px solid rgb(var(--border-color));
+    background: var(--drawer-mobile-box-color, rgb(var(--background)));
+    background-image: none;
+    border-radius: var(--drawer-border-radius);
+    overflow: hidden;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
   }
 
-  /* The parts paint the color scheme's background by default. Here they must be see-through: the bar already paints it,
-     and a scheme background with any transparency would be laid over the bar's own and show as lighter rectangles. */
-  .drawer--facets::part(content),
+  /* Header and footer are see-through: the panel's content already paints the background. */
   .drawer--facets::part(header),
   .drawer--facets::part(footer) {
     background: transparent;
@@ -6111,7 +6107,7 @@ product-rerender {
   .drawer--facets::part(close-button) {
     position: absolute;
     inset-block-end: calc(var(--facets-inner-padding) / 2 + .15rem);
-    inset-inline-end: 0;
+    inset-inline-end: var(--facets-inner-padding);
     z-index: 1;
   }
 
@@ -6120,12 +6116,10 @@ product-rerender {
   }
 
   .drawer--facets::part(body) {
-    padding-inline: 0;
     padding-block: calc(var(--facets-inner-padding) / 2);
   }
 
   .drawer--facets::part(footer) {
-    padding-inline: 0;
     padding-block: calc(var(--facets-inner-padding) / 2);
   }
 
@@ -6150,7 +6144,7 @@ product-rerender {
   /* The buttons stay at the start of the footer row and the close button owns its end: the footer keeps room for it, so
      the buttons can never sit on top of it and swallow its clicks. */
   .drawer--facets::part(footer) {
-    padding-inline-end: calc(var(--control-button-size, 1.75rem) + 1rem);
+    padding-inline-end: calc(var(--facets-inner-padding) + var(--control-button-size, 1.75rem) + 1rem);
     z-index: 1;
   }
 
