@@ -284,10 +284,10 @@ to the first 5 of the newly sorted order.
 
       <input type="hidden" name="contact[Submission type]" value="Review">
 
-      <p class="review-form__required-note">* campos obligatorios</p>
+      <p class="review-form__required-note">Los campos marcados con * son obligatorios.</p>
 
       <fieldset class="review-form__rating">
-        <legend class="review-form__rating-label">Valora tu experiencia <span aria-hidden="true">*</span></legend>
+        <legend class="review-form__rating-label">¿Cómo calificarías tu experiencia? <span aria-hidden="true">*</span></legend>
         <div class="review-form__star-picker">
           {%- for i in (5..1) -%}
             {%- capture rating_id -%}review-rating-{{ i }}-{{ section.id }}{%- endcapture -%}
@@ -304,8 +304,8 @@ to the first 5 of the newly sorted order.
       </fieldset>
 
       <div class="fieldset">
-        {%- render 'input', type: 'text', name: 'contact[Review title]', label: 'Agregar un título', show_label_as_block: true, placeholder: 'Resume tu experiencia', required: true, maxlength: 80 -%}
-        {%- render 'input', name: 'contact[body]', label: 'Escribe una reseña', show_label_as_block: true, placeholder: 'Cuéntanos qué te gusta o qué no te gusta.', multiline: 5, required: true, minlength: 10, maxlength: 1500, show_max_characters_count: true -%}
+        {%- render 'input', type: 'text', name: 'contact[Review title]', label: 'Agregar un título', show_label_as_block: true, placeholder: 'Resume tu experiencia en una frase', required: true, maxlength: 80 -%}
+        {%- render 'input', name: 'contact[body]', label: 'Escribe una reseña', show_label_as_block: true, placeholder: 'Cuéntanos cómo fue tu experiencia y qué resultados notaste.', multiline: 5, required: true, minlength: 10, maxlength: 1500, show_max_characters_count: true -%}
 
         {%- comment -%}
         The same details every published review shows next to its text (skin type, age, main concern, previous
@@ -317,7 +317,7 @@ to the first 5 of the newly sorted order.
         {%- assign review_concerns = 'Textura irregular,Manchas,Poros dilatados,Opacidad,Cicatrices de acné,Arrugas,Otra' | split: ',' -%}
         {%- assign review_experiences = 'Primera vez,Ya lo había probado antes' | split: ',' -%}
 
-        <p class="review-form__section-note">Cuéntanos sobre ti (opcional)</p>
+        <p class="review-form__section-note">Cuéntanos sobre ti (opcional). Así ayudas a quienes tienen tu mismo tipo de piel.</p>
 
         <div class="fieldset-row">
           {%- render 'select', option_values: review_skin_types, show_empty_value: true, name: 'contact[Tipo de piel]', label: 'Tipo de piel' -%}
@@ -338,7 +338,7 @@ to the first 5 of the newly sorted order.
       </div>
 
       <div class="review-form__submit">
-        {%- render 'button', content: 'Enviar', type: 'submit', class: 'sm-max:w-full' -%}
+        {%- render 'button', content: 'Enviar reseña', type: 'submit', class: 'sm-max:w-full' -%}
       </div>
       {%- endunless -%}
     {%- endform -%}
@@ -353,21 +353,25 @@ to the first 5 of the newly sorted order.
   -%}
 
   <x-modal id="{{ write_review_modal_id }}" append-to-body {% if has_form_feedback %}open{% endif %} class="modal modal--lg modal--write-review color-scheme color-scheme--{{ write_review_block.settings.color_scheme.id }}" {{ write_review_block.shopify_attributes }}>
-    {%- if write_review_block.settings.title != blank -%}
-      <div class="prose">
-        {%- comment -%}
-        h4 + the same padding-inline-end as sections/newsletter-popup.liquid's own title (so it clears
-        the close button identically) - this popup is meant to inherit that exact configuration rather
-        than invent its own, down to the heading size: both are a single short line of merchant-edited
-        text above a form, so there's no reason for this one to render smaller (it used to be a
-        hardcoded h5, and hardcoded lowercase copy ("comparte tus ideas") instead of a real,
-        properly-cased setting).
-        {%- endcomment -%}
-        <p class="h4" style="padding-inline-end: 2rem">{{ write_review_block.settings.title }}</p>
+    {%- comment -%}
+    The title stays pinned at the top (with the close button, which is positioned against the popup itself) and only
+    the form scrolls: the header is a normal block outside the scrolling area, see ".review-modal__scroll" below.
+    {%- endcomment -%}
+    {%- if write_review_block.settings.title != blank or write_review_block.settings.subtitle != blank -%}
+      <div class="review-modal__header prose">
+        {%- if write_review_block.settings.title != blank -%}
+          <p class="h4">{{ write_review_block.settings.title }}</p>
+        {%- endif -%}
+
+        {%- if write_review_block.settings.subtitle != blank -%}
+          <p class="review-modal__subtitle">{{ write_review_block.settings.subtitle }}</p>
+        {%- endif -%}
       </div>
     {%- endif -%}
 
-    {{- review_form_content -}}
+    <div class="review-modal__scroll">
+      {{- review_form_content -}}
+    </div>
   </x-modal>
 
   <style>
@@ -383,6 +387,39 @@ to the first 5 of the newly sorted order.
     a narrower width is explicitly chosen) - same popup system, same two settings, instead of a
     separate one-off implementation here.
     {%- endcomment -%}
+    {%- comment -%}
+    The body part normally scrolls as a whole; here the form scrolls on its own (.review-modal__scroll) so the header
+    and the close button stay put. The header reserves room at its end for the close button.
+    {%- endcomment -%}
+    #{{ write_review_modal_id }}.modal--write-review::part(body) {
+      overflow: hidden;
+      grid-template-rows: auto minmax(0, 1fr);
+      align-items: stretch;
+      align-content: start;
+    }
+
+    #{{ write_review_modal_id }} .review-modal__header {
+      padding-inline-end: 2.5rem;
+      padding-block-end: 1.25rem;
+    }
+
+    #{{ write_review_modal_id }} .review-modal__header p {
+      margin: 0;
+    }
+
+    #{{ write_review_modal_id }} .review-modal__subtitle {
+      margin-block-start: .5rem;
+      color: rgb(var(--text-color) / .7);
+    }
+
+    #{{ write_review_modal_id }} .review-modal__scroll {
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
+      padding: .25rem;
+      margin: -.25rem;
+    }
+
     #{{ write_review_modal_id }}.modal--write-review::part(content) {
       border-radius: {{ write_review_block.settings.popup_border_radius }}px;
       overflow: hidden;
@@ -1204,7 +1241,13 @@ to the first 5 of the newly sorted order.
           "type": "inline_richtext",
           "id": "title",
           "label": "t:global.text.heading",
-          "default": "Comparte tus ideas"
+          "default": "Comparte tu experiencia"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "subtitle",
+          "label": "Texto bajo el título",
+          "default": "Tu opinión ayuda a otras personas a elegir con más confianza."
         },
         {
           "type": "checkbox",
