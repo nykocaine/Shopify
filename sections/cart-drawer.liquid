@@ -4,16 +4,19 @@
   Drawers), instead of a new independent value, so they stay in sync with the drawer shell. They fill a
   square (cropped to cover, never stretched) instead of showing the image's own portrait shape.
   Not emitted on the cart page, where the drawer itself isn't rendered.
+
+  Scoped by the drawer's own id, not by #shopify-section-ID: the drawer is moved to <body> when it opens, outside
+  that section wrapper, where a section-scoped rule no longer matches (the radius and the square never applied).
   {%- endcomment -%}
   <style>
-    #shopify-section-{{ section.id }} .line-item__media {
+    #cart-drawer .line-item__media {
       border-radius: var(--drawer-border-radius);
       overflow: hidden;
       aspect-ratio: 1;
       display: block;
     }
 
-    #shopify-section-{{ section.id }} .line-item__media img {
+    #cart-drawer .line-item__media img {
       object-fit: cover;
       width: 100%;
       height: 100%;
