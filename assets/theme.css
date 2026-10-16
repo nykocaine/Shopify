@@ -5979,18 +5979,11 @@ product-rerender {
 
 /* Filters drawer on mobile and tablet: a half-height panel hanging from the bottom edge of the filter toolbar and
    unfolding downward (the unfold itself is FacetsDrawer in theme.js, which also measures the toolbar and sets
-   --facets-drawer-top), with the same side margin as the centered cart/search drawers. The overlay (the veil and its
-   blur) is removed so the page stays visible and sharp behind it; tapping outside still closes it, since the overlay
-   element is still there, just invisible. Declared without the .drawer-mobile-centered prefix on purpose so it applies
+   --facets-drawer-top), with the same side margin as the centered cart/search drawers. The overlay keeps the theme's usual
+   veil and blur behind it. Declared without the .drawer-mobile-centered prefix on purpose so it applies
    whether or not "Center drawers on mobile" is on, and after the cart/search rule above so it wins over it for this
    drawer. */
 @media screen and (max-width: 999px) {
-  .drawer--facets::part(overlay) {
-    background: transparent;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-
   .drawer--facets::part(content) {
     position: absolute;
     inset: calc(var(--facets-drawer-top, 5rem) + .5rem) var(--container-gutter) auto var(--container-gutter);
