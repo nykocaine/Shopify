@@ -11,6 +11,7 @@ This component display a list of product that can be used in collection, search.
 @param {boolean} [stack] - set to true when products are stacked
 @param {boolean} [show_placeholder] - set to true to display placeholder when no product set
 @param {boolean} [output_override_attributes] - only for collection page, we allow customers to switch the layout. To avoid CLS, we have to save the attribute in the cart and apply it to the product list. A better approach would be to use container query around cards, but unfortunately we are using subgrid, and currently in browsers, subgrid and container queries can't be used together, so we have to revert to this approach
+@param {object} [source] - the collection or search drop the list belongs to, used to know whether filters are active (defaults to the current collection)
 @param {object} [paginate] - an optional paginate object when product list is rendered in context of collection pages
 @param {object} [section]
 {%- enddoc -%}
@@ -18,8 +19,9 @@ This component display a list of product that can be used in collection, search.
 <product-list {% if id %}id="{{ id }}"{% endif %} class="product-list {% if stack == false or spotlight == false %}product-list--carousel scroll-area bleed{% endif %} {% if spotlight %}product-list--spotlight scroll-area bleed{% if settings.product_listing_spacing == 'none' %}border{% endif %}{% endif %}" {% if output_override_attributes %}mobile-items-per-row="{{ cart.attributes.product_card_mobile_items_per_row | default: section.settings.products_per_row_mobile }}" desktop-layout="{{ cart.attributes.product_card_desktop_layout | default: 'grid' }}"{% endif %}>
   {%- liquid
     assign has_active_filters = false
+    assign filters_source = source | default: collection
 
-    for filter in collection.filters
+    for filter in filters_source.filters
       if filter.type == 'price_range'
         if filter.max_value.value != blank or filter.min_value.value != blank
           assign has_active_filters = true
