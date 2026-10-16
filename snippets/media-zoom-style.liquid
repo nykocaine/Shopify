@@ -81,6 +81,25 @@ the resting thumbnail, which that rule doesn't cover.
   transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
+{%- comment -%}
+Every control icon takes its size from the one global setting (Theme Settings > Controls > Icon size),
+instead of the width each render call passes. The zoom button's icon keeps its own 0.75rem padding
+(theme.css) around that size.
+{%- endcomment -%}
+#{{ wrapper_id }} .carousel-video-sound-toggle .icon,
+#{{ wrapper_id }} .carousel-video-pause-toggle .icon,
+#{{ wrapper_id }} .carousel-video-product-link .icon,
+#{{ lightbox_id }} .media-lightbox__close .icon,
+#{{ lightbox_id }} .media-lightbox__prev .icon,
+#{{ lightbox_id }} .media-lightbox__next .icon {
+  width: var(--control-icon-size, 14px);
+}
+
+#{{ wrapper_id }} .product-zoom-button .icon {
+  box-sizing: content-box;
+  width: var(--control-icon-size, 16px);
+}
+
 /* Base position (top-right, matches "top" layout exactly). Declared before the device/layout rules
    below on purpose: the "center" override further down has the same specificity (#id .class), so it
    only wins because it comes later in the cascade. */
