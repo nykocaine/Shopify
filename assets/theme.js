@@ -2603,19 +2603,6 @@ var Drawer = class extends DialogElement {
       return createUnfoldAnimationControls(animateSequence2, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), true);
     }
     return animateSequence2([
-        [
-          this.getShadowPartByName("overlay"),
-          reduceMotion ? { opacity: [0, 1] } : { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] },
-          { duration: reduceMotion ? 0.2 : 1.2, ease: [0.22, 1, 0.36, 1] }
-        ],
-        [
-          this.getShadowPartByName("content"),
-          reduceMotion ? { opacity: [0, 1] } : { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] },
-          { duration: reduceMotion ? 0.2 : 1.2, at: "<", ease: [0.22, 1, 0.36, 1] }
-        ]
-      ]);
-    }
-    return animateSequence2([
       [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.35, ease: "easeInOut" }],
       [this.getShadowPartByName("content"), { opacity: [0, 1], transform: ["translateY(0.75rem) scale(0.98)", "translateY(0) scale(1)"] }, { duration: 0.45, at: "-0.2", ease: [0.22, 1, 0.36, 1] }]
     ]);
@@ -2623,19 +2610,6 @@ var Drawer = class extends DialogElement {
   createLeaveAnimationControls() {
     if (this.unfolds) {
       return createUnfoldAnimationControls(animateSequence2, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), false);
-    }
-    return animateSequence2([
-        [
-          this.getShadowPartByName("overlay"),
-          reduceMotion ? { opacity: [1, 0] } : { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] },
-          { duration: reduceMotion ? 0.2 : 0.8, ease: [0.4, 0, 1, 1] }
-        ],
-        [
-          this.getShadowPartByName("content"),
-          reduceMotion ? { opacity: [1, 0] } : { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] },
-          { duration: reduceMotion ? 0.2 : 0.8, at: "<", ease: [0.4, 0, 1, 1] }
-        ]
-      ]);
     }
     return animateSequence2([
       [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.3, ease: "easeInOut" }],
