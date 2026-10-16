@@ -213,7 +213,21 @@
           {%- endfor -%}
         </product-list>
 
-        {%- render 'scroll-controls', target_id: product_list_id, show_mobile: section.settings.show_progress_bar_mobile, show_desktop: section.settings.show_progress_bar_desktop, class: 'featured-product-list__scroll-controls' -%}
+        {%- comment -%}The scroll controls only make sense when the list scrolls, so each breakpoint shows them only in carousel mode, never when its products are stacked{%- endcomment -%}
+        {%- liquid
+          assign show_controls_mobile = false
+          assign show_controls_desktop = false
+
+          if section.settings.show_progress_bar_mobile and section.settings.stack_products_mobile == false
+            assign show_controls_mobile = true
+          endif
+
+          if section.settings.show_progress_bar_desktop and section.settings.stack_products_desktop == false
+            assign show_controls_desktop = true
+          endif
+        -%}
+
+        {%- render 'scroll-controls', target_id: product_list_id, show_mobile: show_controls_mobile, show_desktop: show_controls_desktop, class: 'featured-product-list__scroll-controls' -%}
     </div>
   </div>
 </div>
@@ -277,13 +291,17 @@
       "type": "checkbox",
       "id": "show_progress_bar_mobile",
       "label": "Show scroll controls on mobile",
-      "default": true
+      "info": "Only available in carousel mode (not when products are stacked).",
+      "default": true,
+      "visible_if": "{{ section.settings.stack_products_mobile == false }}"
     },
     {
       "type": "checkbox",
       "id": "show_progress_bar_desktop",
       "label": "Show scroll controls on desktop",
-      "default": false
+      "info": "Only available in carousel mode (not when products are stacked).",
+      "default": false,
+      "visible_if": "{{ section.settings.stack_products_desktop == false }}"
     },
     {
       "type": "select",
