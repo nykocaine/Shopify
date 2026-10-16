@@ -289,7 +289,7 @@ to the first 5 of the newly sorted order.
       <fieldset class="review-form__rating">
         <legend class="review-form__rating-label">¿Cómo calificarías tu experiencia? <span aria-hidden="true">*</span></legend>
         <div class="review-form__star-picker">
-          {%- for i in (5..1) -%}
+          {%- for i in (1..5) reversed -%}
             {%- capture rating_id -%}review-rating-{{ i }}-{{ section.id }}{%- endcapture -%}
             <input type="radio" name="contact[Rating]" id="{{ rating_id }}" value="{{ i }}" required>
             <label for="{{ rating_id }}">
