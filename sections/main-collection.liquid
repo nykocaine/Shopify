@@ -126,7 +126,7 @@
   }
 
   {%- comment -%}
-  "Mobile image as product card" (image block setting): on mobile only, the image promo leaves its own
+  "Mobile as product card" (image and video block setting): on mobile only, the image promo leaves its own
   full-width row and becomes a single item inside the product grid. It keeps the grid's column width,
   gap and — through the theme's existing subgrid (`--product-card-row-count`) — the exact row span /
   height of a product card, so no arbitrary width/height is set. Desktop is untouched: every rule below
@@ -156,10 +156,23 @@
     }
 
     #shopify-section-{{ section.id }} .product-list__promo--mobile-card .content-box__background-media picture,
-    #shopify-section-{{ section.id }} .product-list__promo--mobile-card .content-box__background-media img {
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card .content-box__background-media img,
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card .content-box__background-media video {
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    {%- comment -%}
+    A video is wrapped in <video-media>, which sizes itself from the video's own aspect ratio (theme.css). In a card the
+    height comes from the grid row instead, so the ratio is dropped and the wrapper (and the video inside it) simply
+    fills the card, cropped with object-fit: cover, exactly like an image does. Its corners follow the card's radius.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-list__promo--mobile-card .content-box__background-media video-media {
+      aspect-ratio: auto;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
     }
   }
 </style>
@@ -722,6 +735,16 @@ on desktop based on the settings
           "label": "t:global.sizes.size"
         },
         {
+          "type": "range",
+          "id": "border_radius",
+          "min": 0,
+          "max": 25,
+          "step": 1,
+          "unit": "px",
+          "label": "Radio del borde",
+          "default": 0
+        },
+        {
           "type": "video",
           "id": "video",
           "label": "t:global.video.video",
@@ -731,6 +754,13 @@ on desktop based on the settings
           "type": "video",
           "id": "mobile_video",
           "label": "t:global.video.mobile_video"
+        },
+        {
+          "type": "checkbox",
+          "id": "mobile_as_product_card",
+          "label": "Móvil: mostrar como tarjeta de producto",
+          "info": "En móvil integra este bloque dentro del grid de productos, ocupando exactamente el espacio de una tarjeta de producto (mismo ancho, alto, gap y radio de borde). No afecta al escritorio. Con 3 productos por fila en móvil el bloque queda oculto, igual que ahora.",
+          "default": false
         },
         {
           "type": "color",

@@ -48,7 +48,14 @@ This component display a list of product that can be used in collection, search.
         {%- continue -%}
       {%- endif -%}
 
-      <div class="product-list__promo {% if block.settings.mobile_as_product_card %}product-list__promo--mobile-card{% endif %} {% if block.settings.image == blank and settings.product_listing_spacing == 'none' %}outline{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {% if settings.stagger_products %}reveal-on-scroll="true"{% endif %} style="--product-list-promo-row-span: {{ block.settings.size | split: '_' | last }}; --product-list-promo-column-span: {{ block.settings.size | split: '_' | first }}; border-radius: {{ block.settings.border_radius }}px; overflow: hidden;" {{ block.shopify_attributes }}>
+      {%- comment -%}The block's media is its image or its video depending on the type. Both promo types share the same card options (radius, "mobile as product card"), and the "no media" outline applies to either, not only to an image block{%- endcomment -%}
+      {%- assign promo_media = block.settings.image -%}
+
+      {%- if block.type == 'video' -%}
+        {%- assign promo_media = block.settings.video -%}
+      {%- endif -%}
+
+      <div class="product-list__promo {% if block.settings.mobile_as_product_card %}product-list__promo--mobile-card{% endif %} {% if promo_media == blank and settings.product_listing_spacing == 'none' %}outline{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {% if settings.stagger_products %}reveal-on-scroll="true"{% endif %} style="--product-list-promo-row-span: {{ block.settings.size | split: '_' | last }}; --product-list-promo-column-span: {{ block.settings.size | split: '_' | first }}; border-radius: {{ block.settings.border_radius | default: 0 }}px; overflow: hidden;" {{ block.shopify_attributes }}>
         <div class="content-box min-h-full">
           <div class="content-box__background-media with-overlay" style="--overlay: {{ block.settings.overlay_color.rgb }} / {{ block.settings.overlay_opacity | divided_by: 100.0 }}">
             {%- liquid
