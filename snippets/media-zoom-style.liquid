@@ -468,6 +468,88 @@ an inward margin that keeps the whole button inside the media box's rounded corn
 }
 
 {%- comment -%}
+Playback scrubber (lightbox videos only, built by media-zoom-script.liquid as a child of <video-media>, so it
+travels with the video). Sits on the bottom line, between the logo on the left and the controls on the right
+(each is 0.75rem from its corner), and uses the controls' icon color. Hidden everywhere except in the lightbox.
+{%- endcomment -%}
+#{{ wrapper_id }} .lightbox-scrubber {
+  display: none;
+}
+
+#{{ wrapper_id }} video-media.is-lightbox-expanded .lightbox-scrubber {
+  display: block;
+  position: absolute;
+  z-index: 3;
+  inset-inline-start: calc(0.75rem + min(3.5rem, 25%) + 0.75rem);
+  inset-inline-end: calc(0.75rem + var(--control-button-size, 1.75rem) + 0.75rem);
+  inset-block-end: 0.75rem;
+  height: var(--control-button-size, 1.75rem);
+  color: var(--control-button-icon-color, #ffffff);
+  cursor: pointer;
+  touch-action: none;
+  filter: drop-shadow(0 0 2px rgb(0 0 0 / .45));
+}
+
+#{{ wrapper_id }} .lightbox-scrubber__svg {
+  display: block;
+  overflow: visible;
+  width: 100%;
+  height: 100%;
+}
+
+#{{ wrapper_id }} .lightbox-scrubber__rest,
+#{{ wrapper_id }} .lightbox-scrubber__played {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: var(--icon-stroke-width, 1.1px);
+}
+
+#{{ wrapper_id }} .lightbox-scrubber__rest {
+  opacity: .35;
+}
+
+#{{ wrapper_id }} .lightbox-scrubber__dot {
+  fill: currentColor;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lightbox-scrubber-breathe 1.8s ease-in-out infinite;
+  transition: scale .2s ease;
+}
+
+#{{ wrapper_id }} .lightbox-scrubber.is-scrubbing .lightbox-scrubber__dot {
+  scale: 1.5;
+}
+
+#{{ wrapper_id }} .lightbox-scrubber__time {
+  position: absolute;
+  inset-block-end: 100%;
+  translate: -50% 0;
+  margin-block-end: 0.125rem;
+  font: var(--text-font-style) var(--text-font-weight) 0.6875rem / 1 var(--text-font-family);
+  letter-spacing: 0.02em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+
+#{{ wrapper_id }} .lightbox-scrubber.is-scrubbing .lightbox-scrubber__time {
+  opacity: 1;
+}
+
+@keyframes lightbox-scrubber-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #{{ wrapper_id }} .lightbox-scrubber__dot {
+    animation: none;
+  }
+}
+
+{%- comment -%}
 The feed is driven by vertical drags: the browser must not treat them as page scroll/zoom or select the
 media, and the media is never draggable as a native image.
 {%- endcomment -%}

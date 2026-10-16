@@ -287,6 +287,201 @@ progress bar) are simply skipped when no carousel_id is given.
         }
       }
 
+      // ---- Playback scrubber (lightbox videos only) ------------------------------------------------------
+      // A thin line along the bottom of the expanded video, between the logo and the controls: a soft wave
+      // that flows while the video plays, solid up to the playhead and faint after it. A dot (that
+      // "breathes") marks the current moment. Dragging along it seeks, the wave swells and the time shows
+      // above the dot. It is a child of the <video-media>, so it moves, zooms and slides with the video.
+      var scrubberFrame = null;
+
+      function formatTime(seconds) {
+        var whole = Math.max(0, Math.floor(seconds || 0));
+        var rest = whole % 60;
+
+        return Math.floor(whole / 60) + ':' + (rest < 10 ? '0' : '') + rest;
+      }
+
+      function scrubberPath(state, from, to, positionX) {
+        var path = '';
+
+        for (var x = from; x < to + 3; x += 3) {
+          var pointX = Math.min(x, to);
+          var envelope = 0.3 + 0.7 * Math.exp(-Math.pow((pointX - positionX) / (state.span * 0.22), 2));
+          var pointY = state.height / 2 + state.amplitude * envelope * Math.sin(pointX / 9 + state.phase);
+
+          path += (path ? 'L' : 'M') + pointX.toFixed(1) + ' ' + pointY.toFixed(2);
+
+          if (pointX === to) {
+            break;
+          }
+        }
+
+        return path;
+      }
+
+      function drawScrubber(state) {
+        var width = state.root.clientWidth;
+        var height = state.root.clientHeight;
+
+        if (!width || !height || !state.video) {
+          return;
+        }
+
+        if (width !== state.width || height !== state.height) {
+          state.width = width;
+          state.height = height;
+          state.svg.setAttribute('width', width);
+          state.svg.setAttribute('height', height);
+          state.svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        }
+
+        var padding = 6;
+        var duration = state.video.duration;
+        var ratio = isFinite(duration) && duration > 0 ? Math.min(1, state.video.currentTime / duration) : 0;
+        var playing = !state.video.paused && !state.video.ended;
+
+        state.span = width - padding * 2;
+
+        var target = state.dragging ? 4.5 : (playing ? 2.4 : 1);
+
+        state.amplitude += (target - state.amplitude) * 0.12;
+
+        if ((playing || state.dragging) && !prefersReducedMotion) {
+          state.phase += 0.045;
+        }
+
+        var positionX = padding + ratio * state.span;
+        var envelope = 1;
+        var dotY = height / 2 + state.amplitude * envelope * Math.sin(positionX / 9 + state.phase);
+
+        state.played.setAttribute('d', scrubberPath(state, padding, positionX, positionX));
+        state.rest.setAttribute('d', scrubberPath(state, positionX, width - padding, positionX));
+        state.dot.setAttribute('cx', positionX.toFixed(1));
+        state.dot.setAttribute('cy', dotY.toFixed(2));
+
+        if (state.dragging) {
+          state.time.textContent = formatTime(state.video.currentTime);
+          state.time.style.insetInlineStart = Math.min(width - 16, Math.max(16, positionX)) + 'px';
+        }
+      }
+
+      function seekScrubber(state, event) {
+        var duration = state.video.duration;
+
+        if (!isFinite(duration) || duration <= 0) {
+          return;
+        }
+
+        var rect = state.root.getBoundingClientRect();
+        var padding = 6;
+        var ratio = (event.clientX - rect.left - padding) / Math.max(1, rect.width - padding * 2);
+
+        state.video.currentTime = Math.min(1, Math.max(0, ratio)) * duration;
+      }
+
+      function ensureScrubber(videoMedia) {
+        if (videoMedia.scrubber) {
+          return videoMedia.scrubber;
+        }
+
+        var video = videoMedia.querySelector('video');
+
+        if (!video) {
+          return null;
+        }
+
+        var root = document.createElement('div');
+
+        root.className = 'lightbox-scrubber';
+        root.setAttribute('aria-hidden', 'true');
+        root.innerHTML = '<svg class="lightbox-scrubber__svg" focusable="false"><path class="lightbox-scrubber__rest"/><path class="lightbox-scrubber__played"/><circle class="lightbox-scrubber__dot" r="3"/></svg><span class="lightbox-scrubber__time">0:00</span>';
+        videoMedia.appendChild(root);
+
+        var state = {
+          root: root,
+          svg: root.firstChild,
+          rest: root.querySelector('.lightbox-scrubber__rest'),
+          played: root.querySelector('.lightbox-scrubber__played'),
+          dot: root.querySelector('.lightbox-scrubber__dot'),
+          time: root.querySelector('.lightbox-scrubber__time'),
+          video: video,
+          width: 0,
+          height: 0,
+          span: 0,
+          amplitude: 1,
+          phase: 0,
+          dragging: false
+        };
+
+        root.addEventListener('pointerdown', function(event) {
+          if (event.button > 0) {
+            return;
+          }
+
+          state.dragging = true;
+          root.classList.add('is-scrubbing');
+          root.setPointerCapture(event.pointerId);
+          seekScrubber(state, event);
+          event.preventDefault();
+          event.stopPropagation();
+        });
+
+        root.addEventListener('pointermove', function(event) {
+          if (state.dragging) {
+            seekScrubber(state, event);
+          }
+        });
+
+        function stopScrubbing() {
+          state.dragging = false;
+          root.classList.remove('is-scrubbing');
+        }
+
+        root.addEventListener('pointerup', stopScrubbing);
+        root.addEventListener('pointercancel', stopScrubbing);
+
+        // The scrubber sits inside <video-media>, which starts playback on click: touching the scrubber
+        // must only seek.
+        root.addEventListener('click', function(event) {
+          event.stopPropagation();
+        });
+
+        videoMedia.scrubber = state;
+
+        return state;
+      }
+
+      function tickScrubber() {
+        scrubberFrame = null;
+
+        if (lightbox.hidden || !activeCell) {
+          return;
+        }
+
+        var activeMedia = getCellMedia(activeCell);
+
+        if (activeMedia.videoMedia && activeMedia.videoMedia.scrubber) {
+          drawScrubber(activeMedia.videoMedia.scrubber);
+        }
+
+        scrubberFrame = requestAnimationFrame(tickScrubber);
+      }
+
+      function startScrubberLoop() {
+        if (!scrubberFrame) {
+          scrubberFrame = requestAnimationFrame(tickScrubber);
+        }
+      }
+
+      function seekActiveVideoBy(seconds) {
+        var activeMedia = activeCell ? getCellMedia(activeCell) : null;
+        var video = activeMedia && activeMedia.videoMedia ? activeMedia.videoMedia.querySelector('video') : null;
+
+        if (video && isFinite(video.duration)) {
+          video.currentTime = Math.min(video.duration, Math.max(0, video.currentTime + seconds));
+        }
+      }
+
       // Puts one item's media in its expanded (position: fixed, centered) state without touching playback
       // or which item counts as the active one - the vertical feed needs the neighbouring item expanded
       // too, parked off screen, while it is being dragged/slid in. Safe to call twice for the same cell.
@@ -307,6 +502,14 @@ progress bar) are simply skipped when no carousel_id is given.
 
         if (media.controlsGroup) {
           media.controlsGroup.classList.add('is-lightbox-expanded');
+        }
+
+        if (media.videoMedia) {
+          var scrubber = ensureScrubber(media.videoMedia);
+
+          if (scrubber) {
+            drawScrubber(scrubber);
+          }
         }
 
         return media;
@@ -499,6 +702,7 @@ progress bar) are simply skipped when no carousel_id is given.
         var expandedElement = media.videoMedia || media.image;
 
         updateNavButtons();
+        startScrubberLoop();
 
         // The controls group jumps from its thumbnail spot to the viewport corner the moment it is
         // expanded: starting it at opacity 0 without a transition (instead of fading down from 1) keeps
@@ -773,7 +977,7 @@ progress bar) are simply skipped when no carousel_id is given.
       // Finger/mouse drag: the current item follows the pointer, the one it is heading to comes in right
       // behind it, and releasing either completes the slide or springs back.
       function pointerIsOnControl(event) {
-        return event.target.closest && event.target.closest('button, a, .carousel-video-controls, .media-lightbox__close');
+        return event.target.closest && event.target.closest('button, a, .carousel-video-controls, .lightbox-scrubber, .media-lightbox__close');
       }
 
       document.addEventListener('pointerdown', function(event) {
@@ -941,6 +1145,10 @@ progress bar) are simply skipped when no carousel_id is given.
         } else if (event.key === 'ArrowUp' || event.key === 'PageUp') {
           event.preventDefault();
           showRelativeSlide(-1);
+        } else if (event.key === 'ArrowRight') {
+          seekActiveVideoBy(5);
+        } else if (event.key === 'ArrowLeft') {
+          seekActiveVideoBy(-5);
         }
       });
 
