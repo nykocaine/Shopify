@@ -3715,6 +3715,9 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 .product-card--info-outside .product-card__figure {
   background-color: rgb(var(--background));
   background-image: var(--background-gradient);
+  /* The figure paints the card background behind the image, so it needs the same radius as the image box:
+     otherwise square background corners show around the rounded image and the radius looks like it did nothing. */
+  border-radius: var(--product-card-border-radius, 0);
 }
 
 .product-card__info .product-card__swatch-list {

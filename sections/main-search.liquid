@@ -298,7 +298,7 @@
                       </div>
                     </div>
                   {%- else -%}
-                    <div class="collection__results">
+                    <div class="collection__results" style="--product-card-border-radius: {{ section.settings.product_card_border_radius }}px;">
                       {%- render 'active-facets', source: search, hash: '#collection' -%}
                       {%- render 'product-list', products: search.results, allow_highlight: false -%}
                     </div>
@@ -425,6 +425,16 @@ on desktop based on the settings
       "label": "t:sections.main_search.search_border_radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_search }}"
+    },
+    {
+      "type": "range",
+      "id": "product_card_border_radius",
+      "min": 0,
+      "max": 25,
+      "step": 1,
+      "unit": "px",
+      "label": "Radio del borde de la tarjeta de producto",
+      "default": 12
     },
     {
       "type": "header",
