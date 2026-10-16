@@ -5189,6 +5189,9 @@ table caption {
 
 .quantity-selector--line-item {
   grid-template-columns: 2.5rem auto 2.5rem;
+  /* Cart page and cart drawer: the 1px border is the scheme's "Step Controls > Background color", the same solid color
+     as the circles behind the + and - buttons (no opacity). Schemes without that color keep the regular border. */
+  border-color: var(--step-control-background-color, rgb(var(--button-scheme-border-color, var(--border-color))));
 }
 
 .quantity-selector:has(.icon-spinner) {
