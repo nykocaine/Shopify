@@ -522,6 +522,22 @@ to only ever be visible once relocated into the controls slot, which doesn't app
 }
 
 {%- comment -%}
+Pinned to the media box's own bottom-right corner (same 0.75rem inset the video's logo has on the bottom-left),
+so the logo and these controls sit on one line. The box is computed from the same --lightbox-w / --lightbox-ratio
+the media itself is sized with (media-zoom-script.liquid sets them on both). Mobile has its own fixed box, below.
+{%- endcomment -%}
+#{{ wrapper_id }} .carousel-video-controls.is-lightbox-expanded {
+  --lightbox-box-w: min(var(--lightbox-w, var(--lightbox-media-w)), var(--lightbox-media-w), calc(var(--lightbox-media-h) * var(--lightbox-ratio, 1)));
+  --lightbox-box-h: calc(var(--lightbox-box-w) / var(--lightbox-ratio, 1));
+  inset-block-end: auto;
+  inset-inline-end: auto;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  transform: none;
+  translate: calc(var(--lightbox-box-w) / 2 - 100% - 0.75rem) calc(var(--lightbox-box-h) / 2 - 100% - 0.75rem);
+}
+
+{%- comment -%}
 Fades with the backdrop and close/prev/next buttons instead of popping in beside the still-zooming
 video on open, and sitting in the corner until the zoom ends on close:
 media-zoom-script.liquid toggles is-lightbox-visible on this group together with the lightbox's.
