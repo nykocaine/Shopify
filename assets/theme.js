@@ -2246,9 +2246,13 @@ var DialogElement = class extends HTMLElement {
       });
     }
     if (this.shouldLock) {
-      lockLayerCount += 1;
+      if (this._unlockPending) {
+        this._unlockPending = false;
+      } else {
+        lockLayerCount += 1;
+        document.documentElement.classList.add("lock");
+      }
       __privateSet(this, _isLocked, true);
-      document.documentElement.classList.add("lock");
     }
     return animationControls;
   }
@@ -2281,9 +2285,29 @@ var DialogElement = class extends HTMLElement {
     });
     if (this.shouldLock) {
       __privateSet(this, _isLocked, false);
-      document.documentElement.classList.toggle("lock", --lockLayerCount > 0);
+      if (this.unlocksAfterHide) {
+        // The lock is still held while the dialog closes. Opening it again before the animation ends takes that same
+        // lock back (see show()), so the deferred unlock below only runs if nobody did.
+        this._unlockPending = true;
+        hideTransitionPromise.then(() => {
+          if (this._unlockPending) {
+            this._unlockPending = false;
+            document.documentElement.classList.toggle("lock", --lockLayerCount > 0);
+          }
+        });
+      } else {
+        document.documentElement.classList.toggle("lock", --lockLayerCount > 0);
+      }
     }
     return hideTransitionPromise;
+  }
+  /**
+   * By default the page scroll is unlocked as soon as the dialog starts closing. A dialog with a long closing
+   * animation can ask to keep it locked until that animation ends: unlocking early brings the scrollbar back
+   * (desktop) and shifts the page's layout in the middle of the animation, which reads as a flicker.
+   */
+  get unlocksAfterHide() {
+    return false;
   }
   /**
    * Get the abort controller used to clean listeners. You can retrieve it in children classes to add your own listeners
@@ -2548,7 +2572,7 @@ if (!window.customElements.get("dialog-close-button")) {
 
 // Shared "unfold" transition (menu, search and cart drawers): the overlay (blur + backdrop color) and the content are
 // revealed together from top to bottom on open, and fold back up on close. The close uses an in-out curve (an ease-in
-// one ends abruptly) and is slightly shorter than the open. The clip-path is cleared once the opening finishes, so it
+// one ends abruptly) and is shorter than the open, and the layers are promoted while it runs to avoid flicker. The clip-path is cleared once the opening finishes, so it
 // can't leave the content clipped (focus rings, shadows). Reduced motion keeps a plain fade.
 function createUnfoldAnimationControls(animateSequence, overlay, content, opening) {
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -2556,19 +2580,22 @@ function createUnfoldAnimationControls(animateSequence, overlay, content, openin
   const shown = "inset(0 0 0% 0)";
   const keyframes = reduceMotion ? { opacity: opening ? [0, 1] : [1, 0] } : { clipPath: opening ? [hidden, shown] : [shown, hidden] };
   const options = {
-    duration: reduceMotion ? 0.2 : opening ? 1.2 : 1,
-    ease: opening ? [0.22, 1, 0.36, 1] : [0.65, 0, 0.35, 1]
+    duration: reduceMotion ? 0.2 : opening ? 1.2 : 0.8,
+    // The close starts moving right away (an in-out curve sits still for the first moments, which reads as a delay)
+    ease: opening ? [0.22, 1, 0.36, 1] : [0.33, 0, 0.2, 1]
   };
+  overlay.style.willChange = content.style.willChange = reduceMotion ? "opacity" : "clip-path";
   const controls = animateSequence([
     [overlay, keyframes, options],
     [content, keyframes, { ...options, at: "<" }]
   ]);
-  if (opening) {
-    controls.then(() => {
+  controls.then(() => {
+    overlay.style.willChange = content.style.willChange = "";
+    if (opening) {
       overlay.style.clipPath = "";
       content.style.clipPath = "";
-    });
-  }
+    }
+  });
   return controls;
 }
 // js/common/overlay/drawer.js
@@ -2596,6 +2623,9 @@ var Drawer = class extends DialogElement {
    */
   get unfolds() {
     return this.hasAttribute("unfold");
+  }
+  get unlocksAfterHide() {
+    return this.unfolds;
   }
   createEnterAnimationControls() {
     this.getShadowPartByName("content").style.marginInlineStart = this.openFrom === "right" ? "auto" : "0";
@@ -5512,6 +5542,9 @@ var HeaderMenuDrawer = class extends DialogElement {
   get shouldLock() {
     return true;
   }
+  get unlocksAfterHide() {
+    return true;
+  }
   /**
    * The menu unfolds from the header downwards, together with its overlay (see createUnfoldAnimationControls).
    */
@@ -6117,6 +6150,9 @@ var NewsletterPopup = class extends Modal {
   }
   get shouldAppendToBody() {
     return false;
+  }
+  get unlocksAfterHide() {
+    return true;
   }
   // Same top-to-bottom unfold as the drawers (see createUnfoldAnimationControls)
   createEnterAnimationControls() {
