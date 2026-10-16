@@ -102,7 +102,8 @@
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    justify-content: space-between;
+    justify-content: center;
+    text-align: center;
     column-gap: 0.75rem;
     row-gap: 0.25rem;
     width: 100%;
@@ -502,9 +503,9 @@
 
     {%- comment -%}
     Copyright + custom text: their own full-width row below the aside, so it spans the whole footer
-    instead of just the width of the copyright text. Copyright pinned start, custom text pinned end
-    (see .footer__copyright in the <style> above) - both sit on one line (flex row) and wrap only if
-    there isn't room.
+    instead of just the width of the copyright text. Everything is centered horizontally, on mobile and desktop
+    (see .footer__copyright in the <style> above) - the copyright and the custom text sit on one line
+    (flex row) and wrap, each line centered, only if there isn't room.
     {%- endcomment -%}
     {%- capture footer_copyright_content -%}
       {%- if section.settings.show_copyright or section.settings.footer_bottom_text != blank -%}
