@@ -276,8 +276,14 @@ progress bar) are simply skipped when no carousel_id is given.
         }
 
         if (width && height) {
-          element.style.setProperty('--lightbox-w', width + 'px');
-          element.style.setProperty('--lightbox-ratio', width / height);
+          // Also on the controls group: on desktop it is pinned to the media box's own corner (see
+          // media-zoom-style.liquid), which it can only compute from the same two values.
+          [element, media.controlsGroup].forEach(function(target) {
+            if (target) {
+              target.style.setProperty('--lightbox-w', width + 'px');
+              target.style.setProperty('--lightbox-ratio', width / height);
+            }
+          });
         }
       }
 
@@ -331,6 +337,8 @@ progress bar) are simply skipped when no carousel_id is given.
 
         if (media.controlsGroup) {
           media.controlsGroup.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
+          media.controlsGroup.style.removeProperty('--lightbox-w');
+          media.controlsGroup.style.removeProperty('--lightbox-ratio');
         }
 
         cell.style.minHeight = '';

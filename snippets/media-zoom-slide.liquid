@@ -47,7 +47,7 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
 
   {%- if video != blank and video_logo != blank -%}
     {%- assign video_logo_url = video_logo | image_url: width: 400 -%}
-    {%- capture video_logo_style -%}--video-logo: url('{{ video_logo_url }}'); --video-logo-ratio: {{ video_logo.aspect_ratio }};{%- endcapture -%}
+    {%- capture video_logo_style -%}--video-logo: url('{{ video_logo_url }}');{%- endcapture -%}
   {%- endif -%}
 
   <div class="content-box__background-media {% if video != blank %}carousel-video-tap-to-play{% endif %}{% if video_logo_style != blank %} has-video-logo{% endif %}"{% if video_logo_style != blank %} style="{{ video_logo_style }}"{% endif %}>
