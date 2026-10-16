@@ -302,38 +302,6 @@
     search
     {%- endcomment -%}
 
-    <div class="container section-spacing section-spacing--tight">
-      <div class="prose prose-justify-center">
-        {%- if section.settings.search_heading != blank or section.settings.show_icon -%}
-          <div class="search-heading-row">
-            {%- if section.settings.search_heading != blank -%}
-              <h1 class="search-heading-row__heading {{ section.settings.search_heading_size }}">{{ section.settings.search_heading }}</h1>
-            {%- endif -%}
-
-            {%- if section.settings.show_icon -%}
-              <div class="search-heading-row__icon">
-                {%- render 'decorative-icon',
-                  icon_type: section.settings.icon_type,
-                  icon_size: section.settings.icon_size,
-                  icon_spin: section.settings.icon_spin,
-                  icon_primary_color: section.settings.icon_primary_color,
-                  icon_secondary_color: section.settings.icon_secondary_color,
-                  icon_border_color: section.settings.icon_border_color
-                -%}
-              </div>
-            {%- endif -%}
-          </div>
-        {%- endif -%}
-
-        <p>{{ 'search.results_count' | t: count: search.results_count }}</p>
-
-        <form class="max-w-xs md:max-w-md" action="{{ routes.search_url }}" method="get" role="search">
-          <label for="search-page-input-results" class="sr-only">{{ 'search.general.search_placeholder' | t }}</label>
-          <input id="search-page-input-results" type="search" name="q" value="{{ search.terms }}" class="search-form__input input" placeholder="{{ 'search.general.search_placeholder' | t }}" autocomplete="off" autocorrect="off">
-        </form>
-      </div>
-    </div>
-
     <div id="collection" class="collection">
       {%- capture search_toolbar_tabs -%}
         {%- if search.types.size > 1 or search.types.first != 'product' -%}
@@ -361,6 +329,39 @@
       {%- endif -%}
 
       {%- render 'collection-toolbar', data_source: search, filter_layout: 'drawer', leading_content: search_toolbar_tabs, hide_faceting: search_toolbar_hide_faceting -%}
+
+      {%- comment -%}The toolbar goes first so it sits right under the header (and sticks to it); the search heading and field come after it{%- endcomment -%}
+      <div class="container section-spacing section-spacing--tight">
+        <div class="prose prose-justify-center">
+          {%- if section.settings.search_heading != blank or section.settings.show_icon -%}
+            <div class="search-heading-row">
+              {%- if section.settings.search_heading != blank -%}
+                <h1 class="search-heading-row__heading {{ section.settings.search_heading_size }}">{{ section.settings.search_heading }}</h1>
+              {%- endif -%}
+
+              {%- if section.settings.show_icon -%}
+                <div class="search-heading-row__icon">
+                  {%- render 'decorative-icon',
+                    icon_type: section.settings.icon_type,
+                    icon_size: section.settings.icon_size,
+                    icon_spin: section.settings.icon_spin,
+                    icon_primary_color: section.settings.icon_primary_color,
+                    icon_secondary_color: section.settings.icon_secondary_color,
+                    icon_border_color: section.settings.icon_border_color
+                  -%}
+                </div>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+
+          <p>{{ 'search.results_count' | t: count: search.results_count }}</p>
+
+          <form class="max-w-xs md:max-w-md" action="{{ routes.search_url }}" method="get" role="search">
+            <label for="search-page-input-results" class="sr-only">{{ 'search.general.search_placeholder' | t }}</label>
+            <input id="search-page-input-results" type="search" name="q" value="{{ search.terms }}" class="search-form__input input" placeholder="{{ 'search.general.search_placeholder' | t }}" autocomplete="off" autocorrect="off">
+          </form>
+        </div>
+      </div>
     
       {%- comment -%}If there is only one type of resources and that those are products, then we can show the results directly{%- endcomment -%}
         
