@@ -4,6 +4,21 @@
   {%- assign show_filters = false -%}
 {%- endif -%}
 
+{%- liquid
+  # Height of a promo shown as a product card when no product card sits next to it to give the row its height: the
+  # same ratio as the product card's image (see snippets/product-card.liquid), "natural" falls back to portrait.
+  case settings.product_card_image_aspect_ratio
+    when 'short', 'short_crop'
+      assign promo_card_aspect_ratio = '4 / 3'
+    when 'portrait', 'portrait_crop', 'natural'
+      assign promo_card_aspect_ratio = '4 / 5'
+    when 'tall', 'tall_crop'
+      assign promo_card_aspect_ratio = '2 / 3'
+    else
+      assign promo_card_aspect_ratio = '1'
+  endcase
+-%}
+
 <style>
   {%- if section.settings.floating_toolbar -%}
     {%- comment -%}
@@ -135,6 +150,12 @@
   @media screen and (max-width: 699px) {
     #shopify-section-{{ section.id }} .product-list__promo--mobile-card {
       grid-column: span 1;
+      {%- comment -%}
+      Its own height when the card has no product card beside it (eg. an image and a video blocks in the same row, which
+      otherwise collapsed to almost nothing because the media is absolutely positioned and adds no height). Next to a
+      product card the row is taller than this, and the promo just stretches to the row as before.
+      {%- endcomment -%}
+      aspect-ratio: {{ promo_card_aspect_ratio }};
       {%- comment -%} Match the product cards' radius rather than the block's own. {%- endcomment -%}
       border-radius: var(--product-card-border-radius, 0) !important;
     }
