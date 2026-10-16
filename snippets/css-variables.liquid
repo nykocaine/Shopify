@@ -199,8 +199,11 @@ note that this may have impact on different places.
     --checkbox-size: 0.875rem; /* Size (width and height) for checkbox */
 
     /* Product listing gaps */
-    --product-list-column-gap: {% if settings.product_listing_spacing == 'none' %}0px{% elsif settings.product_listing_spacing == 'x-small' %}0.125rem{% elsif settings.product_listing_spacing == 'small' %}0.25rem{% elsif settings.product_listing_spacing == 'medium' %}0.5rem{% else %}0.75rem{% endif %};
-    --product-list-padding-inline: clamp(0px, var(--product-list-column-gap) {% if settings.product_listing_spacing == 'x-small' %}- 4px{% endif %}, min(1.75rem, var(--product-list-column-gap)));
+    /* One place for the horizontal gap between items (product cards and the like) across every section and breakpoint.
+       The "Product listing spacing" setting now only decides whether the cards touch ("None") or use this gap. */
+    --item-gap-inline: 0.625rem;
+    --product-list-column-gap: {% if settings.product_listing_spacing == 'none' %}0px{% else %}var(--item-gap-inline){% endif %};
+    --product-list-padding-inline: clamp(0px, var(--product-list-column-gap), min(1.75rem, var(--product-list-column-gap)));
 
     {%- if settings.product_card_info_position == 'outside' -%}
       --product-list-row-gap: {% if settings.product_listing_spacing == 'none' %}0px{% elsif settings.product_listing_spacing == 'x-small' %}1.5rem{% elsif settings.product_listing_spacing == 'small' %}1.75rem{% elsif settings.product_listing_spacing == 'medium' %}2rem{% else %}2.25rem{% endif %};
@@ -419,10 +422,8 @@ note that this may have impact on different places.
 
       /* Product listing gaps */
       {%- if settings.product_card_info_position == 'outside' -%}
-        --product-list-column-gap: {% if settings.product_listing_spacing == 'none' %}0px{% elsif settings.product_listing_spacing == 'x-small' %}0.25rem{% elsif settings.product_listing_spacing == 'small' %}0.75rem{% elsif settings.product_listing_spacing == 'medium' %}1.75rem{% else %}3rem{% endif %};
         --product-list-row-gap: {% if settings.product_listing_spacing == 'none' %}0px{% elsif settings.product_listing_spacing == 'x-small' %}2rem{% elsif settings.product_listing_spacing == 'small' %}2.5rem{% elsif settings.product_listing_spacing == 'medium' %}3rem{% else %}4rem{% endif %};
       {%- else -%}
-        --product-list-column-gap: {% if settings.product_listing_spacing == 'none' %}0px{% elsif settings.product_listing_spacing == 'x-small' %}0.25rem{% elsif settings.product_listing_spacing == 'small' %}0.75rem{% elsif settings.product_listing_spacing == 'medium' %}1.75rem{% else %}3rem{% endif %};
       {%- endif -%}
     }
   }

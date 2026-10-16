@@ -111,14 +111,12 @@
   }
 
   {%- comment -%}
-  Fixed gap between cards (not viewport-scaled, not the theme-wide "Product listing spacing"), matching
-  sections/featured-product-list.liquid. Set directly on .product-list with !important because a
-  .product-list--carousel variant reassigns the whole `grid` shorthand, which can drop a plain
-  column-gap override.
+  The horizontal gap between cards is no longer set here: every product list reads it from --item-gap-inline
+  (snippets/css-variables.liquid), the single place that defines it. Only the vertical gap stays fixed on this page.
+  Set directly on .product-list with !important because a .product-list--carousel variant reassigns the whole `grid`
+  shorthand, which can drop a plain override.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-list {
-    --product-list-column-gap: 0.625rem;
-    column-gap: 0.625rem !important;
     row-gap: 0.625rem !important;
   }
 
