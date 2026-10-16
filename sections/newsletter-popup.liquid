@@ -18,13 +18,60 @@
       endif
     -%}
 
+    {%- liquid
+      assign has_desktop_image = false
+      assign has_mobile_image = false
+
+      if section.settings.image != blank
+        assign has_desktop_image = true
+      endif
+
+      if section.settings.image_mobile != blank
+        assign has_mobile_image = true
+      endif
+
+      assign align_mobile = section.settings.text_alignment_mobile
+      assign align_desktop = section.settings.text_alignment_desktop
+      assign justify_mobile = 'flex-start'
+      assign justify_desktop = 'flex-start'
+      assign title_start_mobile = '0px'
+      assign title_start_desktop = '0px'
+
+      if align_mobile == 'center'
+        assign justify_mobile = 'center'
+        assign title_start_mobile = '2rem'
+      elsif align_mobile == 'right'
+        assign justify_mobile = 'flex-end'
+      endif
+
+      if align_desktop == 'center'
+        assign justify_desktop = 'center'
+        assign title_start_desktop = '2rem'
+      elsif align_desktop == 'right'
+        assign justify_desktop = 'flex-end'
+      endif
+    -%}
+
     <style>
+      {%- comment -%}
+      The padding all around the popup is the same one the floating sections use (container gutter + 0.5rem), applied
+      on the popup itself - so the image sits at that distance from the top, bottom and sides - and the gap between
+      the image and the text is the same distance. The modal body keeps only a tiny padding so the inputs' focus ring
+      isn't clipped by its scroll area.
+      {%- endcomment -%}
       .modal--newsletter {
-        {%- comment -%} Consumed by .newsletter-popup__image in assets/theme.css {%- endcomment -%}
+        --newsletter-padding: calc(var(--container-gutter) + 0.5rem);
         --newsletter-image-radius: {{ section.settings.image_border_radius }}px;
+        --newsletter-align: {{ align_mobile }};
+        --newsletter-justify: {{ justify_mobile }};
+        --newsletter-title-start: {{ title_start_mobile }};
+        --modal-body-padding-block: 0.25rem;
+        --modal-body-padding-inline: 0.25rem;
       }
 
       .modal--newsletter::part(content) {
+        padding: calc(var(--newsletter-padding) - 0.25rem);
+        gap: calc(var(--newsletter-padding) - 0.5rem);
         {%- if section.settings.center_popup -%}
           place-self: center;
         {%- endif -%}
@@ -33,6 +80,71 @@
           overflow: hidden;
           -webkit-mask-image: -webkit-radial-gradient(white, black);
         {%- endif -%}
+      }
+
+      {%- comment -%}
+      Radius + overflow:hidden live on the wrapper (not the <img>) so the image reliably clips to the rounded corners
+      in every browser. On mobile the image sits on top with its own height capped; on desktop it stretches to the
+      height of the popup (cropped, never distorted) so its top and bottom margins match the sides.
+      {%- endcomment -%}
+      .newsletter-popup__image {
+        border-radius: var(--newsletter-image-radius);
+        overflow: hidden;
+      }
+
+      .newsletter-popup__image img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 28svh;
+        object-fit: cover;
+      }
+
+      .newsletter-popup__content {
+        text-align: var(--newsletter-align);
+      }
+
+      {%- comment -%}Clears the close button on its side; centered text clears it on both sides so it stays centered.{%- endcomment -%}
+      .newsletter-popup__title {
+        padding-inline: var(--newsletter-title-start) 2rem;
+      }
+
+      .newsletter-popup__content .newsletter-discount__code-group {
+        justify-content: var(--newsletter-justify);
+      }
+
+      {%- if has_mobile_image -%}
+        @media screen and (max-width: 999px) {
+          .newsletter-popup__image--desktop {
+            display: none;
+          }
+        }
+      {%- endif -%}
+
+      @media screen and (min-width: 1000px) {
+        .modal--newsletter {
+          --newsletter-align: {{ align_desktop }};
+          --newsletter-justify: {{ justify_desktop }};
+          --newsletter-title-start: {{ title_start_desktop }};
+        }
+
+        .modal--newsletter::part(content) {
+          grid-template-columns: {% if has_desktop_image %}minmax(0, 24rem) minmax(0, 26rem){% else %}minmax(0, 30rem){% endif %};
+          gap: var(--newsletter-padding);
+        }
+
+        .newsletter-popup__image {
+          align-self: stretch;
+        }
+
+        .newsletter-popup__image img {
+          height: 100%;
+          max-height: none;
+        }
+
+        .newsletter-popup__image--mobile {
+          display: none;
+        }
       }
 
       {%- comment -%}
@@ -51,20 +163,22 @@
       {%- endif -%}
     </style>
     <newsletter-popup class="modal modal--newsletter color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.show_only_once %}only-once{% endif %} apparition-delay="{{ section.settings.apparition_delay }}" {% if posted_successfully %}open{% endif %} role="dialog" aria-label="{{ 'sections.newsletter_popup.accessibility_title' | t | escape }}" handle-editor-events>
-      {%- if section.settings.image != blank -%}
-        {%- comment -%}
-        The radius + overflow:hidden live on this wrapper (not directly on the <img>) to reliably clip the image
-        across browsers, same pattern as .media-blocks__item / --media-blocks-corner-radius in media-blocks.liquid.
-        {%- endcomment -%}
-        <div class="newsletter-popup__image" slot="image">
-          {{- section.settings.image | image_url: width: section.settings.image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 100vw, 430px', widths: '200,400,600,800,1000,1200' -}}
+      {%- if has_desktop_image -%}
+        <div class="newsletter-popup__image newsletter-popup__image--desktop" slot="image">
+          {{- section.settings.image | image_url: width: section.settings.image.width | image_tag: loading: 'lazy', sizes: '(max-width: 999px) 100vw, 24rem', widths: '200,400,600,800,1000,1200' -}}
         </div>
       {%- endif -%}
 
-      <div class="v-stack gap-6">
+      {%- if has_mobile_image -%}
+        <div class="newsletter-popup__image newsletter-popup__image--mobile" slot="image">
+          {{- section.settings.image_mobile | image_url: width: section.settings.image_mobile.width | image_tag: loading: 'lazy', sizes: '100vw', widths: '200,400,600,800,1000,1200' -}}
+        </div>
+      {%- endif -%}
+
+      <div class="newsletter-popup__content v-stack gap-6">
         {%- unless show_discount_after_success -%}
           {%- if section.settings.title != blank -%}
-            <p class="h4" style="padding-inline-end: 2rem">{{ section.settings.title }}</p>
+            <p class="newsletter-popup__title h4">{{ section.settings.title }}</p>
           {%- endif -%}
 
           {%- if section.settings.content != blank -%}
@@ -170,13 +284,31 @@
       "step": 2,
       "unit": "px",
       "label": "Radio de imagen",
-      "default": 0
+      "default": 12
     },
     {
       "type": "image_picker",
       "id": "image",
-      "label": "t:global.image.image",
+      "label": "Imagen para escritorio",
       "info": "t:sections.newsletter_popup.image_recommendation"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Imagen para móvil",
+      "info": "Opcional. Si la dejas vacía, en móvil se usa la imagen de escritorio."
+    },
+    {
+      "type": "text_alignment",
+      "id": "text_alignment_mobile",
+      "label": "Alineación del texto en móvil",
+      "default": "center"
+    },
+    {
+      "type": "text_alignment",
+      "id": "text_alignment_desktop",
+      "label": "Alineación del texto en escritorio",
+      "default": "left"
     },
     {
       "type": "inline_richtext",
