@@ -907,8 +907,10 @@ progress bar) are simply skipped when no carousel_id is given.
       // or the up/down buttons slide the current one out and the next one in. The media elements are the
       // same real ones as ever (fixed + centered, see media-zoom-style.liquid) - a slide is just a
       // transform on the outgoing and incoming ones, so nothing is moved in the DOM or re-buffered.
-      var slideEase = 'cubic-bezier(0.32, 0.72, 0, 1)';
-      var slideDuration = prefersReducedMotion ? 1 : 380;
+      // Ease-in-out and a longer duration: the previous fast-start curve (0.32, 0.72, 0, 1) over 380ms made the
+      // jump between videos feel abrupt. Starting and ending gently reads as a smooth scroll instead.
+      var slideEase = 'cubic-bezier(0.65, 0, 0.35, 1)';
+      var slideDuration = prefersReducedMotion ? 1 : 650;
       var isSliding = false;
       var dragState = null;
       var suppressClick = false;
