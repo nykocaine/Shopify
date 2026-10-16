@@ -65,8 +65,23 @@
     hidden
   ></div>
 
+  {% comment %}
+    Aparece tras "appear_delay" segundos (ver el script): hasta entonces el botón está oculto. Sin JavaScript no habría
+    quien lo muestre, por eso el <noscript> lo deja visible desde el principio.
+  {% endcomment %}
+  <noscript>
+    <style>
+      .vc-whatsapp-button-wrapper[data-appear-delay] {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+      }
+    </style>
+  </noscript>
+
   <div
     data-section-id="{{ section.id }}"
+    data-appear-delay="{{ section.settings.appear_delay }}"
     class="vc-whatsapp-button-wrapper
       {% if is_docked %}vc-whatsapp-button-wrapper--dock vc-whatsapp-button-wrapper--dock-{{ side }}{% endif %}
       {% unless show_on_mobile %}hide-on-mobile{% endunless %}
@@ -156,6 +171,20 @@
     right: var(--wa-right);
     width: fit-content;
     max-width: calc(100vw - (var(--container-gutter) * 2));
+  }
+
+  /* Oculto hasta que pase el tiempo de aparición (el script añade .is-visible) */
+  .vc-whatsapp-button-wrapper[data-appear-delay] {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+  }
+
+  .vc-whatsapp-button-wrapper[data-appear-delay].is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .vc-whatsapp-main-container {
@@ -365,6 +394,24 @@
 
       var sectionId = wrapper.dataset.sectionId;
 
+      // Aparición: tras los segundos configurados. En el editor del tema se muestra de inmediato para poder
+      // editarlo, y una vez que ya apareció en la sesión, en las siguientes páginas sale sin esperar de nuevo.
+      var appearDelay = parseFloat(wrapper.dataset.appearDelay);
+      var shownKey = 'vc-whatsapp-shown';
+      var alreadyShown = false;
+      try { alreadyShown = sessionStorage.getItem(shownKey) === 'true'; } catch (error) {}
+
+      function reveal() {
+        wrapper.classList.add('is-visible');
+        try { sessionStorage.setItem(shownKey, 'true'); } catch (error) {}
+      }
+
+      if ((window.Shopify && window.Shopify.designMode) || alreadyShown || !(appearDelay > 0)) {
+        wrapper.classList.add('is-visible');
+      } else {
+        setTimeout(reveal, appearDelay * 1000);
+      }
+
       if (wrapper.querySelector('.vc-whatsapp-button-text')) {
         wrapper.classList.add('has-text');
       }
@@ -438,6 +485,7 @@
   "settings": [
     { "type": "header", "content": "Estilo de visualización" },
     { "type": "select", "id": "display_style", "label": "Display Style", "options": [{ "value": "floating", "label": "Floating" }, { "value": "docked_tab", "label": "Docked Tab" }], "default": "floating" },
+    { "type": "range", "id": "appear_delay", "label": "Aparece después de", "min": 1, "max": 60, "step": 1, "unit": "s", "default": 5, "info": "Segundos que pasan desde que se abre la página hasta que aparece el botón. Una vez que apareció, en las demás páginas de la visita sale enseguida. En el editor del tema siempre se ve." },
     { "type": "header", "content": "Contenido" },
     { "type": "text", "id": "phone_number", "label": "Número de teléfono principal", "info": "Incluye el código de país (ej. 51987654321 para Perú). Se usa si no agregas agentes." },
     { "type": "textarea", "id": "default_message", "label": "Mensaje predeterminado", "default": "Hola, estoy interesado en tus productos." },
