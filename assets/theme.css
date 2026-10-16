@@ -4056,6 +4056,24 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   z-index: 1;
 }
 
+/* The header's transparent-header logo (--video-logo, defined on :root by sections/header.liquid, nothing is drawn when
+   it has none) in the bottom-left corner of the video of an image / video block, small and at 70% opacity: the same
+   mark, size and inset the Instagram feed and Media Lightbox thumbnails carry (snippets/media-zoom-style.liquid). It is
+   drawn on the <video-media> itself, so it sits on the video wherever the card goes. Used by the collection, search and
+   featured product list blocks, which all render through snippets/product-list-promo.liquid. */
+.product-list__promo video-media::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0.75rem;
+  inset-block-end: 0.75rem;
+  z-index: 2;
+  width: min(3.5rem, 25%);
+  height: 2rem;
+  background: var(--video-logo) left bottom / contain no-repeat;
+  opacity: .7;
+  pointer-events: none;
+}
+
 @media screen and (max-width: 699px) {
   .product-list__promo:not(:last-child) {
     margin-block-end: calc(-1 * var(--product-list-row-gap) + var(--product-list-column-gap));
