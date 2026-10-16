@@ -1,14 +1,39 @@
 {%- if block.settings.text != blank -%}
-  {%- render 'heading', 
-    content: block.settings.text,
-    html_tag: block.settings.html_tag,
-    style: block.settings.heading_size,
-    highlight_effect: block.settings.highlight_effect, 
-    highlight_accent_color: block.settings.highlight_accent_color, 
-    highlight_text_color: block.settings.highlight_text_color,
-    indent: block.settings.indent,
-    block: block
-  -%}
+  {%- capture heading_markup -%}
+    {%- render 'heading', 
+      content: block.settings.text,
+      html_tag: block.settings.html_tag,
+      style: block.settings.heading_size,
+      highlight_effect: block.settings.highlight_effect, 
+      highlight_accent_color: block.settings.highlight_accent_color, 
+      highlight_text_color: block.settings.highlight_text_color,
+      indent: block.settings.indent,
+      block: block
+    -%}
+  {%- endcapture -%}
+
+  {%- if block.settings.show_icon -%}
+    {%- comment -%}
+    Same decorative-icon-next-to-title row as the rich text block's heading (sections/rich-text.liquid) and
+    sections/contact.liquid, so it is available wherever this block is used (slideshow image and video slides,
+    containers, ...). snippets/heading-with-icon.liquid holds the layout.
+    {%- endcomment -%}
+    {%- render 'heading-with-icon',
+      title_content: heading_markup,
+      show_icon: true,
+      icon_margin_block: '0',
+      icon_position: block.settings.icon_position,
+      icon_alignment: block.settings.icon_alignment,
+      icon_type: block.settings.icon_type,
+      icon_size: block.settings.icon_size,
+      icon_spin: block.settings.icon_spin,
+      icon_primary_color: block.settings.icon_primary_color,
+      icon_secondary_color: block.settings.icon_secondary_color,
+      icon_border_color: block.settings.icon_border_color
+    -%}
+  {%- else -%}
+    {{- heading_markup -}}
+  {%- endif -%}
 {%- endif -%}
 
 {% schema %}
@@ -197,6 +222,156 @@
       "type": "color",
       "id": "highlight_text_color",
       "label": "t:global.heading_effect.text_color"
+    },
+    {
+      "type": "header",
+      "content": "Decorative icon"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icon",
+      "label": "Show spinning icon",
+      "info": "A decorative icon shown next to the heading.",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "icon_type",
+      "label": "Icon",
+      "options": [
+        {
+          "value": "star",
+          "label": "Star"
+        },
+        {
+          "value": "lotus",
+          "label": "Lotus"
+        },
+        {
+          "value": "clover",
+          "label": "Clover"
+        },
+        {
+          "value": "smiley",
+          "label": "Smiley face"
+        },
+        {
+          "value": "cherries",
+          "label": "Cherries"
+        },
+        {
+          "value": "eight_ball",
+          "label": "8-Ball"
+        },
+        {
+          "value": "blob",
+          "label": "Blob"
+        },
+        {
+          "value": "badge",
+          "label": "Badge"
+        },
+        {
+          "value": "stamp",
+          "label": "Stamp"
+        },
+        {
+          "value": "swoosh",
+          "label": "Swoosh"
+        },
+        {
+          "value": "phone",
+          "label": "Phone"
+        }
+      ],
+      "default": "star",
+      "visible_if": "{{ block.settings.show_icon }}"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "min": 16,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Icon size",
+      "default": 32,
+      "visible_if": "{{ block.settings.show_icon }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "icon_spin",
+      "label": "Spin icon",
+      "default": true,
+      "visible_if": "{{ block.settings.show_icon }}"
+    },
+    {
+      "type": "select",
+      "id": "icon_position",
+      "label": "Position",
+      "options": [
+        {
+          "value": "right",
+          "label": "Right of heading"
+        },
+        {
+          "value": "left",
+          "label": "Left of heading"
+        },
+        {
+          "value": "above",
+          "label": "Above heading"
+        },
+        {
+          "value": "below",
+          "label": "Below heading"
+        }
+      ],
+      "default": "right",
+      "visible_if": "{{ block.settings.show_icon }}"
+    },
+    {
+      "type": "select",
+      "id": "icon_alignment",
+      "label": "Alignment",
+      "info": "Only has a visible effect when position is \"Above\" or \"Below\" the heading.",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left",
+      "visible_if": "{{ block.settings.show_icon }}"
+    },
+    {
+      "type": "color",
+      "id": "icon_primary_color",
+      "label": "Primary color",
+      "default": "#FF6B9D",
+      "visible_if": "{{ block.settings.show_icon }}"
+    },
+    {
+      "type": "color",
+      "id": "icon_secondary_color",
+      "label": "Secondary color",
+      "default": "#FFD93D",
+      "visible_if": "{{ block.settings.show_icon }}"
+    },
+    {
+      "type": "color",
+      "id": "icon_border_color",
+      "label": "Border color",
+      "info": "Leave blank for no border.",
+      "visible_if": "{{ block.settings.show_icon }}"
     }
   ],
   "presets": [
