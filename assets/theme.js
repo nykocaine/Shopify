@@ -4692,6 +4692,16 @@ var Tabs = class extends HTMLElement {
    * Perform a custom transition (can be overridden in subclasses). To "from" and "to" are hash representing the panel
    */
   async transition(fromPanel, toPanel) {
+    if (this.getAttribute("transition") === "unfold") {
+      // Same top-to-bottom unfold the drawers use (clip-path revealed from the top edge down, same duration and curve)
+      fromPanel.hidden = true;
+      toPanel.hidden = false;
+      toPanel.style.willChange = "clip-path";
+      await animate8(toPanel, { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] }, { duration: 0.55, ease: [0.22, 1, 0.36, 1] });
+      toPanel.style.willChange = "";
+      toPanel.style.clipPath = "";
+      return;
+    }
     await animate8(fromPanel, { opacity: [1, 0], transform: ["translateY(0)", "translateY(10px)"] }, { duration: this.animationDuration });
     fromPanel.hidden = true;
     toPanel.hidden = false;
