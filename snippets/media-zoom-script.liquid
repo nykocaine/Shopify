@@ -370,24 +370,64 @@ progress bar) are simply skipped when no carousel_id is given.
       // so every zoom in the theme moves the same way. Closing plays the keyframes backwards by swapping
       // them, not with a reversed animation: that would also reverse the curve, making the close start
       // slow and end abruptly.
-      var zoomEase = 'cubic-bezier(0.42, 0, 0.2, 1)';
       var zoomDuration = 480;
       var activeZoom = null;
 
-      function zoomKeyframes(thumbRect, finalRect) {
-        var scale = thumbRect.width / finalRect.width;
-        var shiftX = (thumbRect.left + thumbRect.width / 2) - (finalRect.left + finalRect.width / 2);
-        var shiftY = (thumbRect.top + thumbRect.height / 2) - (finalRect.top + finalRect.height / 2);
-        var trim = Math.max(0, (finalRect.height - thumbRect.height / scale) / 2) / finalRect.height * 100;
-        var radius = parseFloat(window.getComputedStyle(activeCell || document.body).borderRadius) || 0;
+      // Solves the cubic-bezier curve (0.42, 0, 0.2, 1 - same curve as the product gallery zoom) for a given progress, so the frames below
+      // can be sampled by hand.
+      function easeProgress(t) {
+        var x1 = 0.42, y1 = 0, x2 = 0.2, y2 = 1;
+        var low = 0, high = 1, mid = t;
 
-        return [
-          {
+        for (var i = 0; i < 24; i++) {
+          mid = (low + high) / 2;
+
+          var x = 3 * (1 - mid) * (1 - mid) * mid * x1 + 3 * (1 - mid) * mid * mid * x2 + mid * mid * mid;
+
+          if (x < t) {
+            low = mid;
+          } else {
+            high = mid;
+          }
+        }
+
+        return 3 * (1 - mid) * (1 - mid) * mid * y1 + 3 * (1 - mid) * mid * mid * y2 + mid * mid * mid;
+      }
+
+      // Sampled frame by frame (instead of two keyframes) on purpose: the visible box is interpolated
+      // directly between the two rects, and the corner radius is divided by the current scale at every
+      // step, so the corners keep exactly the same on-screen radius for the whole zoom. With only two
+      // keyframes the scale and the clip-path radius moved independently and the corners visibly
+      // bulged halfway through.
+      function zoomKeyframes(thumbRect, finalRect, reverse) {
+        var radius = parseFloat(window.getComputedStyle(activeCell || document.body).borderRadius) || 0;
+        var thumbCenterX = thumbRect.left + thumbRect.width / 2;
+        var thumbCenterY = thumbRect.top + thumbRect.height / 2;
+        var finalCenterX = finalRect.left + finalRect.width / 2;
+        var finalCenterY = finalRect.top + finalRect.height / 2;
+        var steps = 30;
+        var frames = [];
+
+        for (var i = 0; i <= steps; i++) {
+          // e: 0 = at the thumbnail, 1 = at the final box
+          var eased = easeProgress(i / steps);
+          var e = reverse ? 1 - eased : eased;
+          var visibleWidth = thumbRect.width + (finalRect.width - thumbRect.width) * e;
+          var visibleHeight = thumbRect.height + (finalRect.height - thumbRect.height) * e;
+          var scale = Math.max(visibleWidth / finalRect.width, visibleHeight / finalRect.height);
+          var shiftX = (thumbCenterX - finalCenterX) * (1 - e);
+          var shiftY = (thumbCenterY - finalCenterY) * (1 - e);
+          var trimX = Math.max(0, (finalRect.width - visibleWidth / scale) / 2) / finalRect.width * 100;
+          var trimY = Math.max(0, (finalRect.height - visibleHeight / scale) / 2) / finalRect.height * 100;
+
+          frames.push({
+            offset: i / steps,
             transform: 'translate(' + shiftX + 'px, ' + shiftY + 'px) scale(' + scale + ')',
-            clipPath: 'inset(' + trim + '% 0 ' + trim + '% 0 round ' + (radius / scale) + 'px)'
-          },
-          { transform: 'none', clipPath: 'inset(0% 0 0% 0 round ' + radius + 'px)' }
-        ];
+            clipPath: 'inset(' + trimY + '% ' + trimX + '% ' + trimY + '% ' + trimX + '% round ' + (radius / scale) + 'px)'
+          });
+        }
+
+        return frames;
       }
 
       function playZoom(element, thumbRect, finalRect, reverse) {
@@ -395,15 +435,9 @@ progress bar) are simply skipped when no carousel_id is given.
           activeZoom.cancel();
         }
 
-        var frames = zoomKeyframes(thumbRect, finalRect);
-
-        if (reverse) {
-          frames.reverse();
-        }
-
-        var animation = element.animate(frames, {
+        var animation = element.animate(zoomKeyframes(thumbRect, finalRect, reverse), {
           duration: zoomDuration,
-          easing: zoomEase,
+          easing: 'linear',
           fill: 'both'
         });
 
