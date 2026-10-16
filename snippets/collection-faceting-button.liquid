@@ -48,6 +48,6 @@ This component is used on collection and search page, and show the button that a
 {%- else -%}
   <button type="button" aria-controls="facets-drawer" class="h-stack gap-2.5 link-faded-reverse {{ class }}">
     {%- render 'icon' with 'filters' -%}
-    <span class="subheading">{{ button_content }} {% if show_count %}({{ data_source.products_count }}){% endif %}</span>
+    <span class="subheading">{{ button_content }} {% if show_count and data_source.products_count != blank %}({{ data_source.products_count }}){% endif %}</span>
   </button>
 {%- endif -%}

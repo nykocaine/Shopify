@@ -143,12 +143,35 @@
     display: block;
   }
 
+  #shopify-section-{{ section.id }} .collection__resource-tab-list button[hidden] {
+    display: none;
+  }
+
   #shopify-section-{{ section.id }} search-result-panel[hidden] {
     display: none;
   }
 
   #shopify-section-{{ section.id }} search-result-panel[load-from-url]:empty {
     min-height: 50vh;
+  }
+
+  {%- comment -%}
+  Filter bar layout: result-type tabs (or the count) pinned to the left, filter/sort pinned to the right. The bar is a
+  space-between flex row, but its children are not always two: the mobile filter button and the (here always empty on
+  mobile) desktop group are separate items, so the button ended up next to the tabs instead of at the far end. Both
+  filter/sort entry points now take all the free space before them (margin-inline-start: auto), and the desktop group is
+  dropped below 700px, where it holds nothing for the search page, so the mobile button is the only item on the right.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .collection__toolbar > .vertically-separated-list,
+  #shopify-section-{{ section.id }} .collection__toolbar > .sm\:hidden,
+  #shopify-section-{{ section.id }} .collection__toolbar > button[aria-controls="facets-drawer"] {
+    margin-inline-start: auto;
+  }
+
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .collection__toolbar > .vertically-separated-list {
+      display: none;
+    }
   }
 
   {%- comment -%}
@@ -350,7 +373,8 @@
             {%- comment -%}We reverse to ensure that "products" is the first tab{%- endcomment -%}
 
             {%- for search_type in search.types reversed -%}
-              <button slot="tab" class="link-reversed subheading" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="main-search-results-{{ search_type }}">
+              {%- comment -%}With several result types each tab starts hidden and is revealed once its results have loaded (theme.js, SearchResultPanel), so a type with no results never flashes its tab before being removed{%- endcomment -%}
+              <button slot="tab" class="link-reversed subheading" {% if search.types.size > 1 %}hidden{% endif %} aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="main-search-results-{{ search_type }}">
                 {%- assign translation_key = 'search.general.' | append: search_type | append: 's' -%}
                 {{- translation_key | t }} {% if search.types.size == 1 %}({{ search.results_count }}){% endif %}
               </button>

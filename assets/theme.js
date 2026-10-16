@@ -5933,6 +5933,7 @@ var SearchResultPanel = class extends HTMLElement {
     const searchResultsPanel = temporaryContent.querySelector(`#${this.getAttribute("id")}`);
     if (searchResultsPanel) {
       this.replaceChildren(...searchResultsPanel.children);
+      document.querySelector(`[aria-controls="${this.id}"]`)?.removeAttribute("hidden");
     } else {
       document.querySelector(`[aria-controls="${this.id}"]`).remove();
       this.remove();
