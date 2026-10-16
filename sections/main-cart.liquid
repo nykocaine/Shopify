@@ -122,6 +122,15 @@
   #shopify-section-{{ section.id }} .line-item__media {
     border-radius: {{ section.settings.cart_summary_border_radius }}px;
     overflow: hidden;
+    aspect-ratio: 1;
+    display: block;
+  }
+
+  {%- comment -%}The image fills that square (cropped to cover, never stretched) instead of showing its own portrait shape.{%- endcomment -%}
+  #shopify-section-{{ section.id }} .line-item__media img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
   }
 
   {%- comment -%}

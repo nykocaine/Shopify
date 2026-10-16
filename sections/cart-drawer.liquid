@@ -1,13 +1,22 @@
 {%- if request.page_type != 'cart' -%}
   {%- comment -%}
   Product images inherit the drawer's own corner radius (--drawer-border-radius, Theme settings >
-  Drawers), instead of a new independent value, so they stay in sync with the drawer shell.
+  Drawers), instead of a new independent value, so they stay in sync with the drawer shell. They fill a
+  square (cropped to cover, never stretched) instead of showing the image's own portrait shape.
   Not emitted on the cart page, where the drawer itself isn't rendered.
   {%- endcomment -%}
   <style>
     #shopify-section-{{ section.id }} .line-item__media {
       border-radius: var(--drawer-border-radius);
       overflow: hidden;
+      aspect-ratio: 1;
+      display: block;
+    }
+
+    #shopify-section-{{ section.id }} .line-item__media img {
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
     }
   </style>
 
