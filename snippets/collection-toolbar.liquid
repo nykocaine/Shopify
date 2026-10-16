@@ -2,19 +2,35 @@
 This component is rendered at the top of the collection and show information about the current collection, as well as
 access to filters.
 
+@param {object} [data_source] - the collection or search drop the toolbar belongs to (defaults to the current collection)
+@param {string} [filter_layout] - "drawer" or "sidebar" (defaults to the section's filter_layout setting, which the search page doesn't have)
+@param {string} [leading_content] - optional markup shown at the start of the bar instead of the results count (the search page puts its result-type tabs here)
+@param {boolean} [hide_faceting] - set to true to hide the filter/sort buttons (eg. search results with no products)
 @param {object} [section]
 {%- enddoc -%}
 
 {%- liquid
   assign mobile_items_per_row = cart.attributes.product_card_mobile_items_per_row | default: section.settings.products_per_row_mobile
   assign desktop_layout_mode = cart.attributes.product_card_desktop_layout | default: 'grid'
+  assign toolbar_source = data_source | default: collection
+  assign toolbar_filter_layout = filter_layout | default: section.settings.filter_layout
+  assign toolbar_count = toolbar_source.products_count | default: toolbar_source.results_count
+  assign show_toolbar_faceting = true
+
+  if hide_faceting
+    assign show_toolbar_faceting = false
+  endif
 -%}
 
 <div class="collection__toolbar color-scheme color-scheme--{{ section.settings.toolbar_color_scheme.id }}{% if section.settings.floating_toolbar %} section-floating{% endif %}"{% if section.settings.floating_toolbar %} style="border-radius: 0 0 {{ section.settings.toolbar_border_radius }}px {{ section.settings.toolbar_border_radius }}px; overflow: hidden;"{% endif %}>
-  <span class="subheading sm-max:hidden">{{ 'collection.products_count' | t: count: collection.products_count }}</span>
+  {%- if leading_content != blank -%}
+    {{ leading_content }}
+  {%- else -%}
+    <span class="subheading sm-max:hidden">{{ 'collection.products_count' | t: count: toolbar_count }}</span>
+  {%- endif -%}
 
-  {%- if section.settings.show_sort_by or section.settings.show_filters and collection.filters.size > 0 -%}
-    {%- render 'collection-faceting-button', data_source: collection, filter_layout: section.settings.filter_layout, show_count: true, class: 'sm:hidden', context: 'mobile' -%}
+  {%- if show_toolbar_faceting and section.settings.show_sort_by or show_toolbar_faceting and section.settings.show_filters and toolbar_source.filters.size > 0 -%}
+    {%- render 'collection-faceting-button', data_source: toolbar_source, filter_layout: toolbar_filter_layout, show_count: true, class: 'sm:hidden', context: 'mobile' -%}
   {%- endif -%}
 
   {%- if section.settings.quick_links_menu.links.size > 0 -%}
@@ -113,12 +129,12 @@ access to filters.
       </div>
     {%- endif -%}
 
-    {%- if section.settings.show_sort_by or section.settings.show_filters and collection.filters.size > 0 and section.settings.filter_layout == 'drawer' -%}
+    {%- if show_toolbar_faceting and section.settings.show_sort_by or show_toolbar_faceting and section.settings.show_filters and toolbar_source.filters.size > 0 and toolbar_filter_layout == 'drawer' -%}
       {%- if section.settings.show_product_card_size_selector -%}
         <hr class="divider sm-max:hidden">
       {%- endif -%}
 
-      {%- render 'collection-faceting-button', data_source: collection, filter_layout: section.settings.filter_layout, class: 'sm-max:hidden', context: 'desktop' -%}
+      {%- render 'collection-faceting-button', data_source: toolbar_source, filter_layout: toolbar_filter_layout, class: 'sm-max:hidden', context: 'desktop' -%}
     {%- endif -%}
   </div>
 </div>

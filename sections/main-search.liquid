@@ -134,6 +134,83 @@
   {%- endif -%}
 
   {%- comment -%}
+  Filter bar: same look and options as the collection page's toolbar (its own color scheme, optional floating and
+  sticky-to-header modes), ported from sections/main-collection.liquid.
+  {%- endcomment -%}
+  {%- if section.settings.floating_toolbar -%}
+    {%- comment -%}
+    Floating mode: same calc(var(--container-gutter) + 0.5rem) formula as sections/reviews.liquid and
+    sections/faq.liquid on the sides; top and bottom use three quarters of it (half from 700px up), so the toolbar reads as a compact
+    padded card instead of keeping its default, non-uniform padding values (theme.css).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .collection__toolbar {
+      padding-block: calc((var(--container-gutter) + 0.5rem) * 0.75);
+      padding-inline: calc(var(--container-gutter) + 0.5rem);
+    }
+
+    @media screen and (min-width: 700px) {
+      #shopify-section-{{ section.id }} .collection__toolbar {
+        padding-block: calc((var(--container-gutter) + 0.5rem) / 2);
+      }
+    }
+
+    {%- comment -%}
+    Spacing below the toolbar and below the whole collection is a full section spacing, as outer margin
+    (not padding): the gap to the product grid sits between the toolbar and the grid, and the gap to the
+    footer sits outside the section's colored background, so the theme editor doesn't select either.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .collection__toolbar {
+      margin-block-end: var(--section-vertical-spacing);
+    }
+
+    #shopify-section-{{ section.id }} > .color-scheme {
+      margin-block-end: var(--section-vertical-spacing);
+    }
+
+    #shopify-section-{{ section.id }} .collection {
+      padding-block-end: 0;
+    }
+
+    {%- if section.settings.sticky_toolbar -%}
+      {%- comment -%}
+      Sticky toolbar glued to the header. It sticks at the header's fully visible position
+      (--sticky-area-height) and, when the header hides on scroll, slides up by the header's height with
+      the same transform + timing as the header's own slide (sections/header.liquid), so both move on
+      the compositor in lockstep. It overlaps the header's last pixel (z-index below the header's) so
+      sub-pixel rounding of the header's height can never leave a visible seam between them.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .collection__toolbar {
+        position: sticky;
+        top: calc(var(--sticky-area-height) - 1px);
+        z-index: 2;
+        margin-block-start: -1px;
+        padding-block-start: calc((var(--container-gutter) + 0.5rem) * 0.75 + 1px);
+        will-change: transform;
+        transition: transform var(--header-solid-transition, .45s cubic-bezier(.4, 0, .2, 1)), visibility var(--header-solid-transition, .45s cubic-bezier(.4, 0, .2, 1));
+      }
+
+      @media screen and (min-width: 700px) {
+        #shopify-section-{{ section.id }} .collection__toolbar {
+          padding-block-start: calc((var(--container-gutter) + 0.5rem) / 2 + 1px);
+        }
+      }
+
+      {%- comment -%}
+      Hides together with the header: triggered by the very same state as the header's own slide
+      (.header.is-hidden, see sections/header.liquid), not by a custom property on :root, so both start in
+      the same style recalculation. It slides completely off-screen (its own height plus the sticky area
+      above it) and, like the header, only switches to visibility: hidden once the slide ends. On mobile
+      this also lets the floating filters button take over (it appears whenever the toolbar is out of view).
+      {%- endcomment -%}
+      :root:has(.shopify-section--header .header.is-hidden) #shopify-section-{{ section.id }} .collection__toolbar {
+        transform: translateY(calc(-100% - var(--sticky-area-height, 0px)));
+        visibility: hidden;
+      }
+
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- comment -%}
   Entirely skipped when the icon is off - the row is then just a transparent wrapper around the
   h1, which keeps behaving exactly like a bare h1 (centered by .prose-justify-center's inherited
   text-align, nothing else involved).
@@ -258,26 +335,32 @@
     </div>
 
     <div id="collection" class="collection">
-      <div class="collection__toolbar">
-        <x-tabs class="collection__resource-tab-list">
-          <template shadowrootmode="open">
-            <slot part="tablist" role="tablist" name="tab"></slot>
-          </template>
+      {%- capture search_toolbar_tabs -%}
+        {%- if search.types.size > 1 or search.types.first != 'product' -%}
+          <x-tabs class="collection__resource-tab-list">
+            <template shadowrootmode="open">
+              <slot part="tablist" role="tablist" name="tab"></slot>
+            </template>
 
-          {%- comment -%}We reverse to ensure that "products" is the first tab{%- endcomment -%}
+            {%- comment -%}We reverse to ensure that "products" is the first tab{%- endcomment -%}
 
-          {%- for search_type in search.types reversed -%}
-            <button slot="tab" class="link-reversed subheading" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="main-search-results-{{ search_type }}">
-              {%- assign translation_key = 'search.general.' | append: search_type | append: 's' -%}
-              {{- translation_key | t }} {% if search.types.size == 1 %}({{ search.results_count }}){% endif %}
-            </button>
-          {%- endfor -%}
-        </x-tabs>
-
-        {%- if search.types contains 'product' and section.settings.show_sort_by or section.settings.show_filters and search.filters.size > 0 -%}
-          {%- render 'collection-faceting-button', data_source: search, filter_layout: 'drawer', context: 'mobile' -%}
+            {%- for search_type in search.types reversed -%}
+              <button slot="tab" class="link-reversed subheading" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="main-search-results-{{ search_type }}">
+                {%- assign translation_key = 'search.general.' | append: search_type | append: 's' -%}
+                {{- translation_key | t }} {% if search.types.size == 1 %}({{ search.results_count }}){% endif %}
+              </button>
+            {%- endfor -%}
+          </x-tabs>
         {%- endif -%}
-      </div>
+      {%- endcapture -%}
+
+      {%- comment -%}Same toolbar as the collection page (snippets/collection-toolbar.liquid): the results count (or the result-type tabs when the search returns several types) on the left, filter and sort on the right{%- endcomment -%}
+      {%- assign search_toolbar_hide_faceting = true -%}
+      {%- if search.types contains 'product' -%}
+        {%- assign search_toolbar_hide_faceting = false -%}
+      {%- endif -%}
+
+      {%- render 'collection-toolbar', data_source: search, filter_layout: 'drawer', leading_content: search_toolbar_tabs, hide_faceting: search_toolbar_hide_faceting -%}
     
       {%- comment -%}If there is only one type of resources and that those are products, then we can show the results directly{%- endcomment -%}
         
@@ -407,6 +490,38 @@ on desktop based on the settings
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "color_scheme",
+      "id": "toolbar_color_scheme",
+      "label": "Esquema de color de la barra de herramientas",
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_toolbar",
+      "label": "Barra de herramientas flotante",
+      "info": "Pega la barra de herramientas al encabezado (sin esquinas redondeadas arriba) y agrega margen abajo y a los lados, usando el espaciado entre secciones y el margen lateral global de la tienda.",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky_toolbar",
+      "label": "Barra de herramientas fija junto al encabezado",
+      "info": "Se queda pegada debajo del encabezado al hacer scroll y se oculta y reaparece junto con él.",
+      "default": false,
+      "visible_if": "{{ section.settings.floating_toolbar }}"
+    },
+    {
+      "type": "range",
+      "id": "toolbar_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Radio de esquina",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_toolbar }}"
     },
     {
       "type": "checkbox",
