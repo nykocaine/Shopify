@@ -2829,15 +2829,19 @@ var FacetsDrawer = class extends Drawer {
       window.scrollTo({ top: Math.max(0, window.scrollY + bar.getBoundingClientRect().top - (header ? header.offsetHeight : 0)), behavior: "instant" });
     }
     if (this.isInline) {
+      // The panel is its own card right after the filter toolbar, not a part of it (the toolbar keeps its rounded bottom edge)
       const toolbar = document.querySelector(".collection__toolbar");
-      if (toolbar && this.parentElement !== toolbar) {
-        toolbar.append(this);
+      if (toolbar) {
+        if (this.previousElementSibling !== toolbar) {
+          toolbar.after(this);
+        }
+        const toolbarStyle = getComputedStyle(toolbar);
+        this.style.setProperty("--facets-toolbar-margin", toolbarStyle.marginBlockEnd);
+        // Same side margins as the toolbar (a floating toolbar is inset by the container gutter), so both cards line up
+        this.style.setProperty("--facets-toolbar-margin-inline", toolbarStyle.marginInlineStart);
       }
-      // The panel takes the toolbar's colors instead of the drawer color scheme, so both read as one piece
-      this.classList.remove("color-scheme");
-    } else {
-      this.classList.add("color-scheme");
     }
+    this.classList.add("color-scheme");
     return super.show(options);
   }
   /**
