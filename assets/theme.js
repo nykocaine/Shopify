@@ -2820,6 +2820,7 @@ var FacetsDrawer = class extends Drawer {
   }
   async show(options) {
     this._mode = this.#currentMode();
+    document.documentElement.toggleAttribute("data-facets-open", this.isInline);
     if (this.isInline) {
       const toolbar = document.querySelector(".collection__toolbar");
       if (toolbar && this.parentElement !== toolbar) {
@@ -2884,6 +2885,12 @@ var FacetsDrawer = class extends Drawer {
     if (this._reconfiguring) {
       controls.complete();
     }
+    // The header and the bar are released (back to their normal scroll behavior) once the panel has closed
+    controls.then(() => {
+      if (!this.open) {
+        document.documentElement.removeAttribute("data-facets-open");
+      }
+    });
     return controls;
   }
   createLeaveAnimation() {

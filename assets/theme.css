@@ -6099,6 +6099,10 @@ product-rerender {
     padding: 0;
     border: 0;
     overflow: visible;
+    /* The parts inherit a z-index, which turns each flex item into its own layer, and the footer (later in the order)
+       was painting over the header's layer, covering the close button and swallowing its clicks. The header's layer
+       must sit above the footer's. */
+    z-index: 2;
   }
 
   .drawer--facets::part(close-button) {
@@ -6140,10 +6144,34 @@ product-rerender {
     box-shadow: none;
   }
 
+  /* The buttons stay at the start of the footer row and the close button owns its end: the footer keeps room for it, so
+     the buttons can never sit on top of it and swallow its clicks. */
+  .drawer--facets::part(footer) {
+    padding-inline-end: calc(var(--control-button-size, 1.75rem) + 1rem);
+    z-index: 1;
+  }
+
   .drawer--facets [slot="footer"] .button-group {
     width: auto !important;
     min-width: 22rem;
-    margin-inline-start: auto;
+    max-width: 100%;
+    margin-inline-start: 0;
+  }
+
+  /* While the panel is open, the header and the bar (with the panel inside it) stay pinned at the top as the page scrolls:
+     the header does not slide away (hide on scroll) and the bar sticks even when its "sticky" option is off. Everything
+     returns to normal once the panel closes (FacetsDrawer sets and clears data-facets-open on <html>). */
+  :root[data-facets-open] .shopify-section--header {
+    transform: none !important;
+    visibility: visible !important;
+  }
+
+  :root[data-facets-open] .collection__toolbar {
+    position: sticky;
+    top: calc(var(--sticky-area-height, 0px) - 1px);
+    z-index: 2;
+    transform: none !important;
+    visibility: visible !important;
   }
 }
 
