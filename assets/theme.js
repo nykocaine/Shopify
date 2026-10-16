@@ -4374,6 +4374,15 @@ var VideoMedia = class extends BaseMedia {
       const videoElement = this.querySelector("video");
       this.setAttribute("loaded", "");
       this.querySelector("custom-cursor")?.remove();
+      if (this.hasAttribute("autoplay")) {
+        // Mobile browsers (iOS Safari above all) only autoplay a video that is muted AND inline, and they check the
+        // element's muted *property*, which the muted attribute in the markup doesn't always set in time. Setting
+        // all of it from script right before the first play() is what makes background videos start on phones.
+        videoElement.muted = true;
+        videoElement.defaultMuted = true;
+        videoElement.playsInline = true;
+        videoElement.setAttribute("webkit-playsinline", "");
+      }
       videoElement.addEventListener("play", () => {
         this.setAttribute("playing", "");
         this.removeAttribute("suspended");
@@ -4395,7 +4404,16 @@ var VideoMedia = class extends BaseMedia {
     } else {
       if (prop === "play" && !this.hasAttribute("host")) {
         target.play().catch((error) => {
-          if (error.name === "NotAllowedError") {
+          if (error.name === "NotAllowedError" && this.hasAttribute("autoplay")) {
+            // A silent background video blocked by the browser (data saver, iOS low power mode...) shouldn't pop up
+            // native controls like a regular video would: it simply retries on the visitor's first touch / scroll /
+            // click, which is when browsers allow it.
+            const retry = () => {
+              ["touchstart", "pointerdown", "scroll", "keydown"].forEach((type) => window.removeEventListener(type, retry, true));
+              target.play().catch(() => {});
+            };
+            ["touchstart", "pointerdown", "scroll", "keydown"].forEach((type) => window.addEventListener(type, retry, { capture: true, passive: true, once: true }));
+          } else if (error.name === "NotAllowedError") {
             this.setAttribute("suspended", "");
             if (!this.hasAttribute("controls")) {
               this.#mustRemoveControlsAfterSuspend = true;
