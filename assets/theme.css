@@ -8757,6 +8757,15 @@ shopify-account::part(signed-out-avatar) {
   display: none;
 }
 
+/* The header's side padding (1.25rem) was narrower than the body's (2rem), so the close button sat closer to
+   the edge than the search field and the content below it - nothing lined up on a common margin. Using the
+   body's inline padding for the header too puts the X on the same edge as the content (the pickup
+   availability drawer already does this with 2rem/2rem). Same for the cart drawer's X. */
+.drawer--search,
+.drawer--cart {
+  --drawer-header-padding-inline: var(--drawer-body-padding-inline);
+}
+
 .drawer--search::part(close-button) {
   justify-self: end;
 }
