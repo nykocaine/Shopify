@@ -6002,6 +6002,20 @@ product-rerender {
   }
 }
 
+/* Inner padding of the filters (mobile sheet and desktop panel): the same calc(var(--container-gutter) + 0.5rem) formula the
+   footer, reviews, FAQ and header cards use for their content, instead of the drawers' own min(2rem, gutter). On desktop the
+   panel's sides take the filter bar's own padding (which uses this formula when the bar floats) and its top and bottom
+   take half of it, set in the desktop block below. */
+.drawer--facets {
+  --facets-inner-padding: calc(var(--container-gutter) + 0.5rem);
+  --drawer-header-padding-inline: var(--facets-inner-padding);
+  --drawer-header-padding-block: var(--facets-inner-padding);
+  --drawer-body-padding-inline: var(--facets-inner-padding);
+  --drawer-body-padding-block: var(--facets-inner-padding);
+  --drawer-footer-padding-inline: var(--facets-inner-padding);
+  --drawer-footer-padding-block: var(--facets-inner-padding);
+}
+
 /* Filters drawer on mobile and tablet: a 65%-height panel hanging from the bottom edge of the filter toolbar and
    unfolding downward (the unfold itself is FacetsDrawer in theme.js, which also measures the toolbar and sets
    --facets-drawer-top), with the same side margin as the centered cart/search drawers. The overlay keeps the theme's usual
@@ -6089,7 +6103,7 @@ product-rerender {
 
   .drawer--facets::part(close-button) {
     position: absolute;
-    inset-block-end: 1.1rem;
+    inset-block-end: calc(var(--facets-inner-padding) / 2 + .15rem);
     inset-inline-end: 0;
     z-index: 1;
   }
@@ -6100,12 +6114,12 @@ product-rerender {
 
   .drawer--facets::part(body) {
     padding-inline: 0;
-    padding-block: .5rem 1rem;
+    padding-block: calc(var(--facets-inner-padding) / 2);
   }
 
   .drawer--facets::part(footer) {
     padding-inline: 0;
-    padding-block: 1rem;
+    padding-block: calc(var(--facets-inner-padding) / 2);
   }
 
   .drawer--facets .facets {
