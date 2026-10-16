@@ -299,9 +299,10 @@ Drawer-style framing: the expanded media is centered with padding on every side 
 area without cropping, and rounded to match the item's own corners.
 
 Its size is never left to the browser ("auto" would size a video by whatever it has loaded so far and
-let it grow once its metadata arrives): media-zoom-script.liquid sets --lightbox-w (the media's natural
-width) and --lightbox-ratio (its natural width / height) before the zoom starts, so the box is final
-from the first frame - the thumbnail-to-lightbox zoom lands on it exactly and nothing resizes afterwards.
+let it grow once its metadata arrives): media-zoom-script.liquid sets --lightbox-ratio (the media's real
+width / height) before the zoom starts, and the box is always the biggest one of that shape that fits the
+area, so it is final from the first frame - the thumbnail-to-lightbox zoom lands on it exactly, every item
+gets the same treatment, and nothing resizes afterwards.
 {%- endcomment -%}
 #{{ wrapper_id }} {
   --lightbox-media-w: 96vw;
@@ -315,7 +316,7 @@ from the first frame - the thumbnail-to-lightbox zoom lands on it exactly and no
   inset-block-start: 50%;
   inset-inline-start: 50%;
   translate: -50% -50%;
-  width: min(var(--lightbox-w, var(--lightbox-media-w)), var(--lightbox-media-w), calc(var(--lightbox-media-h) * var(--lightbox-ratio, 1)));
+  width: min(var(--lightbox-media-w), calc(var(--lightbox-media-h) * var(--lightbox-ratio, 1)));
   height: auto;
   aspect-ratio: var(--lightbox-ratio, auto);
   max-width: none;
@@ -617,11 +618,11 @@ to only ever be visible once relocated into the controls slot, which doesn't app
 
 {%- comment -%}
 Pinned to the media box's own bottom-right corner (same inset the video's logo has on the bottom-left, 1.75rem up so both clear the scrubber),
-so the logo and these controls sit on one line. The box is computed from the same --lightbox-w / --lightbox-ratio
+so the logo and these controls sit on one line. The box is computed from the same --lightbox-ratio
 the media itself is sized with (media-zoom-script.liquid sets them on both). Mobile has its own fixed box, below.
 {%- endcomment -%}
 #{{ wrapper_id }} .carousel-video-controls.is-lightbox-expanded {
-  --lightbox-box-w: min(var(--lightbox-w, var(--lightbox-media-w)), var(--lightbox-media-w), calc(var(--lightbox-media-h) * var(--lightbox-ratio, 1)));
+  --lightbox-box-w: min(var(--lightbox-media-w), calc(var(--lightbox-media-h) * var(--lightbox-ratio, 1)));
   --lightbox-box-h: calc(var(--lightbox-box-w) / var(--lightbox-ratio, 1));
   inset-block-end: auto;
   inset-inline-end: auto;
