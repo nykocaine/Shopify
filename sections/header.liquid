@@ -105,13 +105,24 @@
     --header-solid-transition: .75s cubic-bezier(.45, 0, .25, 1);
   }
 
+  {%- comment -%}
+  Two-step choreography instead of everything changing at once: the background fades first, and the
+  content (text color, logo cross-fade) follows after a short delay. Changing everything
+  together passes through an awkward mid-point where the (already light) text sits on the (still light)
+  background, or the (still dark) text on the dark hero, so it reads as a flicker. With the content
+  delayed, the background has mostly settled before the text/logo swap, like a polished staged reveal.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} {
+    --header-content-delay: .18s;
+  }
+
   #shopify-section-{{ section.id }} .header {
     --header-padding-inline: calc(var(--container-gutter) + 0.5rem);
-    transition: background var(--header-solid-transition), color var(--header-solid-transition), border-color var(--header-solid-transition);
+    transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition);
   }
 
   #shopify-section-{{ section.id }} .header__logo-image {
-    transition: opacity var(--header-solid-transition);
+    transition: opacity var(--header-solid-transition) var(--header-content-delay);
   }
 
   {%- comment -%}
@@ -142,7 +153,14 @@
   #shopify-section-{{ section.id }} .link,
   #shopify-section-{{ section.id }} .link-faded,
   #shopify-section-{{ section.id }} .link-faded-reverse {
-    transition: color var(--header-solid-transition), background-size .3s ease-in-out;
+    transition: color var(--header-solid-transition) var(--header-content-delay), background-size .3s ease-in-out;
+  }
+
+  {%- comment -%}Hover/focus feedback on links must stay instant, so the content delay above doesn't apply to it.{%- endcomment -%}
+  #shopify-section-{{ section.id }} .link:is(:hover, :focus-visible),
+  #shopify-section-{{ section.id }} .link-faded:is(:hover, :focus-visible),
+  #shopify-section-{{ section.id }} .link-faded-reverse:is(:hover, :focus-visible) {
+    transition-delay: 0s;
   }
 
   #shopify-section-{{ section.id }} .header__secondary-nav-separator {
