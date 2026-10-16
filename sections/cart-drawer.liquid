@@ -21,6 +21,16 @@
       width: 100%;
       height: 100%;
     }
+
+    {%- comment -%}
+    The products are pinned to the bottom of the drawer, right above the totals, and the list grows upwards: with few
+    products the empty space is above them instead of between them and the totals. (The body of the drawer is a grid
+    that fills the available height, so aligning its only item to the end is all it takes.) When the list is taller
+    than the drawer nothing changes: it scrolls as before.
+    {%- endcomment -%}
+    #cart-drawer .cart-drawer__content {
+      align-self: end;
+    }
   </style>
 
   {%- if section.settings.mobile_only -%}
@@ -149,7 +159,7 @@
           </div>
         </div>
       {%- else -%}
-        <div class="v-stack gap-5">
+        <div class="v-stack gap-5 cart-drawer__content">
           <div class="v-stack gap-4">
             {%- comment -%}TRUST BADGES{%- endcomment -%}
             {%- assign trust_badges_block = section.blocks | where: 'type', 'trust_badges' | first -%}
