@@ -12,6 +12,16 @@
     }
 
     {%- comment -%}
+    The text's distance from the slide's edges is the site-wide container gutter, at every width. .content-box
+    (theme.css) is shared with many other sections, so its own value (the larger of 1.5rem and the gutter, shrinking
+    in narrow containers) stays as is and is only overridden here; the section id in the selector beats those
+    container-width rules.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .slideshow__slide .content-box {
+      --content-box-spacing: var(--container-gutter);
+    }
+
+    {%- comment -%}
     Matches the existing .min-h-fill convention (assets/theme.css): subtract the sticky header/
     announcement bar area from the svh height, since that's real occupied space above the fold on
     every page except when this section is both first AND allows a transparent header - there, the
