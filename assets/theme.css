@@ -1262,15 +1262,18 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
    header and below the footer. Used by the mobile floating cart/search drawers and the bottom of the menu drawer. */
 :root {
   --drawer-block-gap: calc(var(--section-vertical-spacing) / 2);
+  /* Inner padding of every drawer, modal and popup: the same formula the containers (footer, reviews, FAQ, header cards) use
+     for their content. */
+  --dialog-inner-padding: calc(var(--container-gutter) + 0.5rem);
 }
 
 .drawer {
-  --drawer-header-padding-block: min(1.25rem, var(--container-gutter));
-  --drawer-header-padding-inline: min(1.25rem, var(--container-gutter));
-  --drawer-body-padding-block: min(2rem, var(--container-gutter));
-  --drawer-body-padding-inline: min(2rem, var(--container-gutter));
-  --drawer-footer-padding-block: min(2rem, var(--container-gutter));
-  --drawer-footer-padding-inline: min(2rem, var(--container-gutter));
+  --drawer-header-padding-block: var(--dialog-inner-padding);
+  --drawer-header-padding-inline: var(--dialog-inner-padding);
+  --drawer-body-padding-block: var(--dialog-inner-padding);
+  --drawer-body-padding-inline: var(--dialog-inner-padding);
+  --drawer-footer-padding-block: var(--dialog-inner-padding);
+  --drawer-footer-padding-inline: var(--dialog-inner-padding);
   --drawer-max-width: min(100vw - 2rem, 37.5rem);
 }
 
@@ -1362,7 +1365,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   text-align: center;
   border-block-end: 1px solid rgb(var(--border-color));
   place-items: center;
-  padding: .7rem 1rem;
+  padding: calc(var(--dialog-inner-padding) / 2) var(--dialog-inner-padding);
   display: grid;
 }
 
@@ -1373,23 +1376,23 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 }
 
 .drawer-popover::part(body) {
-  padding: 1.25rem;
+  padding: var(--dialog-inner-padding);
 }
 
 @media screen and (min-width: 700px) {
   .drawer-popover::part(header) {
-    padding: .9rem 1.25rem;
+    padding: calc(var(--dialog-inner-padding) / 2) var(--dialog-inner-padding);
   }
 
   .drawer-popover::part(body) {
-    padding: 2rem;
+    padding: var(--dialog-inner-padding);
   }
 }
 
 .modal {
   --modal-content-margin: 1rem;
-  --modal-body-padding-block: 1.25rem;
-  --modal-body-padding-inline: 1.25rem;
+  --modal-body-padding-block: var(--dialog-inner-padding);
+  --modal-body-padding-inline: var(--dialog-inner-padding);
   --modal-content-width: 30rem;
 }
 
@@ -1435,8 +1438,8 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 @media screen and (min-width: 1000px) {
   .modal {
     --modal-content-margin: 1.75rem;
-    --modal-body-padding-block: 3rem;
-    --modal-body-padding-inline: 3rem;
+    --modal-body-padding-block: var(--dialog-inner-padding);
+    --modal-body-padding-inline: var(--dialog-inner-padding);
   }
 
   .modal::part(content) {
@@ -1453,13 +1456,13 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   }
 
   .modal--tight {
-    --modal-body-padding-block: 2rem;
-    --modal-body-padding-inline: 2rem;
+    --modal-body-padding-block: var(--dialog-inner-padding);
+    --modal-body-padding-inline: var(--dialog-inner-padding);
   }
 }
 
 .popover {
-  --popover-padding-inline: 1.25rem;
+  --popover-padding-inline: var(--dialog-inner-padding);
 }
 
 @media screen and (max-width: 999px) {
@@ -6007,7 +6010,7 @@ product-rerender {
    panel's sides take the filter bar's own padding (which uses this formula when the bar floats) and its top and bottom
    take half of it, set in the desktop block below. */
 .drawer--facets {
-  --facets-inner-padding: calc(var(--container-gutter) + 0.5rem);
+  --facets-inner-padding: var(--dialog-inner-padding);
   --drawer-header-padding-inline: var(--facets-inner-padding);
   --drawer-header-padding-block: var(--facets-inner-padding);
   --drawer-body-padding-inline: var(--facets-inner-padding);
@@ -8532,8 +8535,8 @@ shopify-account::part(signed-out-avatar) {
 }
 
 .drawer--pickup-availability {
-  --drawer-header-padding-block: min(2rem, var(--container-gutter));
-  --drawer-header-padding-inline: min(2rem, var(--container-gutter));
+  --drawer-header-padding-block: var(--dialog-inner-padding);
+  --drawer-header-padding-inline: var(--dialog-inner-padding);
 }
 
 .drawer--pickup-availability::part(header) {
