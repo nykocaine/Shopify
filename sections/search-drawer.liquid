@@ -4,8 +4,23 @@
     margin-block-end: 1.5rem;
   }
 
+  {%- comment -%}
+  The radius is defined on the drawer itself (not only on .product-card) so every card inside it - the featured
+  carousel and the live search results, which are fetched and inserted later - always resolves it. It is then
+  applied straight to each card's image box and to the image, so the corners are rounded and clipped even when the
+  card markup doesn't pick up the inline radius (and the hover zoom can't spill past the rounded corners).
+  {%- endcomment -%}
+  #search-drawer {
+    --product-card-border-radius: {{ section.settings.product_card_border_radius }}px;
+  }
+
   #search-drawer .product-card {
     --product-card-border-radius: {{ section.settings.product_card_border_radius }}px;
+  }
+
+  #search-drawer .product-card__media,
+  #search-drawer .product-card__media img {
+    border-radius: var(--product-card-border-radius, 0);
   }
 </style>
 
