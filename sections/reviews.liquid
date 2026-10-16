@@ -793,7 +793,7 @@ to the first 5 of the newly sorted order.
     var loadMoreButton = root.querySelector('.reviews__load-more-button');
     var loadLessButton = root.querySelector('.reviews__load-less-button');
     var initialCount = 1;
-    var pageSize = 5;
+    var pageSize = 1;
     var visibleCount = initialCount;
     var previousVisibleCount = initialCount;
 
@@ -809,7 +809,7 @@ to the first 5 of the newly sorted order.
 
     function animateList(applyChange, opening) {
       var fromHeight = list.offsetHeight;
-      var duration = opening ? 2500 : 2200;
+      var duration = opening ? 2500 : 1200;
       var easing = 'cubic-bezier(0.45, 0, 0.25, 1)';
 
       applyChange();
@@ -827,9 +827,13 @@ to the first 5 of the newly sorted order.
 
       isAnimating = true;
       list.style.overflow = 'hidden';
+      // Scroll anchoring would otherwise keep nudging the scroll position while the list's height changes
+      // (the content below, footer included, would appear to drift out of sync with the fold).
+      document.documentElement.style.overflowAnchor = 'none';
 
       list.animate({ height: [fromHeight + 'px', toHeight + 'px'] }, { duration: duration, easing: easing }).finished.then(function () {
         list.style.overflow = '';
+        document.documentElement.style.overflowAnchor = '';
         isAnimating = false;
 
         if (!opening) {
