@@ -5956,11 +5956,11 @@ product-rerender {
 
 
 @media screen and (max-width: 999px) {
-  .drawer-mobile-centered :is(.drawer--cart, .drawer--search)::part(overlay) {
+  .drawer-mobile-centered :is(.drawer--cart, .drawer--search, .drawer--facets)::part(overlay) {
     background: var(--drawer-mobile-overlay-color, rgb(var(--page-overlay)));
   }
 
-  .drawer-mobile-centered :is(.drawer--cart, .drawer--search)::part(content) {
+  .drawer-mobile-centered :is(.drawer--cart, .drawer--search, .drawer--facets)::part(content) {
     position: absolute;
     inset: var(--drawer-block-gap) var(--container-gutter);
     margin: 0 !important;
@@ -8786,7 +8786,8 @@ shopify-account::part(signed-out-avatar) {
 }
 
 .drawer--search,
-.drawer--cart {
+.drawer--cart,
+.drawer--facets {
   --drawer-header-padding-inline: var(--drawer-body-padding-inline);
 }
 
