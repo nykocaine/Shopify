@@ -281,82 +281,99 @@ progress bar) are simply skipped when no carousel_id is given.
         }
       }
 
-      // continuePlayingWithSound is only passed by next/prev, never the initial open: undefined means
-      // "leave it exactly as it already is" - nothing autoplays, so a never-played video expands
-      // paused, matching how it already looked before the lightbox opened. Returns the resolved media
-      // object so callers can drive setMediaVisible() on it without looking it up a second time.
-      function expandCell(cell, continuePlayingWithSound) {
+      // Puts one item's media in its expanded (position: fixed, centered) state without touching playback
+      // or which item counts as the active one - the vertical feed needs the neighbouring item expanded
+      // too, parked off screen, while it is being dragged/slid in. Safe to call twice for the same cell.
+      function expandMedia(cell) {
         var media = getCellMedia(cell);
+        var element = media.videoMedia || media.image;
+
+        if (!element || element.classList.contains('is-lightbox-expanded')) {
+          return media;
+        }
 
         // The expanded media leaves the cell's flow (position: fixed): keeping the cell's box means the
         // grid doesn't collapse or shift under it, and the thumbnail's slot is still there to land back in.
         cell.style.minHeight = cell.offsetHeight + 'px';
 
-        setLightboxSize(media.videoMedia || media.image, media);
+        setLightboxSize(element, media);
+        element.classList.add('is-lightbox-expanded');
 
-        if (media.videoMedia) {
-          var video = media.videoMedia.querySelector('video');
-          var wasPlaying = video && !video.paused;
-          var soundButton = media.controlsGroup ? media.controlsGroup.querySelector('.carousel-video-sound-toggle') : null;
-
-          if (video && soundButton && continuePlayingWithSound !== undefined && !video.muted !== continuePlayingWithSound) {
-            soundButton.click();
-          }
-
-          if (video && (wasPlaying || continuePlayingWithSound !== undefined)) {
-            media.videoMedia.player.play();
-          }
-
-          media.videoMedia.classList.add('is-lightbox-expanded');
-
-          if (media.controlsGroup) {
-            media.controlsGroup.classList.add('is-lightbox-expanded');
-          }
-        } else if (media.image) {
-          media.image.classList.add('is-lightbox-expanded');
+        if (media.controlsGroup) {
+          media.controlsGroup.classList.add('is-lightbox-expanded');
         }
-
-        activeCell = cell;
 
         return media;
       }
 
-      // Returns whether the collapsed item was an actually-playing video - the caller
-      // (showRelativeSlide) uses this to decide whether the next item should resume playing too.
-      function collapseCell() {
-        if (!activeCell) {
-          return false;
-        }
-
-        var media = getCellMedia(activeCell);
-        var wasPlaying = false;
+      // The reverse of expandMedia(): back to the thumbnail's own state, video paused. Also records
+      // whether this video had sound on, so the next one can carry it over.
+      function collapseMedia(cell) {
+        var media = getCellMedia(cell);
+        var element = media.videoMedia || media.image;
 
         if (media.videoMedia) {
           var video = media.videoMedia.querySelector('video');
 
           if (video) {
-            wasPlaying = !video.paused;
             lightboxSoundOn = !video.muted;
           }
 
           media.videoMedia.pause();
-          media.videoMedia.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
-          media.videoMedia.style.removeProperty('--lightbox-w');
-          media.videoMedia.style.removeProperty('--lightbox-ratio');
-
-          if (media.controlsGroup) {
-            media.controlsGroup.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
-          }
-        } else if (media.image) {
-          media.image.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
-          media.image.style.removeProperty('--lightbox-w');
-          media.image.style.removeProperty('--lightbox-ratio');
         }
 
-        activeCell.style.minHeight = '';
-        activeCell = null;
+        if (element) {
+          element.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
+          element.style.removeProperty('--lightbox-w');
+          element.style.removeProperty('--lightbox-ratio');
+          element.style.transform = '';
+        }
 
-        return wasPlaying;
+        if (media.controlsGroup) {
+          media.controlsGroup.classList.remove('is-lightbox-expanded', 'is-lightbox-visible');
+        }
+
+        cell.style.minHeight = '';
+      }
+
+      // Plays the video of the item that is now on screen, like a feed does. soundOn is only passed
+      // when moving between items (undefined = leave the sound exactly as it already is): a freshly
+      // encountered video otherwise always starts muted, so the previous one's choice is carried over.
+      function startPlayback(media, soundOn) {
+        if (!media.videoMedia) {
+          return;
+        }
+
+        var video = media.videoMedia.querySelector('video');
+        var soundButton = media.controlsGroup ? media.controlsGroup.querySelector('.carousel-video-sound-toggle') : null;
+
+        if (video && soundButton && soundOn !== undefined && !video.muted !== soundOn) {
+          soundButton.click();
+        }
+
+        if (video) {
+          media.videoMedia.player.play();
+        }
+      }
+
+      // Returns the resolved media object so callers can drive setMediaVisible() on it without looking
+      // it up a second time.
+      function expandCell(cell, soundOn) {
+        var media = expandMedia(cell);
+
+        startPlayback(media, soundOn);
+        activeCell = cell;
+
+        return media;
+      }
+
+      function collapseCell() {
+        if (!activeCell) {
+          return;
+        }
+
+        collapseMedia(activeCell);
+        activeCell = null;
       }
 
       var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -473,6 +490,8 @@ progress bar) are simply skipped when no carousel_id is given.
         var media = expandCell(cell);
         var expandedElement = media.videoMedia || media.image;
 
+        updateNavButtons();
+
         // The controls group jumps from its thumbnail spot to the viewport corner the moment it is
         // expanded: starting it at opacity 0 without a transition (instead of fading down from 1) keeps
         // that jump from ever being seen. The transition is handed back with the fade-in below.
@@ -509,7 +528,7 @@ progress bar) are simply skipped when no carousel_id is given.
       var openedCell = null;
 
       function closeLightbox() {
-        if (isClosing || !activeCell) {
+        if (isClosing || isSliding || !activeCell) {
           return;
         }
 
@@ -571,26 +590,321 @@ progress bar) are simply skipped when no carousel_id is given.
         };
       }
 
-      function showRelativeSlide(offset) {
-        if (!activeCell) {
-          return;
-        }
+      // ---- Vertical feed (TikTok style) ---------------------------------------------------------------
+      // Items are stacked one above the other, one screen apart: a swipe/drag, the wheel, the arrow keys
+      // or the up/down buttons slide the current one out and the next one in. The media elements are the
+      // same real ones as ever (fixed + centered, see media-zoom-style.liquid) - a slide is just a
+      // transform on the outgoing and incoming ones, so nothing is moved in the DOM or re-buffered.
+      var slideEase = 'cubic-bezier(0.32, 0.72, 0, 1)';
+      var slideDuration = prefersReducedMotion ? 1 : 380;
+      var isSliding = false;
+      var dragState = null;
+      var suppressClick = false;
+      var wheelLockedUntil = 0;
+      var slideAnimations = [];
 
-        var currentIndex = cells.indexOf(activeCell);
-        var nextCell = cells[currentIndex + offset];
-
-        if (!nextCell) {
-          return;
-        }
-
-        var wasPlaying = collapseCell();
-        var media = expandCell(nextCell, wasPlaying ? lightboxSoundOn : undefined);
-
-        // No enter animation here, unlike openLightbox - this swaps between two items that are both
-        // already part of the same open lightbox, so the new one should just appear at its settled
-        // state right away instead of re-running the fade/scale-in.
-        setMediaVisible(media, true);
+      function viewportHeight() {
+        return window.innerHeight;
       }
+
+      function slideElement(cell) {
+        var media = getCellMedia(cell);
+
+        return media.videoMedia || media.image;
+      }
+
+      function setSlideOffset(cell, offsetY) {
+        var element = slideElement(cell);
+
+        if (element) {
+          element.style.transform = offsetY ? 'translateY(' + offsetY + 'px)' : '';
+        }
+      }
+
+      // Items that are not the active one are parked a full screen away on the side they come from.
+      function parkNeighbour(cell, direction) {
+        expandMedia(cell);
+        setSlideOffset(cell, direction * viewportHeight());
+      }
+
+      function updateNavButtons() {
+        var index = cells.indexOf(activeCell);
+
+        if (lightboxPrevButton) {
+          lightboxPrevButton.disabled = index <= 0;
+        }
+
+        if (lightboxNextButton) {
+          lightboxNextButton.disabled = index >= cells.length - 1;
+        }
+      }
+
+      function cancelSlideAnimations() {
+        slideAnimations.forEach(function(animation) {
+          animation.cancel();
+        });
+
+        slideAnimations = [];
+      }
+
+      function slideTo(element, from, to, duration) {
+        var animation = element.animate(
+          [{ transform: 'translateY(' + from + 'px)' }, { transform: 'translateY(' + to + 'px)' }],
+          { duration: duration, easing: slideEase, fill: 'both' }
+        );
+
+        slideAnimations.push(animation);
+
+        return animation;
+      }
+
+      // Settles the feed on the next/previous item (direction: 1 = next, shown by sliding up, -1 =
+      // previous), starting from wherever the finger/animation currently is (fromOffset, px).
+      function commitSlide(direction, fromOffset) {
+        var outgoing = activeCell;
+        var incoming = cells[cells.indexOf(outgoing) + direction];
+
+        if (!outgoing || !incoming) {
+          return;
+        }
+
+        var height = viewportHeight();
+        var outgoingElement = slideElement(outgoing);
+        var incomingMedia = expandMedia(incoming);
+        var incomingElement = incomingMedia.videoMedia || incomingMedia.image;
+
+        isSliding = true;
+
+        // What the outgoing item's own sound state was is read (and carried over) by collapseMedia() at
+        // the end, but the new video has to start now so it is already moving as it slides in.
+        var outgoingMedia = getCellMedia(outgoing);
+        var outgoingVideo = outgoingMedia.videoMedia ? outgoingMedia.videoMedia.querySelector('video') : null;
+        var carriedSound = outgoingVideo ? !outgoingVideo.muted : lightboxSoundOn;
+
+        if (outgoingMedia.videoMedia) {
+          outgoingMedia.videoMedia.pause();
+        }
+
+        lightboxSoundOn = carriedSound;
+        setMediaVisible(outgoingMedia, false);
+        setMediaVisible(incomingMedia, true);
+        startPlayback(incomingMedia, carriedSound);
+
+        // Quicker when the finger already dragged most of the way.
+        var remaining = Math.max(0.35, 1 - Math.abs(fromOffset) / height);
+        var duration = Math.round(slideDuration * remaining);
+
+        var incomingFrom = direction * height + fromOffset;
+
+        setSlideOffset(outgoing, 0);
+        setSlideOffset(incoming, 0);
+
+        slideTo(outgoingElement, fromOffset, -direction * height, duration);
+
+        var finishing = slideTo(incomingElement, incomingFrom, 0, duration);
+
+        activeCell = incoming;
+        updateNavButtons();
+
+        finishing.onfinish = function() {
+          cancelSlideAnimations();
+          collapseMedia(outgoing);
+          setSlideOffset(incoming, 0);
+          isSliding = false;
+        };
+      }
+
+      function springBack(direction, fromOffset) {
+        var current = activeCell;
+        var neighbour = cells[cells.indexOf(current) + direction];
+        var height = viewportHeight();
+
+        isSliding = true;
+        setSlideOffset(current, 0);
+
+        if (neighbour) {
+          setSlideOffset(neighbour, 0);
+        }
+
+        var back = slideTo(slideElement(current), fromOffset, 0, 260);
+
+        if (neighbour) {
+          slideTo(slideElement(neighbour), direction * height + fromOffset, direction * height, 260);
+        }
+
+        back.onfinish = function() {
+          cancelSlideAnimations();
+
+          if (neighbour) {
+            collapseMedia(neighbour);
+          }
+
+          isSliding = false;
+        };
+      }
+
+      function showRelativeSlide(offset) {
+        if (!activeCell || isSliding || isClosing) {
+          return;
+        }
+
+        var target = cells[cells.indexOf(activeCell) + offset];
+
+        if (!target) {
+          return;
+        }
+
+        parkNeighbour(target, offset);
+
+        // The parked item has to be laid out at its off-screen spot before the slide reads it.
+        void slideElement(target).offsetHeight;
+
+        commitSlide(offset, 0);
+      }
+
+      // Finger/mouse drag: the current item follows the pointer, the one it is heading to comes in right
+      // behind it, and releasing either completes the slide or springs back.
+      function pointerIsOnControl(event) {
+        return event.target.closest && event.target.closest('button, a, .carousel-video-controls, .media-lightbox__close');
+      }
+
+      document.addEventListener('pointerdown', function(event) {
+        if (lightbox.hidden || !activeCell || isSliding || isClosing || activeZoom || event.button > 0 || pointerIsOnControl(event)) {
+          return;
+        }
+
+        dragState = {
+          id: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          offset: 0,
+          dragging: false,
+          parked: {},
+          lastY: event.clientY,
+          lastTime: event.timeStamp,
+          velocity: 0
+        };
+      });
+
+      document.addEventListener('pointermove', function(event) {
+        if (!dragState || event.pointerId !== dragState.id) {
+          return;
+        }
+
+        var deltaY = event.clientY - dragState.startY;
+
+        if (!dragState.dragging) {
+          if (Math.abs(deltaY) < 8 || Math.abs(deltaY) < Math.abs(event.clientX - dragState.startX)) {
+            return;
+          }
+
+          dragState.dragging = true;
+          suppressClick = true;
+        }
+
+        var direction = deltaY < 0 ? 1 : -1;
+        var neighbour = cells[cells.indexOf(activeCell) + direction];
+
+        // No item in that direction: the drag still follows the finger, but resists.
+        var offset = neighbour ? deltaY : deltaY * 0.3;
+
+        if (neighbour && !dragState.parked[direction]) {
+          parkNeighbour(neighbour, direction);
+          dragState.parked[direction] = neighbour;
+        }
+
+        dragState.offset = offset;
+        dragState.direction = direction;
+        dragState.hasNeighbour = !!neighbour;
+
+        var elapsed = event.timeStamp - dragState.lastTime;
+
+        if (elapsed > 0) {
+          dragState.velocity = (event.clientY - dragState.lastY) / elapsed;
+        }
+
+        dragState.lastY = event.clientY;
+        dragState.lastTime = event.timeStamp;
+
+        setSlideOffset(activeCell, offset);
+
+        Object.keys(dragState.parked).forEach(function(key) {
+          var parkedDirection = Number(key);
+
+          setSlideOffset(dragState.parked[key], parkedDirection * viewportHeight() + (parkedDirection === direction ? offset : 0));
+        });
+
+        event.preventDefault();
+      }, { passive: false });
+
+      function endDrag(event) {
+        if (!dragState || event.pointerId !== dragState.id) {
+          return;
+        }
+
+        var state = dragState;
+
+        dragState = null;
+
+        setTimeout(function() {
+          suppressClick = false;
+        }, 0);
+
+        if (!state.dragging) {
+          return;
+        }
+
+        var height = viewportHeight();
+        var movedEnough = Math.abs(state.offset) > height * 0.18;
+        var flicked = Math.abs(state.velocity) > 0.5 && Math.sign(state.velocity) === Math.sign(state.offset);
+
+        // A neighbour parked for the opposite direction earlier in the same drag is no longer needed.
+        Object.keys(state.parked).forEach(function(key) {
+          if (Number(key) !== state.direction) {
+            collapseMedia(state.parked[key]);
+          }
+        });
+
+        if (state.hasNeighbour && (movedEnough || flicked)) {
+          commitSlide(state.direction, state.offset);
+        } else {
+          springBack(state.direction, state.offset);
+        }
+      }
+
+      // The browser's own image drag-and-drop would otherwise cancel the pointer drag.
+      document.addEventListener('dragstart', function(event) {
+        if (!lightbox.hidden) {
+          event.preventDefault();
+        }
+      });
+
+      document.addEventListener('pointerup', endDrag);
+      document.addEventListener('pointercancel', endDrag);
+
+      // A drag must not also count as a tap on whatever it ended over (play/pause, product link...).
+      document.addEventListener('click', function(event) {
+        if (suppressClick) {
+          event.stopPropagation();
+          event.preventDefault();
+        }
+      }, true);
+
+      document.addEventListener('wheel', function(event) {
+        if (lightbox.hidden || !activeCell) {
+          return;
+        }
+
+        event.preventDefault();
+
+        if (isSliding || isClosing || event.timeStamp < wheelLockedUntil || Math.abs(event.deltaY) < 24) {
+          return;
+        }
+
+        // Trackpads keep emitting wheel events for a while after the gesture: one slide per gesture.
+        wheelLockedUntil = event.timeStamp + slideDuration + 250;
+        showRelativeSlide(event.deltaY > 0 ? 1 : -1);
+      }, { passive: false });
 
       lightboxCloseButton.addEventListener('click', closeLightbox);
 
@@ -607,8 +921,18 @@ progress bar) are simply skipped when no carousel_id is given.
       }
 
       document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape' && !lightbox.hidden) {
+        if (lightbox.hidden) {
+          return;
+        }
+
+        if (event.key === 'Escape') {
           closeLightbox();
+        } else if (event.key === 'ArrowDown' || event.key === 'PageDown') {
+          event.preventDefault();
+          showRelativeSlide(1);
+        } else if (event.key === 'ArrowUp' || event.key === 'PageUp') {
+          event.preventDefault();
+          showRelativeSlide(-1);
         }
       });
 
