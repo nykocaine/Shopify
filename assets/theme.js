@@ -2786,13 +2786,17 @@ var FacetsDrawer = class extends Drawer {
     const top = toolbar ? Math.max(0, Math.round(toolbar.getBoundingClientRect().bottom)) : 0;
     this.style.setProperty("--facets-drawer-top", `${top}px`);
     const content = this.getShadowPartByName("content");
-    content.style.willChange = "clip-path";
+    const overlay = this.getShadowPartByName("overlay");
+    content.style.willChange = overlay.style.willChange = "clip-path";
+    const options = { duration: 0.55, ease: [0.22, 1, 0.36, 1] };
+    const unfold = { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] };
     const controls = animateSequence2([
-      [content, { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] }, { duration: 0.55, ease: [0.22, 1, 0.36, 1] }]
+      [overlay, unfold, options],
+      [content, unfold, { ...options, at: "<" }]
     ]);
     controls.then(() => {
-      content.style.willChange = "";
-      content.style.clipPath = "";
+      content.style.willChange = overlay.style.willChange = "";
+      content.style.clipPath = overlay.style.clipPath = "";
     });
     return controls;
   }
@@ -2801,9 +2805,13 @@ var FacetsDrawer = class extends Drawer {
       return super.createLeaveAnimationControls();
     }
     const content = this.getShadowPartByName("content");
-    content.style.willChange = "clip-path";
+    const overlay = this.getShadowPartByName("overlay");
+    content.style.willChange = overlay.style.willChange = "clip-path";
+    const options = { duration: 0.4, ease: [0.33, 0, 0.2, 1] };
+    const fold = { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] };
     return animateSequence2([
-      [content, { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] }, { duration: 0.4, ease: [0.33, 0, 0.2, 1] }]
+      [overlay, fold, options],
+      [content, fold, { ...options, at: "<" }]
     ]);
   }
 };

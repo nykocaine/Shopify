@@ -5984,6 +5984,14 @@ product-rerender {
    whether or not "Center drawers on mobile" is on, and after the cart/search rule above so it wins over it for this
    drawer. */
 @media screen and (max-width: 999px) {
+  /* The veil and blur start where the panel starts (the bottom edge of the filter toolbar) and run down to the bottom
+     edge of the screen, instead of covering the whole page including the header and the toolbar. */
+  .drawer--facets::part(overlay) {
+    inset-block-start: var(--facets-drawer-top, 0px);
+    inset-block-end: 0;
+    min-height: 0;
+  }
+
   .drawer--facets::part(content) {
     position: absolute;
     inset: calc(var(--facets-drawer-top, 5rem) + .5rem) var(--container-gutter) auto var(--container-gutter);
