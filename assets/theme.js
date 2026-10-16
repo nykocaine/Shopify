@@ -2770,26 +2770,40 @@ var FacetsDrawer = class extends Drawer {
     this.addEventListener("facet:update", this.hide);
   }
   /**
-   * Below 1000px the drawer is a half-height bottom sheet (see .drawer--facets in theme.css): it slides up from the
-   * bottom edge instead of fading in. The overlay has no visible veil there, so only the content moves.
+   * Below 1000px the drawer is a half-height panel that hangs from the bottom edge of the filter toolbar and unfolds
+   * downward from there (see .drawer--facets in theme.css), instead of fading in. The toolbar's current bottom edge is
+   * measured on every open (it can be sticky, or scrolled away) and handed to the CSS as --facets-drawer-top. The
+   * overlay has no visible veil there, so only the content moves.
    */
-  get isBottomSheet() {
+  get isDropdownSheet() {
     return window.matchMedia("(max-width: 999px)").matches;
   }
   createEnterAnimationControls() {
-    if (!this.isBottomSheet) {
+    if (!this.isDropdownSheet) {
       return super.createEnterAnimationControls();
     }
-    return animateSequence2([
-      [this.getShadowPartByName("content"), { transform: ["translateY(calc(100% + 2rem))", "translateY(0)"] }, { duration: 0.5, ease: [0.32, 0.72, 0, 1] }]
+    const toolbar = document.querySelector(".collection__toolbar");
+    const top = toolbar ? Math.max(0, Math.round(toolbar.getBoundingClientRect().bottom)) : 0;
+    this.style.setProperty("--facets-drawer-top", `${top}px`);
+    const content = this.getShadowPartByName("content");
+    content.style.willChange = "clip-path";
+    const controls = animateSequence2([
+      [content, { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] }, { duration: 0.55, ease: [0.22, 1, 0.36, 1] }]
     ]);
+    controls.then(() => {
+      content.style.willChange = "";
+      content.style.clipPath = "";
+    });
+    return controls;
   }
   createLeaveAnimationControls() {
-    if (!this.isBottomSheet) {
+    if (!this.isDropdownSheet) {
       return super.createLeaveAnimationControls();
     }
+    const content = this.getShadowPartByName("content");
+    content.style.willChange = "clip-path";
     return animateSequence2([
-      [this.getShadowPartByName("content"), { transform: ["translateY(0)", "translateY(calc(100% + 2rem))"] }, { duration: 0.35, ease: [0.4, 0, 0.2, 1] }]
+      [content, { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] }, { duration: 0.4, ease: [0.33, 0, 0.2, 1] }]
     ]);
   }
 };

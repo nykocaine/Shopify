@@ -5977,12 +5977,13 @@ product-rerender {
   }
 }
 
-/* Filters drawer on mobile and tablet: a bottom sheet that takes the lower half of the screen and slides up from the
-   bottom (the slide itself is FacetsDrawer in theme.js), floating with the same side margin and bottom gap as the
-   centered cart/search drawers. The overlay (the veil and its blur) is removed so the page stays visible and sharp
-   behind it; tapping outside still closes it, since the overlay element is still there, just invisible. Declared
-   without the .drawer-mobile-centered prefix on purpose so it applies whether or not "Center drawers on mobile" is on,
-   and after the cart/search rule above so it wins over it for this drawer. */
+/* Filters drawer on mobile and tablet: a half-height panel hanging from the bottom edge of the filter toolbar and
+   unfolding downward (the unfold itself is FacetsDrawer in theme.js, which also measures the toolbar and sets
+   --facets-drawer-top), with the same side margin as the centered cart/search drawers. The overlay (the veil and its
+   blur) is removed so the page stays visible and sharp behind it; tapping outside still closes it, since the overlay
+   element is still there, just invisible. Declared without the .drawer-mobile-centered prefix on purpose so it applies
+   whether or not "Center drawers on mobile" is on, and after the cart/search rule above so it wins over it for this
+   drawer. */
 @media screen and (max-width: 999px) {
   .drawer--facets::part(overlay) {
     background: transparent;
@@ -5992,12 +5993,12 @@ product-rerender {
 
   .drawer--facets::part(content) {
     position: absolute;
-    inset: auto var(--container-gutter) var(--drawer-block-gap) var(--container-gutter);
+    inset: calc(var(--facets-drawer-top, 5rem) + .5rem) var(--container-gutter) auto var(--container-gutter);
     margin: 0 !important;
     width: auto;
     max-width: none;
-    height: 50dvh;
-    max-height: 50dvh;
+    height: min(50dvh, calc(100dvh - var(--facets-drawer-top, 5rem) - .5rem - var(--drawer-block-gap)));
+    max-height: none;
     background: var(--drawer-mobile-box-color, rgb(var(--background)));
     background-image: none;
     border-radius: var(--drawer-border-radius);
