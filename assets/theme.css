@@ -8764,11 +8764,12 @@ shopify-account::part(signed-out-avatar) {
    the edge than the search field and the content below it - nothing lined up on a common margin. Using the
    body's inline padding for the header too puts the X on the same edge as the content (the pickup
    availability drawer already does this with 2rem/2rem). Same for the cart drawer's X. */
-/* Cart and search drawer titles use the Body Text typography (family, style, weight, size, line height,
+/* Cart, search and filters drawer titles use the Body Text typography (family, style, weight, size, line height,
    letter-spacing) instead of the heading style, with a capital first letter. The first-letter rule (not
    text-transform: capitalize) keeps multi-word titles as written, only guaranteeing the initial capital. */
 .drawer--cart [slot="header"] h2,
-.drawer--search [slot="header"] {
+.drawer--search [slot="header"],
+.drawer--facets [slot="header"] {
   font-family: var(--text-font-family);
   font-style: var(--text-font-style);
   font-weight: var(--text-font-weight);
@@ -8779,7 +8780,8 @@ shopify-account::part(signed-out-avatar) {
 }
 
 .drawer--cart [slot="header"] h2::first-letter,
-.drawer--search [slot="header"]::first-letter {
+.drawer--search [slot="header"]::first-letter,
+.drawer--facets [slot="header"]::first-letter {
   text-transform: uppercase;
 }
 
