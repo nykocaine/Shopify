@@ -5933,7 +5933,13 @@ var SearchResultPanel = class extends HTMLElement {
     const searchResultsPanel = temporaryContent.querySelector(`#${this.getAttribute("id")}`);
     if (searchResultsPanel) {
       this.replaceChildren(...searchResultsPanel.children);
-      document.querySelector(`[aria-controls="${this.id}"]`)?.removeAttribute("hidden");
+      const tab = document.querySelector(`[aria-controls="${this.id}"]`);
+      const count = searchResultsPanel.dataset.resultsCount;
+      const tabCount = tab?.querySelector("[data-search-tab-count]");
+      if (tabCount && count) {
+        tabCount.textContent = ` (${count})`;
+      }
+      tab?.removeAttribute("hidden");
     } else {
       document.querySelector(`[aria-controls="${this.id}"]`).remove();
       this.remove();
