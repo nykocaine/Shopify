@@ -2565,14 +2565,43 @@ var Drawer = class extends DialogElement {
   get openFrom() {
     return this.getAttribute("open-from") || "right";
   }
+  /**
+   * A drawer with the "unfold" attribute is revealed top to bottom (same effect as the menu drawer) instead of
+   * fading in. Reduced motion keeps a plain fade.
+   */
+  get unfolds() {
+    return this.hasAttribute("unfold");
+  }
   createEnterAnimationControls() {
     this.getShadowPartByName("content").style.marginInlineStart = this.openFrom === "right" ? "auto" : "0";
+    if (this.unfolds) {
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      return animateSequence2([
+        [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.8, ease: "easeInOut" }],
+        [
+          this.getShadowPartByName("content"),
+          reduceMotion ? { opacity: [0, 1] } : { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] },
+          { duration: reduceMotion ? 0.2 : 1.2, at: "<", ease: [0.22, 1, 0.36, 1] }
+        ]
+      ]);
+    }
     return animateSequence2([
       [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.35, ease: "easeInOut" }],
       [this.getShadowPartByName("content"), { opacity: [0, 1], transform: ["translateY(0.75rem) scale(0.98)", "translateY(0) scale(1)"] }, { duration: 0.45, at: "-0.2", ease: [0.22, 1, 0.36, 1] }]
     ]);
   }
   createLeaveAnimationControls() {
+    if (this.unfolds) {
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      return animateSequence2([
+        [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.7, ease: "easeInOut" }],
+        [
+          this.getShadowPartByName("content"),
+          reduceMotion ? { opacity: [1, 0] } : { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] },
+          { duration: reduceMotion ? 0.2 : 0.8, at: "<", ease: [0.4, 0, 1, 1] }
+        ]
+      ]);
+    }
     return animateSequence2([
       [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.3, ease: "easeInOut" }],
       [this.getShadowPartByName("content"), { opacity: [1, 0], transform: ["translateY(0) scale(1)", "translateY(0.5rem) scale(0.99)"] }, { duration: 0.3, at: "<", ease: [0.4, 0, 1, 1] }]
