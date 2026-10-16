@@ -794,21 +794,24 @@ to the first 5 of the newly sorted order.
   ============================================================
   WRITE REVIEW FORM (modal content)
   ============================================================
+  The modal is moved to <body> when it opens (append-to-body), outside #shopify-section-ID, so these rules are scoped
+  by the modal's own id: scoped by the section they stopped applying once the popup opened (native radio buttons and
+  unstyled black stars showed up instead of the star picker).
   {%- endcomment -%}
 
-  #shopify-section-{{ section.id }} .review-form__required-note {
+  #{{ write_review_modal_id }} .review-form__required-note {
     color: rgb(var(--text-color) / .6);
     font-size: .875em;
     margin-block-end: 1.5rem;
   }
 
-  #shopify-section-{{ section.id }} .review-form__rating {
+  #{{ write_review_modal_id }} .review-form__rating {
     border: 0;
     padding: 0;
     margin: 0 0 1.5rem;
   }
 
-  #shopify-section-{{ section.id }} .review-form__rating-label {
+  #{{ write_review_modal_id }} .review-form__rating-label {
     display: block;
     margin-block-end: .75rem;
   }
@@ -819,7 +822,7 @@ to the first 5 of the newly sorted order.
   DOM") ends up matching the hovered/checked star and every star visually to its left. Each radio is
   visually hidden (not display: none, so it stays focusable) and its own label carries the visible star.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .review-form__star-picker {
+  #{{ write_review_modal_id }} .review-form__star-picker {
     direction: rtl;
     display: inline-flex;
     position: relative;
@@ -829,7 +832,7 @@ to the first 5 of the newly sorted order.
   The hidden radios sit at the bottom of the picker (not at their static position) so the browser's
   "select one of these options" message points at the stars when the rating is missing.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .review-form__star-picker input {
+  #{{ write_review_modal_id }} .review-form__star-picker input {
     width: 1px;
     height: 1px;
     opacity: 0;
@@ -838,41 +841,41 @@ to the first 5 of the newly sorted order.
     inset-inline-start: 50%;
   }
 
-  #shopify-section-{{ section.id }} .review-form__section-note {
+  #{{ write_review_modal_id }} .review-form__section-note {
     margin: 0;
   }
 
-  #shopify-section-{{ section.id }} .review-form__privacy-note {
+  #{{ write_review_modal_id }} .review-form__privacy-note {
     color: rgb(var(--text-color) / .6);
     font-size: .875em;
     margin: 0;
   }
 
-  #shopify-section-{{ section.id }} .review-form__star-picker label {
+  #{{ write_review_modal_id }} .review-form__star-picker label {
     padding: 0 .15rem;
     cursor: pointer;
     display: inline-flex;
   }
 
-  #shopify-section-{{ section.id }} .review-form__star-picker label svg {
+  #{{ write_review_modal_id }} .review-form__star-picker label svg {
     fill: none;
     stroke: rgb(var(--text-color) / .4);
     transition: fill .15s ease, stroke .15s ease;
   }
 
-  #shopify-section-{{ section.id }} .review-form__star-picker input:checked ~ label svg,
-  #shopify-section-{{ section.id }} .review-form__star-picker label:hover svg,
-  #shopify-section-{{ section.id }} .review-form__star-picker label:hover ~ label svg {
+  #{{ write_review_modal_id }} .review-form__star-picker input:checked ~ label svg,
+  #{{ write_review_modal_id }} .review-form__star-picker label:hover svg,
+  #{{ write_review_modal_id }} .review-form__star-picker label:hover ~ label svg {
     fill: rgb(var(--text-color));
     stroke: rgb(var(--text-color));
   }
 
-  #shopify-section-{{ section.id }} .review-form__star-picker input:focus-visible + label svg {
+  #{{ write_review_modal_id }} .review-form__star-picker input:focus-visible + label svg {
     outline: 2px solid rgb(var(--text-color));
     outline-offset: 2px;
   }
 
-  #shopify-section-{{ section.id }} .review-form__submit {
+  #{{ write_review_modal_id }} .review-form__submit {
     text-align: end;
   }
 </style>
