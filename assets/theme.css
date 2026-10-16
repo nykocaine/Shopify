@@ -2337,6 +2337,25 @@ main > .shopify-section:first-child .section-floating--block {
   margin-block-start: calc(var(--section-vertical-spacing) / 2);
 }
 
+/* Rule: whatever section sits directly above the collection (or the search results), between the header and the filter
+   toolbar, joins it with no gap and no rounded corners at all (top or bottom), whatever its own settings say. A floating
+   section keeps its side margins. */
+.shopify-section:has(+ :is(.shopify-section--main-collection, .shopify-section--main-search)) {
+  --section-vertical-spacing-block-end: 0px;
+}
+
+.shopify-section:has(+ :is(.shopify-section--main-collection, .shopify-section--main-search)) :is(.section-spacing, .section-spacing--tight, .section-spacing--loose) {
+  padding-block-end: 0;
+}
+
+.shopify-section:has(+ :is(.shopify-section--main-collection, .shopify-section--main-search)) :is(.section-floating--block, .section-floating--block-end) {
+  margin-block-end: 0 !important;
+}
+
+.shopify-section:has(+ :is(.shopify-section--main-collection, .shopify-section--main-search)) .section-floating {
+  border-radius: 0 !important;
+}
+
 .section-spacing--tight {
   padding-block-start: min(3rem, var(--section-disable-padding-collapsing) * var(--section-vertical-spacing-block-start, var(--section-vertical-spacing)));
   padding-block-end: min(3rem, var(--section-vertical-spacing-block-end, var(--section-vertical-spacing)));
