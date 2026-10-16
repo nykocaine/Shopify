@@ -1247,6 +1247,17 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   display: block;
 }
 
+/* The close icon inside these shadow templates (snippets/shadow-dom-templates.liquid) is the only icon they
+   hold. It no longer carries a width attribute (the control icon set is sized by .icon--control), but that
+   class lives in the light DOM stylesheet and can't reach into the shadow tree, so the SVG fell back to
+   its default size and sat off-center in the round close button (cart, search and other drawers). Size it
+   here the same way .icon--control does, from the global Icon size. */
+:where(.drawer, .drawer-popover, .modal, .popover)::part(icon) {
+  box-sizing: content-box;
+  width: var(--control-icon-size, 16px);
+  height: auto;
+}
+
 /* Gap above and below a floating drawer: half the section spacing, the same distance the page keeps above the
    header and below the footer. Used by the mobile floating cart/search drawers and the bottom of the menu drawer. */
 :root {
