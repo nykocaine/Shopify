@@ -327,9 +327,13 @@
   gated by floating_product) on purpose: outside that branch .product-info-frame previously had no
   padding at all, and inside it this replaces the plain var(--container-gutter)/half-on-mobile pair with
   this same, single value instead - see the floating_product branch below, which no longer repeats it.
+
+  The left and right sides (only) are half of that value, at every breakpoint: the info text sits closer to
+  the card's side edges while the top and bottom keep the full padding.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-info-frame {
     padding: calc(var(--container-gutter) + 0.5rem);
+    padding-inline: calc((var(--container-gutter) + 0.5rem) / 2);
   }
 
   {%- if section.settings.floating_product -%}
