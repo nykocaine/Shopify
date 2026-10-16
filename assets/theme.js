@@ -6118,6 +6118,13 @@ var NewsletterPopup = class extends Modal {
   get shouldAppendToBody() {
     return false;
   }
+  // Same top-to-bottom unfold as the drawers (see createUnfoldAnimationControls)
+  createEnterAnimationControls() {
+    return createUnfoldAnimationControls(animateSequence4, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), true);
+  }
+  createLeaveAnimationControls() {
+    return createUnfoldAnimationControls(animateSequence4, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), false);
+  }
   get shouldAppearAutomatically() {
     return !(localStorage.getItem("theme:popup-filled") === "true" || this.hasAttribute("only-once") && localStorage.getItem("theme:popup-appeared") === "true");
   }
