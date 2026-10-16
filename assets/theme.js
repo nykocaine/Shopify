@@ -2773,10 +2773,11 @@ var FacetsDrawer = class extends Drawer {
     super.connectedCallback();
     // Rotating a phone or resizing the window across 1000px while the filters are open must keep them visible. The two
     // modes are built differently (a block inside the toolbar vs a modal layer on the body), so the open dialog is
-    // closed and reopened, without animation, in the mode that matches the new width.
+    // closed and reopened, without animation, in the mode that matches the new width. It is checked both on the media
+    // query change and on resize / orientation change, since not every browser or preview frame fires the first one.
     this._breakpointQuery = window.matchMedia("(min-width: 1000px)");
-    this._onBreakpointChange = async () => {
-      if (!this.open || this._reconfiguring) {
+    this._syncMode = async () => {
+      if (!this.open || this._reconfiguring || this._mode === this.#currentMode()) {
         return;
       }
       this._reconfiguring = true;
@@ -2787,11 +2788,18 @@ var FacetsDrawer = class extends Drawer {
         this._reconfiguring = false;
       }
     };
-    this._breakpointQuery.addEventListener("change", this._onBreakpointChange);
+    this._breakpointQuery.addEventListener("change", this._syncMode);
+    window.addEventListener("resize", this._syncMode);
+    window.addEventListener("orientationchange", this._syncMode);
   }
   disconnectedCallback() {
-    this._breakpointQuery?.removeEventListener("change", this._onBreakpointChange);
+    this._breakpointQuery?.removeEventListener("change", this._syncMode);
+    window.removeEventListener("resize", this._syncMode);
+    window.removeEventListener("orientationchange", this._syncMode);
     super.disconnectedCallback();
+  }
+  #currentMode() {
+    return this.isInline ? "inline" : "sheet";
   }
   /**
    * From 1000px up the filters are not a modal drawer anymore: the panel is a block that lives inside the filter toolbar
@@ -2811,6 +2819,7 @@ var FacetsDrawer = class extends Drawer {
     return !this.isInline;
   }
   async show(options) {
+    this._mode = this.#currentMode();
     if (this.isInline) {
       const toolbar = document.querySelector(".collection__toolbar");
       if (toolbar && this.parentElement !== toolbar) {
