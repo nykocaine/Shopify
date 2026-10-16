@@ -23,6 +23,11 @@
   :root {
     --header-is-sticky: {% if section.settings.enable_sticky %}1{% else %}0{% endif %};
     --header-is-visible: 1;
+    {%- if section.settings.transparent_logo != blank %}
+    /* The transparent-header logo, shared with videos (media-zoom-style.liquid draws it in their bottom-left corner). Defined here,
+       on :root, because the header is the one place guaranteed to have this setting in scope on every page. */
+    --video-logo: url('{{ section.settings.transparent_logo | image_url: width: 400 }}');
+    {%- endif %}
     /* Softer, slightly slower timing for everything that changes when the header turns solid (background,
        text color, logo swap, the gap above it) and for its hide-on-scroll slide. theme.css uses a fixed .2s for each, which read as an abrupt
        blink when they all fire at once. */
