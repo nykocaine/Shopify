@@ -394,22 +394,16 @@
 
       var sectionId = wrapper.dataset.sectionId;
 
-      // Aparición: tras los segundos configurados. En el editor del tema se muestra de inmediato para poder
-      // editarlo, y una vez que ya apareció en la sesión, en las siguientes páginas sale sin esperar de nuevo.
+      // Aparición: tras los segundos configurados, cada vez que se carga una página (también al actualizarla o al
+      // cambiar de página). En el editor del tema se muestra de inmediato para poder editarlo.
       var appearDelay = parseFloat(wrapper.dataset.appearDelay);
-      var shownKey = 'vc-whatsapp-shown';
-      var alreadyShown = false;
-      try { alreadyShown = sessionStorage.getItem(shownKey) === 'true'; } catch (error) {}
 
-      function reveal() {
-        wrapper.classList.add('is-visible');
-        try { sessionStorage.setItem(shownKey, 'true'); } catch (error) {}
-      }
-
-      if ((window.Shopify && window.Shopify.designMode) || alreadyShown || !(appearDelay > 0)) {
+      if ((window.Shopify && window.Shopify.designMode) || !(appearDelay > 0)) {
         wrapper.classList.add('is-visible');
       } else {
-        setTimeout(reveal, appearDelay * 1000);
+        setTimeout(function() {
+          wrapper.classList.add('is-visible');
+        }, appearDelay * 1000);
       }
 
       if (wrapper.querySelector('.vc-whatsapp-button-text')) {
@@ -485,7 +479,7 @@
   "settings": [
     { "type": "header", "content": "Estilo de visualización" },
     { "type": "select", "id": "display_style", "label": "Display Style", "options": [{ "value": "floating", "label": "Floating" }, { "value": "docked_tab", "label": "Docked Tab" }], "default": "floating" },
-    { "type": "range", "id": "appear_delay", "label": "Aparece después de", "min": 1, "max": 60, "step": 1, "unit": "s", "default": 5, "info": "Segundos que pasan desde que se abre la página hasta que aparece el botón. Una vez que apareció, en las demás páginas de la visita sale enseguida. En el editor del tema siempre se ve." },
+    { "type": "range", "id": "appear_delay", "label": "Aparece después de", "min": 1, "max": 60, "step": 1, "unit": "s", "default": 5, "info": "Segundos que pasan desde que se carga cada página hasta que aparece el botón (también al actualizarla). En el editor del tema siempre se ve." },
     { "type": "header", "content": "Contenido" },
     { "type": "text", "id": "phone_number", "label": "Número de teléfono principal", "info": "Incluye el código de país (ej. 51987654321 para Perú). Se usa si no agregas agentes." },
     { "type": "textarea", "id": "default_message", "label": "Mensaje predeterminado", "default": "Hola, estoy interesado en tus productos." },
