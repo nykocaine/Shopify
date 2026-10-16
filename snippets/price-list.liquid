@@ -19,10 +19,11 @@ Render a list of price for a product, variant or line item.
 
     when 'card'
       # The price always uses the body_text look (regular weight, same text-base size and
-      # subdued color as the card's .product-subtitle) regardless of the card's own
+      # full text color as the card's title and .product-subtitle) regardless of the card's own
       # product_card_style (body_text/heading/subheading), so it never inherits the title's
-      # bold/tracked/uppercase treatment.
-      assign regular_price_classes = 'text-base product-card__price product-card__price--subdued'
+      # bold/tracked/uppercase treatment. Only the struck-through compare-at price and the unit
+      # price stay subdued.
+      assign regular_price_classes = 'text-base product-card__price'
       assign on_sale_price_classes = 'text-base text-on-sale product-card__price'
       assign compare_at_price_classes = 'text-base product-card__price product-card__price--subdued line-through'
       assign unit_price_classes = 'text-base product-card__price product-card__price--subdued'
