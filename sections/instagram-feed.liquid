@@ -62,7 +62,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {{ instagram_corner_radius_px }}; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
-    <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack{% if section.settings.bw_intro %} is-bw{% endif %}"{% if section.settings.show_lightbox_reviews %} data-review-seconds="{{ section.settings.review_rotation_seconds }}"{% endif %}{% if section.settings.bw_intro %} data-bw-seconds="{{ section.settings.bw_intro_seconds }}" data-bw-fade="{{ section.settings.bw_intro_fade }}"{% endif %}>
+    <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack{% if section.settings.bw_intro %} is-bw{% endif %}"{% if section.settings.show_lightbox_reviews %} data-lightbox-reviews{% endif %}{% if section.settings.bw_intro %} data-bw-seconds="{{ section.settings.bw_intro_seconds }}" data-bw-fade="{{ section.settings.bw_intro_fade }}"{% endif %}>
       {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank or section.settings.show_icon -%}
         <div class="instagram-feed__header">
           <div class="instagram-feed__content">
@@ -425,12 +425,10 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             });
 
             {%- comment -%}
-            Zoom view: the reviews of the page's Reviews section (a hidden block of data that section leaves on the page) over the lower part
-            of the video, in a rounded container: the stars, the name and the text of one review at a time, rotating every "Review rotation
-            time" seconds. The container is built when a video is opened and only exists inside it; CSS keeps it clear of the logo and
-            the buttons.
+            Zoom view, comments: the reviews of the page's Reviews section (a hidden block of data that section leaves on the page) are
+            listed in a panel that the comments button opens (see "Comments" below).
             {%- endcomment -%}
-            var reviewSeconds = parseFloat(document.getElementById('{{ instagram_feed_id }}').getAttribute('data-review-seconds'));
+            var reviewsEnabled = document.getElementById('{{ instagram_feed_id }}').hasAttribute('data-lightbox-reviews');
             var lightboxReviews = null;
 
             {%- comment -%}
@@ -455,103 +453,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               return lightboxReviews;
             }
 
-            if (reviewSeconds > 0) {
+            if (reviewsEnabled) {
               Array.prototype.forEach.call(carousel.querySelectorAll('video-media'), function (videoMedia) {
-                var card = null;
-                var content = null;
-                var starsElement = null;
-                var nameElement = null;
-                var textElement = null;
-                var timer = null;
-                var index = 0;
-                var running = false;
-
-                function build() {
-                  if (!getLightboxReviews().length) {
-                    return;
-                  }
-
-                  card = document.createElement('div');
-                  card.className = 'lightbox-reviews';
-                  content = document.createElement('div');
-                  content.className = 'lightbox-reviews__content';
-                  starsElement = document.createElement('span');
-                  starsElement.className = 'lightbox-reviews__stars';
-                  nameElement = document.createElement('span');
-                  nameElement.className = 'lightbox-reviews__name';
-                  textElement = document.createElement('p');
-                  textElement.className = 'lightbox-reviews__text';
-
-                  var head = document.createElement('div');
-                  head.className = 'lightbox-reviews__head';
-                  head.appendChild(starsElement);
-                  head.appendChild(nameElement);
-                  content.appendChild(head);
-                  content.appendChild(textElement);
-                  card.appendChild(content);
-                  videoMedia.appendChild(card);
-                }
-
-                function showReview() {
-                  var reviews = getLightboxReviews();
-
-                  if (!card || !reviews.length) {
-                    return;
-                  }
-
-                  var review = reviews[index % reviews.length];
-                  var rating = Math.max(0, Math.min(5, Math.round(review.rating || 0)));
-
-                  starsElement.setAttribute('role', 'img');
-                  starsElement.setAttribute('aria-label', rating + ' / 5');
-                  starsElement.textContent = '';
-
-                  for (var star = 1; star <= 5; star += 1) {
-                    var starElement = document.createElement('span');
-
-                    starElement.textContent = '\u2605';
-                    starElement.className = star <= rating ? 'is-filled' : 'is-empty';
-                    starsElement.appendChild(starElement);
-                  }
-
-                  nameElement.textContent = review.name || '';
-                  textElement.textContent = review.text || '';
-                  content.classList.add('is-visible');
-                }
-
-                function nextReview() {
-                  content.classList.remove('is-visible');
-
-                  setTimeout(function () {
-                    index += 1;
-                    showReview();
-                  }, 250);
-                }
-
-                function start() {
-                  running = true;
-
-                  if (!card) {
-                    build();
-                  }
-
-                  index = 0;
-                  showReview();
-
-                  if (card && getLightboxReviews().length > 1) {
-                    timer = setInterval(nextReview, Math.max(1500, reviewSeconds * 1000));
-                  }
-                }
-
-                function stop() {
-                  running = false;
-                  clearInterval(timer);
-
-                  if (content) {
-                    content.classList.remove('is-visible');
-                  }
-                }
-
                 {%- comment -%}
                 Comments: the button at the top of the video's buttons opens a panel that rises from the bottom of the video (about a third of
                 its height) listing ALL the reviews, scrollable. While it is open everything else over the video (logo, sound / pause / like,
@@ -674,12 +577,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                 }
 
                 new MutationObserver(function () {
-                  var expanded = videoMedia.classList.contains('is-lightbox-expanded');
-
-                  if (expanded && !running) {
-                    start();
-                  } else if (!expanded && running) {
-                    stop();
+                  if (!videoMedia.classList.contains('is-lightbox-expanded')) {
                     setCommentsOpen(false);
                   }
                 }).observe(videoMedia, { attributes: true, attributeFilter: ['class'] });
@@ -1247,41 +1145,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- endif -%}
 
   {%- comment -%}
-  Zoom view: the reviews (built by the script, only inside the expanded video) in a container with the drawers' rounded corners
-  (--drawer-border-radius), above the logo and left of the column of buttons: it stops short of that column on the right and is
-  never taller than it (heart, sound, pause). The stars and the name on one line, the text under them, two lines at most.
+  Stars and name of a review inside the comments panel (the stars on one line with the name, the text under them).
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .lightbox-reviews {
-    display: none;
-  }
-
-  #shopify-section-{{ section.id }} video-media.is-lightbox-expanded > .lightbox-reviews {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: absolute;
-    z-index: 3;
-    inset-inline-start: 0.75rem;
-    inset-inline-end: calc(var(--control-button-size, 1.75rem) + 1.5rem);
-    inset-block-end: 5rem;
-    max-height: calc(3 * var(--control-button-size, 1.75rem) + 2rem);
-    padding: 0.625rem 0.875rem;
-    overflow: hidden;
-    border-radius: var(--drawer-border-radius);
-    background: rgb(var(--background) / 0.92);
-    color: rgb(var(--text-color));
-    pointer-events: none;
-  }
-
-  #shopify-section-{{ section.id }} .lightbox-reviews__content {
-    opacity: 0;
-    transition: opacity 0.25s ease;
-  }
-
-  #shopify-section-{{ section.id }} .lightbox-reviews__content.is-visible {
-    opacity: 1;
-  }
-
   #shopify-section-{{ section.id }} .lightbox-reviews__head {
     display: flex;
     align-items: center;
@@ -1307,16 +1172,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     text-overflow: ellipsis;
     white-space: nowrap;
     font: var(--text-font-style) 600 0.75rem / 1.2 var(--text-font-family);
-  }
-
-  #shopify-section-{{ section.id }} .lightbox-reviews__text {
-    margin: 0;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    overflow: hidden;
-    font: var(--text-font-style) var(--text-font-weight) 0.8125rem / 1.35 var(--text-font-family);
   }
 
   {%- comment -%}
@@ -1430,8 +1285,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   #shopify-section-{{ section.id }} video-media.is-comments-open::after,
-  #shopify-section-{{ section.id }} video-media.is-comments-open > .lightbox-scrubber,
-  #shopify-section-{{ section.id }} video-media.is-comments-open > .lightbox-reviews {
+  #shopify-section-{{ section.id }} video-media.is-comments-open > .lightbox-scrubber {
     display: none !important;
   }
 
@@ -1933,20 +1787,9 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     {
       "type": "checkbox",
       "id": "show_lightbox_reviews",
-      "label": "Reviews over the video",
-      "info": "In the zoom view of a video, the reviews of this page's Reviews section show over the lower part, in a rounded container with the stars, the name and the text, one review at a time. Needs a Reviews section on the same page.",
+      "label": "Comments button on videos",
+      "info": "In the zoom view of a video, a comments button (with the number of reviews) opens a panel with the reviews of this page's Reviews section. Needs a Reviews section on the same page.",
       "default": true
-    },
-    {
-      "type": "range",
-      "id": "review_rotation_seconds",
-      "min": 1.5,
-      "max": 10,
-      "step": 0.5,
-      "unit": "s",
-      "label": "Review rotation time",
-      "default": 3,
-      "visible_if": "{{ section.settings.show_lightbox_reviews }}"
     },
     {
       "type": "header",
