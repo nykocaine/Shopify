@@ -62,7 +62,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {{ instagram_corner_radius_px }}; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
-    <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack">
+    <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack{% if section.settings.bw_intro %} is-bw{% endif %}"{% if section.settings.bw_intro %} data-bw-seconds="{{ section.settings.bw_intro_seconds }}" data-bw-fade="{{ section.settings.bw_intro_fade }}"{% endif %}>
       {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank or section.settings.show_icon -%}
         <div class="instagram-feed__header">
           <div class="instagram-feed__content">
@@ -528,6 +528,60 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
           </script>
         {%- endif -%}
 
+        {%- if section.settings.bw_intro -%}
+          <noscript>
+            <style>
+              #{{ instagram_feed_id }}.is-bw .instagram-feed__carousel img,
+              #{{ instagram_feed_id }}.is-bw .instagram-feed__carousel video-media {
+                filter: none;
+              }
+            </style>
+          </noscript>
+
+          <script>
+            (function () {
+              var feed = document.getElementById('{{ instagram_feed_id }}');
+
+              if (!feed || !feed.classList.contains('is-bw')) {
+                return;
+              }
+
+              {%- comment -%}
+              The countdown starts when the visitor actually reaches the section (a quarter of it on screen), not at page load, so the
+              seconds are spent looking at it. It runs once per page view.
+              {%- endcomment -%}
+              var seconds = parseFloat(feed.getAttribute('data-bw-seconds')) || 15;
+
+              var fadeSeconds = parseFloat(feed.getAttribute('data-bw-fade')) || 1.5;
+
+              function startCountdown() {
+                setTimeout(function () {
+                  feed.classList.remove('is-bw');
+                  feed.classList.add('is-bw-fading');
+
+                  setTimeout(function () {
+                    feed.classList.remove('is-bw-fading');
+                  }, fadeSeconds * 1000 + 100);
+                }, seconds * 1000);
+              }
+
+              if (!('IntersectionObserver' in window)) {
+                startCountdown();
+                return;
+              }
+
+              var observer = new IntersectionObserver(function (entries) {
+                if (entries.some(function (entry) { return entry.isIntersecting; })) {
+                  observer.disconnect();
+                  startCountdown();
+                }
+              }, { threshold: 0.25 });
+
+              observer.observe(feed);
+            })();
+          </script>
+        {%- endif -%}
+
         {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id, sound_on_open: true -%}
 
         {%- comment -%}
@@ -794,6 +848,38 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     opacity: 0.7;
     pointer-events: none;
   }
+
+  {%- if section.settings.bw_intro -%}
+    {%- comment -%}
+    Black and white intro (setting "Black and white intro"): photos and videos start in grayscale - from the first paint, so the
+    color never shows before the effect - and, once the visitor reaches the feed, fade back to color after the configured number
+    of seconds (script below). Only the photos and videos are filtered, not the buttons.
+    {%- endcomment -%}
+    #{{ instagram_feed_id }}.is-bw .instagram-feed__carousel img,
+    #{{ instagram_feed_id }}.is-bw .instagram-feed__carousel video-media {
+      filter: grayscale(1);
+    }
+
+    {%- comment -%}
+    The fade back to color is an animation, not a transition: the photos and videos already have transitions of their own (the zoom
+    in the lightbox, the poster fade) that a "transition: filter" would replace. The filter goes on the media elements themselves,
+    never on an ancestor, which would trap the expanded (position: fixed) photo or video of the lightbox inside it.
+    {%- endcomment -%}
+    #{{ instagram_feed_id }}.is-bw-fading .instagram-feed__carousel img,
+    #{{ instagram_feed_id }}.is-bw-fading .instagram-feed__carousel video-media {
+      animation: instagram-feed-bw-fade {{ section.settings.bw_intro_fade }}s ease-in-out forwards;
+    }
+
+    @keyframes instagram-feed-bw-fade {
+      from {
+        filter: grayscale(1);
+      }
+
+      to {
+        filter: grayscale(0);
+      }
+    }
+  {%- endif -%}
 
   {%- comment -%}
   Loading cue: a small spinner in the middle of the cell while its video was asked to play and has no frames yet. It fades in
@@ -1216,6 +1302,39 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       ],
       "default": "medium",
       "visible_if": "{{ section.settings.autoscroll }}"
+    },
+    {
+      "type": "header",
+      "content": "Black and white intro"
+    },
+    {
+      "type": "checkbox",
+      "id": "bw_intro",
+      "label": "Black and white at first",
+      "info": "Photos and videos start in black and white and fade to color after a few seconds, counted from the moment the visitor reaches this section.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "bw_intro_seconds",
+      "min": 3,
+      "max": 30,
+      "step": 1,
+      "unit": "s",
+      "label": "Time in black and white",
+      "default": 15,
+      "visible_if": "{{ section.settings.bw_intro }}"
+    },
+    {
+      "type": "range",
+      "id": "bw_intro_fade",
+      "min": 0.5,
+      "max": 4,
+      "step": 0.5,
+      "unit": "s",
+      "label": "Fade to color",
+      "default": 1.5,
+      "visible_if": "{{ section.settings.bw_intro }}"
     }
   ],
   "blocks": [
