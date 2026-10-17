@@ -378,9 +378,13 @@
       position: fixed;
       inset: 0;
       z-index: 105;
-      background: rgb(var(--page-overlay));
+      /* Sin color de fondo (se veía blanco): solo el blur del tema, a plena fuerza abajo y
+         desvaneciéndose hacia arriba. La máscara actúa sobre el blur mismo. */
+      background: none;
       -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
       backdrop-filter: blur(var(--dialog-backdrop-blur));
+      -webkit-mask-image: linear-gradient(to top, black 30%, transparent);
+      mask-image: linear-gradient(to top, black 30%, transparent);
     }
   }
 {% endstylesheet %}
