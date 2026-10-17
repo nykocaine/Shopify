@@ -173,7 +173,88 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- render 'scroll-controls', target_id: instagram_carousel_id, show_mobile: section.settings.show_progress_bar_mobile, show_desktop: section.settings.show_progress_bar_desktop, class: 'instagram-feed__scroll-controls' -%}
         {%- endunless -%}
 
-        {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple -%}
+        {%- comment -%}
+        On a product page the lightbox also gets an "add to cart" button for that page's product (the variant selected in the page's URL, else
+        the first available one); the click is handled by the script right below.
+        {%- endcomment -%}
+        {%- liquid
+          assign instagram_cart_variant_id = ''
+
+          if request.page_type == 'product' and product.available
+            assign instagram_cart_variant_id = product.selected_or_first_available_variant.id
+          endif
+
+          assign instagram_cart_label = 'product.general.add_to_cart_button' | t
+        -%}
+        {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple, cart_variant_id: instagram_cart_variant_id, cart_label: instagram_cart_label -%}
+
+        {%- if instagram_cart_variant_id != blank -%}
+          <script>
+            (function () {
+              var lightbox = document.getElementById('{{ instagram_lightbox_id }}');
+              var button = lightbox && lightbox.querySelector('.media-lightbox__cart');
+
+              if (!button) {
+                return;
+              }
+
+              button.addEventListener('click', async function () {
+                if (button.getAttribute('aria-busy') === 'true') {
+                  return;
+                }
+
+                var variantId = new URLSearchParams(window.location.search).get('variant') || button.getAttribute('data-variant-id');
+                var root = window.Shopify && Shopify.routes ? Shopify.routes.root : '/';
+                var sections = new Set();
+
+                button.setAttribute('aria-busy', 'true');
+
+                {%- comment -%}The lightbox closes first, so the cart drawer opens on a clear page instead of behind it{%- endcomment -%}
+                var closeButton = lightbox.querySelector('.media-lightbox__close');
+
+                if (closeButton) {
+                  closeButton.click();
+                }
+
+                document.documentElement.dispatchEvent(new CustomEvent('cart:prepare-bundled-sections', { bubbles: true, detail: { sections: sections } }));
+
+                try {
+                  var response = await fetch(root + 'cart/add.js', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify({ items: [{ id: Number(variantId), quantity: 1 }], sections: Array.from(sections).join(',') })
+                  });
+                  var added = await response.json();
+
+                  if (!response.ok) {
+                    document.dispatchEvent(new CustomEvent('toast:show', { detail: { message: added.description || added.message, tone: 'error' } }));
+                    return;
+                  }
+
+                  if (window.themeVariables && themeVariables.settings.cartType === 'page') {
+                    window.location.href = root + 'cart';
+                    return;
+                  }
+
+                  var cart = await (await fetch(root + 'cart.js')).json();
+                  var items = added.items || [added];
+
+                  cart.sections = added.sections;
+
+                  document.documentElement.dispatchEvent(new CustomEvent('cart:change', { bubbles: true, detail: { baseEvent: 'variant:add', cart: cart } }));
+
+                  if (window.themeVariables && themeVariables.settings.cartType === 'message') {
+                    document.dispatchEvent(new CustomEvent('toast:show', { detail: { message: themeVariables.strings.addedToCart.replace('{' + '{product_title}}', (items[0] && items[0].title) || '') } }));
+                  }
+                } catch (error) {
+                  document.documentElement.dispatchEvent(new CustomEvent('cart:refresh', { bubbles: true }));
+                } finally {
+                  button.removeAttribute('aria-busy');
+                }
+              });
+            })();
+          </script>
+        {%- endif -%}
 
         {%- comment -%}
         Caption shown only in the zoomed-in lightbox, never in the feed grid itself - each "Media"
