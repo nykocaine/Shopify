@@ -535,7 +535,7 @@ the first available one); the click is handled by the script near the lightbox b
 
                 {%- comment -%}
                 Phone only (hidden from 1000px by CSS): a comment box at the bottom of the panel, full width, like the one under a post on Instagram -
-                picture, "Añade un comentario..." and a send button that shows once there is text. There is no place to post a loose comment, so sending
+                picture, "Escribe una reseña..." and a send button that shows once there is text. There is no place to post a loose comment, so sending
                 it closes the zoom view and opens the "Escribir una reseña" window of the page's Reviews section with the text already in the review
                 field. Without that section on the page there is nothing to send to and the box is not shown.
                 {%- endcomment -%}
@@ -555,15 +555,15 @@ the first available one); the click is handled by the script near the lightbox b
 
                   field.type = 'text';
                   field.className = 'lightbox-comments__input';
-                  field.placeholder = 'A\u00f1ade un comentario...';
-                  field.setAttribute('aria-label', 'A\u00f1ade un comentario');
+                  field.placeholder = 'Escribe una rese\u00f1a...';
+                  field.setAttribute('aria-label', 'Escribe una rese\u00f1a');
                   field.enterKeyHint = 'send';
 
                   var send = document.createElement('button');
 
                   send.type = 'submit';
                   send.className = 'lightbox-comments__send';
-                  send.textContent = 'Publicar';
+                  send.textContent = 'Enviar';
                   send.hidden = true;
 
                   field.addEventListener('input', function () {
@@ -1586,13 +1586,13 @@ the first available one); the click is handled by the script near the lightbox b
   #shopify-section-{{ section.id }} .lightbox-comments__input {
     flex: 1 1 auto;
     min-width: 0;
-    height: 2.5rem;
+    height: 2.75rem;
     padding-inline: 1rem;
     border: 1px solid rgb(var(--border-color));
     border-radius: 999px;
     background: transparent;
     color: inherit;
-    font: var(--text-font-style) var(--text-font-weight) max(16px, var(--text-base)) / 1.2 var(--text-font-family);
+    font: var(--text-font-style) var(--text-font-weight) var(--text-base) / var(--text-line-height) var(--text-font-family);
   }
 
   #shopify-section-{{ section.id }} .lightbox-comments__input::placeholder {
