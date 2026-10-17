@@ -206,6 +206,7 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
               <div class="review-card" data-rating="{{ block.settings.rating }}" data-days-ago="{{ review_date_days }}" {{ block.shopify_attributes }}>
                 <div class="review-card__side">
                   <div class="review-card__reviewer">
+                    <span class="review-card__avatar" data-review-avatar="{{ block.settings.reviewer_name | escape }}"></span>
                     <span class="review-card__name">{{ block.settings.reviewer_name }}</span>
 
                     {%- if block.settings.verified_buyer -%}
@@ -757,9 +758,22 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
   }
 
   #shopify-section-{{ section.id }} .review-card__reviewer {
+    --review-avatar-size: 2.25rem;
     align-items: center;
-    gap: .375rem;
+    gap: .625rem;
     display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__avatar:empty {
+    flex: none;
+    width: var(--review-avatar-size);
+    height: var(--review-avatar-size);
+    border-radius: 100%;
+    background: rgb(var(--border-color));
+  }
+
+  #shopify-section-{{ section.id }} .review-card__avatar:not(:empty) {
+    display: contents;
   }
 
   #shopify-section-{{ section.id }} .review-card__verified {
@@ -961,6 +975,17 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     text-align: end;
   }
 </style>
+
+{%- render 'review-avatar-script' -%}
+
+<script>
+  (function () {
+    {%- comment -%}Each reviewer gets their round picture (shared with the Instagram Feed's zoom view, so it is the same one in both){%- endcomment -%}
+    Array.prototype.forEach.call(document.querySelectorAll('#shopify-section-{{ section.id }} [data-review-avatar]'), function (placeholder) {
+      placeholder.appendChild(window.buildReviewAvatar(placeholder.getAttribute('data-review-avatar') || ''));
+    });
+  })();
+</script>
 
 <script>
   (function () {

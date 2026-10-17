@@ -1,0 +1,38 @@
+{%- doc -%}
+The round picture that goes with a reviewer's name, shared by the Reviews section and the Instagram Feed's zoom view so the same reviewer has the same picture
+in both. Reviews carry no photo, so it is generated: a soft gradient with a person's silhouette, its colors taken from the name (same name, same picture).
+
+Defines window.buildReviewAvatar(name), once per page, and the .review-avatar look (size from --review-avatar-size, 1.75rem by default).
+{%- enddoc -%}
+
+<style>
+  .review-avatar {
+    flex: none;
+    display: block;
+    width: var(--review-avatar-size, 1.75rem);
+    height: var(--review-avatar-size, 1.75rem);
+    border-radius: 100%;
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  if (!window.buildReviewAvatar) {
+    window.buildReviewAvatar = function (name) {
+      var hash = 0;
+
+      for (var index = 0; index < name.length; index += 1) {
+        hash = (hash * 31 + name.charCodeAt(index)) % 360;
+      }
+
+      var avatar = document.createElement('span');
+
+      avatar.className = 'review-avatar';
+      avatar.setAttribute('aria-hidden', 'true');
+      avatar.style.background = 'linear-gradient(145deg, hsl(' + hash + ', 55%, 72%), hsl(' + ((hash + 40) % 360) + ', 50%, 52%))';
+      avatar.innerHTML = '<svg viewBox="0 0 32 32" width="100%" height="100%" focusable="false"><circle cx="16" cy="12.5" r="5.2" fill="#fff" fill-opacity="0.9"/><path d="M5.5 29c0-6 4.7-9.8 10.5-9.8S26.5 23 26.5 29" fill="#fff" fill-opacity="0.9"/></svg>';
+
+      return avatar;
+    };
+  }
+</script>

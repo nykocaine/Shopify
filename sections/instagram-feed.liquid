@@ -702,20 +702,7 @@ the first available one); the click is handled by the script near the lightbox b
                 }
 
                 function buildAvatar(name) {
-                  var hash = 0;
-
-                  for (var index = 0; index < name.length; index += 1) {
-                    hash = (hash * 31 + name.charCodeAt(index)) % 360;
-                  }
-
-                  var avatar = document.createElement('span');
-
-                  avatar.className = 'lightbox-reviews__avatar';
-                  avatar.setAttribute('aria-hidden', 'true');
-                  avatar.style.background = 'linear-gradient(145deg, hsl(' + hash + ', 55%, 72%), hsl(' + ((hash + 40) % 360) + ', 50%, 52%))';
-                  avatar.innerHTML = '<svg viewBox="0 0 32 32" width="100%" height="100%" focusable="false"><circle cx="16" cy="12.5" r="5.2" fill="#fff" fill-opacity="0.9"/><path d="M5.5 29c0-6 4.7-9.8 10.5-9.8S26.5 23 26.5 29" fill="#fff" fill-opacity="0.9"/></svg>';
-
-                  return avatar;
+                  return window.buildReviewAvatar(name);
                 }
 
                 function buildPanel() {
@@ -1140,6 +1127,10 @@ the first available one); the click is handled by the script near the lightbox b
           </script>
         {%- endif -%}
 
+        {%- if section.settings.show_lightbox_reviews -%}
+          {%- render 'review-avatar-script' -%}
+        {%- endif -%}
+
         {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id, sound_on_open: true -%}
 
         {%- comment -%}
@@ -1441,15 +1432,6 @@ the first available one); the click is handled by the script near the lightbox b
     column-gap: 0.625rem;
     margin-block-end: 0.25rem;
     min-width: 0;
-  }
-
-  #shopify-section-{{ section.id }} .lightbox-reviews__avatar {
-    flex: none;
-    display: block;
-    width: 1.75rem;
-    height: 1.75rem;
-    border-radius: 100%;
-    overflow: hidden;
   }
 
   #shopify-section-{{ section.id }} .lightbox-reviews__badge {
