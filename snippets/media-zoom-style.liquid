@@ -264,6 +264,8 @@ outside #{{ lightbox_id }} entirely, so they need the class on themselves to be 
 {%- endcomment -%}
 #{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__backdrop {
   opacity: 0;
+  /* Closing: as long as the media's own fade (snippets/media-zoom-script.liquid), so the backdrop is never still half there when the lightbox is hidden. */
+  transition: opacity .3s cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 {%- comment -%}

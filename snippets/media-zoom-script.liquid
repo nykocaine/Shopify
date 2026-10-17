@@ -535,11 +535,15 @@ progress bar) are simply skipped when no carousel_id is given.
 
             media.videoMedia.pause({ manual: false });
             media.videoMedia._manualPause = false;
-            setTimeout(function() {
-              if (typeof media.videoMedia._ensurePlaying === 'function') {
-                media.videoMedia._ensurePlaying(3);
-              }
-            }, 600);
+            // Back in the grid it is asked to play again right away, and once more a little later in case the browser was still
+            // settling the paused video, so a video that was opened and closed never stays frozen or blank.
+            [120, 600].forEach(function(delay) {
+              setTimeout(function() {
+                if (typeof media.videoMedia._ensurePlaying === 'function') {
+                  media.videoMedia._ensurePlaying(3);
+                }
+              }, delay);
+            });
           } else {
             media.videoMedia.pause();
           }
@@ -680,29 +684,47 @@ progress bar) are simply skipped when no carousel_id is given.
       var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       // The open/close animation: the expanded media is already centered in its final state (see media-zoom-style.liquid).
-      var zoomDuration = 360;
+      var openDuration = 420;
+      var closeDuration = 300;
+      var revealDuration = 380;
       var activeZoom = null;
 
-      // Minimal open/close: the media fades in while settling from a very slightly smaller size (and the reverse on close). It does
-      // not travel from / to the thumbnail, so there is no box to measure and nothing that can land out of place - the previous
-      // thumbnail-to-lightbox zoom could visibly jump when the two boxes differed or the final box changed while it ran.
+      // Minimal open/close: the media fades in while settling from a very slightly smaller size, and on close it fades out while
+      // easing back a touch. It does not travel from / to the thumbnail, so there is no box to measure and nothing that can land out
+      // of place. Everything that closes together (backdrop, buttons, panel, the media) lasts about the same, so nothing is cut off
+      // while another part is still moving: the lightbox is only hidden once all of it has faded.
       function playZoom(element, reverse) {
         if (activeZoom) {
           activeZoom.cancel();
         }
 
-        var settled = { opacity: 1, transform: 'scale(1)' };
-        var tucked = { opacity: 0, transform: 'scale(0.97)' };
-
-        var animation = element.animate(reverse ? [settled, tucked] : [tucked, settled], {
-          duration: zoomDuration,
-          easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)',
-          fill: 'both'
-        });
+        var animation = element.animate(
+          reverse
+            ? [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0.985)' }]
+            : [{ opacity: 0, transform: 'scale(0.96)' }, { opacity: 1, transform: 'scale(1)' }],
+          {
+            duration: reverse ? closeDuration : openDuration,
+            easing: reverse ? 'cubic-bezier(0.4, 0, 0.6, 1)' : 'cubic-bezier(0.22, 0.61, 0.36, 1)',
+            fill: 'both'
+          }
+        );
 
         activeZoom = animation;
 
         return animation;
+      }
+
+      // Back in its thumbnail the media is invisible (it just faded out in the lightbox): without this it would pop to full opacity
+      // in one frame, a flash. It fades back in instead, so the grid gets its picture back gently.
+      function revealInThumbnail(element) {
+        if (prefersReducedMotion || !element) {
+          return;
+        }
+
+        element.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: revealDuration,
+          easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)'
+        });
       }
 
       function openLightbox(index) {
@@ -782,6 +804,7 @@ progress bar) are simply skipped when no carousel_id is given.
           }
 
           collapseCell();
+          revealInThumbnail(element);
           lightbox.hidden = true;
           document.documentElement.style.overflow = '';
           document.documentElement.style.scrollbarGutter = '';
@@ -822,6 +845,13 @@ progress bar) are simply skipped when no carousel_id is given.
             finish();
           }
         };
+
+        // Safety net: if the browser never reports the end of the fade (a hidden tab, a throttled animation), the lightbox still closes.
+        setTimeout(function() {
+          if (isClosing && activeCell === finalCell) {
+            finish();
+          }
+        }, closeDuration + 300);
       }
 
       // ---- Vertical feed (TikTok style) ---------------------------------------------------------------
