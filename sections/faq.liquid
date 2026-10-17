@@ -514,8 +514,8 @@
       scroll in the first place (is-overflowing absent, no mask at all).
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__categories.is-overflowing::part(tablist) {
-        -webkit-mask-image: linear-gradient(to right, transparent, black 2rem, black calc(100% - 2rem), transparent);
-        mask-image: linear-gradient(to right, transparent, black 2rem, black calc(100% - 2rem), transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black .5rem, black calc(100% - 2rem), transparent);
+        mask-image: linear-gradient(to right, transparent, black .5rem, black calc(100% - 2rem), transparent);
       }
 
       #shopify-section-{{ section.id }} .faq__categories.is-overflowing.at-start::part(tablist) {
@@ -524,8 +524,8 @@
       }
 
       #shopify-section-{{ section.id }} .faq__categories.is-overflowing.at-end::part(tablist) {
-        -webkit-mask-image: linear-gradient(to right, transparent, black 2rem, black);
-        mask-image: linear-gradient(to right, transparent, black 2rem, black);
+        -webkit-mask-image: linear-gradient(to right, transparent, black .5rem, black);
+        mask-image: linear-gradient(to right, transparent, black .5rem, black);
       }
 
       #shopify-section-{{ section.id }} .faq__categories.is-overflowing.at-start.at-end::part(tablist) {
@@ -840,6 +840,20 @@
                   tabs.classList.toggle('at-start', tablist.scrollLeft <= 0);
                   tabs.classList.toggle('at-end', tablist.scrollLeft + tablist.clientWidth >= tablist.scrollWidth - 1);
                 }
+
+                {%- comment -%}
+                Tapping a tab slides the row so that tab sits at the left edge (the browser clamps the
+                scroll at the end of the row, so the last tabs simply go as far left as they can). The
+                .5rem inset matches the left edge fade width, so the tab isn't faded out.
+                {%- endcomment -%}
+                tabs.addEventListener('click', function (event) {
+                  var tab = event.target.closest('[slot="tab"]');
+                  if (!tab || tablist.scrollWidth <= tablist.clientWidth + 1) return;
+
+                  var left = tab.getBoundingClientRect().left - tablist.getBoundingClientRect().left + tablist.scrollLeft;
+                  var inset = parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5;
+                  tablist.scrollTo({ left: Math.max(0, left - inset), behavior: 'smooth' });
+                });
 
                 updateEdgeFade();
                 tablist.addEventListener('scroll', updateEdgeFade, { passive: true });
