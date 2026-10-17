@@ -12,6 +12,7 @@ progress bar) are simply skipped when no carousel_id is given.
 @param {string} [carousel_id] - id of the <product-list> element, when the media items sit inside a real scrolling carousel. Omit for a single static media item.
 @param {string} [controls_slot_id] - id of the element the selected slide's controls should be relocated into on touch devices. Only used when relocate_controls is true.
 @param {boolean} [relocate_controls] - whether to relocate controls next to the progress bar on touch devices (carousel-only, see section.settings.controls_position)
+@param {boolean} [sound_on_open] - whether a video opened in the lightbox with the zoom button starts with sound on (default false). An autoplaying video is muted again when the lightbox closes.
 {%- enddoc -%}
 
 <script>
@@ -26,6 +27,7 @@ progress bar) are simply skipped when no carousel_id is given.
       var carousel = {% if carousel_id %}document.getElementById('{{ carousel_id }}'){% else %}null{% endif %};
       var isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
       var relocateControls = {% if relocate_controls %}true{% else %}false{% endif %};
+      var soundOnOpen = {% if sound_on_open %}true{% else %}false{% endif %};
       var controlsSlot = (relocateControls && isTouchDevice) ? document.getElementById('{{ controls_slot_id }}') : null;
 
       // The list of "cells" to pause/relocate/navigate between: a real carousel's own cells when
@@ -556,8 +558,16 @@ progress bar) are simply skipped when no carousel_id is given.
           }
 
           // An autoplaying video goes back to playing in its thumbnail if it is on screen: the pause is not "on purpose"
+          // (even if the visitor paused it inside the lightbox), and the thumbnail is silent again, like before it was opened.
           if (media.videoMedia.hasAttribute('autoplay')) {
+            var thumbnailSoundButton = media.controlsGroup ? media.controlsGroup.querySelector('.carousel-video-sound-toggle') : null;
+
+            if (video && !video.muted && thumbnailSoundButton) {
+              thumbnailSoundButton.click();
+            }
+
             media.videoMedia.pause({ manual: false });
+            media.videoMedia._manualPause = false;
             setTimeout(function() {
               if (typeof media.videoMedia._ensurePlaying === 'function') {
                 media.videoMedia._ensurePlaying(3);
@@ -811,7 +821,8 @@ progress bar) are simply skipped when no carousel_id is given.
         document.documentElement.style.overflow = 'hidden';
         lightbox.hidden = false;
 
-        var media = expandCell(cell);
+        // The zoom button is a tap by the visitor, so the browser lets the video start with sound (soundOnOpen)
+        var media = expandCell(cell, soundOnOpen ? true : undefined);
         var expandedElement = media.videoMedia || media.image;
 
         updateNavButtons();

@@ -331,6 +331,14 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               });
             });
 
+            {%- comment -%}
+            The sound / pause buttons are only seen inside the lightbox (the thumbnails hide them by CSS) and there they are always
+            visible, never hidden until a tap: the tap-to-reveal class is dropped from them here, for every screen size.
+            {%- endcomment -%}
+            Array.prototype.forEach.call(carousel.querySelectorAll('.carousel-video-controls.carousel-video-controls--tap-to-reveal'), function (element) {
+              element.classList.remove('carousel-video-controls--tap-to-reveal');
+            });
+
             if (window.matchMedia('(max-width: 699px)').matches) {
               Array.prototype.forEach.call(carousel.querySelectorAll('open-lightbox-button.carousel-video-controls--tap-to-reveal'), function (element) {
                 element.classList.remove('carousel-video-controls--tap-to-reveal');
@@ -518,7 +526,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
           </script>
         {%- endif -%}
 
-        {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id -%}
+        {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id, sound_on_open: true -%}
 
         {%- comment -%}
         Keeps the lightbox caption's TEXT and POSITION in sync with whichever item is currently
@@ -748,11 +756,18 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   {%- comment -%}
-  Every video plays by itself, so there are no play/pause or sound buttons at any screen size, only the zoom button
-  (always visible on mobile, revealed on hover/tap on desktop).
+  Every video plays by itself, so there are no play/pause or sound buttons on the thumbnails at any screen size, only the zoom
+  button (always visible on mobile, revealed on hover/tap on desktop). They appear in the lightbox.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .carousel-video-controls {
+  #shopify-section-{{ section.id }} .carousel-video-controls:not(.is-lightbox-expanded) {
     display: none;
+  }
+
+  {%- comment -%}
+  Inside the lightbox the sound and pause buttons are always there: visible, enabled, never faded out or hidden.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .carousel-video-controls.is-lightbox-expanded {
+    visibility: visible;
   }
 
   {%- comment -%}
