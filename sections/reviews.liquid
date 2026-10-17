@@ -1108,10 +1108,29 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     var isAnimating = false;
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+    {%- comment -%}
+    Same feel as the reviews panel in the zoom view of the Instagram Feed: the box opens and closes quickly with a soft curve that slows down at
+    the end, and the reviews that appear come in one after the other, rising a little while they fade in.
+    {%- endcomment -%}
+    function revealCards(fromIndex) {
+      if (reduceMotion.matches) {
+        return;
+      }
+
+      var shown = Array.prototype.slice.call(list.querySelectorAll('.review-card:not([hidden])')).slice(fromIndex);
+
+      shown.forEach(function (card, position) {
+        card.animate(
+          [{ opacity: 0, transform: 'translateY(0.75rem)' }, { opacity: 1, transform: 'none' }],
+          { duration: 450, delay: 120 + position * 60, easing: 'cubic-bezier(0.32, 0.72, 0, 1)', fill: 'backwards' }
+        );
+      });
+    }
+
     function animateList(applyChange, opening) {
       var fromHeight = list.offsetHeight;
-      var duration = opening ? 2500 : 1200;
-      var easing = 'cubic-bezier(0.45, 0, 0.25, 1)';
+      var duration = opening ? 420 : 340;
+      var easing = 'cubic-bezier(0.32, 0.72, 0, 1)';
 
       applyChange();
       var toHeight = list.offsetHeight;
@@ -1207,11 +1226,14 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
         if (isAnimating) return;
 
         var totalCards = list ? list.querySelectorAll('.review-card').length : 0;
+        var alreadyShown = visibleCount;
 
         animateList(function () {
           visibleCount = Math.min(visibleCount + pageSize, totalCards);
           updateVisibility();
         }, true);
+
+        revealCards(alreadyShown);
       });
     }
 
