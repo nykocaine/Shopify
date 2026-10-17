@@ -429,6 +429,28 @@ direction_aware's own RTL flip isn't involved.
   translate: 0 0.375rem;
 }
 
+{%- comment -%}
+Add to cart (rendered only when the lightbox is given a product): the same round button as prev/next, third in the stack at the right
+edge, just below "next".
+{%- endcomment -%}
+#{{ lightbox_id }} .media-lightbox__cart {
+  width: var(--control-button-size, 1.75rem);
+  height: var(--control-button-size, 1.75rem);
+  z-index: 1000;
+  position: fixed;
+  inset-block-start: 50%;
+  inset-inline-end: 1rem;
+  translate: 0 calc(var(--control-button-size, 1.75rem) + 0.75rem);
+  opacity: 1;
+  scale: 1;
+  transition: opacity .2s ease, scale .2s ease;
+}
+
+#{{ lightbox_id }} .media-lightbox__cart[aria-busy="true"] {
+  opacity: .5;
+  pointer-events: none;
+}
+
 #{{ lightbox_id }} .media-lightbox__prev .icon,
 #{{ lightbox_id }} .media-lightbox__next .icon {
   rotate: 90deg;
@@ -444,6 +466,7 @@ First/last item: nothing further in that direction (the feed doesn't wrap around
 }
 
 #{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__close,
+#{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__cart,
 #{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__prev,
 #{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__next {
   opacity: 0;
@@ -471,6 +494,12 @@ an inward margin that keeps the whole button inside the media box's rounded corn
   #{{ lightbox_id }} .media-lightbox__next {
     inset-inline-start: 50%;
     inset-inline-end: auto;
+  }
+
+  #{{ lightbox_id }} .media-lightbox__cart {
+    inset-inline-start: 50%;
+    inset-inline-end: auto;
+    translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(var(--control-button-size, 1.75rem) + 0.75rem);
   }
 
   #{{ lightbox_id }} .media-lightbox__prev {
@@ -524,8 +553,7 @@ A taller invisible touch area above the thin line, so it is easy to grab without
 #{{ wrapper_id }} .lightbox-scrubber__played {
   fill: none;
   stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke-linecap: butt;
   stroke-width: var(--icon-stroke-width, 1.1px);
 }
 
@@ -678,6 +706,7 @@ happens instantly instead of animated.
 @media (prefers-reduced-motion: reduce) {
   #{{ lightbox_id }} .media-lightbox__backdrop,
   #{{ lightbox_id }} .media-lightbox__close,
+  #{{ lightbox_id }} .media-lightbox__cart,
   #{{ lightbox_id }} .media-lightbox__prev,
   #{{ lightbox_id }} .media-lightbox__next {
     transition: none;
