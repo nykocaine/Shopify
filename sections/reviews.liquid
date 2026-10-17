@@ -91,14 +91,15 @@ visitor can read on the page are included, with the same average and count shown
 
 {%- comment -%}
 The reviews (name, stars and text) for the Instagram Feed's zoom view (sections/instagram-feed.liquid shows them, one at a time, over the video): a hidden
-block of data on the page, read by that section when a video is opened. It holds only what the visitor can already read here.
+block of data on the page, read by that section when a video is opened. It holds only what the visitor can already read here. The text is complete:
+the zoom view shortens it to two lines by itself and offers "Ver más".
 {%- endcomment -%}
 {%- if review_blocks.size > 0 -%}
   {%- assign lightbox_reviews_printed = 0 -%}
   <script type="application/json" data-reviews-lightbox>
     [
       {%- for review_block in review_blocks -%}
-        {%- assign lightbox_review_text = review_block.settings.body | strip_html | strip | truncate: 160 -%}
+        {%- assign lightbox_review_text = review_block.settings.body | strip_html | strip -%}
 
         {%- if lightbox_review_text == blank -%}
           {%- assign lightbox_review_text = review_block.settings.title | strip_html | strip -%}
