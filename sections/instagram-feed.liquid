@@ -720,13 +720,13 @@ the first available one); the click is handled by the script near the lightbox b
 
                 function buildPanel() {
                   {%- comment -%}
-                  Every video lists the reviews in its own order: the best rated first, and in a random order among the ones with the same
-                  rating, so two videos rarely open on the same reviews.
+                  Every video lists the reviews in its own order: the best rated first, and in a random order among the ones in the same star
+                  tier (4.5 and 4.8 are both 5 stars, 3.5 and 4.2 both 4...), so two videos rarely open on the same reviews.
                   {%- endcomment -%}
                   var reviews = getLightboxReviews().map(function (review) {
                     return { review: review, tiebreak: Math.random() };
                   }).sort(function (first, second) {
-                    return (second.review.rating || 0) - (first.review.rating || 0) || first.tiebreak - second.tiebreak;
+                    return Math.round(second.review.rating || 0) - Math.round(first.review.rating || 0) || first.tiebreak - second.tiebreak;
                   }).map(function (entry) {
                     return entry.review;
                   });
