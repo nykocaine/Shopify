@@ -642,33 +642,63 @@ the first available one); the click is handled by the script near the lightbox b
                   }
 
                   {%- comment -%}
-                  Not just the name: a pattern, a separator and a number picked from the name itself (always the same ones for the same reviewer),
-                  the way people sign up: "maria.lopez_92", "mlopez07", "xmariax", "maria_lima"...
+                  Handles look like ones people actually pick: mostly short and plain (a nickname, an initial plus the surname, the name with a
+                  letter stretched), with a number only now and then. Always the same handle for the same reviewer: everything is picked from a
+                  number computed from the name.
                   {%- endcomment -%}
-                  var seed = 7;
+                  var seed = 11;
 
                   for (var index = 0; index < name.length; index += 1) {
-                    seed = (seed * 33 + name.charCodeAt(index)) % 100003;
+                    seed = (seed * 37 + name.charCodeAt(index)) % 1000003;
+                  }
+
+                  function pick(list, offset) {
+                    return list[(seed >> offset) % list.length];
                   }
 
                   var first = words[0];
                   var last = words.length > 1 ? words[words.length - 1] : '';
-                  var number = String((seed % 97) + 3);
-                  var year = String(1990 + (seed % 16)).slice(2);
-                  var tags = ['pe', 'lima', 'real', 'oficial', 'love', 'style'];
-                  var tag = tags[seed % tags.length];
-                  var patterns = [
-                    first + (last ? '.' + last : '') + '_' + number,
-                    (last ? first.charAt(0) + last : first) + year,
-                    first + '_' + tag,
-                    first + number,
-                    (last ? first + '_' + last.charAt(0) : first) + '.' + number,
-                    'its' + first + number,
-                    first + year + '_' + tag,
-                    first + '__' + number
+                  var nick = first.length > 5 ? first.slice(0, 4 + (seed % 2)) : first;
+                  var stretched = first.replace(/([aeiou])(?!.*[aeiou])/, '$1$1');
+                  var birth = String(88 + (seed % 15)).slice(-2);
+                  var small = ['x', 'z', 'k', 'j'];
+                  var patterns = last ? [
+                    first.charAt(0) + last,
+                    first + last.charAt(0),
+                    nick + '.' + last.slice(0, 3),
+                    last + '.' + first.charAt(0),
+                    first + '_' + last.charAt(0),
+                    first + '.' + last.charAt(0),
+                    nick + last.charAt(0) + pick(small, 3),
+                    first + '.' + last,
+                    stretched,
+                    first + birth,
+                    last.slice(0, 4) + '_' + first.slice(0, 3),
+                    first + '_' + last.slice(0, 2)
+                  ] : [
+                    first,
+                    stretched,
+                    first + '_' + first.charAt(0),
+                    first + '_' + pick(small, 3),
+                    first + '.' + pick(small, 5) + pick(small, 7),
+                    first + birth,
+                    'its' + first,
+                    '_' + first
                   ];
 
                   return '@' + patterns[seed % patterns.length];
+                }
+
+                {%- comment -%}Verified badge next to the handle: a small blue seal with a check{%- endcomment -%}
+                function buildBadge() {
+                  var badge = document.createElement('span');
+
+                  badge.className = 'lightbox-reviews__badge';
+                  badge.setAttribute('role', 'img');
+                  badge.setAttribute('aria-label', 'Verificado');
+                  badge.innerHTML = '<svg viewBox="0 0 24 24" width="100%" height="100%" focusable="false" aria-hidden="true"><path d="M12.00 2.00 L15.21 4.24 L19.07 4.93 L19.76 8.79 L22.00 12.00 L19.76 15.21 L19.07 19.07 L15.21 19.76 L12.00 22.00 L8.79 19.76 L4.93 19.07 L4.24 15.21 L2.00 12.00 L4.24 8.79 L4.93 4.93 L8.79 4.24Z" fill="#0095f6" stroke="#0095f6" stroke-width="1.6" stroke-linejoin="round"/><path d="m7.9 12.2 2.9 2.9 5.4-5.8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+                  return badge;
                 }
 
                 function buildAvatar(name) {
@@ -746,6 +776,7 @@ the first available one); the click is handled by the script near the lightbox b
                     setupClampedText(itemText, review.text || '');
 
                     itemHead.appendChild(itemName);
+                    itemHead.appendChild(buildBadge());
                     item.appendChild(itemHead);
                     item.appendChild(itemText);
                     list.appendChild(item);
@@ -1419,6 +1450,14 @@ the first available one); the click is handled by the script near the lightbox b
     height: 1.75rem;
     border-radius: 100%;
     overflow: hidden;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-reviews__badge {
+    flex: none;
+    display: block;
+    width: 1em;
+    height: 1em;
+    margin-inline-start: -0.25rem;
   }
 
   #shopify-section-{{ section.id }} .lightbox-reviews__name {
