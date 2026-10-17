@@ -612,6 +612,24 @@
           </a>
         </li>
 
+        {%- if shop.customer_accounts_enabled -%}
+          {%- comment -%}
+          Mobile only (the desktop account link above is hidden below 1000px): the account icon sits right next to the cart.
+          Same logic as the desktop one: signed in keeps <shopify-account> (avatar + account sheet), signed out links straight
+          to the login page. Always the icon, never text.
+          {%- endcomment -%}
+          <li class="header__account-link header__account-link--mobile md:hidden">
+            {%- if customer -%}
+              <shopify-account menu="{{ section.settings.customer_account_menu }}"></shopify-account>
+            {%- else -%}
+              <a href="{{ routes.account_login_url }}" class="block tap-area">
+                <span class="sr-only">{{ 'header.general.login' | t }}</span>
+                {%- render 'icon' with 'account', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+              </a>
+            {%- endif -%}
+          </li>
+        {%- endif -%}
+
         <li class="header__cart-link relative">
           <a href="{{ routes.cart_url }}" class="block tap-area" {% if settings.cart_type != 'page' and request.page_type != 'cart' %}aria-controls="cart-drawer"{% endif %} data-no-instant>
             {%- if section.settings.show_icons_text -%}
