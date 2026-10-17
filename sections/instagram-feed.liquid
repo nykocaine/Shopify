@@ -337,25 +337,31 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                 videoCell.classList.add('has-poster');
               }
 
-              function setLoading(isLoading) {
-                videoCell.classList.toggle('is-video-loading', isLoading);
+              {%- comment -%}
+              The spinner follows the video's real state instead of a pair of "start" and "end" events (which could leave it
+              stuck: "stalled" and "waiting" also fire while the video is already playing or only preloading, and nothing
+              fired afterwards to turn it off). It is on only while the video is trying to play (not paused, not ended) and does
+              not have enough data to keep going (readyState below HAVE_FUTURE_DATA); it is re-evaluated on every event that can
+              change that, including timeupdate while it plays. A video that is actually moving also gets .is-ready here, in case
+              the "playing" event was missed.
+              {%- endcomment -%}
+              function updateState() {
+                var isPlaying = !video.paused && !video.ended;
+                var hasData = video.readyState >= 3;
+
+                videoCell.classList.toggle('is-video-loading', isPlaying && !hasData);
+
+                if (isPlaying && hasData && video.currentTime > 0) {
+                  videoMedia.classList.add('is-ready');
+                }
               }
 
-              ['play', 'waiting', 'stalled'].forEach(function (type) {
-                video.addEventListener(type, function () {
-                  setLoading(true);
-                });
+              ['play', 'playing', 'waiting', 'stalled', 'seeking', 'seeked', 'loadeddata', 'canplay', 'canplaythrough', 'timeupdate', 'pause', 'ended', 'emptied', 'abort', 'error'].forEach(function (type) {
+                video.addEventListener(type, updateState);
               });
 
               video.addEventListener('playing', function () {
-                setLoading(false);
                 videoMedia.classList.add('is-ready');
-              });
-
-              ['pause', 'ended', 'emptied', 'error'].forEach(function (type) {
-                video.addEventListener(type, function () {
-                  setLoading(false);
-                });
               });
             });
 
