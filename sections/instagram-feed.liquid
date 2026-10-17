@@ -657,6 +657,28 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     #shopify-section-{{ section.id }} .instagram-feed__carousel {
       border-radius: {{ instagram_corner_radius_px }};
     }
+
+    {%- if section.settings.attach_to_footer -%}
+      {%- comment -%}
+      "Attach to footer": only when this section is the last one of the page content, so the footer comes right after it
+      (the footer lives in its own section group, right below <main>). The two join with no gap: this section loses its
+      bottom margin and its bottom corners, keeping only the top ones, and the footer loses all its rounded corners.
+      Side margins stay (both are floating). The footer's own rules are scoped through :root:has(), because it is a
+      different section.
+      {%- endcomment -%}
+      main > #shopify-section-{{ section.id }}:last-child > .section-floating {
+        margin-block-end: 0 !important;
+        border-radius: {{ instagram_corner_radius_px }} {{ instagram_corner_radius_px }} 0 0 !important;
+      }
+
+      :root:has(main > #shopify-section-{{ section.id }}:last-child) .shopify-section--footer {
+        margin-block-start: 0;
+      }
+
+      :root:has(main > #shopify-section-{{ section.id }}:last-child) .shopify-section--footer .footer {
+        border-radius: 0 !important;
+      }
+    {%- endif -%}
   {%- endif -%}
 
   {%- comment -%}
@@ -840,6 +862,14 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       "label": "Floating",
       "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
       "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "attach_to_footer",
+      "label": "Attach to footer",
+      "info": "Only works when this section is the last one on the page, right above the footer: the two join with no gap, the footer's rounded corners and this section's bottom corners are removed.",
+      "default": false,
+      "visible_if": "{{ section.settings.floating_instagram_feed }}"
     },
     {
       "type": "range",
