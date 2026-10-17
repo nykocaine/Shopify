@@ -18,6 +18,7 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
 @param {string} [corner_radius] - CSS value for the item's border-radius (eg. "var(--media-blocks-corner-radius)" or "12px")
 @param {string} [heading] - optional heading shown over the media (carousel slide caption)
 @param {string} [text] - optional rich text shown under the heading
+@param {boolean} [show_comments] - whether to render a comments button (with the number of comments) at the top of the video's controls. Its behavior lives in the section that renders the slide
 @param {boolean} [show_like] - whether to render a heart (like) button with its count at the top of the video's controls. Its behavior lives in the section that renders the slide
 @param {string} [like_id] - stable id of this item, used to remember the visitor's like
 @param {number} [like_count] - the number of likes to show (a real number entered by the merchant); the visitor's own like adds one. Blank hides the number
@@ -60,6 +61,16 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
       {%- endif -%}
 
       <div class="h-stack gap-2 carousel-video-controls{% if reveal_controls_on_tap %} carousel-video-controls--tap-to-reveal{% endif %}">
+        {%- if show_comments -%}
+          <div class="carousel-video-comments" hidden>
+            <button type="button" class="carousel-video-comments-toggle" aria-expanded="false">
+              <span class="sr-only">{{ 'Reseñas' }}</span>
+              {%- render 'icon' with 'comment' -%}
+            </button>
+            <span class="carousel-video-comments__count"></span>
+          </div>
+        {%- endif -%}
+
         {%- if show_like -%}
           <div class="carousel-video-like" data-like-id="{{ like_id }}" data-like-base="{{ like_count }}">
             <button type="button" class="carousel-video-like-toggle" aria-pressed="false">

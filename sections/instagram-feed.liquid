@@ -123,6 +123,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                   video: block.settings.video,
                   autoplay: true,
                   reveal_controls_on_tap: true,
+                  show_comments: section.settings.show_lightbox_reviews,
                   show_like: section.settings.show_likes,
                   like_id: block.id,
                   like_count: block.settings.likes_count,
@@ -547,6 +548,119 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                   }
                 }
 
+                {%- comment -%}
+                Comments: the button at the top of the video's buttons opens a panel that rises from the bottom of the video (about a third of
+                its height) listing ALL the reviews, scrollable. While it is open everything else over the video (logo, sound / pause / like,
+                the rotating review, the progress line, the arrows) is hidden; its own close button, at the top right of the panel, closes it.
+                {%- endcomment -%}
+                var commentsBox = videoMedia.closest('.content-box__background-media');
+                var commentsWidget = commentsBox ? commentsBox.querySelector('.carousel-video-comments') : null;
+                var controlsGroup = commentsBox ? commentsBox.querySelector('.carousel-video-controls') : null;
+                var lightboxElement = document.getElementById('{{ instagram_lightbox_id }}');
+                var panel = null;
+
+                function setCommentsOpen(open) {
+                  videoMedia.classList.toggle('is-comments-open', open);
+
+                  if (controlsGroup) {
+                    controlsGroup.classList.toggle('is-comments-open', open);
+                  }
+
+                  if (lightboxElement) {
+                    lightboxElement.classList.toggle('is-comments-open', open);
+                  }
+
+                  if (commentsWidget) {
+                    commentsWidget.querySelector('.carousel-video-comments-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+                  }
+                }
+
+                function buildPanel() {
+                  var reviews = getLightboxReviews();
+
+                  panel = document.createElement('div');
+                  panel.className = 'lightbox-comments';
+                  panel.setAttribute('role', 'dialog');
+
+                  var head = document.createElement('div');
+                  head.className = 'lightbox-comments__head';
+
+                  var title = document.createElement('span');
+                  title.className = 'lightbox-comments__title';
+                  title.textContent = 'Reseñas (' + reviews.length + ')';
+
+                  var closeButton = document.createElement('button');
+                  closeButton.type = 'button';
+                  closeButton.className = 'lightbox-comments__close';
+                  closeButton.setAttribute('aria-label', 'Cerrar');
+                  closeButton.innerHTML = '<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="14" height="14" fill="none"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="m3.5 3.5 9 9m0-9-9 9"/></svg>';
+                  closeButton.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    setCommentsOpen(false);
+                  });
+
+                  head.appendChild(title);
+                  head.appendChild(closeButton);
+
+                  var list = document.createElement('div');
+                  list.className = 'lightbox-comments__list';
+
+                  reviews.forEach(function (review) {
+                    var item = document.createElement('div');
+                    item.className = 'lightbox-comments__item';
+
+                    var itemHead = document.createElement('div');
+                    itemHead.className = 'lightbox-reviews__head';
+
+                    var itemStars = document.createElement('span');
+                    itemStars.className = 'lightbox-reviews__stars';
+                    var rating = Math.max(0, Math.min(5, Math.round(review.rating || 0)));
+
+                    for (var star = 1; star <= 5; star += 1) {
+                      var itemStar = document.createElement('span');
+
+                      itemStar.textContent = '\u2605';
+                      itemStar.className = star <= rating ? 'is-filled' : 'is-empty';
+                      itemStars.appendChild(itemStar);
+                    }
+
+                    var itemName = document.createElement('span');
+                    itemName.className = 'lightbox-reviews__name';
+                    itemName.textContent = review.name || '';
+
+                    var itemText = document.createElement('p');
+                    itemText.className = 'lightbox-comments__text';
+                    itemText.textContent = review.text || '';
+
+                    itemHead.appendChild(itemStars);
+                    itemHead.appendChild(itemName);
+                    item.appendChild(itemHead);
+                    item.appendChild(itemText);
+                    list.appendChild(item);
+                  });
+
+                  panel.appendChild(head);
+                  panel.appendChild(list);
+                  videoMedia.appendChild(panel);
+                }
+
+                if (commentsWidget) {
+                  if (getLightboxReviews().length) {
+                    commentsWidget.hidden = false;
+                    commentsWidget.querySelector('.carousel-video-comments__count').textContent = getLightboxReviews().length.toLocaleString();
+                  }
+
+                  commentsWidget.querySelector('.carousel-video-comments-toggle').addEventListener('click', function (event) {
+                    event.stopPropagation();
+
+                    if (!panel) {
+                      buildPanel();
+                    }
+
+                    setCommentsOpen(true);
+                  });
+                }
+
                 new MutationObserver(function () {
                   var expanded = videoMedia.classList.contains('is-lightbox-expanded');
 
@@ -554,6 +668,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                     start();
                   } else if (!expanded && running) {
                     stop();
+                    setCommentsOpen(false);
                   }
                 }).observe(videoMedia, { attributes: true, attributeFilter: ['class'] });
               });
@@ -1190,6 +1305,133 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     line-clamp: 2;
     overflow: hidden;
     font: var(--text-font-style) var(--text-font-weight) 0.8125rem / 1.35 var(--text-font-family);
+  }
+
+  {%- comment -%}
+  Comments: the button joins the like button at the top of the column (same size, no background, same icon color) and opens a panel
+  that rises from the bottom of the video (--lightbox-comments-height of it) with all the reviews. With it open, everything else
+  over the video is hidden, and the panel's close button sits at its top right.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .carousel-video-comments {
+    display: grid;
+    justify-items: center;
+    row-gap: 0.125rem;
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-comments[hidden] {
+    display: none;
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-comments__count {
+    font: var(--text-font-style) var(--text-font-weight) 0.6875rem / 1 var(--text-font-family);
+    letter-spacing: 0.02em;
+    color: var(--control-button-icon-color, #ffffff);
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-comments-toggle {
+    display: grid;
+    place-content: center;
+    width: var(--control-button-size, 1.75rem);
+    height: var(--control-button-size, 1.75rem);
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--control-button-icon-color, #ffffff);
+    cursor: pointer;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments {
+    display: none;
+  }
+
+  #shopify-section-{{ section.id }} video-media.is-lightbox-expanded > .lightbox-comments {
+    --lightbox-comments-height: 36%;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    z-index: 5;
+    inset-inline: 0.75rem;
+    inset-block-end: 0.75rem;
+    height: var(--lightbox-comments-height);
+    padding: 0.625rem 0.875rem 0;
+    overflow: hidden;
+    border-radius: var(--drawer-border-radius);
+    background: rgb(var(--background));
+    color: rgb(var(--text-color));
+    visibility: hidden;
+    transform: translateY(calc(100% + 1rem));
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.4s;
+    cursor: default;
+  }
+
+  #shopify-section-{{ section.id }} video-media.is-lightbox-expanded.is-comments-open > .lightbox-comments {
+    visibility: visible;
+    transform: none;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s;
+  }
+
+  #shopify-section-{{ section.id }} video-media.is-lightbox-expanded.is-comments-open {
+    touch-action: pan-y;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: none;
+    padding-block-end: 0.5rem;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__title {
+    font: var(--text-font-style) 600 0.8125rem / 1.2 var(--text-font-family);
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__close {
+    display: grid;
+    place-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    padding-block-end: 0.625rem;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__item {
+    padding-block: 0.5rem;
+    border-block-start: 1px solid rgb(var(--border-color));
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__text {
+    margin: 0;
+    font: var(--text-font-style) var(--text-font-weight) 0.8125rem / 1.4 var(--text-font-family);
+  }
+
+  #shopify-section-{{ section.id }} video-media.is-comments-open::after,
+  #shopify-section-{{ section.id }} video-media.is-comments-open > .lightbox-scrubber,
+  #shopify-section-{{ section.id }} video-media.is-comments-open > .lightbox-reviews {
+    display: none !important;
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-controls.is-lightbox-expanded.is-comments-open {
+    display: none !important;
+  }
+
+  #{{ instagram_lightbox_id }}.is-comments-open .media-lightbox__prev,
+  #{{ instagram_lightbox_id }}.is-comments-open .media-lightbox__next,
+  #{{ instagram_lightbox_id }}.is-comments-open .media-lightbox__cart {
+    opacity: 0;
+    pointer-events: none;
   }
 
   {%- comment -%}
