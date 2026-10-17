@@ -90,7 +90,7 @@ visitor can read on the page are included, with the same average and count shown
 {%- endif -%}
 
 {%- comment -%}
-The reviews' texts for the Instagram Feed's zoom view (sections/instagram-feed.liquid shows them, one at a time, over the video): a hidden
+The reviews (name, stars and text) for the Instagram Feed's zoom view (sections/instagram-feed.liquid shows them, one at a time, over the video): a hidden
 block of data on the page, read by that section when a video is opened. It holds only what the visitor can already read here.
 {%- endcomment -%}
 {%- if review_blocks.size > 0 -%}
@@ -107,7 +107,7 @@ block of data on the page, read by that section when a video is opened. It holds
         {%- if lightbox_review_text != blank -%}
           {%- assign lightbox_reviews_printed = lightbox_reviews_printed | plus: 1 -%}
           {%- if lightbox_reviews_printed > 1 -%},{%- endif -%}
-          {{ lightbox_review_text | json }}
+          { "name": {{ review_block.settings.reviewer_name | json }}, "rating": {{ review_block.settings.rating | default: 0 | json }}, "text": {{ lightbox_review_text | json }} }
         {%- endif -%}
       {%- endfor -%}
     ]
