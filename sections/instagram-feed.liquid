@@ -285,11 +285,13 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             });
 
             {%- comment -%}
-            Mobile (up to 699px): nothing autoplays - saves data and battery. Removing the attribute here,
-            while this script still runs before the deferred theme.js defines <video-media>, makes the
-            element behave as a regular tap-to-play video (VideoMedia#connectedCallback) with its poster
-            frame, and dropping the tap-to-reveal class keeps the play/pause, sound and zoom buttons
-            always visible (media-zoom-script.liquid reads that class after this script has run).
+            Mobile (up to 699px): only the FIRST video of the row autoplays (muted, looped), so the page loads fast; the rest
+            do not autoplay - saves data and battery. Removing the attribute here, while this script still runs before the
+            deferred theme.js defines <video-media>, makes the element behave as a regular tap-to-play video
+            (VideoMedia#connectedCallback) with its poster frame. The tap-to-reveal class is dropped so the buttons are
+            always visible (media-zoom-script.liquid reads that class after this script has run); the first video's
+            cell is marked .instagram-feed__lead-video and the CSS below hides its play/pause and sound buttons, leaving
+            only the zoom button.
 
             Desktop: videos keep autoplaying, but BaseMedia only starts them the first time they come
             into view and never stops them. With the carousel scrolling, that would slowly leave every
@@ -297,12 +299,20 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             resumed when it comes back (only if it was paused here, never if the visitor paused it).
             {%- endcomment -%}
             if (window.matchMedia('(max-width: 699px)').matches) {
-              Array.prototype.forEach.call(carousel.querySelectorAll('video-media[autoplay]'), function (video) {
-                video.removeAttribute('autoplay');
-              });
+              Array.prototype.forEach.call(carousel.querySelectorAll('video-media[autoplay]'), function (video, index) {
+                var videoCell = video.closest('.snap-start');
 
-              Array.prototype.forEach.call(carousel.querySelectorAll('.carousel-video-controls--tap-to-reveal'), function (element) {
-                element.classList.remove('carousel-video-controls--tap-to-reveal');
+                if (index > 0) {
+                  video.removeAttribute('autoplay');
+                } else if (videoCell) {
+                  videoCell.classList.add('instagram-feed__lead-video');
+                }
+
+                if (videoCell) {
+                  Array.prototype.forEach.call(videoCell.querySelectorAll('.carousel-video-controls--tap-to-reveal'), function (element) {
+                    element.classList.remove('carousel-video-controls--tap-to-reveal');
+                  });
+                }
               });
             } else if ('IntersectionObserver' in window) {
               var visibilityObserver = new IntersectionObserver(function (entries) {
@@ -742,6 +752,15 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- endcomment -%}
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .carousel-video-controls {
+      display: none;
+    }
+  }
+
+  {%- comment -%}
+  Mobile (below 700px): the first video plays by itself, so it shows only the zoom button, no play/pause or sound buttons.
+  {%- endcomment -%}
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .instagram-feed__lead-video .carousel-video-controls {
       display: none;
     }
   }
