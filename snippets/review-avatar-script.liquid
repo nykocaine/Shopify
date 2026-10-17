@@ -1,6 +1,6 @@
 {%- doc -%}
 The round picture that goes with a reviewer's name, shared by the Reviews section and the Instagram Feed's zoom view so the same reviewer has the same picture
-in both. Reviews carry no photo, so it is generated: a soft gradient with a person's silhouette, its colors taken from the name (same name, same picture).
+in both. Reviews carry no photo, so it is generated: a flat soft color with one simple shape, both taken from the name (same name, same picture).
 
 Defines, once per page, window.buildReviewAvatar(name) and window.buildReviewHandle(name) (the "@user" shown with the picture), and the .review-avatar
 look (size from --review-avatar-size, 1.75rem by default).
@@ -19,19 +19,46 @@ look (size from --review-avatar-size, 1.75rem by default).
 
 <script>
   if (!window.buildReviewAvatar) {
+    {%- comment -%}
+    Flat and quiet: a muted, soft color with one simple shape in a deeper tone of the same color. The color (10 of them), the shape (10 of them) and
+    which way it faces all come from the name, so the same person always has the same picture and different people rarely share one.
+    {%- endcomment -%}
+    var reviewAvatarColors = [
+      ['#e9e4dc', '#b9ad9b'], ['#dfe7e1', '#9fb5a5'], ['#e3e6ee', '#a3adc4'], ['#efe1e0', '#c9a09d'], ['#e8e3ee', '#b3a4c4'],
+      ['#e2eae8', '#97b4ad'], ['#f0e8d6', '#d0b784'], ['#e1e5e8', '#98a4ad'], ['#ecded4', '#c9a389'], ['#e6e9dc', '#adb892']
+    ];
+
+    var reviewAvatarShapes = [
+      '<circle cx="16" cy="16" r="7"/>',
+      '<path d="M5 20a11 11 0 0 1 22 0Z"/>',
+      '<circle cx="16" cy="16" r="8" fill="none" stroke-width="3.2" stroke="FG"/>',
+      '<circle cx="11" cy="16" r="4.5"/><circle cx="22" cy="16" r="4.5"/>',
+      '<path d="M-2 22 22 -2h8L6 34h-8Z" transform="translate(0 -1)"/>',
+      '<path d="M16 6.5 26.5 25h-21Z"/>',
+      '<path d="M0 0h20A20 20 0 0 1 0 20Z"/>',
+      '<path d="M9 27V15a7 7 0 0 1 14 0v12Z"/>',
+      '<rect x="6" y="9" width="20" height="3.6" rx="1.8"/><rect x="6" y="14.2" width="20" height="3.6" rx="1.8"/><rect x="6" y="19.4" width="20" height="3.6" rx="1.8"/>',
+      '<path d="M16 5 27 16 16 27 5 16Z"/>'
+    ];
+
     window.buildReviewAvatar = function (name) {
-      var hash = 0;
+      var hash = 2166136261;
 
       for (var index = 0; index < name.length; index += 1) {
-        hash = (hash * 31 + name.charCodeAt(index)) % 360;
+        hash ^= name.charCodeAt(index);
+        hash = Math.imul(hash, 16777619) >>> 0;
       }
+
+      var colors = reviewAvatarColors[hash % reviewAvatarColors.length];
+      var shape = reviewAvatarShapes[(hash >>> 8) % reviewAvatarShapes.length].replace(/FG/g, colors[1]);
+      var mirrored = (hash >>> 16) % 2 === 1;
 
       var avatar = document.createElement('span');
 
       avatar.className = 'review-avatar';
       avatar.setAttribute('aria-hidden', 'true');
-      avatar.style.background = 'linear-gradient(145deg, hsl(' + hash + ', 55%, 72%), hsl(' + ((hash + 40) % 360) + ', 50%, 52%))';
-      avatar.innerHTML = '<svg viewBox="0 0 32 32" width="100%" height="100%" focusable="false"><circle cx="16" cy="12.5" r="5.2" fill="#fff" fill-opacity="0.9"/><path d="M5.5 29c0-6 4.7-9.8 10.5-9.8S26.5 23 26.5 29" fill="#fff" fill-opacity="0.9"/></svg>';
+      avatar.style.background = colors[0];
+      avatar.innerHTML = '<svg viewBox="0 0 32 32" width="100%" height="100%" focusable="false"><g fill="' + colors[1] + '"' + (mirrored ? ' transform="translate(32 0) scale(-1 1)"' : '') + '>' + shape + '</g></svg>';
 
       return avatar;
     };
