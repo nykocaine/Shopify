@@ -4314,8 +4314,15 @@ var BaseMedia = class extends HTMLElement {
       this.player.play();
     }
   }
-  pause() {
-    this._manualPause = true;
+  /**
+   * Pauses the media. By default it counts as a pause on purpose, which an autoplaying video does not undo by itself when it
+   * comes back on screen (see #watchVisibility). Pass { manual: false } for a pause that only makes room for something else
+   * (a lightbox opening over it, for instance) and must not stop the video from playing again afterwards.
+   */
+  pause({ manual = true } = {}) {
+    if (manual) {
+      this._manualPause = true;
+    }
     if (this.playing) {
       this.player.pause();
     }
