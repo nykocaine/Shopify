@@ -266,8 +266,9 @@ lives outside it entirely.
 {%- endcomment -%}
 {%- comment -%}
 The backdrop behind the lightbox is the drawers' own: the same color and intensity (Theme settings > Drawers and popups > Backdrop
-color / intensity: --page-overlay) and the same blur (--dialog-backdrop-blur), and on mobile with "Center drawers on mobile" the
-same overlay color the centered drawers use. It no longer has a background of its own. The buttons keep their own look.
+color / intensity: --page-overlay) and the same blur (--dialog-backdrop-blur), on every screen size. It no longer has a background
+of its own. The buttons keep their own look. (The centered mobile drawers use a separate, fully opaque overlay color of their own,
+--drawer-mobile-overlay-color, which is deliberately not used here: on an opaque color the blur would not show.)
 {%- endcomment -%}
 #{{ lightbox_id }} .media-lightbox__backdrop {
   background: rgb(var(--page-overlay));
@@ -291,12 +292,6 @@ outside #{{ lightbox_id }} entirely, so they need the class on themselves to be 
 {%- endcomment -%}
 #{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__backdrop {
   opacity: 0;
-}
-
-@media screen and (max-width: 999px) {
-  .drawer-mobile-centered #{{ lightbox_id }} .media-lightbox__backdrop {
-    background: var(--drawer-mobile-overlay-color, rgb(var(--page-overlay)));
-  }
 }
 
 {%- comment -%}
