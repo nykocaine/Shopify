@@ -431,47 +431,6 @@ direction_aware's own RTL flip isn't involved.
   translate: 0 0.375rem;
 }
 
-{%- comment -%}
-Add to cart (rendered only when the lightbox is given a product): the same round button as prev/next, third in the stack at the right
-edge, just below "next".
-{%- endcomment -%}
-#{{ lightbox_id }} .media-lightbox__cart {
-  width: var(--control-button-size, 1.75rem);
-  height: var(--control-button-size, 1.75rem);
-  z-index: 1000;
-  position: fixed;
-  inset-block-start: 50%;
-  inset-inline-end: 1rem;
-  translate: 0 calc(var(--control-button-size, 1.75rem) + 0.75rem);
-  place-content: center;
-  display: grid;
-  padding: 0;
-  background: none;
-  border: 0;
-  /* Just the icon, like the heart and the comments button: no background, no border. On desktop it sits over the backdrop, so it
-     takes the text color; on mobile it is pinned over the video and takes the controls' icon color (below). */
-  color: rgb(var(--text-color));
-  cursor: pointer;
-  opacity: 1;
-  scale: 1;
-  transition: opacity .3s cubic-bezier(.4, 0, .2, 1), scale .25s cubic-bezier(.4, 0, .2, 1), color .25s ease;
-}
-
-@media (hover: hover) {
-  #{{ lightbox_id }} .media-lightbox__cart:hover {
-    scale: 1.12;
-  }
-}
-
-#{{ lightbox_id }} .media-lightbox__cart:active {
-  scale: .92;
-}
-
-#{{ lightbox_id }} .media-lightbox__cart[aria-busy="true"] {
-  opacity: .5;
-  pointer-events: none;
-}
-
 #{{ lightbox_id }} .media-lightbox__prev .icon,
 #{{ lightbox_id }} .media-lightbox__next .icon {
   rotate: 90deg;
@@ -487,7 +446,6 @@ First/last item: nothing further in that direction (the feed doesn't wrap around
 }
 
 #{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__close,
-#{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__cart,
 #{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__prev,
 #{{ lightbox_id }}:not(.is-lightbox-visible) .media-lightbox__next {
   opacity: 0;
@@ -517,13 +475,6 @@ an inward margin that keeps the whole button inside the media box's rounded corn
     inset-inline-end: auto;
   }
 
-  #{{ lightbox_id }} .media-lightbox__cart {
-    color: var(--control-button-icon-color, #ffffff);
-    inset-inline-start: 50%;
-    inset-inline-end: auto;
-    translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(var(--control-button-size, 1.75rem) + 0.75rem);
-  }
-
   #{{ lightbox_id }} .media-lightbox__prev {
     translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(-100% - 0.375rem);
   }
@@ -540,8 +491,7 @@ corner and would run into the centered prev/next/cart, so on these heights the s
 @media screen and (max-width: 999px) and (max-height: 700px) {
   #{{ lightbox_id }} .media-lightbox__close,
   #{{ lightbox_id }} .media-lightbox__prev,
-  #{{ lightbox_id }} .media-lightbox__next,
-  #{{ lightbox_id }} .media-lightbox__cart {
+  #{{ lightbox_id }} .media-lightbox__next {
     --lightbox-stack-step: calc(var(--control-button-size, 1.75rem) + 0.25rem);
     --lightbox-stack-x: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem);
     --lightbox-stack-top: calc(var(--lightbox-media-h) / -2 + 0.75rem);
@@ -555,9 +505,6 @@ corner and would run into the centered prev/next/cart, so on these heights the s
     translate: var(--lightbox-stack-x) calc(var(--lightbox-stack-top) + 2 * var(--lightbox-stack-step));
   }
 
-  #{{ lightbox_id }} .media-lightbox__cart {
-    translate: var(--lightbox-stack-x) calc(var(--lightbox-stack-top) + 3 * var(--lightbox-stack-step));
-  }
 }
 
 {%- comment -%}
@@ -754,7 +701,6 @@ happens instantly instead of animated.
 @media (prefers-reduced-motion: reduce) {
   #{{ lightbox_id }} .media-lightbox__backdrop,
   #{{ lightbox_id }} .media-lightbox__close,
-  #{{ lightbox_id }} .media-lightbox__cart,
   #{{ lightbox_id }} .media-lightbox__prev,
   #{{ lightbox_id }} .media-lightbox__next {
     transition: none;
