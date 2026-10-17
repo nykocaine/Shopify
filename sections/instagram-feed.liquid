@@ -291,10 +291,12 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             frame, and dropping the tap-to-reveal class keeps the play/pause, sound and zoom buttons
             always visible (media-zoom-script.liquid reads that class after this script has run).
 
-            Desktop: videos keep autoplaying, but BaseMedia only starts them the first time they come
-            into view and never stops them. With the carousel scrolling, that would slowly leave every
-            video playing at once, so each one is paused when it leaves the carousel's visible area and
-            resumed when it comes back (only if it was paused here, never if the visitor paused it).
+            Desktop: only the FIRST video of the row autoplays (muted, looped), so the page loads fast; it shows no play /
+            pause or sound buttons, only the zoom button, which is always visible. Every other video is a regular
+            tap-to-play video, like on mobile: no autoplay and its play / sound / zoom buttons always visible.
+            BaseMedia only starts the autoplaying video the first time it comes into view and never stops it; with the
+            carousel scrolling it is paused when it leaves the carousel's visible area and resumed when it comes back
+            (only if it was paused here, never if the visitor paused it).
             {%- endcomment -%}
             if (window.matchMedia('(max-width: 699px)').matches) {
               Array.prototype.forEach.call(carousel.querySelectorAll('video-media[autoplay]'), function (video) {
@@ -304,26 +306,49 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               Array.prototype.forEach.call(carousel.querySelectorAll('.carousel-video-controls--tap-to-reveal'), function (element) {
                 element.classList.remove('carousel-video-controls--tap-to-reveal');
               });
-            } else if ('IntersectionObserver' in window) {
-              var visibilityObserver = new IntersectionObserver(function (entries) {
-                entries.forEach(function (entry) {
-                  var video = entry.target;
+            } else {
+              var autoplayVideos = carousel.querySelectorAll('video-media[autoplay]');
 
-                  if (entry.isIntersecting) {
-                    if (video.hasAttribute('data-auto-paused') && typeof video.play === 'function') {
-                      video.removeAttribute('data-auto-paused');
-                      video.play();
-                    }
-                  } else if (video.playing && typeof video.pause === 'function') {
-                    video.setAttribute('data-auto-paused', '');
-                    video.pause();
+              Array.prototype.forEach.call(autoplayVideos, function (video, index) {
+                var videoCell = video.closest('.snap-start');
+
+                if (index > 0) {
+                  video.removeAttribute('autoplay');
+                }
+
+                if (videoCell) {
+                  if (index === 0) {
+                    videoCell.classList.add('instagram-feed__lead-video');
+                    Array.prototype.forEach.call(videoCell.querySelectorAll('open-lightbox-button'), function (element) {
+                      element.classList.remove('carousel-video-controls--tap-to-reveal');
+                    });
+                  } else {
+                    Array.prototype.forEach.call(videoCell.querySelectorAll('.carousel-video-controls--tap-to-reveal'), function (element) {
+                      element.classList.remove('carousel-video-controls--tap-to-reveal');
+                    });
                   }
-                });
+                }
               });
 
-              Array.prototype.forEach.call(carousel.querySelectorAll('video-media[autoplay]'), function (video) {
-                visibilityObserver.observe(video);
-              });
+              if ('IntersectionObserver' in window && autoplayVideos.length > 0) {
+                var visibilityObserver = new IntersectionObserver(function (entries) {
+                  entries.forEach(function (entry) {
+                    var video = entry.target;
+
+                    if (entry.isIntersecting) {
+                      if (video.hasAttribute('data-auto-paused') && typeof video.play === 'function') {
+                        video.removeAttribute('data-auto-paused');
+                        video.play();
+                      }
+                    } else if (video.playing && typeof video.pause === 'function') {
+                      video.setAttribute('data-auto-paused', '');
+                      video.pause();
+                    }
+                  });
+                });
+
+                visibilityObserver.observe(autoplayVideos[0]);
+              }
             }
 
             {%- comment -%}
@@ -737,11 +762,12 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   {%- comment -%}
-  Desktop (700px and up): the videos play by themselves, so there are no video controls at all - no play/pause,
-  sound or zoom buttons. On mobile (below 700px) they stay visible, since nothing autoplays there.
+  Desktop (700px and up): the first video plays by itself (the script above marks its cell .instagram-feed__lead-video),
+  so it has no play/pause or sound buttons, only the zoom button. The other videos keep their controls, since nothing
+  autoplays for them.
   {%- endcomment -%}
   @media screen and (min-width: 700px) {
-    #shopify-section-{{ section.id }} .carousel-video-controls {
+    #shopify-section-{{ section.id }} .instagram-feed__lead-video .carousel-video-controls {
       display: none;
     }
   }
