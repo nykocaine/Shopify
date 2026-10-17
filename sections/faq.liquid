@@ -344,6 +344,31 @@
         font-weight: var(--text-font-weight);
       }
 
+      {%- if section.settings.two_columns -%}
+        {%- comment -%}
+        Desktop (1000px and up), tabs: the questions of a tab are laid out in two columns instead of one very wide column, read from left to right
+        (first question on the left, second on the right, and so on): with an odd number the extra one ends up alone on the left, in the last row.
+        Opening a question makes its whole row taller (the neighbour next to it stretches with it, so the lines between rows stay aligned). Blocks
+        that are not a question (text + image) keep the full width, and phones keep one column.
+        {%- endcomment -%}
+        @media screen and (min-width: 1000px) {
+          #shopify-section-{{ section.id }} .faq__panel:not([hidden]) {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            column-gap: 2.5rem;
+          }
+
+          #shopify-section-{{ section.id }} .faq__panel > :not(.accordion) {
+            grid-column: 1 / -1;
+          }
+
+          {%- comment -%}The closing line goes from the whole last row, not only from the very last question{%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq-block__list .accordion:not(.bg-secondary):nth-last-child(2):nth-child(odd) {
+            box-shadow: none;
+          }
+        }
+      {%- endif -%}
+
       {%- comment -%}
       Toggle icon ("+"/toggle_icon: 'accordion-plus', snippets/icon.liquid): the icon is two bars, a
       fixed horizontal one and a vertical one carrying the .accordion-plus-bar class. theme.css's own
@@ -869,6 +894,13 @@
         }
       ],
       "default": "border"
+    },
+    {
+      "type": "checkbox",
+      "id": "two_columns",
+      "label": "Two columns on desktop",
+      "info": "With tabs: the questions of a tab are shown in two columns, read from left to right.",
+      "default": true
     },
     {
       "type": "checkbox",
