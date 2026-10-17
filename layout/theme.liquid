@@ -13,6 +13,18 @@
 
     <link rel="canonical" href="{{ canonical_url }}">
 
+    {%- comment -%}
+    Pages that must not show up in search engines (the claims book, the FAQ page, the blog and its posts): this tag is what keeps
+    them out of the results (a missing <h1> does not), while search engines still follow their links.
+    {%- endcomment -%}
+    {%- if request.page_type == 'blog' or request.page_type == 'article' -%}
+      <meta name="robots" content="noindex, follow">
+    {%- elsif request.page_type == 'page' and page.template_suffix == 'libro-reclamaciones' -%}
+      <meta name="robots" content="noindex, follow">
+    {%- elsif request.page_type == 'page' and page.template_suffix == 'faq' -%}
+      <meta name="robots" content="noindex, follow">
+    {%- endif -%}
+
     {%- if settings.favicon -%}
       <link rel="shortcut icon" href="{{ settings.favicon | image_url: width: 96 }}">
       <link rel="apple-touch-icon" href="{{ settings.favicon | image_url: width: 180 }}">
@@ -99,44 +111,16 @@
     {%- endif -%}
 
     {%- comment -%}
-    <h1> rules (SEO and accessibility), applied to the page's content here so that whatever is added in the editor follows them:
-    - Home page: no heading of the content is an <h1> (they all become <h2>) and the page's one <h1> is a visually hidden one with
-      the shop name.
-    - Libro de reclamaciones, FAQ page and the blog (list and posts): no <h1> at all (any <h1> becomes <h2>, none is added).
-    - Every other page: exactly one <h1>. Its own content decides what it is (product title, collection title, page title...); if there
-      is none, a visually hidden one is added (the page title); if there are several, the first stays and the others become <h2>.
-    Demoted headings keep their classes, so they look the same.
+    Exactly one <h1> per page (SEO and accessibility). The page's own content decides what it is (the hero heading on the home page,
+    the product title, the collection title, the page title...). This is the safety net for whatever is added in the editor:
+    - no <h1> in the content: a visually hidden one is added (the shop name on the home page, the page title elsewhere);
+    - more than one: the first stays and the others become <h2> (same classes, so they look the same).
     {%- endcomment -%}
-    {%- assign h1_mode = 'single' -%}
-
-    {%- if request.page_type == 'index' -%}
-      {%- assign h1_mode = 'home' -%}
-    {%- elsif request.page_type == 'blog' or request.page_type == 'article' -%}
-      {%- assign h1_mode = 'none' -%}
-    {%- elsif request.page_type == 'page' and page.template_suffix == 'libro-reclamaciones' -%}
-      {%- assign h1_mode = 'none' -%}
-    {%- elsif request.page_type == 'page' and page.template_suffix == 'faq' -%}
-      {%- assign h1_mode = 'none' -%}
-    {%- endif -%}
-
     {%- capture main_content -%}{{ content_for_layout }}{%- endcapture -%}
     {%- assign h1_parts = main_content | split: '<h1' -%}
     {%- assign needs_fallback_h1 = false -%}
 
-    {%- if h1_mode == 'home' or h1_mode == 'none' -%}
-      {%- if h1_parts.size > 1 -%}
-        {%- capture main_content -%}
-          {{- h1_parts[0] -}}
-          {%- for h1_part in h1_parts offset: 1 -%}
-            <h2{{- h1_part | replace_first: '</h1>', '</h2>' -}}
-          {%- endfor -%}
-        {%- endcapture -%}
-      {%- endif -%}
-
-      {%- if h1_mode == 'home' -%}
-        {%- assign needs_fallback_h1 = true -%}
-      {%- endif -%}
-    {%- elsif h1_parts.size == 1 -%}
+    {%- if h1_parts.size == 1 -%}
       {%- assign needs_fallback_h1 = true -%}
     {%- elsif h1_parts.size > 2 -%}
       {%- capture main_content -%}
