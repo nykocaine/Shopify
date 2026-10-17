@@ -381,22 +381,6 @@ visitor can read on the page are included, with the same average and count shown
         <p class="review-form__privacy-note">Tu correo no se publicará.</p>
       </div>
 
-      {%- comment -%}
-      Captcha inside the popup (Cloudflare Turnstile, the modern, free and privacy-friendly one): it renders here, in the form, once the
-      popup opens (script at the end of this section) and the submit button stays disabled until it is solved. Only when the block has
-      a site key. The notice below replaces the floating reCAPTCHA badge of Shopify's own spam protection, which can be hidden as long
-      as this text is shown (Google's rule).
-      {%- endcomment -%}
-      {%- if write_review_block.settings.turnstile_site_key != blank -%}
-        <div class="review-form__captcha">
-          <div class="review-form__captcha-widget" data-sitekey="{{ write_review_block.settings.turnstile_site_key | escape }}"></div>
-        </div>
-      {%- endif -%}
-
-      {%- if write_review_block.settings.hide_recaptcha_badge -%}
-        <p class="review-form__recaptcha-note">Este sitio está protegido por reCAPTCHA y se aplican la <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="link">Política de privacidad</a> y los <a href="https://policies.google.com/terms" target="_blank" rel="noopener" class="link">Términos del servicio</a> de Google.</p>
-      {%- endif -%}
-
       <div class="review-form__submit">
         {%- render 'button', content: 'Enviar reseña', type: 'submit', class: 'sm-max:w-full' -%}
       </div>
@@ -518,95 +502,6 @@ visitor can read on the page are included, with the same average and count shown
       }
     {%- endif -%}
   </style>
-
-  {%- if write_review_block.settings.hide_recaptcha_badge -%}
-    <style>
-      .grecaptcha-badge {
-        visibility: hidden !important;
-      }
-    </style>
-  {%- endif -%}
-
-  {%- if write_review_block.settings.turnstile_site_key != blank -%}
-    <script>
-      (function () {
-        var modal = document.getElementById('{{ write_review_modal_id }}');
-
-        if (!modal) {
-          return;
-        }
-
-        var rendered = false;
-        var scriptRequested = false;
-
-        function lockSubmit(locked) {
-          Array.prototype.forEach.call(modal.querySelectorAll('button[type="submit"]'), function (button) {
-            button.disabled = locked;
-          });
-        }
-
-        function renderCaptcha() {
-          var widget = modal.querySelector('.review-form__captcha-widget');
-
-          if (rendered || !widget || !window.turnstile) {
-            return;
-          }
-
-          rendered = true;
-
-          window.turnstile.render(widget, {
-            sitekey: widget.getAttribute('data-sitekey'),
-            theme: 'auto',
-            language: '{{ request.locale.iso_code }}',
-            callback: function () { lockSubmit(false); },
-            'expired-callback': function () { lockSubmit(true); },
-            'error-callback': function () { lockSubmit(true); }
-          });
-        }
-
-        {%- comment -%}
-        The Turnstile script is only downloaded the first time the popup opens, so it costs nothing for visitors who never write a review.
-        {%- endcomment -%}
-        function loadCaptcha() {
-          if (window.turnstile) {
-            renderCaptcha();
-            return;
-          }
-
-          if (scriptRequested) {
-            return;
-          }
-
-          scriptRequested = true;
-
-          var script = document.createElement('script');
-          script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-          script.async = true;
-          script.onload = renderCaptcha;
-          document.head.appendChild(script);
-        }
-
-        lockSubmit(true);
-
-        modal.addEventListener('dialog:before-show', function () {
-          lockSubmit(!rendered);
-          loadCaptcha();
-        });
-
-        modal.addEventListener('submit', function (event) {
-          var response = modal.querySelector('[name="cf-turnstile-response"]');
-
-          if (!response || !response.value) {
-            event.preventDefault();
-          }
-        });
-
-        if (modal.hasAttribute('open')) {
-          loadCaptcha();
-        }
-      })();
-    </script>
-  {%- endif -%}
 {%- endif -%}
 
 <style>
@@ -1004,17 +899,6 @@ visitor can read on the page are included, with the same average and count shown
 
   #{{ write_review_modal_id }} .review-form__section-note {
     margin: 0;
-  }
-
-  #{{ write_review_modal_id }} .review-form__captcha {
-    margin-block-start: 1.25rem;
-    min-height: 65px;
-  }
-
-  #{{ write_review_modal_id }} .review-form__recaptcha-note {
-    color: rgb(var(--text-color) / .6);
-    font-size: .75rem;
-    margin: .75rem 0 0;
   }
 
   #{{ write_review_modal_id }} .review-form__privacy-note {
@@ -1466,23 +1350,6 @@ visitor can read on the page are included, with the same average and count shown
           "unit": "px",
           "label": "Corner radius",
           "default": 0
-        },
-        {
-          "type": "header",
-          "content": "Captcha"
-        },
-        {
-          "type": "text",
-          "id": "turnstile_site_key",
-          "label": "Cloudflare Turnstile site key",
-          "info": "Shows a captcha inside the popup and keeps the send button disabled until it is solved. Get a free key at dash.cloudflare.com > Turnstile (add your domain and choose the Managed widget). Leave empty for no captcha."
-        },
-        {
-          "type": "checkbox",
-          "id": "hide_recaptcha_badge",
-          "label": "Hide the reCAPTCHA badge",
-          "info": "Hides the floating reCAPTCHA badge of Shopify's own spam protection (the one at the side of the page) and shows Google's required notice inside the form instead.",
-          "default": true
         }
       ]
     }
