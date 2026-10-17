@@ -123,6 +123,9 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                   video: block.settings.video,
                   autoplay: true,
                   reveal_controls_on_tap: true,
+                  show_like: section.settings.show_likes,
+                  like_id: block.id,
+                  like_count: block.settings.likes_count,
                   corner_radius: instagram_corner_radius_px,
                   lightbox_id: instagram_lightbox_id,
                   lightbox_index: instagram_slide_index,
@@ -418,6 +421,49 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             {%- endcomment -%}
             Array.prototype.forEach.call(carousel.querySelectorAll('.carousel-video-controls.carousel-video-controls--tap-to-reveal'), function (element) {
               element.classList.remove('carousel-video-controls--tap-to-reveal');
+            });
+
+            {%- comment -%}
+            Like button (the heart at the top of a video's controls in the lightbox). The number is the one entered in the Media block (the
+            post's real likes) plus the visitor's own like, which is remembered in this browser. There is no server behind it: nothing here
+            invents or sums likes from other visitors.
+            {%- endcomment -%}
+            Array.prototype.forEach.call(carousel.querySelectorAll('.carousel-video-like'), function (likeBox) {
+              var likeId = 'instagram-feed-like-' + likeBox.getAttribute('data-like-id');
+              var baseAttribute = likeBox.getAttribute('data-like-base');
+              var base = baseAttribute === null || baseAttribute === '' ? null : parseInt(baseAttribute, 10);
+              var toggle = likeBox.querySelector('.carousel-video-like-toggle');
+              var countElement = likeBox.querySelector('.carousel-video-like__count');
+              var liked = false;
+
+              try {
+                liked = window.localStorage.getItem(likeId) === '1';
+              } catch (error) {
+                liked = false;
+              }
+
+              function render() {
+                toggle.setAttribute('aria-pressed', liked ? 'true' : 'false');
+
+                if (base === null || isNaN(base)) {
+                  countElement.textContent = '';
+                } else {
+                  countElement.textContent = (base + (liked ? 1 : 0)).toLocaleString();
+                }
+              }
+
+              toggle.addEventListener('click', function (event) {
+                event.stopPropagation();
+                liked = !liked;
+
+                try {
+                  window.localStorage.setItem(likeId, liked ? '1' : '0');
+                } catch (error) {}
+
+                render();
+              });
+
+              render();
             });
 
             if (window.matchMedia('(max-width: 699px)').matches) {
@@ -938,6 +984,35 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- endif -%}
 
   {%- comment -%}
+  Like button: at the top of the video's controls (in the lightbox), same round button as the play / pause / sound ones, with the number
+  under the heart. The heart fills when liked.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .carousel-video-like {
+    display: grid;
+    justify-items: center;
+    row-gap: 0.125rem;
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-like__count {
+    font: var(--text-font-style) var(--text-font-weight) 0.6875rem / 1 var(--text-font-family);
+    letter-spacing: 0.02em;
+    color: var(--control-button-icon-color, #ffffff);
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-like__count:empty {
+    display: none;
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-like-toggle .icon path {
+    fill: transparent;
+    transition: fill 0.2s ease;
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-like-toggle[aria-pressed="true"] .icon path {
+    fill: currentColor;
+  }
+
+  {%- comment -%}
   Loading cue: a small spinner in the middle of the cell while its video was asked to play and has no frames yet. It fades in
   after a short delay, so a video that starts right away never shows it.
   {%- endcomment -%}
@@ -1360,6 +1435,13 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       "visible_if": "{{ section.settings.autoscroll }}"
     },
     {
+      "type": "checkbox",
+      "id": "show_likes",
+      "label": "Show a like button on videos",
+      "info": "A heart at the top of the video's controls in the zoom view. Visitors can like a video; their like is remembered in their own browser.",
+      "default": true
+    },
+    {
       "type": "header",
       "content": "Black and white intro"
     },
@@ -1431,6 +1513,12 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
           "id": "caption",
           "label": "t:global.image.caption",
           "info": "Only shown in the zoomed-in lightbox view, not in the feed itself."
+        },
+        {
+          "type": "number",
+          "id": "likes_count",
+          "label": "Likes (videos)",
+          "info": "The number of likes this video really has (for instance on the Instagram post it comes from). It shows next to the heart and a visitor's own like adds one. Leave empty to show the heart without a number."
         }
       ]
     }

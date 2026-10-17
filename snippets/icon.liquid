@@ -25,7 +25,7 @@ To render an icon made of an image, you need to explicitly pass the image, and t
 {%- comment -%}
 The control icon set (media/lightbox/bar controls) has no size of its own: .icon--control (theme.css) sizes every one of them from Theme Settings > Controls > Icon size.
 {%- endcomment -%}
-{%- assign control_icon_names = 'close,arrow-left,arrow-right,big-arrow-left,big-arrow-right,back-arrow,zoom-plus,volume,volume-off,slideshow-pause,slideshow-play' | split: ',' -%}
+{%- assign control_icon_names = 'close,arrow-left,arrow-right,big-arrow-left,big-arrow-right,back-arrow,zoom-plus,volume,volume-off,slideshow-pause,slideshow-play,heart' | split: ',' -%}
 
 {%- capture class -%}{{ class }} icon {% if icon != blank %}icon-{{ icon | handle }}{% endif %} {% if control_icon_names contains icon %}icon--control{% endif %} {% if offset %}offset-icon{% endif %} {% if direction_aware %}icon--direction-aware{% endif %}{%- endcapture -%}
 
@@ -220,6 +220,11 @@ The control icon set (media/lightbox/bar controls) has no size of its own: .icon
       <svg aria-hidden="true" focusable="false" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
         <path fill="currentColor" stroke="currentColor" stroke-width="{{ settings.icon_stroke_width }}" stroke-linejoin="round" d="M2 6.5h2L7 4v8l-3-2.5H2v-3Z"/>
         <path stroke="currentColor" stroke-width="{{ settings.icon_stroke_width }}" stroke-linecap="round" d="M10.5 5.5a4 4 0 0 1 0 5M12.5 3.5a7 7 0 0 1 0 9"/>
+      </svg>
+
+    {%- when 'heart' -%}
+      <svg aria-hidden="true" focusable="false" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
+        <path stroke="currentColor" stroke-width="{{ settings.icon_stroke_width }}" stroke-linejoin="round" d="M8 13.6 2.7 8.5A3.4 3.4 0 0 1 8 4.2a3.4 3.4 0 0 1 5.3 4.3L8 13.6Z"/>
       </svg>
 
     {%- when 'volume-off' -%}
