@@ -4245,6 +4245,7 @@ var BaseMedia = class extends HTMLElement {
   }
   disconnectedCallback() {
     this._abortController.abort();
+    clearTimeout(this._ensurePlayingTimer);
     this._visibilityObserver?.disconnect();
   }
   /**
@@ -4261,11 +4262,10 @@ var BaseMedia = class extends HTMLElement {
     this._visibilityObserver?.disconnect();
     this._visibilityObserver = new IntersectionObserver((entries) => {
       const entry = entries[entries.length - 1];
+      this._isVisible = entry.isIntersecting;
       if (entry.isIntersecting) {
-        if (this._autoPaused) {
-          this._autoPaused = false;
-          this.play();
-        }
+        this._autoPaused = false;
+        this._ensurePlaying(3);
       } else if (this.hasAttribute("autoplay") && !this._manualPause && !this._autoPaused) {
         this._autoPaused = true;
         if (this.playing) {
@@ -4274,6 +4274,27 @@ var BaseMedia = class extends HTMLElement {
       }
     });
     this._visibilityObserver.observe(this);
+  }
+  /**
+   * Makes sure an autoplaying video that is on screen is really playing. Starting it is not a one-shot thing: the play()
+   * call can be aborted when the source is switched (video.load()) in the same moment, the browser can pause it on its own,
+   * and the "playing" attribute can be left stale by a load(). In any of those cases the poster stayed on screen and the
+   * video never started. So when the video is visible, not paused on purpose, and the <video> element is paused, the stale
+   * attribute is cleared and play() is called again, retrying a few times (one per second) while it keeps failing.
+   */
+  _ensurePlaying(retries = 0) {
+    clearTimeout(this._ensurePlayingTimer);
+    const video = this.hasAttribute("host") ? null : this.querySelector("video");
+    if (!video || !this.hasAttribute("autoplay") || !this._isVisible || this._manualPause) {
+      return;
+    }
+    if (video.paused) {
+      this.removeAttribute("playing");
+      this.play();
+      if (retries > 0) {
+        this._ensurePlayingTimer = setTimeout(() => this._ensurePlaying(retries - 1), 1000);
+      }
+    }
   }
   get playing() {
     return this.hasAttribute("playing");
@@ -4399,6 +4420,13 @@ var VideoMedia = class extends BaseMedia {
         this.#selectVideoSource();
         this.querySelector("video")?.setAttribute("preload", "auto");
       }, { margin: "800px" });
+      // Once the (possibly reloaded) video has data, start it if it should be playing: see _ensurePlaying
+      const videoElement = this.querySelector("video");
+      if (videoElement && this.hasAttribute("autoplay")) {
+        ["loadeddata", "canplay"].forEach((type) => {
+          videoElement.addEventListener(type, () => this._ensurePlaying(), { signal: this._abortController.signal });
+        });
+      }
     }
   }
   /**
