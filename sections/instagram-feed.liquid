@@ -219,13 +219,6 @@ the first available one); the click is handled by the script near the lightbox b
 
                 button.setAttribute('aria-busy', 'true');
 
-                {%- comment -%}The lightbox closes first, so the cart drawer opens on a clear page instead of behind it{%- endcomment -%}
-                var closeButton = lightbox.querySelector('.media-lightbox__close');
-
-                if (closeButton) {
-                  closeButton.click();
-                }
-
                 document.documentElement.dispatchEvent(new CustomEvent('cart:prepare-bundled-sections', { bubbles: true, detail: { sections: sections } }));
 
                 try {
@@ -240,6 +233,30 @@ the first available one); the click is handled by the script near the lightbox b
                     document.dispatchEvent(new CustomEvent('toast:show', { detail: { message: added.description || added.message, tone: 'error' } }));
                     return;
                   }
+
+                  {%- comment -%}
+                  Confirmation: the bag pops (same bounce as the heart) and its plus turns into a check that draws itself. The lightbox
+                  stays open for a beat so it is seen, then it closes and the cart opens on a clear page instead of behind it.
+                  {%- endcomment -%}
+                  button.classList.add('is-added');
+
+                  if (window.themeVariables && themeVariables.strings.addedToCart) {
+                    button.querySelector('.sr-only').textContent = themeVariables.strings.addedToCart.replace('{' + '{product_title}}', ((added.items || [added])[0] || {}).title || '');
+                  }
+
+                  await new Promise(function (resolve) {
+                    setTimeout(resolve, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 250 : 800);
+                  });
+
+                  var closeButton = lightbox.querySelector('.media-lightbox__close');
+
+                  if (closeButton) {
+                    closeButton.click();
+                  }
+
+                  setTimeout(function () {
+                    button.classList.remove('is-added');
+                  }, 700);
 
                   if (window.themeVariables && themeVariables.settings.cartType === 'page') {
                     window.location.href = root + 'cart';
@@ -1487,9 +1504,38 @@ the first available one); the click is handled by the script near the lightbox b
     }
   }
 
+  {%- comment -%}
+  Add to cart confirmation: the bag pops with the heart's own bounce, the plus shrinks away and a check is drawn in its place.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .carousel-video-cart-toggle[aria-busy="true"] {
-    opacity: 0.5;
     pointer-events: none;
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-cart-toggle .cart-add__plus {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: opacity 0.2s ease, scale 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-cart-toggle .cart-add__check {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    opacity: 0;
+    transition: stroke-dashoffset 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.12s, opacity 0s linear 0.12s;
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-cart-toggle.is-added {
+    animation: instagram-feed-heart-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-cart-toggle.is-added .cart-add__plus {
+    opacity: 0;
+    scale: 0.4;
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-cart-toggle.is-added .cart-add__check {
+    stroke-dashoffset: 0;
+    opacity: 1;
   }
 
   #shopify-section-{{ section.id }} .carousel-video-like-toggle:active,
