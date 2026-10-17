@@ -963,13 +963,28 @@ the first available one); the click is handled by the script near the lightbox b
 
               if (expanded) {
                 var rect = expanded.getBoundingClientRect();
-                caption.style.top = (rect.bottom + captionGap) + 'px';
+
                 caption.style.left = rect.left + 'px';
                 caption.style.width = rect.width + 'px';
+                caption.style.top = (rect.bottom + captionGap) + 'px';
+
+                {%- comment -%}
+                The media can fill the whole height of the screen (mobile, tall videos), leaving no room under it: the caption then sits
+                inside the video, at its top-left corner, with room left for the close button.
+                {%- endcomment -%}
+                if (rect.bottom + captionGap + caption.offsetHeight > window.innerHeight - captionGap) {
+                  caption.style.left = (rect.left + captionGap) + 'px';
+                  caption.style.width = Math.max(0, rect.width - captionGap * 2 - 48) + 'px';
+                  caption.style.top = (rect.top + captionGap) + 'px';
+                }
               }
             }
 
-            new MutationObserver(syncCaption).observe(carousel, {
+            {%- comment -%}Measured again once the open animation has settled: during it the media is still slightly scaled down{%- endcomment -%}
+            new MutationObserver(function () {
+              syncCaption();
+              setTimeout(syncCaption, 460);
+            }).observe(carousel, {
               attributes: true,
               attributeFilter: ['class'],
               subtree: true
