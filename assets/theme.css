@@ -2618,14 +2618,22 @@ video-media:not([loaded]) > :is(video, iframe), video-media[loaded] > img, video
   pointer-events: none;
 }
 
-/* No empty box while a video has not started playing yet: the rule above hides every <video> until the element has played for
-   the first time ("loaded"). Videos rendered with autoplay have no separate poster <img>, only the video's own poster
-   attribute, so their box stayed blank until the video was triggered and then faded in over a video with no frame yet.
-   A video that has a poster is visible from the start, so the poster is what shows until the first frame replaces it. Videos
-   without a poster attribute keep their separate poster <img> and are unchanged. */
-video-media:not([loaded]) > video[poster] {
-  opacity: 1;
-  pointer-events: auto;
+/* Poster and first frame of an autoplaying video. Its poster is painted as the element's own background (theme.js sets it once
+   the video is near the screen and takes the <video poster> attribute off, so it is not fetched for every video at page load),
+   so a box is never empty before the video starts. The <video> stays transparent over it until it has its first frame (theme.js
+   adds .is-ready on the "playing" event) and then fades in slowly, instead of the browser swapping poster and frame abruptly. */
+video-media[autoplay] {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+video-media[autoplay] > video {
+  transition: opacity .9s cubic-bezier(.4, 0, .2, 1);
+}
+
+video-media[autoplay]:not(.is-ready) > video {
+  opacity: 0;
 }
 
 video-media[suspended] ~ * {
