@@ -377,6 +377,30 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
           {%- render 'input', type: 'email', name: 'contact[email]', label: 'Correo electrónico', value: review_email, required: true, autocomplete: 'email' -%}
         </div>
 
+        {%- comment -%}
+        Photos: the form cannot carry files, so the customer is pointed to where they can send them (as many as they want): the store's WhatsApp
+        (number set on this block) and/or its email (shop.email). They are added to the review by hand once it is approved.
+        {%- endcomment -%}
+        {%- assign review_photo_whatsapp = write_review_block.settings.photo_whatsapp | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')' -%}
+        {%- capture review_photo_message -%}Hola, quiero enviar fotos para mi reseña{% if product %} de {{ product.title }}{% endif %}.{%- endcapture -%}
+
+        {%- if review_photo_whatsapp != blank or shop.email != blank -%}
+          <div class="review-form__photo">
+            <p class="review-form__photo-title">¿Quieres agregar fotos? (opcional)</p>
+            <p class="review-form__photo-note">Envíanos las que quieras por WhatsApp o por correo y las agregamos a tu reseña cuando sea aprobada.</p>
+
+            <div class="review-form__photo-links">
+              {%- if review_photo_whatsapp != blank -%}
+                <a class="review-form__photo-link" href="https://wa.me/{{ review_photo_whatsapp }}?text={{ review_photo_message | url_encode }}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+              {%- endif -%}
+
+              {%- if shop.email != blank -%}
+                <a class="review-form__photo-link" href="mailto:{{ shop.email }}?subject={{ 'Fotos para mi reseña' | url_encode }}&body={{ review_photo_message | url_encode }}">Enviar por correo</a>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endif -%}
+
         <p class="review-form__privacy-note">Tu correo no se publicará.</p>
       </div>
 
@@ -1089,6 +1113,48 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     margin: 0;
   }
 
+  #{{ write_review_modal_id }} .review-form__photo {
+    flex-direction: column;
+    gap: .375rem;
+    display: flex;
+  }
+
+  #{{ write_review_modal_id }} .review-form__photo p {
+    margin: 0;
+  }
+
+  #{{ write_review_modal_id }} .review-form__photo-title {
+    font-weight: 600;
+  }
+
+  #{{ write_review_modal_id }} .review-form__photo-note {
+    color: rgb(var(--text-color) / .7);
+  }
+
+  #{{ write_review_modal_id }} .review-form__photo-links {
+    flex-wrap: wrap;
+    gap: .5rem;
+    display: flex;
+    margin-block-start: .25rem;
+  }
+
+  #{{ write_review_modal_id }} .review-form__photo-link {
+    align-items: center;
+    display: inline-flex;
+    padding: .5rem 1rem;
+    border-radius: 999px;
+    background: rgb(var(--text-color) / .06);
+    color: rgb(var(--text-color));
+    text-decoration: none;
+    transition: background-color .2s ease;
+  }
+
+  @media (hover: hover) {
+    #{{ write_review_modal_id }} .review-form__photo-link:hover {
+      background: rgb(var(--text-color) / .12);
+    }
+  }
+
   #{{ write_review_modal_id }} .review-form__privacy-note {
     color: rgb(var(--text-color) / .6);
     font-size: .875em;
@@ -1662,6 +1728,12 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
           "label": "Ancho en móvil",
           "info": "100% mantiene el ancho completo actual.",
           "default": 100
+        },
+        {
+          "type": "text",
+          "id": "photo_whatsapp",
+          "label": "WhatsApp number for photos",
+          "info": "Country code and number, e.g. +51987654321. Shows a \"Send by WhatsApp\" button in the review form so customers can send photos. The email button uses the store email and needs nothing."
         },
         {
           "type": "range",
