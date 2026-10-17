@@ -45,6 +45,50 @@ to the first 5 of the newly sorted order.
   assign write_review_block = section.blocks | where: 'type', 'write_review_popup' | first
 -%}
 
+{%- comment -%}
+Google can read these reviews (setting "Let Google read these reviews"): on a product page the average and the reviews are handed to
+layout/theme.liquid, which merges them into the product's structured data (snippets/microdata-schema.liquid) as aggregateRating and
+review. They travel as a hidden HTML comment, because the layout renders the page head before this section exists. Only the reviews the
+visitor can read on the page are included, with the same average and count shown in the summary.
+{%- endcomment -%}
+{%- if section.settings.reviews_structured_data and request.page_type == 'product' and review_count > 0 -%}
+  {%- assign reviews_ld_printed = 0 -%}
+  {%- capture reviews_ld -%}
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": {{ average_rating | json }},
+      "reviewCount": {{ review_count | json }},
+      "bestRating": 5,
+      "worstRating": 1
+    },
+    "review": [
+      {%- for review_block in review_blocks -%}
+        {%- if review_block.settings.reviewer_name != blank and review_block.settings.rating > 0 -%}
+          {%- assign reviews_ld_printed = reviews_ld_printed | plus: 1 -%}
+          {%- if reviews_ld_printed > 1 -%},{%- endif -%}
+          {
+            "@type": "Review",
+            "author": { "@type": "Person", "name": {{ review_block.settings.reviewer_name | json }} },
+            "reviewRating": {
+              "@type": "Rating",
+              "ratingValue": {{ review_block.settings.rating | json }},
+              "bestRating": 5,
+              "worstRating": 1
+            }
+            {%- if review_block.settings.title != blank -%},
+            "name": {{ review_block.settings.title | strip_html | json }}
+            {%- endif -%}
+            {%- if review_block.settings.body != blank -%},
+            "reviewBody": {{ review_block.settings.body | strip_html | strip | json }}
+            {%- endif -%}
+          }
+        {%- endif -%}
+      {%- endfor -%}
+    ]
+  {%- endcapture -%}
+  {{- '<!--reviews-ld:' -}}{{- reviews_ld | strip_newlines | remove: '-->' -}}{{- ':reviews-ld-->' -}}
+{%- endif -%}
+
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_reviews %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_reviews %} style="border-radius: {{ section.settings.reviews_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div id="reviews-{{ section.id }}" class="reviews section-stack">
@@ -1063,6 +1107,13 @@ to the first 5 of the newly sorted order.
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "reviews_structured_data",
+      "label": "Let Google read these reviews",
+      "info": "Adds the average rating and these reviews to the product's data for search engines (stars in the results). Turn it on only if they are real reviews from customers of this product: Google penalizes made-up or copied reviews.",
+      "default": false
     },
     {
       "type": "checkbox",

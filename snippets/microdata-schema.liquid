@@ -6,9 +6,31 @@ managed at the theme level.
 {%- enddoc -%}
 
 {%- if request.page_type == 'product' -%}
+  {%- liquid
+    assign product_structured_data = product | structured_data | strip
+  -%}
+  {%- comment -%}
+  When the page has reviews turned on for Google (sections/reviews.liquid hands them over as reviews_ld), they are merged into the
+  product's own data (the closing brace is replaced by the rating and the reviews) so the product stays a single item. If
+  Shopify's data already carries a rating, nothing is added.
+  {%- endcomment -%}
+  {%- assign product_has_rating = false -%}
+
+  {%- if product_structured_data contains 'aggregateRating' -%}
+    {%- assign product_has_rating = true -%}
+  {%- endif -%}
+
+  {%- if reviews_ld != blank and product_has_rating == false -%}
+    {%- assign product_structured_data_size = product_structured_data | size | minus: 1 -%}
+    {%- assign product_structured_data_open = product_structured_data | slice: 0, product_structured_data_size -%}
+    <script type="application/ld+json">
+      {{- product_structured_data_open -}},{{- reviews_ld -}}}
+    </script>
+  {%- else -%}
   <script type="application/ld+json">
-    {{- product | structured_data -}}
+    {{- product_structured_data -}}
   </script>
+  {%- endif -%}
 {%- elsif request.page_type == 'article' -%}
   <script type="application/ld+json">
     {{- article | structured_data -}}
