@@ -228,9 +228,7 @@ progress bar) are simply skipped when no carousel_id is given.
         return {
           home: home,
           videoMedia: home.querySelector('video-media'),
-          // A photo has no buttons, but may carry a logo (.instagram-feed__image-logo) that follows the same expanded / visible
-          // states as a video's buttons, so it stands in for them
-          controlsGroup: home.querySelector('.carousel-video-controls') || home.querySelector('.instagram-feed__image-logo'),
+          controlsGroup: home.querySelector('.carousel-video-controls'),
           image: home.querySelector('img.image-cover')
         };
       }
@@ -249,10 +247,6 @@ progress bar) are simply skipped when no carousel_id is given.
           }
         } else if (media.image) {
           media.image.classList.toggle('is-lightbox-visible', visible);
-
-          if (media.controlsGroup) {
-            media.controlsGroup.classList.toggle('is-lightbox-visible', visible);
-          }
         }
       }
 
