@@ -7603,8 +7603,8 @@ shopify-account::part(signed-out-avatar) {
     inset-block-end: auto;
     inset-inline: var(--container-gutter);
     width: auto;
-    /* Same height as the filters drawer: 65% of the screen, never taller than what is left under the header. */
-    height: min(65dvh, calc(100dvh - var(--menu-offset-top, 0px) - .5rem - var(--drawer-block-gap)));
+    /* All the height that is left under the header, down to the bottom gap every floating drawer keeps from the screen's edge. */
+    height: calc(100dvh - var(--menu-offset-top, 0px) - .5rem - var(--drawer-block-gap));
     max-width: none;
     border-block-start: none;
     border-radius: var(--drawer-border-radius);
@@ -7645,7 +7645,7 @@ shopify-account::part(signed-out-avatar) {
     inset-block-start: calc(var(--menu-offset-top, 0px) + .5rem);
     inset-block-end: auto;
     inset-inline: var(--container-gutter);
-    height: min(65dvh, calc(100dvh - var(--menu-offset-top, 0px) - .5rem - var(--drawer-block-gap)));
+    height: calc(100dvh - var(--menu-offset-top, 0px) - .5rem - var(--drawer-block-gap));
     border-radius: var(--drawer-border-radius);
   }
 }
