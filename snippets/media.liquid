@@ -104,8 +104,13 @@ Renders a single media. This snippet can be used for product media, but also for
         {%- liquid
           if preload
             assign preload_attribute = 'auto'
-          else
+          elsif controls
             assign preload_attribute = 'metadata'
+          else
+            # Nothing is fetched for a video that is not near the screen yet: <video-media> (theme.js, VideoMedia) raises this
+            # to "auto" and picks the right source once the video is within 800px of the viewport. Videos with native controls
+            # keep "metadata" so the browser can show their duration.
+            assign preload_attribute = 'none'
           endif
 
           assign playsinline = playsinline | default: autoplay, allow_false: true
@@ -119,7 +124,7 @@ Renders a single media. This snippet can be used for product media, but also for
 
         {%- assign custom_poster = poster | default: media.preview_image -%}
 
-        <video width="{{ media.sources.first.width }}" height="{{ media.sources.first.height }}" {% if playsinline %}playsinline{% endif %} {% if muted %}muted{% endif %} {% if loop %}loop{% endif %} {% if controls %}controls{% endif %} {% if autoplay %}poster="{{ custom_poster | image_url: width: 1200 }}"{% endif %} preload="{{ preload_attribute }}">
+        <video width="{{ media.sources.first.width }}" height="{{ media.sources.first.height }}" {% if playsinline %}playsinline{% endif %} {% if muted %}muted{% endif %} {% if loop %}loop{% endif %} {% if controls %}controls{% endif %} {% if autoplay %}poster="{{ custom_poster | image_url: width: 800 }}"{% endif %} preload="{{ preload_attribute }}">
           {%- if mobile_media != blank -%}
             {%- for source in mobile_media.sources -%}
               <source media="(max-width: 999px)" src="{{ source.url }}" width="{{ source.width }}" height="{{ source.height }}" type="{{ source.mime_type }}">
