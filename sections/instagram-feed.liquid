@@ -494,6 +494,10 @@ the first available one); the click is handled by the script near the lightbox b
                 function setCommentsOpen(open) {
                   videoMedia.classList.toggle('is-comments-open', open);
 
+                  if (open && panel) {
+                    refitTexts();
+                  }
+
                   if (controlsGroup) {
                     controlsGroup.classList.toggle('is-comments-open', open);
                   }
@@ -506,6 +510,96 @@ the first available one); the click is handled by the script near the lightbox b
                     commentsWidget.querySelector('.carousel-video-comments-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
                   }
                 }
+
+                {%- comment -%}
+                Each review shows two lines. When the text is longer, it is cut where "… Ver más" still fits at the end of the second line - a
+                plain word in the text, not a separate button - and tapping it shows the whole review (with "Ver menos" at its end to fold it back).
+                The cut is measured on the real box, so it is redone when the panel opens or the screen changes size.
+                {%- endcomment -%}
+                var clampedTexts = [];
+
+                function makeToggle(label, onActivate) {
+                  var toggle = document.createElement('span');
+
+                  toggle.className = 'lightbox-comments__more';
+                  toggle.setAttribute('role', 'button');
+                  toggle.tabIndex = 0;
+                  toggle.textContent = label;
+                  toggle.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    onActivate();
+                  });
+                  toggle.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      onActivate();
+                    }
+                  });
+
+                  return toggle;
+                }
+
+                function setupClampedText(element, fullText) {
+                  var state = { element: element, text: fullText, expanded: false };
+
+                  state.fit = function () {
+                    var full = state.text;
+                    var lineHeight = parseFloat(window.getComputedStyle(element).lineHeight) || parseFloat(window.getComputedStyle(element).fontSize) * 1.4;
+                    var limit = lineHeight * 2 + 1;
+
+                    function render(length) {
+                      element.textContent = full.slice(0, length).replace(/\s+$/, '') + '\u2026 ';
+                      element.appendChild(makeToggle('Ver m\u00e1s', function () {
+                        state.expanded = true;
+                        state.fit();
+                      }));
+                    }
+
+                    if (state.expanded) {
+                      element.textContent = full + ' ';
+                      element.appendChild(makeToggle('Ver menos', function () {
+                        state.expanded = false;
+                        state.fit();
+                      }));
+                      return;
+                    }
+
+                    element.textContent = full;
+
+                    if (element.getBoundingClientRect().height <= limit) {
+                      return;
+                    }
+
+                    var low = 0;
+                    var high = full.length;
+
+                    while (low < high) {
+                      var middle = Math.ceil((low + high) / 2);
+
+                      render(middle);
+
+                      if (element.getBoundingClientRect().height <= limit) {
+                        low = middle;
+                      } else {
+                        high = middle - 1;
+                      }
+                    }
+
+                    render(low);
+                  };
+
+                  clampedTexts.push(state);
+                  state.fit();
+                }
+
+                function refitTexts() {
+                  clampedTexts.forEach(function (state) {
+                    state.fit();
+                  });
+                }
+
+                window.addEventListener('resize', refitTexts);
 
                 function buildPanel() {
                   var reviews = getLightboxReviews();
@@ -562,7 +656,7 @@ the first available one); the click is handled by the script near the lightbox b
 
                     var itemText = document.createElement('p');
                     itemText.className = 'lightbox-comments__text';
-                    itemText.textContent = review.text || '';
+                    setupClampedText(itemText, review.text || '');
 
                     itemHead.appendChild(itemStars);
                     itemHead.appendChild(itemName);
@@ -1425,6 +1519,25 @@ the first available one); the click is handled by the script near the lightbox b
   #shopify-section-{{ section.id }} .lightbox-comments__item {
     padding-block: 0.5rem;
     border-block-start: 1px solid rgb(var(--border-color));
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__more {
+    font-weight: 600;
+    opacity: 0.6;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  @media (hover: hover) {
+    #shopify-section-{{ section.id }} .lightbox-comments__more:hover {
+      opacity: 1;
+    }
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__more:focus-visible {
+    opacity: 1;
+    outline: 1px solid currentColor;
+    outline-offset: 2px;
   }
 
   #shopify-section-{{ section.id }} .lightbox-comments__text {
