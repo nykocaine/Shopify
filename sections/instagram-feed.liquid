@@ -494,10 +494,6 @@ the first available one); the click is handled by the script near the lightbox b
                 function setCommentsOpen(open) {
                   videoMedia.classList.toggle('is-comments-open', open);
 
-                  if (open && panel) {
-                    refitTexts();
-                  }
-
                   if (controlsGroup) {
                     controlsGroup.classList.toggle('is-comments-open', open);
                   }
@@ -511,169 +507,6 @@ the first available one); the click is handled by the script near the lightbox b
                   }
                 }
 
-                {%- comment -%}
-                Each review shows two lines. When the text is longer, it is cut where "… Ver más" still fits at the end of the second line - a
-                plain word in the text, not a separate button - and tapping it shows the whole review (with "Ver menos" at its end to fold it back).
-                The cut is measured on the real box, so it is redone when the panel opens or the screen changes size.
-                {%- endcomment -%}
-                var clampedTexts = [];
-
-                function makeToggle(label, onActivate) {
-                  var toggle = document.createElement('span');
-
-                  toggle.className = 'lightbox-comments__more';
-                  toggle.setAttribute('role', 'button');
-                  toggle.tabIndex = 0;
-                  toggle.textContent = label;
-                  toggle.addEventListener('click', function (event) {
-                    event.stopPropagation();
-                    onActivate();
-                  });
-                  toggle.addEventListener('keydown', function (event) {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      onActivate();
-                    }
-                  });
-
-                  return toggle;
-                }
-
-                function setupClampedText(element, fullText) {
-                  var state = { element: element, text: fullText, expanded: false };
-
-                  state.fit = function (force) {
-                    var full = state.text;
-                    var width = element.getBoundingClientRect().width;
-
-                    {%- comment -%}
-                    Re-measuring only when the box really changed width: the phone's browser bars sliding in and out fire "resize" all the time, and
-                    redoing the cut each time made the reviews blink and shift.
-                    {%- endcomment -%}
-                    if (!force && state.fittedWidth !== undefined && Math.abs(width - state.fittedWidth) < 1) {
-                      return;
-                    }
-
-                    state.fittedWidth = width;
-                    var lineHeight = parseFloat(window.getComputedStyle(element).lineHeight) || parseFloat(window.getComputedStyle(element).fontSize) * 1.4;
-                    var limit = lineHeight * 2 + 1;
-
-                    function render(length) {
-                      element.textContent = full.slice(0, length).replace(/\s+$/, '') + '\u2026 ';
-                      element.appendChild(makeToggle('Ver m\u00e1s', function () {
-                        toggleExpanded(true);
-                      }));
-                    }
-
-                    if (state.expanded) {
-                      element.textContent = full + ' ';
-                      element.appendChild(makeToggle('Ver menos', function () {
-                        toggleExpanded(false);
-                      }));
-                      return;
-                    }
-
-                    element.textContent = full;
-
-                    if (element.getBoundingClientRect().height <= limit) {
-                      return;
-                    }
-
-                    var low = 0;
-                    var high = full.length;
-
-                    while (low < high) {
-                      var middle = Math.ceil((low + high) / 2);
-
-                      render(middle);
-
-                      if (element.getBoundingClientRect().height <= limit) {
-                        low = middle;
-                      } else {
-                        high = middle - 1;
-                      }
-                    }
-
-                    render(low);
-                  };
-
-                  {%- comment -%}
-                  Opening or folding a review keeps the top of that review where it is on screen (the list scrolls by the difference), so the
-                  rest of the list grows below it instead of the whole thing jumping.
-                  {%- endcomment -%}
-                  function toggleExpanded(expanded) {
-                    var item = element.closest('.lightbox-comments__item');
-                    var list = element.closest('.lightbox-comments__list');
-                    var before = item ? item.getBoundingClientRect().top : 0;
-                    var startHeight = element.getBoundingClientRect().height;
-                    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-                    if (state.animation) {
-                      state.animation.cancel();
-                      state.animation = null;
-                      element.style.overflow = '';
-                    }
-
-                    {%- comment -%}
-                    Unfolding and folding are animated on the review's height: the box grows (or shrinks) to its new size while it clips its
-                    content, so the rest of the text is uncovered line by line (and covered again on the way back). Folding keeps the whole
-                    text in place during the animation and only swaps in the shortened one when the box has finished shrinking.
-                    {%- endcomment -%}
-                    var fullNodes = expanded ? null : Array.prototype.slice.call(element.cloneNode(true).childNodes);
-
-                    state.expanded = expanded;
-                    state.fit(true);
-
-                    var endHeight = element.getBoundingClientRect().height;
-
-                    if (fullNodes) {
-                      element.textContent = '';
-                      fullNodes.forEach(function (node) {
-                        element.appendChild(node);
-                      });
-                    }
-
-                    if (item && list) {
-                      list.scrollTop += item.getBoundingClientRect().top - before;
-                    }
-
-                    if (reduceMotion || Math.abs(endHeight - startHeight) < 2) {
-                      if (fullNodes) {
-                        state.fit(true);
-                      }
-
-                      return;
-                    }
-
-                    element.style.overflow = 'hidden';
-
-                    state.animation = element.animate(
-                      [{ height: startHeight + 'px' }, { height: endHeight + 'px' }],
-                      { duration: 340, easing: 'cubic-bezier(0.32, 0.72, 0, 1)' }
-                    );
-
-                    state.animation.onfinish = function () {
-                      element.style.overflow = '';
-                      state.animation = null;
-
-                      if (fullNodes) {
-                        state.fit(true);
-                      }
-                    };
-                  }
-
-                  clampedTexts.push(state);
-                  state.fit(true);
-                }
-
-                function refitTexts() {
-                  clampedTexts.forEach(function (state) {
-                    state.fit();
-                  });
-                }
-
-                window.addEventListener('resize', refitTexts);
 
                 {%- comment -%}
                 The reviewer shows as a handle ("@name": lower case, no spaces or accents) with a round picture to its left. The reviews carry no
@@ -755,7 +588,7 @@ the first available one); the click is handled by the script near the lightbox b
 
                     var itemText = document.createElement('p');
                     itemText.className = 'lightbox-comments__text';
-                    setupClampedText(itemText, review.text || '');
+                    itemText.textContent = review.text || '';
 
                     itemHead.appendChild(itemName);
                     itemHead.appendChild(buildBadge());
@@ -1647,25 +1480,6 @@ the first available one); the click is handled by the script near the lightbox b
     min-width: 0;
     padding-block: 1rem;
     border-block-start: 1px solid rgb(var(--border-color));
-  }
-
-  #shopify-section-{{ section.id }} .lightbox-comments__more {
-    font-weight: inherit;
-    opacity: 0.6;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-
-  @media (hover: hover) {
-    #shopify-section-{{ section.id }} .lightbox-comments__more:hover {
-      opacity: 1;
-    }
-  }
-
-  #shopify-section-{{ section.id }} .lightbox-comments__more:focus-visible {
-    opacity: 1;
-    outline: 1px solid currentColor;
-    outline-offset: 2px;
   }
 
   #shopify-section-{{ section.id }} .lightbox-comments__text {
