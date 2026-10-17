@@ -62,7 +62,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {{ instagram_corner_radius_px }}; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
-    <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack{% if section.settings.bw_intro %} is-bw{% endif %}"{% if section.settings.bw_intro %} data-bw-seconds="{{ section.settings.bw_intro_seconds }}" data-bw-fade="{{ section.settings.bw_intro_fade }}"{% endif %}>
+    <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack{% if section.settings.bw_intro %} is-bw{% endif %}"{% if section.settings.show_lightbox_reviews %} data-review-seconds="{{ section.settings.review_rotation_seconds }}"{% endif %}{% if section.settings.bw_intro %} data-bw-seconds="{{ section.settings.bw_intro_seconds }}" data-bw-fade="{{ section.settings.bw_intro_fade }}"{% endif %}>
       {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank or section.settings.show_icon -%}
         <div class="instagram-feed__header">
           <div class="instagram-feed__content">
@@ -422,6 +422,114 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             Array.prototype.forEach.call(carousel.querySelectorAll('.carousel-video-controls.carousel-video-controls--tap-to-reveal'), function (element) {
               element.classList.remove('carousel-video-controls--tap-to-reveal');
             });
+
+            {%- comment -%}
+            Zoom view: soft fades at the top and the bottom of the video and, over the lower part, the reviews of the page's Reviews section
+            (a hidden block of data that section leaves on the page), one at a time, rotating every "Review rotation time" seconds. The
+            elements are built when a video is opened and only exist inside it; CSS keeps them clear of the logo and the buttons.
+            {%- endcomment -%}
+            var reviewSeconds = parseFloat(document.getElementById('{{ instagram_feed_id }}').getAttribute('data-review-seconds'));
+            var lightboxReviews = null;
+
+            function getLightboxReviews() {
+              if (lightboxReviews === null) {
+                lightboxReviews = [];
+
+                var dataElement = document.querySelector('script[data-reviews-lightbox]');
+
+                if (dataElement) {
+                  try {
+                    lightboxReviews = JSON.parse(dataElement.textContent) || [];
+                  } catch (error) {
+                    lightboxReviews = [];
+                  }
+                }
+              }
+
+              return lightboxReviews;
+            }
+
+            if (reviewSeconds > 0) {
+              Array.prototype.forEach.call(carousel.querySelectorAll('video-media'), function (videoMedia) {
+                var fade = null;
+                var textBox = null;
+                var textElement = null;
+                var timer = null;
+                var index = 0;
+                var running = false;
+
+                function build() {
+                  fade = document.createElement('div');
+                  fade.className = 'lightbox-fade';
+                  fade.setAttribute('aria-hidden', 'true');
+                  fade.innerHTML = '<span class="lightbox-fade__top"></span><span class="lightbox-fade__bottom"></span>';
+                  videoMedia.appendChild(fade);
+
+                  if (getLightboxReviews().length) {
+                    textBox = document.createElement('div');
+                    textBox.className = 'lightbox-reviews';
+                    textElement = document.createElement('p');
+                    textElement.className = 'lightbox-reviews__text';
+                    textBox.appendChild(textElement);
+                    videoMedia.appendChild(textBox);
+                  }
+                }
+
+                function showReview() {
+                  var reviews = getLightboxReviews();
+
+                  if (!textElement || !reviews.length) {
+                    return;
+                  }
+
+                  textElement.textContent = reviews[index % reviews.length];
+                  textElement.classList.add('is-visible');
+                }
+
+                function nextReview() {
+                  textElement.classList.remove('is-visible');
+
+                  setTimeout(function () {
+                    index += 1;
+                    showReview();
+                  }, 250);
+                }
+
+                function start() {
+                  running = true;
+
+                  if (!fade) {
+                    build();
+                  }
+
+                  index = 0;
+                  showReview();
+
+                  if (textElement && getLightboxReviews().length > 1) {
+                    timer = setInterval(nextReview, Math.max(1500, reviewSeconds * 1000));
+                  }
+                }
+
+                function stop() {
+                  running = false;
+                  clearInterval(timer);
+
+                  if (textElement) {
+                    textElement.classList.remove('is-visible');
+                  }
+                }
+
+                new MutationObserver(function () {
+                  var expanded = videoMedia.classList.contains('is-lightbox-expanded');
+
+                  if (expanded && !running) {
+                    start();
+                  } else if (!expanded && running) {
+                    stop();
+                  }
+                }).observe(videoMedia, { attributes: true, attributeFilter: ['class'] });
+              });
+            }
 
             {%- comment -%}
             Like button (the heart at the top of a video's controls in the lightbox). The number is the one entered in the Media block (the
@@ -984,6 +1092,79 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- endif -%}
 
   {%- comment -%}
+  Zoom view overlays (built by the script, only inside the expanded video). The fades are colorless: a blur that dissolves toward
+  the video (a mask), so the edge softens without darkening or tinting it. The reviews sit above the logo, left of the column of
+  buttons: they stop short of it on the right and are never taller than that column (heart, sound, pause), two lines at most.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .lightbox-fade,
+  #shopify-section-{{ section.id }} .lightbox-reviews {
+    display: none;
+  }
+
+  #shopify-section-{{ section.id }} video-media.is-lightbox-expanded > .lightbox-fade {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-fade__top,
+  #shopify-section-{{ section.id }} .lightbox-fade__bottom {
+    position: absolute;
+    inset-inline: 0;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-fade__top {
+    inset-block-start: 0;
+    height: 20%;
+    -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+    mask-image: linear-gradient(to bottom, #000, transparent);
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-fade__bottom {
+    inset-block-end: 0;
+    height: 32%;
+    -webkit-mask-image: linear-gradient(to top, #000, transparent);
+    mask-image: linear-gradient(to top, #000, transparent);
+  }
+
+  #shopify-section-{{ section.id }} video-media.is-lightbox-expanded > .lightbox-reviews {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: absolute;
+    z-index: 3;
+    inset-inline-start: 0.75rem;
+    inset-inline-end: calc(var(--control-button-size, 1.75rem) + 1.5rem);
+    inset-block-end: 5rem;
+    max-height: calc(3 * var(--control-button-size, 1.75rem) + 2rem);
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-reviews__text {
+    margin: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    font: var(--text-font-style) var(--text-font-weight) 0.8125rem / 1.35 var(--text-font-family);
+    color: var(--control-button-icon-color, #ffffff);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-reviews__text.is-visible {
+    opacity: 1;
+  }
+
+  {%- comment -%}
   Like button: at the top of the video's controls (in the lightbox), same round button as the play / pause / sound ones, with the number
   under the heart. The heart fills when liked.
   {%- endcomment -%}
@@ -1462,6 +1643,28 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       "label": "Show a like button on videos",
       "info": "A heart at the top of the video's controls in the zoom view. Visitors can like a video; their like is remembered in their own browser.",
       "default": true
+    },
+    {
+      "type": "header",
+      "content": "Zoom view"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_lightbox_reviews",
+      "label": "Reviews and soft fades over the video",
+      "info": "In the zoom view of a video: the edges fade softly (top and bottom, no color) and the reviews of this page's Reviews section show over the lower part, one at a time. Needs a Reviews section on the same page.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "review_rotation_seconds",
+      "min": 1.5,
+      "max": 10,
+      "step": 0.5,
+      "unit": "s",
+      "label": "Review rotation time",
+      "default": 3,
+      "visible_if": "{{ section.settings.show_lightbox_reviews }}"
     },
     {
       "type": "header",
