@@ -441,9 +441,28 @@ edge, just below "next".
   inset-block-start: 50%;
   inset-inline-end: 1rem;
   translate: 0 calc(var(--control-button-size, 1.75rem) + 0.75rem);
+  place-content: center;
+  display: grid;
+  padding: 0;
+  background: none;
+  border: 0;
+  /* Just the icon, like the heart and the comments button: no background, no border. On desktop it sits over the backdrop, so it
+     takes the text color; on mobile it is pinned over the video and takes the controls' icon color (below). */
+  color: rgb(var(--text-color));
+  cursor: pointer;
   opacity: 1;
   scale: 1;
-  transition: opacity .2s ease, scale .2s ease;
+  transition: opacity .3s cubic-bezier(.4, 0, .2, 1), scale .25s cubic-bezier(.4, 0, .2, 1), color .25s ease;
+}
+
+@media (hover: hover) {
+  #{{ lightbox_id }} .media-lightbox__cart:hover {
+    scale: 1.12;
+  }
+}
+
+#{{ lightbox_id }} .media-lightbox__cart:active {
+  scale: .92;
 }
 
 #{{ lightbox_id }} .media-lightbox__cart[aria-busy="true"] {
@@ -497,6 +516,7 @@ an inward margin that keeps the whole button inside the media box's rounded corn
   }
 
   #{{ lightbox_id }} .media-lightbox__cart {
+    color: var(--control-button-icon-color, #ffffff);
     inset-inline-start: 50%;
     inset-inline-end: auto;
     translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(var(--control-button-size, 1.75rem) + 0.75rem);
