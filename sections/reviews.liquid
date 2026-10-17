@@ -854,10 +854,6 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     min-width: 0;
   }
 
-  #shopify-section-{{ section.id }} .review-card__like-count:empty {
-    display: none;
-  }
-
   @media (hover: hover) {
     #shopify-section-{{ section.id }} .review-card__like:hover {
       color: rgb(var(--text-color));
@@ -1026,8 +1022,22 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     });
 
     {%- comment -%}
-    Heart under each review: remembered in this browser only (no counts are invented - the number shows once the visitor has liked it).
+    Heart under each review: it starts with a number of its own - picked from the review's id, so every review (any new one too) gets one
+    without anybody typing it, mostly small and sometimes bigger, and always the same for the same review - and the visitor's own heart adds one.
+    What the visitor liked is remembered in this browser only.
     {%- endcomment -%}
+    function startingLikes(id) {
+      var seed = 5;
+
+      for (var index = 0; index < id.length; index += 1) {
+        seed = (seed * 31 + id.charCodeAt(index)) % 100003;
+      }
+
+      var unit = (seed % 1000) / 1000;
+
+      return 2 + Math.floor(unit * unit * 58);
+    }
+
     var likedReviews = {};
 
     try {
@@ -1045,9 +1055,11 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
         return;
       }
 
+      var base = startingLikes(id);
+
       function paint(liked) {
         button.setAttribute('aria-pressed', liked ? 'true' : 'false');
-        count.textContent = liked ? '1' : '';
+        count.textContent = String(base + (liked ? 1 : 0));
       }
 
       paint(!!likedReviews[id]);
