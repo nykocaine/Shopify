@@ -215,3 +215,55 @@ managed at the theme level.
   }
 ]
 </script>
+{%- comment -%}
+Site navigation: the main menu's links (and their sub-links) as SiteNavigationElement items, on the home page. It tells search
+engines which pages are the main sections of the site (what they may show as sitelinks under the brand's result; Google decides on
+its own whether to show them). It reads the "main-menu" menu, the one the header uses: edit that menu in Shopify (Contenido >
+Menús) and this updates by itself. Links with no real address ("#") and external ones are skipped.
+{%- endcomment -%}
+{%- if request.page_type == 'index' and linklists['main-menu'].links.size > 0 -%}
+  {%- liquid
+    assign nav_items = ''
+    assign nav_delimiter = '|||'
+
+    for top_link in linklists['main-menu'].links
+      assign nav_items = nav_items | append: top_link.title | append: '~~' | append: top_link.url | append: nav_delimiter
+
+      for child_link in top_link.links
+        assign nav_items = nav_items | append: child_link.title | append: '~~' | append: child_link.url | append: nav_delimiter
+      endfor
+    endfor
+
+    assign nav_entries = nav_items | split: nav_delimiter
+    assign nav_printed = 0
+  -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "Main navigation",
+      "itemListElement": [
+        {%- for nav_entry in nav_entries -%}
+          {%- assign nav_pair = nav_entry | split: '~~' -%}
+          {%- assign nav_name = nav_pair[0] -%}
+          {%- assign nav_url = nav_pair[1] -%}
+
+          {%- if nav_name != blank and nav_url != blank and nav_url != '#' -%}
+            {%- assign nav_first_char = nav_url | slice: 0 -%}
+
+            {%- if nav_first_char == '/' -%}
+              {%- assign nav_printed = nav_printed | plus: 1 -%}
+              {%- if nav_printed > 1 -%},{%- endif -%}
+              {
+                "@type": "SiteNavigationElement",
+                "position": {{ nav_printed }},
+                "name": {{ nav_name | json }},
+                "url": {{ request.origin | append: nav_url | json }}
+              }
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      ]
+    }
+  </script>
+{%- endif -%}
