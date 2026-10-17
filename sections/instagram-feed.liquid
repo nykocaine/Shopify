@@ -118,12 +118,13 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               Instagram-style feed, on every screen size. The play / pause / sound buttons are hidden by CSS below: the
               videos just play while they are on screen.
               {%- endcomment -%}
-              <div class="snap-start instagram-feed__video-cell" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
+              <div class="snap-start instagram-feed__video-cell" data-block-id="{{ block.id }}" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
                 {%- render 'media-zoom-slide',
                   video: block.settings.video,
                   autoplay: true,
                   reveal_controls_on_tap: true,
                   show_comments: section.settings.show_lightbox_reviews,
+                  show_share: section.settings.show_share,
                   show_like: section.settings.show_likes,
                   like_id: block.id,
                   like_count: block.settings.likes_count,
@@ -582,6 +583,60 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                   }
                 }).observe(videoMedia, { attributes: true, attributeFilter: ['class'] });
               });
+            }
+
+            {%- comment -%}
+            Share button (under the like button, in the zoom view): shares the page's link with a "#video-..." mark that identifies the video:
+            the phone's own share sheet where it exists, otherwise the link is copied. A page opened with that mark opens the video's zoom
+            view by itself.
+            {%- endcomment -%}
+            var feedElement = document.getElementById('{{ instagram_feed_id }}');
+
+            Array.prototype.forEach.call(carousel.querySelectorAll('.carousel-video-share'), function (shareBox) {
+              var cell = shareBox.closest('.instagram-feed__video-cell');
+              var shareButton = shareBox.querySelector('.carousel-video-share-toggle');
+
+              if (!cell || !shareButton) {
+                return;
+              }
+
+              shareButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+
+                var link = window.location.origin + window.location.pathname + window.location.search + '#video-' + cell.getAttribute('data-block-id');
+
+                if (navigator.share) {
+                  navigator.share({ title: document.title, url: link }).catch(function () {});
+                  return;
+                }
+
+                function showCopied() {
+                  document.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Enlace copiado' } }));
+                }
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(link).then(showCopied, function () {});
+                } else {
+                  window.prompt('', link);
+                }
+              });
+            });
+
+            if (window.location.hash.indexOf('#video-') === 0) {
+              var sharedCell = carousel.querySelector('.instagram-feed__video-cell[data-block-id="' + window.location.hash.slice(7) + '"]');
+
+              if (sharedCell) {
+                customElements.whenDefined('video-media').then(function () {
+                  setTimeout(function () {
+                    var openButton = sharedCell.querySelector('open-lightbox-button');
+                    var openIndex = openButton ? parseInt(openButton.getAttribute('image-index'), 10) : NaN;
+
+                    if (!isNaN(openIndex)) {
+                      feedElement.dispatchEvent(new CustomEvent('lightbox:open', { bubbles: true, detail: { index: openIndex } }));
+                    }
+                  }, 600);
+                });
+              }
             }
 
             {%- comment -%}
@@ -1195,7 +1250,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     color: var(--control-button-icon-color, #ffffff);
   }
 
-  #shopify-section-{{ section.id }} .carousel-video-comments-toggle {
+  #shopify-section-{{ section.id }} .carousel-video-comments-toggle,
+  #shopify-section-{{ section.id }} .carousel-video-share-toggle {
     display: grid;
     place-content: center;
     width: var(--control-button-size, 1.75rem);
@@ -1385,13 +1441,15 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- comment -%}Same feel for the three icon buttons: a soft grow on hover (mouse only) and a press{%- endcomment -%}
   @media (hover: hover) {
     #shopify-section-{{ section.id }} .carousel-video-like-toggle:hover,
-    #shopify-section-{{ section.id }} .carousel-video-comments-toggle:hover {
+    #shopify-section-{{ section.id }} .carousel-video-comments-toggle:hover,
+    #shopify-section-{{ section.id }} .carousel-video-share-toggle:hover {
       scale: 1.12;
     }
   }
 
   #shopify-section-{{ section.id }} .carousel-video-like-toggle:active,
-  #shopify-section-{{ section.id }} .carousel-video-comments-toggle:active {
+  #shopify-section-{{ section.id }} .carousel-video-comments-toggle:active,
+  #shopify-section-{{ section.id }} .carousel-video-share-toggle:active {
     scale: 0.92;
   }
 
@@ -1851,6 +1909,13 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       "id": "show_lightbox_reviews",
       "label": "Comments button on videos",
       "info": "In the zoom view of a video, a comments button (with the number of reviews) opens a panel with the reviews of this page's Reviews section. Needs a Reviews section on the same page.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_share",
+      "label": "Share button on videos",
+      "info": "A share icon under the heart in the zoom view. On a phone it opens the share sheet; on a computer it copies the video's link. The link opens the page with that video already zoomed.",
       "default": true
     },
     {
