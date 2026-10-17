@@ -494,6 +494,10 @@ the first available one); the click is handled by the script near the lightbox b
                 function setCommentsOpen(open) {
                   videoMedia.classList.toggle('is-comments-open', open);
 
+                  if (!open && panel) {
+                    panel.style.height = '';
+                  }
+
                   if (controlsGroup) {
                     controlsGroup.classList.toggle('is-comments-open', open);
                   }
@@ -617,6 +621,82 @@ the first available one); the click is handled by the script near the lightbox b
                   return form;
                 }
 
+                {%- comment -%}
+                Phone only: a small bar at the top of the panel (the grip) that can be dragged up and down to change the height of the panel. It
+                stops at the top edge of the video - the same margin the panel keeps at the bottom, plus the room of the close button of the zoom
+                view, which stays over the video - and at a minimum height below; pulled well under that minimum it closes the comments.
+                {%- endcomment -%}
+                function buildGrip(target) {
+                  var grip = document.createElement('div');
+
+                  grip.className = 'lightbox-comments__grip';
+                  grip.setAttribute('aria-hidden', 'true');
+                  grip.innerHTML = '<span></span>';
+
+                  var startY = 0;
+                  var startHeight = 0;
+                  var minHeight = 0;
+                  var maxHeight = 0;
+
+                  function limits() {
+                    var rem = parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
+                    var videoHeight = videoMedia.getBoundingClientRect().height;
+
+                    minHeight = videoHeight * 0.3;
+                    maxHeight = videoHeight - rem * 0.75 - rem * 3;
+                  }
+
+                  grip.addEventListener('pointerdown', function (event) {
+                    if (desktopQuery.matches) {
+                      return;
+                    }
+
+                    event.preventDefault();
+                    event.stopPropagation();
+                    grip.setPointerCapture(event.pointerId);
+                    limits();
+                    startY = event.clientY;
+                    startHeight = target.getBoundingClientRect().height;
+                    grip.classList.add('is-dragging');
+                  });
+
+                  grip.addEventListener('pointermove', function (event) {
+                    if (!grip.classList.contains('is-dragging')) {
+                      return;
+                    }
+
+                    var height = startHeight + (startY - event.clientY);
+
+                    target.style.height = Math.max(minHeight * 0.6, Math.min(maxHeight, height)) + 'px';
+                  });
+
+                  function release(event) {
+                    if (!grip.classList.contains('is-dragging')) {
+                      return;
+                    }
+
+                    grip.classList.remove('is-dragging');
+
+                    if (grip.hasPointerCapture(event.pointerId)) {
+                      grip.releasePointerCapture(event.pointerId);
+                    }
+
+                    var height = target.getBoundingClientRect().height;
+
+                    if (height < minHeight * 0.8) {
+                      target.style.height = '';
+                      setCommentsOpen(false);
+                    } else if (height < minHeight) {
+                      target.style.height = minHeight + 'px';
+                    }
+                  }
+
+                  grip.addEventListener('pointerup', release);
+                  grip.addEventListener('pointercancel', release);
+
+                  return grip;
+                }
+
                 function buildPanel() {
                   {%- comment -%}
                   Every video lists the reviews in its own order: the best rated first, and in a random order among the ones in the same star
@@ -633,6 +713,8 @@ the first available one); the click is handled by the script near the lightbox b
                   panel = document.createElement('div');
                   panel.className = 'lightbox-comments';
                   panel.setAttribute('role', 'dialog');
+
+                  panel.appendChild(buildGrip(panel));
 
                   var head = document.createElement('div');
                   head.className = 'lightbox-comments__head';
@@ -1521,6 +1603,40 @@ the first available one); the click is handled by the script near the lightbox b
 
   #shopify-section-{{ section.id }} video-media.is-lightbox-expanded.is-comments-open {
     touch-action: pan-y;
+  }
+
+  {%- comment -%}The bar at the top of the panel that is dragged to change its height (phones only, see the script above){%- endcomment -%}
+  #shopify-section-{{ section.id }} .lightbox-comments__grip {
+    flex: none;
+    display: grid;
+    place-items: center;
+    height: 1.25rem;
+    margin-block-start: -0.375rem;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__grip span {
+    display: block;
+    width: 2.5rem;
+    height: 0.25rem;
+    border-radius: 999px;
+    background: rgb(var(--text-color) / .25);
+    transition: background-color 0.2s ease;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__grip.is-dragging {
+    cursor: grabbing;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__grip.is-dragging span {
+    background: rgb(var(--text-color) / .5);
+  }
+
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} .lightbox-comments__grip {
+      display: none;
+    }
   }
 
   #shopify-section-{{ section.id }} .lightbox-comments__head {
