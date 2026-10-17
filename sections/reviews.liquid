@@ -313,12 +313,27 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
       </fieldset>
 
       <div class="fieldset">
+        {%- comment -%}
+        The product the customer bought, picked from the store's available products (the first 50 the store lists - a loop over a collection
+        stops there). On a product page that product is already selected.
+        {%- endcomment -%}
+        {%- capture review_product_options -%}
+          <option value="" disabled{% unless product %} selected{% endunless %}>Elige el producto que compraste</option>
+          {%- for review_product in collections.all.products limit: 50 -%}
+            {%- if review_product.available or review_product.id == product.id -%}
+              <option value="{{ review_product.title | escape }}"{% if review_product.id == product.id %} selected{% endif %}>{{ review_product.title | escape }}</option>
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endcapture -%}
+
+        {%- render 'select', options: review_product_options, name: 'contact[Producto]', label: 'Producto que compraste', show_label_as_block: true, required: true, id_prefix: 'review-product' -%}
+
         {%- render 'input', type: 'text', name: 'contact[Review title]', label: 'Agregar un título', show_label_as_block: true, placeholder: 'Resume tu experiencia en una frase', required: true, maxlength: 80 -%}
         {%- render 'input', name: 'contact[body]', label: 'Escribe una reseña', show_label_as_block: true, placeholder: 'Cuéntanos cómo fue tu experiencia y qué resultados notaste.', multiline: 5, required: true, minlength: 10, maxlength: 1500, show_max_characters_count: true -%}
 
         {%- comment -%}
         The same details every published review shows next to its text (skin type, age, main concern, previous
-        peel experience), all optional. Not the product: the review belongs to the page it is written on.
+        peel experience), all optional. The product is chosen above, in its own field.
         Option lists are split from a comma separated string, so no option may contain a comma.
         {%- endcomment -%}
         {%- assign review_skin_types = 'Normal,Mixta,Grasa,Seca,Sensible' | split: ',' -%}
