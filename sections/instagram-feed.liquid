@@ -433,8 +433,12 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             var reviewSeconds = parseFloat(document.getElementById('{{ instagram_feed_id }}').getAttribute('data-review-seconds'));
             var lightboxReviews = null;
 
+            {%- comment -%}
+            The data comes from the Reviews section, which can sit BELOW this one on the page: it is read again until it is found (it
+            is not remembered while empty), and the comments button is set up once the whole page has been parsed.
+            {%- endcomment -%}
             function getLightboxReviews() {
-              if (lightboxReviews === null) {
+              if (lightboxReviews === null || !lightboxReviews.length) {
                 lightboxReviews = [];
 
                 var dataElement = document.querySelector('script[data-reviews-lightbox]');
@@ -644,12 +648,20 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                   videoMedia.appendChild(panel);
                 }
 
-                if (commentsWidget) {
-                  if (getLightboxReviews().length) {
+                function showCommentsWidget() {
+                  if (commentsWidget && getLightboxReviews().length) {
                     commentsWidget.hidden = false;
                     commentsWidget.querySelector('.carousel-video-comments__count').textContent = getLightboxReviews().length.toLocaleString();
                   }
+                }
 
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', showCommentsWidget);
+                } else {
+                  showCommentsWidget();
+                }
+
+                if (commentsWidget) {
                   commentsWidget.querySelector('.carousel-video-comments-toggle').addEventListener('click', function (event) {
                     event.stopPropagation();
 
