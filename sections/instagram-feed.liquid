@@ -543,24 +543,33 @@ the first available one); the click is handled by the script near the lightbox b
                 function setupClampedText(element, fullText) {
                   var state = { element: element, text: fullText, expanded: false };
 
-                  state.fit = function () {
+                  state.fit = function (force) {
                     var full = state.text;
+                    var width = element.getBoundingClientRect().width;
+
+                    {%- comment -%}
+                    Re-measuring only when the box really changed width: the phone's browser bars sliding in and out fire "resize" all the time, and
+                    redoing the cut each time made the reviews blink and shift.
+                    {%- endcomment -%}
+                    if (!force && state.fittedWidth !== undefined && Math.abs(width - state.fittedWidth) < 1) {
+                      return;
+                    }
+
+                    state.fittedWidth = width;
                     var lineHeight = parseFloat(window.getComputedStyle(element).lineHeight) || parseFloat(window.getComputedStyle(element).fontSize) * 1.4;
                     var limit = lineHeight * 2 + 1;
 
                     function render(length) {
                       element.textContent = full.slice(0, length).replace(/\s+$/, '') + '\u2026 ';
                       element.appendChild(makeToggle('Ver m\u00e1s', function () {
-                        state.expanded = true;
-                        state.fit();
+                        toggleExpanded(true);
                       }));
                     }
 
                     if (state.expanded) {
                       element.textContent = full + ' ';
                       element.appendChild(makeToggle('Ver menos', function () {
-                        state.expanded = false;
-                        state.fit();
+                        toggleExpanded(false);
                       }));
                       return;
                     }
@@ -589,8 +598,25 @@ the first available one); the click is handled by the script near the lightbox b
                     render(low);
                   };
 
+                  {%- comment -%}
+                  Opening or folding a review keeps the top of that review where it is on screen (the list scrolls by the difference), so the
+                  rest of the list grows below it instead of the whole thing jumping.
+                  {%- endcomment -%}
+                  function toggleExpanded(expanded) {
+                    var item = element.closest('.lightbox-comments__item');
+                    var list = element.closest('.lightbox-comments__list');
+                    var before = item ? item.getBoundingClientRect().top : 0;
+
+                    state.expanded = expanded;
+                    state.fit(true);
+
+                    if (item && list) {
+                      list.scrollTop += item.getBoundingClientRect().top - before;
+                    }
+                  }
+
                   clampedTexts.push(state);
-                  state.fit();
+                  state.fit(true);
                 }
 
                 function refitTexts() {
@@ -607,9 +633,42 @@ the first available one); the click is handled by the script near the lightbox b
                 reviewer always has the same picture and different ones look different.
                 {%- endcomment -%}
                 function toHandle(name) {
-                  var handle = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9._]+/g, '');
+                  var words = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().split(/\s+/).map(function (word) {
+                    return word.replace(/[^a-z0-9]+/g, '');
+                  }).filter(Boolean);
 
-                  return handle ? '@' + handle : '';
+                  if (!words.length) {
+                    return '';
+                  }
+
+                  {%- comment -%}
+                  Not just the name: a pattern, a separator and a number picked from the name itself (always the same ones for the same reviewer),
+                  the way people sign up: "maria.lopez_92", "mlopez07", "xmariax", "maria_lima"...
+                  {%- endcomment -%}
+                  var seed = 7;
+
+                  for (var index = 0; index < name.length; index += 1) {
+                    seed = (seed * 33 + name.charCodeAt(index)) % 100003;
+                  }
+
+                  var first = words[0];
+                  var last = words.length > 1 ? words[words.length - 1] : '';
+                  var number = String((seed % 97) + 3);
+                  var year = String(1990 + (seed % 16)).slice(2);
+                  var tags = ['pe', 'lima', 'real', 'oficial', 'love', 'style'];
+                  var tag = tags[seed % tags.length];
+                  var patterns = [
+                    first + (last ? '.' + last : '') + '_' + number,
+                    (last ? first.charAt(0) + last : first) + year,
+                    first + '_' + tag,
+                    first + number,
+                    (last ? first + '_' + last.charAt(0) : first) + '.' + number,
+                    'its' + first + number,
+                    first + year + '_' + tag,
+                    first + '__' + number
+                  ];
+
+                  return '@' + patterns[seed % patterns.length];
                 }
 
                 function buildAvatar(name) {
@@ -630,7 +689,17 @@ the first available one); the click is handled by the script near the lightbox b
                 }
 
                 function buildPanel() {
-                  var reviews = getLightboxReviews();
+                  {%- comment -%}
+                  Every video lists the reviews in its own order: the best rated first, and in a random order among the ones with the same
+                  rating, so two videos rarely open on the same reviews.
+                  {%- endcomment -%}
+                  var reviews = getLightboxReviews().map(function (review) {
+                    return { review: review, tiebreak: Math.random() };
+                  }).sort(function (first, second) {
+                    return (second.review.rating || 0) - (first.review.rating || 0) || first.tiebreak - second.tiebreak;
+                  }).map(function (entry) {
+                    return entry.review;
+                  });
 
                   panel = document.createElement('div');
                   panel.className = 'lightbox-comments';
@@ -1400,7 +1469,7 @@ the first available one); the click is handled by the script near the lightbox b
   }
 
   #shopify-section-{{ section.id }} video-media.is-lightbox-expanded > .lightbox-comments {
-    --lightbox-comments-height: 36%;
+    --lightbox-comments-height: 56%;
     display: flex;
     flex-direction: column;
     position: absolute;
