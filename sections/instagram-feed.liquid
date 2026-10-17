@@ -159,8 +159,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                       {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: '90vw', widths: '150,300,450,600,900,1200,1500', class: 'instagram-feed__image aspect-square image-cover' -}}
                       <span class="sr-only">{{ 'product.gallery.zoom' | t }}</span>
                     </button>
-                    {%- comment -%}The same logo the videos carry, bottom-left of the photo (CSS below, snippets/media-zoom-style.liquid in the lightbox){%- endcomment -%}
-                    <span class="instagram-feed__image-logo" aria-hidden="true"></span>
                   </div>
                 </open-lightbox-button>
               </div>
@@ -824,29 +822,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .carousel-video-controls.is-lightbox-expanded {
     visibility: visible;
-  }
-
-  {%- comment -%}
-  Photos carry the same logo as the videos (the header's transparent-header logo, --video-logo, defined on :root by
-  sections/header.liquid; nothing is drawn when the header has none): small, bottom-left, 70% opacity, same size and inset as on
-  the videos. An <img> cannot have a pseudo-element, so it is its own element next to the photo; in the lightbox the script
-  gives it the same expanded / visible classes as a video's buttons, and snippets/media-zoom-style.liquid pins it to the photo's
-  bottom-left corner.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .snap-start:not(.instagram-feed__video-cell) .content-box__background-media {
-    position: relative;
-  }
-
-  #shopify-section-{{ section.id }} .content-box__background-media > .instagram-feed__image-logo {
-    position: absolute;
-    inset-block: auto 0.75rem;
-    inset-inline: 0.75rem auto;
-    z-index: 2;
-    width: min(3.5rem, 25%);
-    height: 2rem;
-    background: var(--video-logo) left bottom / contain no-repeat;
-    opacity: 0.7;
-    pointer-events: none;
   }
 
   {%- if section.settings.bw_intro -%}

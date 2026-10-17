@@ -65,34 +65,6 @@ so it stays on the video wherever it goes (thumbnail, zoom animation, lightbox, 
   pointer-events: none;
 }
 
-{%- comment -%}
-Photos (the Instagram feed's .instagram-feed__image-logo, an element of its own because an <img> cannot have a pseudo-element): the
-same logo, in the same corner and with the same size as a video's, once the photo is expanded. It is pinned to the photo's own
-bottom-left corner the way the video buttons are pinned to the bottom-right one: the box is the biggest one of the photo's ratio that
-fits the lightbox area (same --lightbox-ratio the photo is sized with), and it fades with the backdrop like those buttons.
-{%- endcomment -%}
-#{{ wrapper_id }} .content-box__background-media > .instagram-feed__image-logo.is-lightbox-expanded {
-  --lightbox-box-w: min(var(--lightbox-media-w), calc(var(--lightbox-media-h) * var(--lightbox-ratio, 1)));
-  --lightbox-box-h: calc(var(--lightbox-box-w) / var(--lightbox-ratio, 1));
-  position: fixed;
-  z-index: 999;
-  inset-block: 50% auto;
-  inset-inline: 50% auto;
-  width: min(5rem, 25%);
-  height: 2.75rem;
-  translate: calc(var(--lightbox-box-w) / -2 + 0.75rem) calc(var(--lightbox-box-h) / 2 - 100% - 1.75rem);
-  transition: opacity .2s ease;
-}
-
-#{{ wrapper_id }} .content-box__background-media > .instagram-feed__image-logo.is-lightbox-expanded:not(.is-lightbox-visible) {
-  opacity: 0 !important;
-}
-
-#{{ wrapper_id }} .content-box__background-media > .instagram-feed__image-logo.is-lightbox-expanded.is-lightbox-visible {
-  opacity: .7;
-  transition-delay: .3s;
-}
-
 #{{ wrapper_id }} video-media > img {
   z-index: 1;
   transition: opacity .3s ease;
