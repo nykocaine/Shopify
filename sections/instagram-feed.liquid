@@ -1521,6 +1521,7 @@ the first available one); the click is handled by the script near the lightbox b
     border-radius: var(--drawer-border-radius);
     background: rgb(var(--background));
     color: rgb(var(--text-color));
+    contain: layout paint;
     visibility: hidden;
     opacity: 0;
     transform: translateY(calc(100% + 1rem));
@@ -1631,16 +1632,27 @@ the first available one); the click is handled by the script near the lightbox b
     cursor: pointer;
   }
 
+  {%- comment -%}
+  The list scrolls on the vertical axis only. With overflow-y alone the browser turns the other axis into "auto" too, so any line wider than the
+  box (a long word or link in a review, a scrollbar appearing when a review opens) let the whole list slide sideways while scrolling.
+  Horizontal overflow is closed off, long words wrap, the vertical scrollbar keeps its room (no reflow when it appears) and the scroll never
+  chains to the video or the page behind.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .lightbox-comments__list {
     flex: 1 1 auto;
     min-height: 0;
+    min-width: 0;
+    overflow-x: hidden;
     overflow-y: auto;
-    overscroll-behavior: contain;
+    overscroll-behavior: none;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
     touch-action: pan-y;
     padding-block-end: 0.625rem;
   }
 
   #shopify-section-{{ section.id }} .lightbox-comments__item {
+    min-width: 0;
     padding-block: 0.5rem;
     border-block-start: 1px solid rgb(var(--border-color));
   }
@@ -1666,6 +1678,8 @@ the first available one); the click is handled by the script near the lightbox b
 
   #shopify-section-{{ section.id }} .lightbox-comments__text {
     margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
     font: var(--text-font-style) var(--text-font-weight) var(--text-base) / var(--text-line-height) var(--text-font-family);
   }
 
