@@ -7,8 +7,6 @@ snippets/media-zoom-script.liquid).
 
 @param {string} id - id for this lightbox element
 @param {boolean} [show_nav] - whether to render the prev/next buttons (only meaningful when there is more than one zoomable item to navigate between)
-@param {string} [cart_variant_id] - when set, an "add to cart" button is rendered below the prev/next ones, adding this variant of the page's product (the real variant is read from the page's ?variant= at click time, this one is the fallback). The click is handled by the section that renders the lightbox.
-@param {string} [cart_label] - accessible label of the cart button
 {%- enddoc -%}
 
 <div id="{{ id }}" class="contents" hidden>
@@ -17,12 +15,6 @@ snippets/media-zoom-script.liquid).
   <button type="button" class="media-lightbox__close" aria-label="{{ 'general.accessibility.close' | t }}">
     {%- render 'icon' with 'close' -%}
   </button>
-
-  {%- if cart_variant_id != blank -%}
-    <button type="button" class="media-lightbox__cart" data-variant-id="{{ cart_variant_id }}" aria-label="{{ cart_label | default: 'Add to cart' | escape }}">
-      {%- render 'icon' with 'cart', class: 'icon--control' -%}
-    </button>
-  {%- endif -%}
 
   {%- if show_nav -%}
     <button type="button" class="media-lightbox__prev circle-button" aria-label="{{ 'general.accessibility.previous' | t }}">

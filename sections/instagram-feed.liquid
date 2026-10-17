@@ -60,6 +60,20 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   endcase
 -%}
 
+{%- comment -%}
+On a product page every video's buttons also get an "add to cart" button for that page's product (the variant selected in the page's URL, else
+the first available one); the click is handled by the script near the lightbox below.
+{%- endcomment -%}
+{%- liquid
+  assign instagram_cart_variant_id = ''
+
+  if request.page_type == 'product' and product.available
+    assign instagram_cart_variant_id = product.selected_or_first_available_variant.id
+  endif
+
+  assign instagram_cart_label = 'product.general.add_to_cart_button' | t
+-%}
+
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {{ instagram_corner_radius_px }}; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack{% if section.settings.bw_intro %} is-bw{% endif %}"{% if section.settings.show_lightbox_reviews %} data-lightbox-reviews{% endif %}{% if section.settings.bw_intro %} data-bw-seconds="{{ section.settings.bw_intro_seconds }}" data-bw-fade="{{ section.settings.bw_intro_fade }}"{% endif %}>
@@ -125,6 +139,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                   reveal_controls_on_tap: true,
                   show_comments: section.settings.show_lightbox_reviews,
                   show_like: section.settings.show_likes,
+                  cart_variant_id: instagram_cart_variant_id,
+                  cart_label: instagram_cart_label,
                   like_id: block.id,
                   like_count: block.settings.likes_count,
                   corner_radius: instagram_corner_radius_px,
@@ -177,32 +193,22 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- render 'scroll-controls', target_id: instagram_carousel_id, show_mobile: section.settings.show_progress_bar_mobile, show_desktop: section.settings.show_progress_bar_desktop, class: 'instagram-feed__scroll-controls' -%}
         {%- endunless -%}
 
-        {%- comment -%}
-        On a product page the lightbox also gets an "add to cart" button for that page's product (the variant selected in the page's URL, else
-        the first available one); the click is handled by the script right below.
-        {%- endcomment -%}
-        {%- liquid
-          assign instagram_cart_variant_id = ''
-
-          if request.page_type == 'product' and product.available
-            assign instagram_cart_variant_id = product.selected_or_first_available_variant.id
-          endif
-
-          assign instagram_cart_label = 'product.general.add_to_cart_button' | t
-        -%}
-        {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple, cart_variant_id: instagram_cart_variant_id, cart_label: instagram_cart_label -%}
+        {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple -%}
 
         {%- if instagram_cart_variant_id != blank -%}
           <script>
             (function () {
               var lightbox = document.getElementById('{{ instagram_lightbox_id }}');
-              var button = lightbox && lightbox.querySelector('.media-lightbox__cart');
+              var buttons = document.querySelectorAll('#{{ instagram_feed_id }} .carousel-video-cart-toggle');
 
-              if (!button) {
+              if (!lightbox || !buttons.length) {
                 return;
               }
 
-              button.addEventListener('click', async function () {
+              Array.prototype.forEach.call(buttons, function (button) {
+              button.addEventListener('click', async function (event) {
+                event.stopPropagation();
+
                 if (button.getAttribute('aria-busy') === 'true') {
                   return;
                 }
@@ -255,6 +261,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                 } finally {
                   button.removeAttribute('aria-busy');
                 }
+              });
               });
             })();
           </script>
@@ -1232,7 +1239,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     color: var(--control-button-icon-color, #ffffff);
   }
 
-  #shopify-section-{{ section.id }} .carousel-video-comments-toggle {
+  #shopify-section-{{ section.id }} .carousel-video-comments-toggle,
+  #shopify-section-{{ section.id }} .carousel-video-cart-toggle {
     display: grid;
     place-content: center;
     width: var(--control-button-size, 1.75rem);
@@ -1417,8 +1425,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     }
 
     #{{ instagram_lightbox_id }}.is-comments-open .media-lightbox__prev,
-    #{{ instagram_lightbox_id }}.is-comments-open .media-lightbox__next,
-    #{{ instagram_lightbox_id }}.is-comments-open .media-lightbox__cart {
+    #{{ instagram_lightbox_id }}.is-comments-open .media-lightbox__next {
       opacity: 0;
       pointer-events: none;
     }
@@ -1474,13 +1481,20 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- comment -%}Same feel for the three icon buttons: a soft grow on hover (mouse only) and a press{%- endcomment -%}
   @media (hover: hover) {
     #shopify-section-{{ section.id }} .carousel-video-like-toggle:hover,
-    #shopify-section-{{ section.id }} .carousel-video-comments-toggle:hover {
+    #shopify-section-{{ section.id }} .carousel-video-comments-toggle:hover,
+    #shopify-section-{{ section.id }} .carousel-video-cart-toggle:hover {
       scale: 1.12;
     }
   }
 
+  #shopify-section-{{ section.id }} .carousel-video-cart-toggle[aria-busy="true"] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
   #shopify-section-{{ section.id }} .carousel-video-like-toggle:active,
-  #shopify-section-{{ section.id }} .carousel-video-comments-toggle:active {
+  #shopify-section-{{ section.id }} .carousel-video-comments-toggle:active,
+  #shopify-section-{{ section.id }} .carousel-video-cart-toggle:active {
     scale: 0.92;
   }
 
