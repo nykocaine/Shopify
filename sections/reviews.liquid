@@ -207,17 +207,23 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
                 <div class="review-card__side">
                   <div class="review-card__reviewer">
                     <span class="review-card__avatar" data-review-avatar="{{ block.settings.reviewer_name | escape }}"></span>
-                    <span class="review-card__name">{{ block.settings.reviewer_name }}</span>
+                    <div class="review-card__identity">
+                      <div class="review-card__name-row">
+                        <span class="review-card__name">{{ block.settings.reviewer_name }}</span>
 
-                    {%- if block.settings.verified_buyer -%}
-                      <span class="review-card__verified">
-                        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false" class="review-card__verified-badge">
-                          <circle cx="8" cy="8" r="8" fill="#3897F0"/>
-                          <path d="M4.5 8.3 6.8 10.6 11.5 5.5" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <span class="sr-only">Comprador verificado</span>
-                      </span>
-                    {%- endif -%}
+                        {%- if block.settings.verified_buyer -%}
+                          <span class="review-card__verified">
+                            <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false" class="review-card__verified-badge">
+                              <circle cx="8" cy="8" r="8" fill="#3897F0"/>
+                              <path d="M4.5 8.3 6.8 10.6 11.5 5.5" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="sr-only">Comprador verificado</span>
+                          </span>
+                        {%- endif -%}
+                      </div>
+
+                      <span class="review-card__handle" data-review-handle="{{ block.settings.reviewer_name | escape }}"></span>
+                    </div>
                   </div>
 
                   {%- if block.settings.product_name != blank -%}
@@ -764,6 +770,26 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     display: flex;
   }
 
+  #shopify-section-{{ section.id }} .review-card__identity {
+    min-width: 0;
+    flex-direction: column;
+    gap: .125rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__name-row {
+    align-items: center;
+    gap: .375rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__handle {
+    color: rgb(var(--text-color) / .6);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   #shopify-section-{{ section.id }} .review-card__avatar:empty {
     flex: none;
     width: var(--review-avatar-size);
@@ -980,9 +1006,13 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
 
 <script>
   (function () {
-    {%- comment -%}Each reviewer gets their round picture (shared with the Instagram Feed's zoom view, so it is the same one in both){%- endcomment -%}
+    {%- comment -%}Each reviewer gets their round picture and their @handle (shared with the Instagram Feed's zoom view, so it is the same one in both){%- endcomment -%}
     Array.prototype.forEach.call(document.querySelectorAll('#shopify-section-{{ section.id }} [data-review-avatar]'), function (placeholder) {
       placeholder.appendChild(window.buildReviewAvatar(placeholder.getAttribute('data-review-avatar') || ''));
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('#shopify-section-{{ section.id }} [data-review-handle]'), function (placeholder) {
+      placeholder.textContent = window.buildReviewHandle(placeholder.getAttribute('data-review-handle') || '');
     });
   })();
 </script>
