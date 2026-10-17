@@ -18,6 +18,9 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
 @param {string} [corner_radius] - CSS value for the item's border-radius (eg. "var(--media-blocks-corner-radius)" or "12px")
 @param {string} [heading] - optional heading shown over the media (carousel slide caption)
 @param {string} [text] - optional rich text shown under the heading
+@param {boolean} [show_like] - whether to render a heart (like) button with its count at the top of the video's controls. Its behavior lives in the section that renders the slide
+@param {string} [like_id] - stable id of this item, used to remember the visitor's like
+@param {number} [like_count] - the number of likes to show (a real number entered by the merchant); the visitor's own like adds one. Blank hides the number
 @param {boolean} [show_product_button] - whether to show the "go to product" button next to the video controls
 @param {object} [product] - the product the button links to
 @param {string} [product_button_type] - 'icon' or 'text'
@@ -57,6 +60,16 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
       {%- endif -%}
 
       <div class="h-stack gap-2 carousel-video-controls{% if reveal_controls_on_tap %} carousel-video-controls--tap-to-reveal{% endif %}">
+        {%- if show_like -%}
+          <div class="carousel-video-like" data-like-id="{{ like_id }}" data-like-base="{{ like_count }}">
+            <button type="button" class="carousel-video-like-toggle circle-button" aria-pressed="false" style="{{ control_button_style }}">
+              <span class="sr-only">{{ 'Me gusta' }}</span>
+              {%- render 'icon' with 'heart' -%}
+            </button>
+            <span class="carousel-video-like__count" aria-live="polite"></span>
+          </div>
+        {%- endif -%}
+
         {%- if resolved_show_product_button -%}
           <a href="{{ product.url }}" class="carousel-video-product-link circle-button" style="{{ product_button_style }}">
             {%- if product_button_type == 'text' -%}
