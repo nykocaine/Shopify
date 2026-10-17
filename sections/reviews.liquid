@@ -895,10 +895,45 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     display: none;
   }
 
+  {%- comment -%}
+  Phone: the review reads like a comment in the zoom view. One header row - picture and name with the @user under it on the start side, stars
+  over the date on the end side - then the title flush to the start, the text under it, the picture of the customer (if any) and the heart. The
+  side / main wrappers dissolve (display: contents) so their pieces sit directly in the card's grid.
+  {%- endcomment -%}
   @media screen and (max-width: 749px) {
     #shopify-section-{{ section.id }} .review-card {
-      grid-template-columns: minmax(0, 1fr);
-      gap: .75rem;
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: .75rem;
+      row-gap: .5rem;
+      padding-block: 1rem;
+    }
+
+    #shopify-section-{{ section.id }} .review-card__side,
+    #shopify-section-{{ section.id }} .review-card__main {
+      display: contents;
+    }
+
+    #shopify-section-{{ section.id }} .review-card__reviewer {
+      --review-avatar-size: 2.25rem;
+      min-width: 0;
+    }
+
+    #shopify-section-{{ section.id }} .review-card__top {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: .125rem;
+    }
+
+    #shopify-section-{{ section.id }} .review-card__title,
+    #shopify-section-{{ section.id }} .review-card__body,
+    #shopify-section-{{ section.id }} .review-card__image,
+    #shopify-section-{{ section.id }} .review-card__actions {
+      grid-column: 1 / -1;
+      text-align: start;
+    }
+
+    #shopify-section-{{ section.id }} .review-card__title {
+      margin-block-start: .25rem;
     }
   }
 
