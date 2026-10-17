@@ -759,6 +759,14 @@ the first available one); the click is handled by the script near the lightbox b
 
                     itemHead.appendChild(itemName);
                     itemHead.appendChild(buildBadge());
+
+                    if (review.date) {
+                      var itemDate = document.createElement('span');
+
+                      itemDate.className = 'lightbox-reviews__date';
+                      itemDate.textContent = review.date;
+                      itemHead.appendChild(itemDate);
+                    }
                     item.appendChild(itemHead);
                     item.appendChild(itemText);
                     list.appendChild(item);
@@ -1427,6 +1435,13 @@ the first available one); the click is handled by the script near the lightbox b
     column-gap: 0.625rem;
     margin-block-end: 0.25rem;
     min-width: 0;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-reviews__date {
+    flex: none;
+    margin-inline-start: auto;
+    color: rgb(var(--text-color) / .6);
+    white-space: nowrap;
   }
 
   #shopify-section-{{ section.id }} .lightbox-reviews__badge {

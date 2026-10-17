@@ -105,10 +105,13 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
           {%- assign lightbox_review_text = review_block.settings.title | strip_html | strip -%}
         {%- endif -%}
 
+        {%- capture lightbox_review_date_result -%}{%- render 'review-date', index: forloop.index -%}{%- endcapture -%}
+        {%- assign lightbox_review_date = lightbox_review_date_result | strip | split: '|' | last -%}
+
         {%- if lightbox_review_text != blank -%}
           {%- assign lightbox_reviews_printed = lightbox_reviews_printed | plus: 1 -%}
           {%- if lightbox_reviews_printed > 1 -%},{%- endif -%}
-          { "name": {{ review_block.settings.reviewer_name | json }}, "rating": {{ review_block.settings.rating | default: 0 | json }}, "text": {{ lightbox_review_text | json }} }
+          { "name": {{ review_block.settings.reviewer_name | json }}, "rating": {{ review_block.settings.rating | default: 0 | json }}, "date": {{ lightbox_review_date | json }}, "text": {{ lightbox_review_text | json }} }
         {%- endif -%}
       {%- endfor -%}
     ]
@@ -180,29 +183,10 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
               counting up forever. Each review gets a different point in that same cycle (seeded off
               forloop.index) so they don't all display the exact same age on a given day.
               {%- endcomment -%}
-              {%- liquid
-                assign review_date_now = 'now' | date: '%s' | plus: 0
-                assign review_date_day_count = review_date_now | divided_by: 86400
-                assign review_date_seed = forloop.index | times: 17 | plus: review_date_day_count
-                assign review_date_days = review_date_seed | modulo: 56 | plus: 4
-
-                case review_date_days
-                  when 4, 5, 6
-                    assign review_date_label = 'Hace ' | append: review_date_days | append: ' días'
-                  when 7, 8, 9, 10, 11, 12, 13
-                    assign review_date_label = 'Hace 1 semana'
-                  when 14, 15, 16, 17, 18, 19, 20
-                    assign review_date_label = 'Hace 2 semanas'
-                  when 21, 22, 23, 24, 25, 26, 27, 28, 29
-                    assign review_date_label = 'Hace 3 semanas'
-                  else
-                    if review_date_days < 50
-                      assign review_date_label = 'Hace 1 mes'
-                    else
-                      assign review_date_label = 'Hace 2 meses'
-                    endif
-                endcase
-              -%}
+              {%- capture review_date_result -%}{%- render 'review-date', index: forloop.index -%}{%- endcapture -%}
+              {%- assign review_date_parts = review_date_result | strip | split: '|' -%}
+              {%- assign review_date_days = review_date_parts[0] -%}
+              {%- assign review_date_label = review_date_parts[1] -%}
               <div class="review-card" data-review-id="{{ block.id }}" data-rating="{{ block.settings.rating }}" data-days-ago="{{ review_date_days }}" {{ block.shopify_attributes }}>
                 <div class="review-card__side">
                   <div class="review-card__reviewer">
@@ -782,7 +766,7 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
 
   #shopify-section-{{ section.id }} .review-card__date {
     color: rgb(var(--text-color) / .6);
-    font-size: .875em;
+    font-size: 1em;
   }
 
   {%- comment -%}
@@ -791,7 +775,7 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
   render at the same height as the date text next to them instead of each at its own fixed size.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .review-card__stars {
-    font-size: .875em;
+    font-size: 1em;
   }
 
   #shopify-section-{{ section.id }} .review-card__stars .icon {
