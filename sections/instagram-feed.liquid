@@ -767,18 +767,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   {%- comment -%}
-  No empty square while a video is not playing yet: the theme hides every <video> (opacity 0) until the element has started
-  playing for the first time ("loaded"), and these videos have no separate poster <img>, only the poster attribute. So the
-  square stayed blank until the video was triggered, then faded in over a video that had no frame yet. Here the video
-  (and with it its poster) is visible from the start, so the poster is what the visitor sees until the first frame of the
-  video replaces it.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} video-media:not([loaded]) > video {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  {%- comment -%}
   Mobile (below 700px): the first video plays by itself, so it shows only the zoom button, no play/pause or sound buttons.
   {%- endcomment -%}
   @media screen and (max-width: 699px) {
