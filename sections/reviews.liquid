@@ -203,7 +203,7 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
                     endif
                 endcase
               -%}
-              <div class="review-card" data-rating="{{ block.settings.rating }}" data-days-ago="{{ review_date_days }}" {{ block.shopify_attributes }}>
+              <div class="review-card" data-review-id="{{ block.id }}" data-rating="{{ block.settings.rating }}" data-days-ago="{{ review_date_days }}" {{ block.shopify_attributes }}>
                 <div class="review-card__side">
                   <div class="review-card__reviewer">
                     <span class="review-card__avatar" data-review-avatar="{{ block.settings.reviewer_name | escape }}"></span>
@@ -222,63 +222,6 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
                       <span class="review-card__handle" data-review-handle="{{ block.settings.reviewer_name | escape }}"></span>
                     </div>
                   </div>
-
-                  {%- if block.settings.product_name != blank -%}
-                    <div class="review-card__product">
-                      <p class="review-card__product-label subheading">Producto</p>
-                      {%- if block.settings.product_url != blank -%}
-                        <a href="{{ block.settings.product_url }}" class="link">{{ block.settings.product_name }}</a>
-                      {%- else -%}
-                        <span>{{ block.settings.product_name }}</span>
-                      {%- endif -%}
-                    </div>
-                  {%- endif -%}
-
-                  {%- liquid
-                    assign has_attributes = false
-
-                    for i in (1..3)
-                      capture attr_label_key
-                        echo 'attribute_'
-                        echo i
-                        echo '_label'
-                      endcapture
-
-                      if block.settings[attr_label_key] != blank
-                        assign has_attributes = true
-                      endif
-                    endfor
-                  -%}
-
-                  {%- if has_attributes -%}
-                    <div class="review-card__attributes">
-                      {%- for i in (1..3) -%}
-                        {%- liquid
-                          capture attr_label_key
-                            echo 'attribute_'
-                            echo i
-                            echo '_label'
-                          endcapture
-
-                          capture attr_value_key
-                            echo 'attribute_'
-                            echo i
-                            echo '_value'
-                          endcapture
-
-                          assign attr_label = block.settings[attr_label_key]
-                          assign attr_value = block.settings[attr_value_key]
-                        -%}
-
-                        {%- if attr_label != blank -%}
-                          <div class="review-card__attribute">
-                            <span class="review-card__attribute-label">{{ attr_label }}</span>
-                            <span class="review-card__attribute-value">{{ attr_value }}</span>
-                          </div>
-                        {%- endif -%}
-                      {%- endfor -%}
-                    </div>
-                  {%- endif -%}
                 </div>
 
                 <div class="review-card__main">
@@ -317,6 +260,14 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
                       {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: '120px', widths: '120,240,360' -}}
                     </div>
                   {%- endif -%}
+
+                  <div class="review-card__actions">
+                    <button type="button" class="review-card__like" aria-pressed="false" data-review-like>
+                      <span class="sr-only">Me gusta</span>
+                      {%- render 'icon' with 'heart' -%}
+                      <span class="review-card__like-count" aria-live="polite"></span>
+                    </button>
+                  </div>
                 </div>
               </div>
             {%- endfor -%}
@@ -742,10 +693,15 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     flex-direction: column;
   }
 
+  {%- comment -%}
+  Comment-style review (the way a video's comments read): the person on the start side - round picture, name with the seal, @user under it -
+  and the review next to it, with a heart under the text. Flat on purpose: no boxes, no big headings, just a hairline between reviews and the
+  text at the page's own size. The stars and the date are small and quiet, on one line above the text.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .review-card {
-    grid-template-columns: 220px minmax(0, 1fr);
-    gap: 2rem;
-    padding-block: 2rem;
+    grid-template-columns: 13rem minmax(0, 1fr);
+    gap: 1.5rem;
+    padding-block: 1.25rem;
     border-block-end: 1px solid rgb(var(--border-color));
     display: grid;
   }
@@ -755,15 +711,13 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
   }
 
   #shopify-section-{{ section.id }} .review-card__side {
-    flex-direction: column;
-    gap: 1.25rem;
-    display: flex;
+    min-width: 0;
   }
 
   #shopify-section-{{ section.id }} .review-card__reviewer {
-    --review-avatar-size: 2.25rem;
+    --review-avatar-size: 2.5rem;
     align-items: center;
-    gap: .625rem;
+    gap: .75rem;
     display: flex;
   }
 
@@ -778,6 +732,14 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     align-items: center;
     gap: .375rem;
     display: flex;
+    min-width: 0;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   #shopify-section-{{ section.id }} .review-card__handle {
@@ -801,38 +763,20 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
 
   #shopify-section-{{ section.id }} .review-card__verified {
     align-items: center;
+    flex: none;
     display: inline-flex;
   }
 
-  #shopify-section-{{ section.id }} .review-card__product-label {
-    text-transform: uppercase;
-    margin-block-end: .25rem;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__attributes {
-    flex-direction: column;
-    gap: .75rem;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__attribute {
-    flex-direction: column;
-    display: flex;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__attribute-value {
-    color: rgb(var(--text-color) / .8);
-  }
-
   #shopify-section-{{ section.id }} .review-card__main {
+    min-width: 0;
     flex-direction: column;
-    gap: 1rem;
+    gap: .5rem;
     display: flex;
   }
 
   #shopify-section-{{ section.id }} .review-card__top {
-    justify-content: space-between;
     align-items: center;
+    gap: .625rem;
     display: flex;
   }
 
@@ -854,8 +798,25 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     width: 1em;
   }
 
+  #shopify-section-{{ section.id }} .review-card__title {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__body {
+    overflow-wrap: anywhere;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__body > :first-child {
+    margin-block-start: 0;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__body > :last-child {
+    margin-block-end: 0;
+  }
+
   #shopify-section-{{ section.id }} .review-card__image {
-    width: 7.5rem;
+    width: 6rem;
   }
 
   #shopify-section-{{ section.id }} .review-card__image img {
@@ -863,6 +824,66 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     aspect-ratio: 1;
     object-fit: cover;
     display: block;
+  }
+
+  {%- comment -%}Heart under the review: outline until pressed, then filled red with the same little pop as the hearts in the zoom view{%- endcomment -%}
+  #shopify-section-{{ section.id }} .review-card__actions {
+    margin-block-start: .25rem;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__like {
+    align-items: center;
+    gap: .375rem;
+    display: inline-flex;
+    padding: .25rem;
+    margin-inline-start: -.25rem;
+    background: none;
+    border: 0;
+    color: rgb(var(--text-color) / .7);
+    cursor: pointer;
+    transition: color .2s ease, scale .25s cubic-bezier(.4, 0, .2, 1);
+  }
+
+  #shopify-section-{{ section.id }} .review-card__like .icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__like-count {
+    font-size: .875em;
+    min-width: 0;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__like-count:empty {
+    display: none;
+  }
+
+  @media (hover: hover) {
+    #shopify-section-{{ section.id }} .review-card__like:hover {
+      color: rgb(var(--text-color));
+    }
+  }
+
+  #shopify-section-{{ section.id }} .review-card__like:active {
+    scale: .92;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__like[aria-pressed="true"] {
+    color: #e5243b;
+  }
+
+  #shopify-section-{{ section.id }} .review-card__like[aria-pressed="true"] .icon {
+    animation: reviews-heart-pop .4s cubic-bezier(.34, 1.56, .64, 1);
+  }
+
+  #shopify-section-{{ section.id }} .review-card__like[aria-pressed="true"] .icon path {
+    fill: currentColor;
+  }
+
+  @keyframes reviews-heart-pop {
+    0% { scale: 1; }
+    45% { scale: 1.35; }
+    100% { scale: 1; }
   }
 
   {%- comment -%}
@@ -897,15 +918,7 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
   @media screen and (max-width: 749px) {
     #shopify-section-{{ section.id }} .review-card {
       grid-template-columns: minmax(0, 1fr);
-      gap: 1.25rem;
-    }
-
-    #shopify-section-{{ section.id }} .review-card__main {
-      order: 1;
-    }
-
-    #shopify-section-{{ section.id }} .review-card__side {
-      order: 2;
+      gap: .75rem;
     }
   }
 
@@ -1010,6 +1023,50 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
 
     Array.prototype.forEach.call(document.querySelectorAll('#shopify-section-{{ section.id }} [data-review-handle]'), function (placeholder) {
       placeholder.textContent = window.buildReviewHandle(placeholder.getAttribute('data-review-handle') || '');
+    });
+
+    {%- comment -%}
+    Heart under each review: remembered in this browser only (no counts are invented - the number shows once the visitor has liked it).
+    {%- endcomment -%}
+    var likedReviews = {};
+
+    try {
+      likedReviews = JSON.parse(window.localStorage.getItem('reviews-liked') || '{}') || {};
+    } catch (error) {
+      likedReviews = {};
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('#shopify-section-{{ section.id }} .review-card'), function (card) {
+      var button = card.querySelector('[data-review-like]');
+      var count = card.querySelector('.review-card__like-count');
+      var id = card.getAttribute('data-review-id');
+
+      if (!button || !id) {
+        return;
+      }
+
+      function paint(liked) {
+        button.setAttribute('aria-pressed', liked ? 'true' : 'false');
+        count.textContent = liked ? '1' : '';
+      }
+
+      paint(!!likedReviews[id]);
+
+      button.addEventListener('click', function () {
+        var liked = button.getAttribute('aria-pressed') !== 'true';
+
+        paint(liked);
+
+        if (liked) {
+          likedReviews[id] = 1;
+        } else {
+          delete likedReviews[id];
+        }
+
+        try {
+          window.localStorage.setItem('reviews-liked', JSON.stringify(likedReviews));
+        } catch (error) {}
+      });
     });
   })();
 </script>
