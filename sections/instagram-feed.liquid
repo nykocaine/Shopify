@@ -115,12 +115,10 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             {%- if instagram_block_has_video -%}
               {%- comment -%}
               autoplay: true (muted, looped) instead of the default tap-to-play, matching an
-              Instagram-style feed. That is the desktop behavior: on mobile the script below removes
-              the autoplay attribute (and the tap-to-reveal class on the controls) before the theme's
-              JS connects, so there videos start on tap and the play / sound / zoom buttons stay visible. On desktop those
-              controls are hidden by CSS (see the 700px rule below): the videos just play.
+              Instagram-style feed, on every screen size. The play / pause / sound buttons are hidden by CSS below: the
+              videos just play while they are on screen.
               {%- endcomment -%}
-              <div class="snap-start" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
+              <div class="snap-start" data-caption="{{ block.settings.caption | escape }}" style="--instagram-video-poster: url('{{ block.settings.video.preview_image | image_url: width: 600 }}');" {{ block.shopify_attributes }}>
                 {%- render 'media-zoom-slide',
                   video: block.settings.video,
                   autoplay: true,
@@ -295,32 +293,16 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             });
 
             {%- comment -%}
-            Mobile (up to 699px): only the FIRST video of the row autoplays (muted, looped), so the page loads fast; the rest
-            do not autoplay - saves data and battery. Removing the attribute here, while this script still runs before the
-            deferred theme.js defines <video-media>, makes the element behave as a regular tap-to-play video
-            (VideoMedia#connectedCallback) with its poster frame. The tap-to-reveal class is dropped so the buttons are
-            always visible (media-zoom-script.liquid reads that class after this script has run); the first video's
-            cell is marked .instagram-feed__lead-video and the CSS below hides its play/pause and sound buttons, leaving
-            only the zoom button.
-
-            Desktop: videos keep autoplaying. Pausing each one when it leaves the screen and resuming it every time it comes
-            back is a rule for every autoplaying video of the theme (BaseMedia in assets/theme.js), not specific to this section.
+            Every video of the feed autoplays (muted, looped) while it is on screen, on every screen size, and none shows play /
+            pause or sound buttons (CSS below hides them). Pausing a video when it leaves the screen and starting it again every
+            time it comes back is a rule for every autoplaying video of the theme (BaseMedia in assets/theme.js); a video only
+            fetches data once the visitor is near it (preload none, see above), so only what is on screen costs anything.
+            On mobile the zoom button is always visible instead of revealed on tap: the tap-to-reveal class is dropped from
+            it here, while this script still runs before media-zoom-script.liquid reads that class.
             {%- endcomment -%}
             if (window.matchMedia('(max-width: 699px)').matches) {
-              Array.prototype.forEach.call(carousel.querySelectorAll('video-media[autoplay]'), function (video, index) {
-                var videoCell = video.closest('.snap-start');
-
-                if (index > 0) {
-                  video.removeAttribute('autoplay');
-                } else if (videoCell) {
-                  videoCell.classList.add('instagram-feed__lead-video');
-                }
-
-                if (videoCell) {
-                  Array.prototype.forEach.call(videoCell.querySelectorAll('.carousel-video-controls--tap-to-reveal'), function (element) {
-                    element.classList.remove('carousel-video-controls--tap-to-reveal');
-                  });
-                }
+              Array.prototype.forEach.call(carousel.querySelectorAll('open-lightbox-button.carousel-video-controls--tap-to-reveal'), function (element) {
+                element.classList.remove('carousel-video-controls--tap-to-reveal');
               });
             }
 
@@ -735,22 +717,20 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   {%- comment -%}
-  Desktop (700px and up): the videos play by themselves, so there are no video controls at all - no play/pause,
-  sound or zoom buttons. On mobile (below 700px) they stay visible, since nothing autoplays there.
+  Every video plays by itself, so there are no play/pause or sound buttons at any screen size, only the zoom button
+  (always visible on mobile, revealed on hover/tap on desktop).
   {%- endcomment -%}
-  @media screen and (min-width: 700px) {
-    #shopify-section-{{ section.id }} .carousel-video-controls {
-      display: none;
-    }
+  #shopify-section-{{ section.id }} .carousel-video-controls {
+    display: none;
   }
 
   {%- comment -%}
-  Mobile (below 700px): the first video plays by itself, so it shows only the zoom button, no play/pause or sound buttons.
+  The video's poster is also painted as the box's own background, behind the <video>: some browsers (iOS Safari) drop the
+  <video> poster the moment play() is called and show an empty box until the first frame is decoded, which read as a blank
+  square while scrolling into the feed. The video draws over this image as soon as it has a frame.
   {%- endcomment -%}
-  @media screen and (max-width: 699px) {
-    #shopify-section-{{ section.id }} .instagram-feed__lead-video .carousel-video-controls {
-      display: none;
-    }
+  #shopify-section-{{ section.id }} .snap-start > .content-box {
+    background: var(--instagram-video-poster, none) center / cover no-repeat;
   }
 
   {%- comment -%}
