@@ -98,8 +98,32 @@
       {%- sections 'overlay-group' -%}
     {%- endif -%}
 
+    {%- comment -%}
+    One <h1> per page, always (SEO and accessibility): the page's own content decides what it is (product title, collection
+    title, page title, hero heading...). This is the safety net for whatever the merchant adds in the editor:
+    - no <h1> in the content: a visually hidden one is added (the shop name on the home page, the page title elsewhere);
+    - more than one: the first stays and the others become <h2> (same classes, so they look the same).
+    {%- endcomment -%}
+    {%- capture main_content -%}{{ content_for_layout }}{%- endcapture -%}
+    {%- assign h1_parts = main_content | split: '<h1' -%}
+    {%- assign needs_fallback_h1 = false -%}
+
+    {%- if h1_parts.size == 1 -%}
+      {%- assign needs_fallback_h1 = true -%}
+    {%- elsif h1_parts.size > 2 -%}
+      {%- capture main_content -%}
+        {{- h1_parts[0] -}}<h1{{- h1_parts[1] -}}
+        {%- for h1_part in h1_parts offset: 2 -%}
+          <h2{{- h1_part | replace_first: '</h1>', '</h2>' -}}
+        {%- endfor -%}
+      {%- endcapture -%}
+    {%- endif -%}
+
     <main id="main" class="anchor {% if request.page_type == 'policy' or request.page_type == 'captcha' %}color-scheme color-scheme--{{ settings.default_color_scheme.id }}{% endif %}">
-      {{ content_for_layout }}
+      {%- if needs_fallback_h1 -%}
+        <h1 class="sr-only">{% if request.page_type == 'index' %}{{ shop.name }}{% else %}{{ page_title | default: shop.name }}{% endif %}</h1>
+      {%- endif -%}
+      {{ main_content }}
     </main>
 
     {%- if request.page_type != 'password' -%}

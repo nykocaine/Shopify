@@ -1,6 +1,15 @@
 {%- if section.blocks.size > 0 -%}
     {%- liquid
       assign has_categories = false
+
+      # On a page template (eg. the FAQ page) this section is the page's own content, so its title is the page's <h1>
+      # (layout/theme.liquid demotes it if the page already has another one); everywhere else it stays an <h2>.
+      assign faq_title_html_tag = 'h2'
+
+      if request.page_type == 'page'
+        assign faq_title_html_tag = 'h1'
+      endif
+
       for category_block in section.blocks
         if category_block.type == 'category' and category_block.settings.title != blank
           assign has_categories = true
@@ -146,7 +155,7 @@
             {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank or section.settings.button_text != blank -%}
               <div class="prose">
                 {%- render 'subheading', content: section.settings.subheading -%}
-                {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.title_tag, html_tag: 'h2' -%}
+                {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.title_tag, html_tag: faq_title_html_tag -%}
 
                 <div class="max-w-sm">
                   {{- section.settings.content -}}
