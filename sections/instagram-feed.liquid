@@ -533,6 +533,90 @@ the first available one); the click is handled by the script near the lightbox b
                   return window.buildReviewAvatar(name);
                 }
 
+                {%- comment -%}
+                Phone only (hidden from 1000px by CSS): a comment box at the bottom of the panel, full width, like the one under a post on Instagram -
+                picture, "Añade un comentario..." and a send button that shows once there is text. There is no place to post a loose comment, so sending
+                it closes the zoom view and opens the "Escribir una reseña" window of the page's Reviews section with the text already in the review
+                field. Without that section on the page there is nothing to send to and the box is not shown.
+                {%- endcomment -%}
+                function buildComposer() {
+                  if (!document.querySelector('.reviews__write-button')) {
+                    return null;
+                  }
+
+                  var form = document.createElement('form');
+
+                  form.className = 'lightbox-comments__compose';
+                  form.setAttribute('autocomplete', 'off');
+
+                  var mine = window.buildReviewAvatar('');
+
+                  var field = document.createElement('input');
+
+                  field.type = 'text';
+                  field.className = 'lightbox-comments__input';
+                  field.placeholder = 'A\u00f1ade un comentario...';
+                  field.setAttribute('aria-label', 'A\u00f1ade un comentario');
+                  field.enterKeyHint = 'send';
+
+                  var send = document.createElement('button');
+
+                  send.type = 'submit';
+                  send.className = 'lightbox-comments__send';
+                  send.textContent = 'Publicar';
+                  send.hidden = true;
+
+                  field.addEventListener('input', function () {
+                    send.hidden = !field.value.trim();
+                  });
+
+                  form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+
+                    var text = field.value.trim();
+
+                    if (!text) {
+                      return;
+                    }
+
+                    field.blur();
+
+                    var closeButton = lightboxElement ? lightboxElement.querySelector('.media-lightbox__close') : null;
+
+                    if (closeButton) {
+                      closeButton.click();
+                    }
+
+                    setTimeout(function () {
+                      var writeButton = document.querySelector('.reviews__write-button');
+
+                      if (!writeButton) {
+                        return;
+                      }
+
+                      writeButton.click();
+
+                      setTimeout(function () {
+                        var body = document.querySelector('x-modal.modal--write-review textarea[name="contact[body]"]');
+
+                        if (body) {
+                          body.value = text;
+                          body.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                      }, 120);
+
+                      field.value = '';
+                      send.hidden = true;
+                    }, 380);
+                  });
+
+                  form.appendChild(mine);
+                  form.appendChild(field);
+                  form.appendChild(send);
+
+                  return form;
+                }
+
                 function buildPanel() {
                   {%- comment -%}
                   Every video lists the reviews in its own order: the best rated first, and in a random order among the ones in the same star
@@ -607,6 +691,12 @@ the first available one); the click is handled by the script near the lightbox b
 
                   panel.appendChild(head);
                   panel.appendChild(list);
+
+                  var composer = buildComposer();
+
+                  if (composer) {
+                    panel.appendChild(composer);
+                  }
                   videoMedia.appendChild(panel);
                 }
 
@@ -1480,6 +1570,59 @@ the first available one); the click is handled by the script near the lightbox b
     min-width: 0;
     padding-block: 1rem;
     border-block-start: 1px solid rgb(var(--border-color));
+  }
+
+  {%- comment -%}Comment box at the bottom of the panel (phones only: built by the script above, hidden from 1000px up){%- endcomment -%}
+  #shopify-section-{{ section.id }} .lightbox-comments__compose {
+    --review-avatar-size: 2rem;
+    flex: none;
+    align-items: center;
+    gap: .625rem;
+    display: flex;
+    padding-block: .75rem;
+    border-block-start: 1px solid rgb(var(--border-color));
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 2.5rem;
+    padding-inline: 1rem;
+    border: 1px solid rgb(var(--border-color));
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    font: var(--text-font-style) var(--text-font-weight) max(16px, var(--text-base)) / 1.2 var(--text-font-family);
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__input::placeholder {
+    color: rgb(var(--text-color) / .55);
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__input:focus {
+    outline: none;
+    border-color: rgb(var(--text-color) / .6);
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__send {
+    flex: none;
+    padding: .5rem;
+    background: none;
+    border: 0;
+    color: #0095f6;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-comments__send[hidden] {
+    display: none;
+  }
+
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} .lightbox-comments__compose {
+      display: none;
+    }
   }
 
   #shopify-section-{{ section.id }} .lightbox-comments__text {

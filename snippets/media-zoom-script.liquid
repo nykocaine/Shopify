@@ -1197,6 +1197,11 @@ progress bar) are simply skipped when no carousel_id is given.
           return;
         }
 
+        // Typing in a field inside the lightbox (the comment box of the Instagram Feed) must not slide, seek or scroll anything.
+        if (event.key !== 'Escape' && event.target && /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)) {
+          return;
+        }
+
         if (event.key === 'Escape') {
           closeLightbox();
         } else if (event.key === 'ArrowDown' || event.key === 'PageDown') {
