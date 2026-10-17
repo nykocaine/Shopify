@@ -151,6 +151,19 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
           </div>
         </div>
 
+        {%- comment -%}
+        Phone only: the "Escribir una reseña" button is replaced by a full-width box like the one in the zoom view of the Instagram Feed (picture, the
+        field and a send button once there is text). Sending opens the same window the button opens, with the text already in the review field.
+        The button stays in the page (hidden on phones) because the window is opened through it.
+        {%- endcomment -%}
+        {%- if write_review_block != blank and review_blocks.size > 0 -%}
+          <form class="reviews__compose" data-reviews-compose autocomplete="off">
+            <span class="reviews__compose-avatar" data-review-avatar=""></span>
+            <input type="text" class="reviews__compose-input" placeholder="Escribe una reseña" aria-label="Escribe una reseña" enterkeyhint="send">
+            <button type="submit" class="reviews__compose-send" hidden>Enviar</button>
+          </form>
+        {%- endif -%}
+
         {%- if review_blocks.size > 0 -%}
           <div class="reviews__controls">
             {%- if write_review_block != blank -%}
@@ -713,6 +726,65 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     min-width: 0;
   }
 
+  {%- comment -%}Phone box to write a review (hidden from 750px up, where the button is used){%- endcomment -%}
+  #shopify-section-{{ section.id }} .reviews__compose {
+    --review-avatar-size: 2.25rem;
+    display: none;
+  }
+
+  @media screen and (max-width: 749px) {
+    #shopify-section-{{ section.id }} .reviews__compose {
+      align-items: center;
+      gap: .625rem;
+      display: flex;
+      width: 100%;
+    }
+
+    #shopify-section-{{ section.id }} .reviews__summary-write {
+      display: none;
+    }
+
+    #shopify-section-{{ section.id }} .reviews__compose-avatar:not(:empty) {
+      display: contents;
+    }
+
+    #shopify-section-{{ section.id }} .reviews__compose-input {
+      flex: 1 1 auto;
+      min-width: 0;
+      height: 2.75rem;
+      padding-inline: 1rem;
+      border: 1px solid rgb(var(--border-color));
+      border-radius: 999px;
+      background: transparent;
+      color: inherit;
+      font: var(--text-font-style) var(--text-font-weight) var(--text-base) / var(--text-line-height) var(--text-font-family);
+    }
+
+    #shopify-section-{{ section.id }} .reviews__compose-input::placeholder {
+      color: rgb(var(--text-color) / .55);
+    }
+
+    #shopify-section-{{ section.id }} .reviews__compose-input:focus {
+      outline: none;
+      border-color: rgb(var(--text-color) / .6);
+    }
+
+    #shopify-section-{{ section.id }} .reviews__compose-send {
+      flex: none;
+      padding: .5rem;
+      background: none;
+      border: 0;
+      color: #0095f6;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #shopify-section-{{ section.id }} .reviews__compose-send[hidden] {
+      display: none;
+    }
+  }
+
   #shopify-section-{{ section.id }} .review-card__reviewer {
     --review-avatar-size: 2.5rem;
     align-items: center;
@@ -1054,6 +1126,43 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     Array.prototype.forEach.call(document.querySelectorAll('#shopify-section-{{ section.id }} [data-review-handle]'), function (placeholder) {
       placeholder.textContent = window.buildReviewHandle(placeholder.getAttribute('data-review-handle') || '');
     });
+
+    var compose = document.querySelector('#shopify-section-{{ section.id }} [data-reviews-compose]');
+
+    if (compose) {
+      var composeInput = compose.querySelector('.reviews__compose-input');
+      var composeSend = compose.querySelector('.reviews__compose-send');
+
+      composeInput.addEventListener('input', function () {
+        composeSend.hidden = !composeInput.value.trim();
+      });
+
+      compose.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        var text = composeInput.value.trim();
+        var writeButton = document.querySelector('#shopify-section-{{ section.id }} .reviews__write-button');
+
+        if (!text || !writeButton) {
+          return;
+        }
+
+        composeInput.blur();
+        writeButton.click();
+
+        setTimeout(function () {
+          var body = document.querySelector('x-modal.modal--write-review textarea[name="contact[body]"]');
+
+          if (body) {
+            body.value = text;
+            body.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }, 120);
+
+        composeInput.value = '';
+        composeSend.hidden = true;
+      });
+    }
 
     {%- comment -%}
     Heart under each review: it starts with a number of its own - picked from the review's id, so every review (any new one too) gets one
