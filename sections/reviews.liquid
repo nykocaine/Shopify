@@ -429,12 +429,24 @@ to the first 5 of the newly sorted order.
       margin: -.25rem;
     }
 
+    {%- comment -%}
+    Full height: the popup takes all the height of the screen (the generic modal caps it at 70vh), minus the modal's own margin
+    (--modal-content-margin) above and below, so it keeps the same gap to the screen's edge on every side.
+    {%- endcomment -%}
     #{{ write_review_modal_id }}.modal--write-review::part(content) {
+      height: calc(100vh - 2 * var(--modal-content-margin));
+      max-height: none;
       border-radius: {{ write_review_block.settings.popup_border_radius }}px;
       overflow: hidden;
       {%- if write_review_block.settings.center_popup -%}
         place-self: center;
       {%- endif -%}
+    }
+
+    @supports (height: 100dvh) {
+      #{{ write_review_modal_id }}.modal--write-review::part(content) {
+        height: calc(100dvh - 2 * var(--modal-content-margin));
+      }
     }
 
     {%- if write_review_block.settings.mobile_popup_width < 100 -%}
