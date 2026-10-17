@@ -303,10 +303,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             cell is marked .instagram-feed__lead-video and the CSS below hides its play/pause and sound buttons, leaving
             only the zoom button.
 
-            Desktop: videos keep autoplaying, but BaseMedia only starts them the first time they come
-            into view and never stops them. With the carousel scrolling, that would slowly leave every
-            video playing at once, so each one is paused when it leaves the carousel's visible area and
-            resumed when it comes back (only if it was paused here, never if the visitor paused it).
+            Desktop: videos keep autoplaying. Pausing each one when it leaves the screen and resuming it every time it comes
+            back is a rule for every autoplaying video of the theme (BaseMedia in assets/theme.js), not specific to this section.
             {%- endcomment -%}
             if (window.matchMedia('(max-width: 699px)').matches) {
               Array.prototype.forEach.call(carousel.querySelectorAll('video-media[autoplay]'), function (video, index) {
