@@ -601,6 +601,34 @@ the first available one); the click is handled by the script near the lightbox b
 
                 window.addEventListener('resize', refitTexts);
 
+                {%- comment -%}
+                The reviewer shows as a handle ("@name": lower case, no spaces or accents) with a round picture to its left. The reviews carry no
+                photo, so each one gets a generated one: a soft gradient with a person's silhouette, its colors taken from the name, so the same
+                reviewer always has the same picture and different ones look different.
+                {%- endcomment -%}
+                function toHandle(name) {
+                  var handle = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9._]+/g, '');
+
+                  return handle ? '@' + handle : '';
+                }
+
+                function buildAvatar(name) {
+                  var hash = 0;
+
+                  for (var index = 0; index < name.length; index += 1) {
+                    hash = (hash * 31 + name.charCodeAt(index)) % 360;
+                  }
+
+                  var avatar = document.createElement('span');
+
+                  avatar.className = 'lightbox-reviews__avatar';
+                  avatar.setAttribute('aria-hidden', 'true');
+                  avatar.style.background = 'linear-gradient(145deg, hsl(' + hash + ', 55%, 72%), hsl(' + ((hash + 40) % 360) + ', 50%, 52%))';
+                  avatar.innerHTML = '<svg viewBox="0 0 32 32" width="100%" height="100%" focusable="false"><circle cx="16" cy="12.5" r="5.2" fill="#fff" fill-opacity="0.9"/><path d="M5.5 29c0-6 4.7-9.8 10.5-9.8S26.5 23 26.5 29" fill="#fff" fill-opacity="0.9"/></svg>';
+
+                  return avatar;
+                }
+
                 function buildPanel() {
                   var reviews = getLightboxReviews();
 
@@ -638,27 +666,16 @@ the first available one); the click is handled by the script near the lightbox b
                     var itemHead = document.createElement('div');
                     itemHead.className = 'lightbox-reviews__head';
 
-                    var itemStars = document.createElement('span');
-                    itemStars.className = 'lightbox-reviews__stars';
-                    var rating = Math.max(0, Math.min(5, Math.round(review.rating || 0)));
-
-                    for (var star = 1; star <= 5; star += 1) {
-                      var itemStar = document.createElement('span');
-
-                      itemStar.textContent = '\u2605';
-                      itemStar.className = star <= rating ? 'is-filled' : 'is-empty';
-                      itemStars.appendChild(itemStar);
-                    }
+                    itemHead.appendChild(buildAvatar(review.name || ''));
 
                     var itemName = document.createElement('span');
                     itemName.className = 'lightbox-reviews__name';
-                    itemName.textContent = review.name || '';
+                    itemName.textContent = toHandle(review.name || '');
 
                     var itemText = document.createElement('p');
                     itemText.className = 'lightbox-comments__text';
                     setupClampedText(itemText, review.text || '');
 
-                    itemHead.appendChild(itemStars);
                     itemHead.appendChild(itemName);
                     item.appendChild(itemHead);
                     item.appendChild(itemText);
@@ -1320,20 +1337,19 @@ the first available one); the click is handled by the script near the lightbox b
   #shopify-section-{{ section.id }} .lightbox-reviews__head {
     display: flex;
     align-items: center;
-    column-gap: 0.5rem;
+    justify-content: flex-start;
+    column-gap: 0.625rem;
     margin-block-end: 0.25rem;
     min-width: 0;
   }
 
-  #shopify-section-{{ section.id }} .lightbox-reviews__stars {
+  #shopify-section-{{ section.id }} .lightbox-reviews__avatar {
     flex: none;
-    font-size: 1em;
-    line-height: 1;
-    letter-spacing: 0.05em;
-  }
-
-  #shopify-section-{{ section.id }} .lightbox-reviews__stars .is-empty {
-    opacity: 0.25;
+    display: block;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 100%;
+    overflow: hidden;
   }
 
   #shopify-section-{{ section.id }} .lightbox-reviews__name {
