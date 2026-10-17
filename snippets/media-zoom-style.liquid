@@ -345,17 +345,25 @@ upgrades to 100dvh where supported (same pattern as .modal--age-verifier in them
 on the real visible area, not the layout viewport Chrome/Safari report before their address bar has
 collapsed.
 {%- endcomment -%}
+{%- comment -%}
+The margin around the box is the drawers' own padding (--container-gutter plus 0.5rem), not the bare gutter (about 10px on a phone): on a tall phone
+with no browser bars the box reached the very edge of the screen, where rounded corners, the camera cut-out and the gesture bar hide or clip the
+corner buttons and the controls. The safe-area insets (when the page lets the content under them) are taken off on both sides, the larger of the two,
+so the box stays centered.
+{%- endcomment -%}
 @media screen and (max-width: 999px) {
   #{{ wrapper_id }} {
-    --lightbox-media-w: min(calc(100vw - 2 * var(--container-gutter)), 32rem);
-    --lightbox-media-h: calc(100vh - 2 * var(--container-gutter));
+    --lightbox-edge: calc(var(--container-gutter) + 0.5rem);
+    --lightbox-safe: max(env(safe-area-inset-top, 0px), env(safe-area-inset-bottom, 0px));
+    --lightbox-media-w: min(calc(100vw - 2 * var(--lightbox-edge)), 32rem);
+    --lightbox-media-h: calc(100vh - 2 * var(--lightbox-edge) - 2 * var(--lightbox-safe));
   }
 }
 
 @supports (height: 100dvh) {
   @media screen and (max-width: 999px) {
     #{{ wrapper_id }} {
-      --lightbox-media-h: calc(100dvh - 2 * var(--container-gutter));
+      --lightbox-media-h: calc(100dvh - 2 * var(--lightbox-edge) - 2 * var(--lightbox-safe));
     }
   }
 }
