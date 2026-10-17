@@ -606,13 +606,61 @@ the first available one); the click is handled by the script near the lightbox b
                     var item = element.closest('.lightbox-comments__item');
                     var list = element.closest('.lightbox-comments__list');
                     var before = item ? item.getBoundingClientRect().top : 0;
+                    var startHeight = element.getBoundingClientRect().height;
+                    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+                    if (state.animation) {
+                      state.animation.cancel();
+                      state.animation = null;
+                      element.style.overflow = '';
+                    }
+
+                    {%- comment -%}
+                    Unfolding and folding are animated on the review's height: the box grows (or shrinks) to its new size while it clips its
+                    content, so the rest of the text is uncovered line by line (and covered again on the way back). Folding keeps the whole
+                    text in place during the animation and only swaps in the shortened one when the box has finished shrinking.
+                    {%- endcomment -%}
+                    var fullNodes = expanded ? null : Array.prototype.slice.call(element.cloneNode(true).childNodes);
 
                     state.expanded = expanded;
                     state.fit(true);
 
+                    var endHeight = element.getBoundingClientRect().height;
+
+                    if (fullNodes) {
+                      element.textContent = '';
+                      fullNodes.forEach(function (node) {
+                        element.appendChild(node);
+                      });
+                    }
+
                     if (item && list) {
                       list.scrollTop += item.getBoundingClientRect().top - before;
                     }
+
+                    if (reduceMotion || Math.abs(endHeight - startHeight) < 2) {
+                      if (fullNodes) {
+                        state.fit(true);
+                      }
+
+                      return;
+                    }
+
+                    element.style.overflow = 'hidden';
+
+                    state.animation = element.animate(
+                      [{ height: startHeight + 'px' }, { height: endHeight + 'px' }],
+                      { duration: 340, easing: 'cubic-bezier(0.32, 0.72, 0, 1)' }
+                    );
+
+                    state.animation.onfinish = function () {
+                      element.style.overflow = '';
+                      state.animation = null;
+
+                      if (fullNodes) {
+                        state.fit(true);
+                      }
+                    };
                   }
 
                   clampedTexts.push(state);
