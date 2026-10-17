@@ -303,10 +303,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             cell is marked .instagram-feed__lead-video and the CSS below hides its play/pause and sound buttons, leaving
             only the zoom button.
 
-            Desktop: videos keep autoplaying, but BaseMedia only starts them the first time they come
-            into view and never stops them. With the carousel scrolling, that would slowly leave every
-            video playing at once, so each one is paused when it leaves the carousel's visible area and
-            resumed when it comes back (only if it was paused here, never if the visitor paused it).
+            Desktop: videos keep autoplaying. Pausing each one when it leaves the screen and resuming it every time it comes
+            back is a rule for every autoplaying video of the theme (BaseMedia in assets/theme.js), not specific to this section.
             {%- endcomment -%}
             if (window.matchMedia('(max-width: 699px)').matches) {
               Array.prototype.forEach.call(carousel.querySelectorAll('video-media[autoplay]'), function (video, index) {
@@ -323,54 +321,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                     element.classList.remove('carousel-video-controls--tap-to-reveal');
                   });
                 }
-              });
-
-              {%- comment -%}
-              The first video has no play/pause button, so nothing the visitor does can stop it - but the browser itself
-              (iOS Safari, Chrome) pauses muted inline videos that leave the screen, and the theme only calls play() the
-              first time it comes into view. So every time it comes back into view and is not playing, it is started
-              again, and it is paused while off-screen (saves battery and data).
-              {%- endcomment -%}
-              var mobileLeadVideo = carousel.querySelector('video-media[autoplay]');
-
-              if (mobileLeadVideo && 'IntersectionObserver' in window) {
-                new IntersectionObserver(function (entries) {
-                  entries.forEach(function (entry) {
-                    var video = entry.target;
-
-                    if (typeof video.play !== 'function') {
-                      return;
-                    }
-
-                    if (entry.isIntersecting) {
-                      if (!video.playing) {
-                        video.play();
-                      }
-                    } else if (video.playing && typeof video.pause === 'function') {
-                      video.pause();
-                    }
-                  });
-                }).observe(mobileLeadVideo);
-              }
-            } else if ('IntersectionObserver' in window) {
-              var visibilityObserver = new IntersectionObserver(function (entries) {
-                entries.forEach(function (entry) {
-                  var video = entry.target;
-
-                  if (entry.isIntersecting) {
-                    if (video.hasAttribute('data-auto-paused') && typeof video.play === 'function') {
-                      video.removeAttribute('data-auto-paused');
-                      video.play();
-                    }
-                  } else if (video.playing && typeof video.pause === 'function') {
-                    video.setAttribute('data-auto-paused', '');
-                    video.pause();
-                  }
-                });
-              });
-
-              Array.prototype.forEach.call(carousel.querySelectorAll('video-media[autoplay]'), function (video) {
-                visibilityObserver.observe(video);
               });
             }
 
