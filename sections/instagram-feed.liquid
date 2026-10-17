@@ -118,7 +118,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               Instagram-style feed, on every screen size. The play / pause / sound buttons are hidden by CSS below: the
               videos just play while they are on screen.
               {%- endcomment -%}
-              <div class="snap-start" data-caption="{{ block.settings.caption | escape }}" style="--instagram-video-poster: url('{{ block.settings.video.preview_image | image_url: width: 600 }}');" {{ block.shopify_attributes }}>
+              <div class="snap-start instagram-feed__video-cell" data-caption="{{ block.settings.caption | escape }}" style="--instagram-video-poster: url('{{ block.settings.video.preview_image | image_url: width: 600 }}');" {{ block.shopify_attributes }}>
                 {%- render 'media-zoom-slide',
                   video: block.settings.video,
                   autoplay: true,
@@ -300,6 +300,43 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             On mobile the zoom button is always visible instead of revealed on tap: the tap-to-reveal class is dropped from
             it here, while this script still runs before media-zoom-script.liquid reads that class.
             {%- endcomment -%}
+            {%- comment -%}
+            Smooth poster -> video change and a loading cue. The poster is the box's own background (CSS below) and the <video> is
+            transparent until it really starts playing (the "playing" event, first frame on screen): then it is marked .is-ready
+            and fades in slowly over the poster, instead of the browser swapping poster and first frame abruptly. While a video
+            has been asked to play but has no frames yet ("play" until "playing", or "waiting" when it stalls), its cell gets
+            .is-video-loading, which shows a small spinner (after a short delay, so a fast start never flashes it).
+            {%- endcomment -%}
+            Array.prototype.forEach.call(carousel.querySelectorAll('.instagram-feed__video-cell video'), function (video) {
+              var videoCell = video.closest('.instagram-feed__video-cell');
+              var videoMedia = video.closest('video-media');
+
+              if (!videoCell || !videoMedia) {
+                return;
+              }
+
+              function setLoading(isLoading) {
+                videoCell.classList.toggle('is-video-loading', isLoading);
+              }
+
+              ['play', 'waiting', 'stalled'].forEach(function (type) {
+                video.addEventListener(type, function () {
+                  setLoading(true);
+                });
+              });
+
+              video.addEventListener('playing', function () {
+                setLoading(false);
+                videoMedia.classList.add('is-ready');
+              });
+
+              ['pause', 'ended', 'emptied', 'error'].forEach(function (type) {
+                video.addEventListener(type, function () {
+                  setLoading(false);
+                });
+              });
+            });
+
             if (window.matchMedia('(max-width: 699px)').matches) {
               Array.prototype.forEach.call(carousel.querySelectorAll('open-lightbox-button.carousel-video-controls--tap-to-reveal'), function (element) {
                 element.classList.remove('carousel-video-controls--tap-to-reveal');
@@ -731,6 +768,56 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .snap-start > .content-box {
     background: var(--instagram-video-poster, none) center / cover no-repeat;
+  }
+
+  {%- comment -%}
+  Poster -> video: the <video> stays transparent over the poster background until it has its first frame (the script above
+  adds .is-ready on the "playing" event), then fades in slowly. Beats the theme's own video opacity rules on purpose.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__video-cell video-media > video {
+    opacity: 0;
+    transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  #shopify-section-{{ section.id }} .instagram-feed__video-cell video-media.is-ready > video {
+    opacity: 1;
+  }
+
+  {%- comment -%}
+  Loading cue: a small spinner in the middle of the cell while its video was asked to play and has no frames yet. It fades in
+  after a short delay, so a video that starts right away never shows it.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__video-cell {
+    position: relative;
+  }
+
+  #shopify-section-{{ section.id }} .instagram-feed__video-cell::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: auto;
+    border: 2px solid rgb(255 255 255 / 0.4);
+    border-block-start-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgb(0 0 0 / 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease 0s;
+    animation: instagram-feed-video-spin 0.8s linear infinite;
+  }
+
+  #shopify-section-{{ section.id }} .instagram-feed__video-cell.is-video-loading::after {
+    opacity: 1;
+    transition-delay: 0.35s;
+  }
+
+  @keyframes instagram-feed-video-spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   {%- comment -%}
