@@ -348,14 +348,46 @@
         {%- comment -%}
         Desktop (1000px and up), tabs: the questions of a tab are laid out in two columns instead of one very wide column, read from left to right
         (first question on the left, second on the right, and so on): with an odd number the extra one ends up alone on the left, in the last row.
-        Opening a question makes its whole row taller (the neighbour next to it stretches with it, so the lines between rows stay aligned). Blocks
-        that are not a question (text + image) keep the full width, and phones keep one column.
+        Each column sits on its own white container with rounded corners (the section's corner radius) and no border: the two containers are
+        drawn behind the questions by the panel's ::before / ::after, so the rows stay aligned - opening a question makes its whole row taller
+        (the neighbour next to it stretches with it) - while each column still looks like one block. Blocks that are not a question (text + image)
+        keep the full width and no containers, and phones keep one column.
         {%- endcomment -%}
         @media screen and (min-width: 1000px) {
           #shopify-section-{{ section.id }} .faq__panel:not([hidden]) {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            column-gap: 2.5rem;
+            column-gap: 1rem;
+          }
+
+          #shopify-section-{{ section.id }} .faq__panel:not([hidden]):has(> .accordion) {
+            position: relative;
+            padding-block: 0.5rem;
+          }
+
+          #shopify-section-{{ section.id }} .faq__panel:not([hidden]):has(> .accordion)::before,
+          #shopify-section-{{ section.id }} .faq__panel:not([hidden]):has(> .accordion)::after {
+            content: "";
+            position: absolute;
+            inset-block: 0;
+            width: calc((100% - 1rem) / 2);
+            background: #ffffff;
+            border-radius: {{ section.settings.faq_border_radius }}px;
+            z-index: 0;
+          }
+
+          #shopify-section-{{ section.id }} .faq__panel:not([hidden]):has(> .accordion)::before {
+            inset-inline-start: 0;
+          }
+
+          #shopify-section-{{ section.id }} .faq__panel:not([hidden]):has(> .accordion)::after {
+            inset-inline-end: 0;
+          }
+
+          #shopify-section-{{ section.id }} .faq__panel > .accordion {
+            position: relative;
+            z-index: 1;
+            margin-inline: 1.5rem;
           }
 
           #shopify-section-{{ section.id }} .faq__panel > :not(.accordion) {
@@ -899,7 +931,7 @@
       "type": "checkbox",
       "id": "two_columns",
       "label": "Two columns on desktop",
-      "info": "With tabs: the questions of a tab are shown in two columns, read from left to right.",
+      "info": "With tabs: the questions of a tab are shown in two white columns, read from left to right.",
       "default": true
     },
     {
