@@ -1,0 +1,40 @@
+{%- doc -%}
+The date shown for a review. It is computed, not merchant-entered: it auto-advances once every 24 hours (day_count, from the current unix timestamp, is the same
+integer for everyone until the next UTC day) and never reads as fresher than ~4-6 days or older than ~2 months: the number of days cycles through that
+[4, 59] range, wrapping back to the start every 56 days instead of counting up forever. Each review gets a different point in that same cycle (seeded off its
+position in the list) so they don't all display the exact same age on a given day.
+
+Shared by the Reviews section (cards) and the Instagram Feed's zoom view (via the section's lightbox data), so a review reads the same age in both.
+
+@param {number} index - the review's position in the Reviews section's list (forloop.index)
+
+Prints "days|label", e.g. "12|Hace 1 semana".
+{%- enddoc -%}
+
+{%- liquid
+  assign review_date_now = 'now' | date: '%s' | plus: 0
+  assign review_date_day_count = review_date_now | divided_by: 86400
+  assign review_date_seed = index | times: 17 | plus: review_date_day_count
+  assign review_date_days = review_date_seed | modulo: 56 | plus: 4
+
+  case review_date_days
+    when 4, 5, 6
+      assign review_date_label = 'Hace ' | append: review_date_days | append: ' días'
+    when 7, 8, 9, 10, 11, 12, 13
+      assign review_date_label = 'Hace 1 semana'
+    when 14, 15, 16, 17, 18, 19, 20
+      assign review_date_label = 'Hace 2 semanas'
+    when 21, 22, 23, 24, 25, 26, 27, 28, 29
+      assign review_date_label = 'Hace 3 semanas'
+    else
+      if review_date_days < 50
+        assign review_date_label = 'Hace 1 mes'
+      else
+        assign review_date_label = 'Hace 2 meses'
+      endif
+  endcase
+
+  echo review_date_days
+  echo '|'
+  echo review_date_label
+-%}
