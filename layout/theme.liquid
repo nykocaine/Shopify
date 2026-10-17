@@ -13,6 +13,18 @@
 
     <link rel="canonical" href="{{ canonical_url }}">
 
+    {%- comment -%}
+    Pages that must not show up in search engines (the claims book, the FAQ page, the blog and its posts): this tag is what keeps
+    them out of the results (a missing <h1> does not), while search engines still follow their links.
+    {%- endcomment -%}
+    {%- if request.page_type == 'blog' or request.page_type == 'article' -%}
+      <meta name="robots" content="noindex, follow">
+    {%- elsif request.page_type == 'page' and page.template_suffix == 'libro-reclamaciones' -%}
+      <meta name="robots" content="noindex, follow">
+    {%- elsif request.page_type == 'page' and page.template_suffix == 'faq' -%}
+      <meta name="robots" content="noindex, follow">
+    {%- endif -%}
+
     {%- if settings.favicon -%}
       <link rel="shortcut icon" href="{{ settings.favicon | image_url: width: 96 }}">
       <link rel="apple-touch-icon" href="{{ settings.favicon | image_url: width: 180 }}">
@@ -98,8 +110,32 @@
       {%- sections 'overlay-group' -%}
     {%- endif -%}
 
+    {%- comment -%}
+    Exactly one <h1> per page (SEO and accessibility). The page's own content decides what it is (the hero heading on the home page,
+    the product title, the collection title, the page title...). This is the safety net for whatever is added in the editor:
+    - no <h1> in the content: a visually hidden one is added (the shop name on the home page, the page title elsewhere);
+    - more than one: the first stays and the others become <h2> (same classes, so they look the same).
+    {%- endcomment -%}
+    {%- capture main_content -%}{{ content_for_layout }}{%- endcapture -%}
+    {%- assign h1_parts = main_content | split: '<h1' -%}
+    {%- assign needs_fallback_h1 = false -%}
+
+    {%- if h1_parts.size == 1 -%}
+      {%- assign needs_fallback_h1 = true -%}
+    {%- elsif h1_parts.size > 2 -%}
+      {%- capture main_content -%}
+        {{- h1_parts[0] -}}<h1{{- h1_parts[1] -}}
+        {%- for h1_part in h1_parts offset: 2 -%}
+          <h2{{- h1_part | replace_first: '</h1>', '</h2>' -}}
+        {%- endfor -%}
+      {%- endcapture -%}
+    {%- endif -%}
+
     <main id="main" class="anchor {% if request.page_type == 'policy' or request.page_type == 'captcha' %}color-scheme color-scheme--{{ settings.default_color_scheme.id }}{% endif %}">
-      {{ content_for_layout }}
+      {%- if needs_fallback_h1 -%}
+        <h1 class="sr-only">{% if request.page_type == 'index' %}{{ shop.name }}{% else %}{{ page_title | default: shop.name }}{% endif %}</h1>
+      {%- endif -%}
+      {{ main_content }}
     </main>
 
     {%- if request.page_type != 'password' -%}

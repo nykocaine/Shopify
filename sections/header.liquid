@@ -368,13 +368,11 @@
       {%- endif -%}
     {%- endcapture -%}
 
-    {%- if request.page_type == 'index' -%}
-      <h1 class="header__logo">
-        <a href="{{ routes.root_url }}">{{ logo_content }}</a>
-      </h1>
-    {% else %}
-      <a href="{{ routes.root_url }}" class="header__logo">{{ logo_content }}</a>
-    {% endif %}
+    {%- comment -%}
+    The logo is never an <h1>, not even on the home page: the page's <h1> is its main content heading (layout/theme.liquid
+    guarantees there is exactly one per page), so the logo link is the same plain link everywhere.
+    {%- endcomment -%}
+    <a href="{{ routes.root_url }}" class="header__logo">{{ logo_content }}</a>
 
     {%- comment -%}
     --------------------------------------------------------------------------------------------------------------------

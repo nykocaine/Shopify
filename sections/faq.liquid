@@ -1,6 +1,7 @@
 {%- if section.blocks.size > 0 -%}
     {%- liquid
       assign has_categories = false
+
       for category_block in section.blocks
         if category_block.type == 'category' and category_block.settings.title != blank
           assign has_categories = true
