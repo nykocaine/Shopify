@@ -2618,6 +2618,16 @@ video-media:not([loaded]) > :is(video, iframe), video-media[loaded] > img, video
   pointer-events: none;
 }
 
+/* No empty box while a video has not started playing yet: the rule above hides every <video> until the element has played for
+   the first time ("loaded"). Videos rendered with autoplay have no separate poster <img>, only the video's own poster
+   attribute, so their box stayed blank until the video was triggered and then faded in over a video with no frame yet.
+   A video that has a poster is visible from the start, so the poster is what shows until the first frame replaces it. Videos
+   without a poster attribute keep their separate poster <img> and are unchanged. */
+video-media:not([loaded]) > video[poster] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 video-media[suspended] ~ * {
   pointer-events: none;
 }
