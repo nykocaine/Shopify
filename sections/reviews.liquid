@@ -306,6 +306,15 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
 
       <input type="hidden" name="contact[Submission type]" value="Review">
 
+      {%- comment -%}What every review has to be to get published: honest, from a real purchase, and checked before it goes up{%- endcomment -%}
+      <div class="review-modal__notice">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="review-modal__notice-seal"><path d="M12.00 2.00 L15.21 4.24 L19.07 4.93 L19.76 8.79 L22.00 12.00 L19.76 15.21 L19.07 19.07 L15.21 19.76 L12.00 22.00 L8.79 19.76 L4.93 19.07 L4.24 15.21 L2.00 12.00 L4.24 8.79 L4.93 4.93 L8.79 4.24Z" fill="#0095f6" stroke="#0095f6" stroke-width="1.6" stroke-linejoin="round"/><path d="m7.9 12.2 2.9 2.9 5.4-5.8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="review-modal__notice-text">
+          <p class="review-modal__notice-title">Reseñas honestas y verificadas</p>
+          <p>Solo publicamos opiniones de clientes que compraron el producto. Revisamos cada reseña y la comparamos con tu pedido antes de publicarla.</p>
+        </div>
+      </div>
+
       <p class="review-form__required-note">Los campos marcados con * son obligatorios.</p>
 
       <fieldset class="review-form__rating">
@@ -1032,6 +1041,37 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
   by the modal's own id: scoped by the section they stopped applying once the popup opened (native radio buttons and
   unstyled black stars showed up instead of the star picker).
   {%- endcomment -%}
+
+  #{{ write_review_modal_id }} .review-modal__notice {
+    align-items: flex-start;
+    gap: .75rem;
+    display: flex;
+    padding: .875rem 1rem;
+    margin-block-end: 1.25rem;
+    border: 1px solid rgb(var(--border-color));
+    border-radius: 12px;
+    background: rgb(var(--text-color) / .04);
+  }
+
+  #{{ write_review_modal_id }} .review-modal__notice-seal {
+    flex: none;
+    margin-block-start: .125rem;
+  }
+
+  #{{ write_review_modal_id }} .review-modal__notice-text {
+    min-width: 0;
+    flex-direction: column;
+    gap: .25rem;
+    display: flex;
+  }
+
+  #{{ write_review_modal_id }} .review-modal__notice-text p {
+    margin: 0;
+  }
+
+  #{{ write_review_modal_id }} .review-modal__notice-title {
+    font-weight: 600;
+  }
 
   #{{ write_review_modal_id }} .review-form__required-note {
     color: rgb(var(--text-color) / .6);
