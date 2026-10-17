@@ -4423,7 +4423,22 @@ var VideoMedia = class extends BaseMedia {
       this.attachShadow({ mode: "open" }).appendChild(document.getElementById("video-media-default-template").content.cloneNode(true));
     }
     if (this.getAttribute("type") === "video") {
+      // An autoplaying video's poster is painted by this element as its own background (see theme.css), and only once the
+      // video is near the screen: the <video poster> attribute is taken off, because browsers fetch it at page load for
+      // every video of the page, however far down it is, and swap it for the first frame abruptly.
+      if (this.hasAttribute("autoplay") && !this.hasAttribute("host")) {
+        const posterVideo = this.querySelector("video");
+        this._posterUrl = posterVideo?.getAttribute("poster") || this._posterUrl;
+        posterVideo?.removeAttribute("poster");
+        // A video that is meant to load eagerly (the first sections of the page) paints its poster right away
+        if (this._posterUrl && posterVideo?.getAttribute("preload") === "auto") {
+          this.style.backgroundImage = `url("${this._posterUrl.replace(/"/g, "%22")}")`;
+        }
+      }
       inView8(this, () => {
+        if (this._posterUrl) {
+          this.style.backgroundImage = `url("${this._posterUrl.replace(/"/g, "%22")}")`;
+        }
         this.#selectVideoSource();
         this.querySelector("video")?.setAttribute("preload", "auto");
       }, { margin: "800px" });
@@ -4569,6 +4584,14 @@ var VideoMedia = class extends BaseMedia {
         videoElement.playsInline = true;
         videoElement.setAttribute("webkit-playsinline", "");
       }
+      // The video fades in over the poster (theme.css) once it really has a frame to show, not when play() is called
+      const markReady = () => {
+        if (!videoElement.paused && videoElement.readyState >= 3 && videoElement.currentTime > 0) {
+          this.classList.add("is-ready");
+        }
+      };
+      videoElement.addEventListener("playing", () => this.classList.add("is-ready"));
+      videoElement.addEventListener("timeupdate", markReady);
       videoElement.addEventListener("play", () => {
         this.setAttribute("playing", "");
         this.removeAttribute("suspended");

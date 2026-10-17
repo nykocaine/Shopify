@@ -118,7 +118,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               Instagram-style feed, on every screen size. The play / pause / sound buttons are hidden by CSS below: the
               videos just play while they are on screen.
               {%- endcomment -%}
-              <div class="snap-start instagram-feed__video-cell" data-caption="{{ block.settings.caption | escape }}" style="--instagram-video-poster: url('{{ block.settings.video.preview_image | image_url: width: 600 }}');" {{ block.shopify_attributes }}>
+              <div class="snap-start instagram-feed__video-cell" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
                 {%- render 'media-zoom-slide',
                   video: block.settings.video,
                   autoplay: true,
@@ -301,40 +301,15 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             it here, while this script still runs before media-zoom-script.liquid reads that class.
             {%- endcomment -%}
             {%- comment -%}
-            Smooth poster -> video change and a loading cue. The poster is the box's own background (CSS below) and the <video> is
-            transparent until it really starts playing (the "playing" event, first frame on screen): then it is marked .is-ready
-            and fades in slowly over the poster, instead of the browser swapping poster and first frame abruptly. While a video
-            has been asked to play but has no frames yet ("play" until "playing", or "waiting" when it stalls), its cell gets
-            .is-video-loading, which shows a small spinner (after a short delay, so a fast start never flashes it).
+            Loading cue: while a video has been asked to play but has no frames yet, its cell gets .is-video-loading, which shows a
+            small spinner (after a short delay, so a fast start never flashes it). The poster behind the video and the fade-in
+            when it starts are the theme's rule for every autoplaying video (theme.css, theme.js).
             {%- endcomment -%}
-            {%- comment -%}
-            Posters are fetched only near the screen: the <video poster> attribute is dropped (browsers fetch it at page load, for
-            every video of the row, however far off-screen) and the poster painted as the cell's background (CSS below) is
-            switched on by .has-poster only once the cell is within 800px of the viewport.
-            {%- endcomment -%}
-            var posterObserver = 'IntersectionObserver' in window ? new IntersectionObserver(function (entries) {
-              entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                  entry.target.classList.add('has-poster');
-                  posterObserver.unobserve(entry.target);
-                }
-              });
-            }, { rootMargin: '800px' }) : null;
-
             Array.prototype.forEach.call(carousel.querySelectorAll('.instagram-feed__video-cell video'), function (video) {
               var videoCell = video.closest('.instagram-feed__video-cell');
-              var videoMedia = video.closest('video-media');
 
-              if (!videoCell || !videoMedia) {
+              if (!videoCell) {
                 return;
-              }
-
-              video.removeAttribute('poster');
-
-              if (posterObserver) {
-                posterObserver.observe(videoCell);
-              } else {
-                videoCell.classList.add('has-poster');
               }
 
               {%- comment -%}
@@ -342,26 +317,17 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               stuck: "stalled" and "waiting" also fire while the video is already playing or only preloading, and nothing
               fired afterwards to turn it off). It is on only while the video is trying to play (not paused, not ended) and does
               not have enough data to keep going (readyState below HAVE_FUTURE_DATA); it is re-evaluated on every event that can
-              change that, including timeupdate while it plays. A video that is actually moving also gets .is-ready here, in case
-              the "playing" event was missed.
+              change that, including timeupdate while it plays.
               {%- endcomment -%}
               function updateState() {
                 var isPlaying = !video.paused && !video.ended;
                 var hasData = video.readyState >= 3;
 
                 videoCell.classList.toggle('is-video-loading', isPlaying && !hasData);
-
-                if (isPlaying && hasData && video.currentTime > 0) {
-                  videoMedia.classList.add('is-ready');
-                }
               }
 
               ['play', 'playing', 'waiting', 'stalled', 'seeking', 'seeked', 'loadeddata', 'canplay', 'canplaythrough', 'timeupdate', 'pause', 'ended', 'emptied', 'abort', 'error'].forEach(function (type) {
                 video.addEventListener(type, updateState);
-              });
-
-              video.addEventListener('playing', function () {
-                videoMedia.classList.add('is-ready');
               });
             });
 
@@ -787,32 +753,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .carousel-video-controls {
     display: none;
-  }
-
-  {%- comment -%}
-  The video's poster is also painted as the box's own background, behind the <video>: some browsers (iOS Safari) drop the
-  <video> poster the moment play() is called and show an empty box until the first frame is decoded, which read as a blank
-  square while scrolling into the feed. The video draws over this image as soon as it has a frame.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .snap-start > .content-box {
-    background: none;
-  }
-
-  #shopify-section-{{ section.id }} .instagram-feed__video-cell.has-poster > .content-box {
-    background: var(--instagram-video-poster, none) center / cover no-repeat;
-  }
-
-  {%- comment -%}
-  Poster -> video: the <video> stays transparent over the poster background until it has its first frame (the script above
-  adds .is-ready on the "playing" event), then fades in slowly. Beats the theme's own video opacity rules on purpose.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__video-cell video-media > video {
-    opacity: 0;
-    transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  #shopify-section-{{ section.id }} .instagram-feed__video-cell video-media.is-ready > video {
-    opacity: 1;
   }
 
   {%- comment -%}
