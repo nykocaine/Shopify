@@ -124,7 +124,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                   autoplay: true,
                   reveal_controls_on_tap: true,
                   show_comments: section.settings.show_lightbox_reviews,
-                  show_share: section.settings.show_share,
                   show_like: section.settings.show_likes,
                   like_id: block.id,
                   like_count: block.settings.likes_count,
@@ -586,41 +585,9 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             }
 
             {%- comment -%}
-            Share button (under the like button, in the zoom view): shares the page's link with a "#video-..." mark that identifies the video:
-            the phone's own share sheet where it exists, otherwise the link is copied. A page opened with that mark opens the video's zoom
-            view by itself.
+            A page opened with a "#video-<block id>" mark opens that video's zoom view by itself.
             {%- endcomment -%}
             var feedElement = document.getElementById('{{ instagram_feed_id }}');
-
-            Array.prototype.forEach.call(carousel.querySelectorAll('.carousel-video-share'), function (shareBox) {
-              var cell = shareBox.closest('.instagram-feed__video-cell');
-              var shareButton = shareBox.querySelector('.carousel-video-share-toggle');
-
-              if (!cell || !shareButton) {
-                return;
-              }
-
-              shareButton.addEventListener('click', function (event) {
-                event.stopPropagation();
-
-                var link = window.location.origin + window.location.pathname + window.location.search + '#video-' + cell.getAttribute('data-block-id');
-
-                if (navigator.share) {
-                  navigator.share({ title: document.title, url: link }).catch(function () {});
-                  return;
-                }
-
-                function showCopied() {
-                  document.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Enlace copiado' } }));
-                }
-
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                  navigator.clipboard.writeText(link).then(showCopied, function () {});
-                } else {
-                  window.prompt('', link);
-                }
-              });
-            });
 
             if (window.location.hash.indexOf('#video-') === 0) {
               var sharedCell = carousel.querySelector('.instagram-feed__video-cell[data-block-id="' + window.location.hash.slice(7) + '"]');
@@ -1250,8 +1217,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     color: var(--control-button-icon-color, #ffffff);
   }
 
-  #shopify-section-{{ section.id }} .carousel-video-comments-toggle,
-  #shopify-section-{{ section.id }} .carousel-video-share-toggle {
+  #shopify-section-{{ section.id }} .carousel-video-comments-toggle {
     display: grid;
     place-content: center;
     width: var(--control-button-size, 1.75rem);
@@ -1294,6 +1260,38 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     opacity: 1;
     transform: none;
     transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease, visibility 0s;
+  }
+
+  {%- comment -%}
+  Desktop (1000px and up): the reviews don't rise over the video, they get a container of their own to its right. Opening them
+  narrows the video's box by the panel's width (the variable below is read by the video's own width rule) and slides the pair
+  left so video + panel stay centered together; the panel is as tall as the video and fades in beside it.
+  {%- endcomment -%}
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} video-media.is-lightbox-expanded {
+      transition: translate 0.45s cubic-bezier(0.32, 0.72, 0, 1), width 0.45s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    #shopify-section-{{ section.id }} video-media.is-lightbox-expanded.is-comments-open {
+      --lightbox-media-w: calc(96vw - 27rem);
+      translate: calc(-50% - 13.5rem) -50%;
+    }
+
+    #shopify-section-{{ section.id }} video-media.is-lightbox-expanded > .lightbox-comments {
+      inset-inline: auto;
+      inset-inline-start: calc(100% + 1.5rem);
+      inset-block: 0;
+      width: 24rem;
+      height: auto;
+      padding: 1rem 1.25rem 0;
+      transform: translateX(1.5rem);
+      transition: transform 0.45s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease, visibility 0s linear 0.35s;
+    }
+
+    #shopify-section-{{ section.id }} video-media.is-lightbox-expanded.is-comments-open > .lightbox-comments {
+      transform: none;
+      transition: transform 0.45s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease 0.1s, visibility 0s;
+    }
   }
 
   {%- comment -%}The reviews come in one after the other, a beat after the panel starts to rise{%- endcomment -%}
@@ -1441,15 +1439,13 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- comment -%}Same feel for the three icon buttons: a soft grow on hover (mouse only) and a press{%- endcomment -%}
   @media (hover: hover) {
     #shopify-section-{{ section.id }} .carousel-video-like-toggle:hover,
-    #shopify-section-{{ section.id }} .carousel-video-comments-toggle:hover,
-    #shopify-section-{{ section.id }} .carousel-video-share-toggle:hover {
+    #shopify-section-{{ section.id }} .carousel-video-comments-toggle:hover {
       scale: 1.12;
     }
   }
 
   #shopify-section-{{ section.id }} .carousel-video-like-toggle:active,
-  #shopify-section-{{ section.id }} .carousel-video-comments-toggle:active,
-  #shopify-section-{{ section.id }} .carousel-video-share-toggle:active {
+  #shopify-section-{{ section.id }} .carousel-video-comments-toggle:active {
     scale: 0.92;
   }
 
@@ -1909,13 +1905,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       "id": "show_lightbox_reviews",
       "label": "Comments button on videos",
       "info": "In the zoom view of a video, a comments button (with the number of reviews) opens a panel with the reviews of this page's Reviews section. Needs a Reviews section on the same page.",
-      "default": true
-    },
-    {
-      "type": "checkbox",
-      "id": "show_share",
-      "label": "Share button on videos",
-      "info": "A share icon under the heart in the zoom view. On a phone it opens the share sheet; on a computer it copies the video's link. The link opens the page with that video already zoomed.",
       "default": true
     },
     {
