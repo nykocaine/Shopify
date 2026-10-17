@@ -285,6 +285,16 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             });
 
             {%- comment -%}
+            Lazy video loading: nothing is fetched for a video until the visitor gets near the section. Every <video> starts
+            with preload="none" (instead of the "metadata" the media snippet sets), and <video-media> (theme.js, VideoMedia)
+            switches it to "auto" and picks the right source once the video is within 800px of the screen, so it is ready
+            when it comes into view. The autoplay below is also limited to videos actually on screen, vertically as well.
+            {%- endcomment -%}
+            Array.prototype.forEach.call(carousel.querySelectorAll('video'), function (video) {
+              video.setAttribute('preload', 'none');
+            });
+
+            {%- comment -%}
             Mobile (up to 699px): only the FIRST video of the row autoplays (muted, looped), so the page loads fast; the rest
             do not autoplay - saves data and battery. Removing the attribute here, while this script still runs before the
             deferred theme.js defines <video-media>, makes the element behave as a regular tap-to-play video
@@ -366,7 +376,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                 }
 
                 var cellRect = cell.getBoundingClientRect();
-                var isWithinCarousel = cellRect.right > carouselRect.left && cellRect.left < carouselRect.right;
+                var isWithinCarousel = cellRect.right > carouselRect.left && cellRect.left < carouselRect.right && cellRect.bottom > 0 && cellRect.top < window.innerHeight;
 
                 if (isWithinCarousel) {
                   videoMedia.play();
