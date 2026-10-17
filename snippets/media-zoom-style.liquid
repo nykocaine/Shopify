@@ -515,19 +515,47 @@ an inward margin that keeps the whole button inside the media box's rounded corn
     inset-inline-end: auto;
   }
 
+  {%- comment -%}
+  The stack is anchored to the TOP of the media box (close, then prev, next and cart one step below each other), not to its
+  vertical center: the video's own controls (heart, comments, sound, pause) grow upward from the bottom-right corner, so a
+  center-anchored stack ran into them whenever the box was short (small phones, landscape, browser bars taking height).
+  Anchored from the top the stack has a fixed size, and the step tightens on short screens.
+  {%- endcomment -%}
+  #{{ lightbox_id }} .media-lightbox__close,
+  #{{ lightbox_id }} .media-lightbox__prev,
+  #{{ lightbox_id }} .media-lightbox__next,
+  #{{ lightbox_id }} .media-lightbox__cart {
+    --lightbox-stack-step: calc(var(--control-button-size, 1.75rem) + 0.5rem);
+    --lightbox-stack-x: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem);
+    --lightbox-stack-top: calc(var(--lightbox-media-h) / -2 + 0.75rem);
+  }
+
+  #{{ lightbox_id }} .media-lightbox__close {
+    translate: var(--lightbox-stack-x) var(--lightbox-stack-top);
+  }
+
+  #{{ lightbox_id }} .media-lightbox__prev {
+    translate: var(--lightbox-stack-x) calc(var(--lightbox-stack-top) + var(--lightbox-stack-step));
+  }
+
+  #{{ lightbox_id }} .media-lightbox__next {
+    translate: var(--lightbox-stack-x) calc(var(--lightbox-stack-top) + 2 * var(--lightbox-stack-step));
+  }
+
   #{{ lightbox_id }} .media-lightbox__cart {
     color: var(--control-button-icon-color, #ffffff);
     inset-inline-start: 50%;
     inset-inline-end: auto;
-    translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(var(--control-button-size, 1.75rem) + 0.75rem);
+    translate: var(--lightbox-stack-x) calc(var(--lightbox-stack-top) + 3 * var(--lightbox-stack-step));
   }
+}
 
-  #{{ lightbox_id }} .media-lightbox__prev {
-    translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) calc(-100% - 0.375rem);
-  }
-
-  #{{ lightbox_id }} .media-lightbox__next {
-    translate: calc(var(--lightbox-media-w) / 2 - 100% - 0.75rem) 0.375rem;
+@media screen and (max-width: 999px) and (max-height: 700px) {
+  #{{ lightbox_id }} .media-lightbox__close,
+  #{{ lightbox_id }} .media-lightbox__prev,
+  #{{ lightbox_id }} .media-lightbox__next,
+  #{{ lightbox_id }} .media-lightbox__cart {
+    --lightbox-stack-step: calc(var(--control-button-size, 1.75rem) + 0.25rem);
   }
 }
 
