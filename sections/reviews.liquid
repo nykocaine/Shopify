@@ -89,6 +89,31 @@ visitor can read on the page are included, with the same average and count shown
   {{- '<!--reviews-ld:' -}}{{- reviews_ld | strip_newlines | remove: '-->' -}}{{- ':reviews-ld-->' -}}
 {%- endif -%}
 
+{%- comment -%}
+The reviews' texts for the Instagram Feed's zoom view (sections/instagram-feed.liquid shows them, one at a time, over the video): a hidden
+block of data on the page, read by that section when a video is opened. It holds only what the visitor can already read here.
+{%- endcomment -%}
+{%- if review_blocks.size > 0 -%}
+  {%- assign lightbox_reviews_printed = 0 -%}
+  <script type="application/json" data-reviews-lightbox>
+    [
+      {%- for review_block in review_blocks -%}
+        {%- assign lightbox_review_text = review_block.settings.body | strip_html | strip | truncate: 160 -%}
+
+        {%- if lightbox_review_text == blank -%}
+          {%- assign lightbox_review_text = review_block.settings.title | strip_html | strip -%}
+        {%- endif -%}
+
+        {%- if lightbox_review_text != blank -%}
+          {%- assign lightbox_reviews_printed = lightbox_reviews_printed | plus: 1 -%}
+          {%- if lightbox_reviews_printed > 1 -%},{%- endif -%}
+          {{ lightbox_review_text | json }}
+        {%- endif -%}
+      {%- endfor -%}
+    ]
+  </script>
+{%- endif -%}
+
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_reviews %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_reviews %} style="border-radius: {{ section.settings.reviews_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div id="reviews-{{ section.id }}" class="reviews section-stack">
