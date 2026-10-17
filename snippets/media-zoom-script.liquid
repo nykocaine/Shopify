@@ -54,8 +54,12 @@ progress bar) are simply skipped when no carousel_id is given.
             // Go through the <video-media> wrapper's own pause(), not the raw <video> tag directly:
             // the wrapper tracks its own "playing" state and only the wrapper's play()/pause() keep
             // that state (and the "loaded" attribute driving its CSS) in sync.
+            //
+            // An autoplaying video (the Instagram feed) is left alone: it plays while it is on screen and the theme's own
+            // visibility rule pauses it when it leaves, whichever cell the carousel has selected. Pausing it here stopped
+            // every visible video but the selected one, and it then never started again (the poster stayed on screen).
             var otherVideoMedia = cell.querySelector('video-media');
-            if (otherVideoMedia) {
+            if (otherVideoMedia && !otherVideoMedia.hasAttribute('autoplay')) {
               otherVideoMedia.pause();
             }
           }
@@ -551,7 +555,17 @@ progress bar) are simply skipped when no carousel_id is given.
             lightboxSoundOn = !video.muted;
           }
 
-          media.videoMedia.pause();
+          // An autoplaying video goes back to playing in its thumbnail if it is on screen: the pause is not "on purpose"
+          if (media.videoMedia.hasAttribute('autoplay')) {
+            media.videoMedia.pause({ manual: false });
+            setTimeout(function() {
+              if (typeof media.videoMedia._ensurePlaying === 'function') {
+                media.videoMedia._ensurePlaying(3);
+              }
+            }, 600);
+          } else {
+            media.videoMedia.pause();
+          }
         }
 
         if (element && media.image && 'lightboxSizes' in element.dataset) {
@@ -996,7 +1010,7 @@ progress bar) are simply skipped when no carousel_id is given.
         var carriedSound = outgoingVideo ? !outgoingVideo.muted : lightboxSoundOn;
 
         if (outgoingMedia.videoMedia) {
-          outgoingMedia.videoMedia.pause();
+          outgoingMedia.videoMedia.pause(outgoingMedia.videoMedia.hasAttribute('autoplay') ? { manual: false } : undefined);
         }
 
         lightboxSoundOn = carriedSound;
