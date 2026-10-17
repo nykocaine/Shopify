@@ -424,9 +424,10 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             });
 
             {%- comment -%}
-            Zoom view: soft fades at the top and the bottom of the video and, over the lower part, the reviews of the page's Reviews section
-            (a hidden block of data that section leaves on the page), one at a time, rotating every "Review rotation time" seconds. The
-            elements are built when a video is opened and only exist inside it; CSS keeps them clear of the logo and the buttons.
+            Zoom view: the reviews of the page's Reviews section (a hidden block of data that section leaves on the page) over the lower part
+            of the video, in a rounded container: the stars, the name and the text of one review at a time, rotating every "Review rotation
+            time" seconds. The container is built when a video is opened and only exists inside it; CSS keeps it clear of the logo and
+            the buttons.
             {%- endcomment -%}
             var reviewSeconds = parseFloat(document.getElementById('{{ instagram_feed_id }}').getAttribute('data-review-seconds'));
             var lightboxReviews = null;
@@ -451,43 +452,70 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
             if (reviewSeconds > 0) {
               Array.prototype.forEach.call(carousel.querySelectorAll('video-media'), function (videoMedia) {
-                var fade = null;
-                var textBox = null;
+                var card = null;
+                var content = null;
+                var starsElement = null;
+                var nameElement = null;
                 var textElement = null;
                 var timer = null;
                 var index = 0;
                 var running = false;
 
                 function build() {
-                  fade = document.createElement('div');
-                  fade.className = 'lightbox-fade';
-                  fade.setAttribute('aria-hidden', 'true');
-                  fade.innerHTML = '<span class="lightbox-fade__top"></span><span class="lightbox-fade__bottom"></span>';
-                  videoMedia.appendChild(fade);
-
-                  if (getLightboxReviews().length) {
-                    textBox = document.createElement('div');
-                    textBox.className = 'lightbox-reviews';
-                    textElement = document.createElement('p');
-                    textElement.className = 'lightbox-reviews__text';
-                    textBox.appendChild(textElement);
-                    videoMedia.appendChild(textBox);
+                  if (!getLightboxReviews().length) {
+                    return;
                   }
+
+                  card = document.createElement('div');
+                  card.className = 'lightbox-reviews';
+                  content = document.createElement('div');
+                  content.className = 'lightbox-reviews__content';
+                  starsElement = document.createElement('span');
+                  starsElement.className = 'lightbox-reviews__stars';
+                  nameElement = document.createElement('span');
+                  nameElement.className = 'lightbox-reviews__name';
+                  textElement = document.createElement('p');
+                  textElement.className = 'lightbox-reviews__text';
+
+                  var head = document.createElement('div');
+                  head.className = 'lightbox-reviews__head';
+                  head.appendChild(starsElement);
+                  head.appendChild(nameElement);
+                  content.appendChild(head);
+                  content.appendChild(textElement);
+                  card.appendChild(content);
+                  videoMedia.appendChild(card);
                 }
 
                 function showReview() {
                   var reviews = getLightboxReviews();
 
-                  if (!textElement || !reviews.length) {
+                  if (!card || !reviews.length) {
                     return;
                   }
 
-                  textElement.textContent = reviews[index % reviews.length];
-                  textElement.classList.add('is-visible');
+                  var review = reviews[index % reviews.length];
+                  var rating = Math.max(0, Math.min(5, Math.round(review.rating || 0)));
+
+                  starsElement.setAttribute('role', 'img');
+                  starsElement.setAttribute('aria-label', rating + ' / 5');
+                  starsElement.textContent = '';
+
+                  for (var star = 1; star <= 5; star += 1) {
+                    var starElement = document.createElement('span');
+
+                    starElement.textContent = '\u2605';
+                    starElement.className = star <= rating ? 'is-filled' : 'is-empty';
+                    starsElement.appendChild(starElement);
+                  }
+
+                  nameElement.textContent = review.name || '';
+                  textElement.textContent = review.text || '';
+                  content.classList.add('is-visible');
                 }
 
                 function nextReview() {
-                  textElement.classList.remove('is-visible');
+                  content.classList.remove('is-visible');
 
                   setTimeout(function () {
                     index += 1;
@@ -498,14 +526,14 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                 function start() {
                   running = true;
 
-                  if (!fade) {
+                  if (!card) {
                     build();
                   }
 
                   index = 0;
                   showReview();
 
-                  if (textElement && getLightboxReviews().length > 1) {
+                  if (card && getLightboxReviews().length > 1) {
                     timer = setInterval(nextReview, Math.max(1500, reviewSeconds * 1000));
                   }
                 }
@@ -514,8 +542,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                   running = false;
                   clearInterval(timer);
 
-                  if (textElement) {
-                    textElement.classList.remove('is-visible');
+                  if (content) {
+                    content.classList.remove('is-visible');
                   }
                 }
 
@@ -1092,59 +1120,66 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   {%- endif -%}
 
   {%- comment -%}
-  Zoom view overlays (built by the script, only inside the expanded video). The fades are colorless: a blur that dissolves toward
-  the video (a mask), so the edge softens without darkening or tinting it. The reviews sit above the logo, left of the column of
-  buttons: they stop short of it on the right and are never taller than that column (heart, sound, pause), two lines at most.
+  Zoom view: the reviews (built by the script, only inside the expanded video) in a container with the drawers' rounded corners
+  (--drawer-border-radius), above the logo and left of the column of buttons: it stops short of that column on the right and is
+  never taller than it (heart, sound, pause). The stars and the name on one line, the text under them, two lines at most.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .lightbox-fade,
   #shopify-section-{{ section.id }} .lightbox-reviews {
     display: none;
-  }
-
-  #shopify-section-{{ section.id }} video-media.is-lightbox-expanded > .lightbox-fade {
-    display: block;
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    border-radius: inherit;
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  #shopify-section-{{ section.id }} .lightbox-fade__top,
-  #shopify-section-{{ section.id }} .lightbox-fade__bottom {
-    position: absolute;
-    inset-inline: 0;
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-  }
-
-  #shopify-section-{{ section.id }} .lightbox-fade__top {
-    inset-block-start: 0;
-    height: 20%;
-    -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
-    mask-image: linear-gradient(to bottom, #000, transparent);
-  }
-
-  #shopify-section-{{ section.id }} .lightbox-fade__bottom {
-    inset-block-end: 0;
-    height: 32%;
-    -webkit-mask-image: linear-gradient(to top, #000, transparent);
-    mask-image: linear-gradient(to top, #000, transparent);
   }
 
   #shopify-section-{{ section.id }} video-media.is-lightbox-expanded > .lightbox-reviews {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: center;
     position: absolute;
     z-index: 3;
     inset-inline-start: 0.75rem;
     inset-inline-end: calc(var(--control-button-size, 1.75rem) + 1.5rem);
     inset-block-end: 5rem;
     max-height: calc(3 * var(--control-button-size, 1.75rem) + 2rem);
+    padding: 0.625rem 0.875rem;
     overflow: hidden;
+    border-radius: var(--drawer-border-radius);
+    background: rgb(var(--background) / 0.92);
+    color: rgb(var(--text-color));
     pointer-events: none;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-reviews__content {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-reviews__content.is-visible {
+    opacity: 1;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-reviews__head {
+    display: flex;
+    align-items: center;
+    column-gap: 0.5rem;
+    margin-block-end: 0.25rem;
+    min-width: 0;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-reviews__stars {
+    flex: none;
+    font-size: 0.75rem;
+    line-height: 1;
+    letter-spacing: 0.05em;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-reviews__stars .is-empty {
+    opacity: 0.25;
+  }
+
+  #shopify-section-{{ section.id }} .lightbox-reviews__name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: var(--text-font-style) 600 0.75rem / 1.2 var(--text-font-family);
   }
 
   #shopify-section-{{ section.id }} .lightbox-reviews__text {
@@ -1155,13 +1190,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     line-clamp: 2;
     overflow: hidden;
     font: var(--text-font-style) var(--text-font-weight) 0.8125rem / 1.35 var(--text-font-family);
-    color: var(--control-button-icon-color, #ffffff);
-    opacity: 0;
-    transition: opacity 0.25s ease;
-  }
-
-  #shopify-section-{{ section.id }} .lightbox-reviews__text.is-visible {
-    opacity: 1;
   }
 
   {%- comment -%}
@@ -1651,8 +1679,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     {
       "type": "checkbox",
       "id": "show_lightbox_reviews",
-      "label": "Reviews and soft fades over the video",
-      "info": "In the zoom view of a video: the edges fade softly (top and bottom, no color) and the reviews of this page's Reviews section show over the lower part, one at a time. Needs a Reviews section on the same page.",
+      "label": "Reviews over the video",
+      "info": "In the zoom view of a video, the reviews of this page's Reviews section show over the lower part, in a rounded container with the stars, the name and the text, one review at a time. Needs a Reviews section on the same page.",
       "default": true
     },
     {
