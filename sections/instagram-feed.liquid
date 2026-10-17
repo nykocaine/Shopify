@@ -1003,9 +1003,31 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     display: none;
   }
 
+  {%- comment -%}
+  The heart is just the icon: no round background and no border, unlike the play / pause / sound buttons. Same size as them (the
+  control button size, so it lines up in the column) and the same icon color; red and filled once liked.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .carousel-video-like-toggle {
+    display: grid;
+    place-content: center;
+    width: var(--control-button-size, 1.75rem);
+    height: var(--control-button-size, 1.75rem);
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--control-button-icon-color, #ffffff);
+    cursor: pointer;
+    transition: color 0.2s ease, scale 0.2s ease;
+  }
+
   #shopify-section-{{ section.id }} .carousel-video-like-toggle .icon path {
     fill: transparent;
     transition: fill 0.2s ease;
+  }
+
+  #shopify-section-{{ section.id }} .carousel-video-like-toggle[aria-pressed="true"] {
+    color: #e5243b;
+    scale: 1.1;
   }
 
   #shopify-section-{{ section.id }} .carousel-video-like-toggle[aria-pressed="true"] .icon path {
