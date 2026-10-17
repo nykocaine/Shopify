@@ -506,6 +506,26 @@
       }
 
       {%- comment -%}
+      Small boxed note right under the tabs, phones only (hidden from 700px, where the tabs share the
+      row with nothing and fit without scrolling). Same row-gap the header already uses (1.8rem)
+      separates it from the questions below via .faq--full-width's own margin.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .faq__tabs-hint {
+        margin-block: .75rem 0;
+        padding: .75rem 1rem;
+        border: 1px solid rgb(var(--text-color) / .3);
+        border-radius: {{ section.settings.faq_border_radius | at_least: 8 }}px;
+        font-size: var(--text-sm);
+        color: rgb(var(--text-color) / .8);
+      }
+
+      @media screen and (min-width: 700px) {
+        #shopify-section-{{ section.id }} .faq__tabs-hint {
+          display: none;
+        }
+      }
+
+      {%- comment -%}
       Edge fade instead of a hard-clipped cut when the tab row overflows and scrolls (script further
       down toggles is-overflowing/at-start/at-end on .faq__categories itself, based on the tablist's
       own scroll position). Starts right-only (there's nothing to scroll back to yet); once the
@@ -752,6 +772,10 @@
       <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_faq %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_faq %} style="border-radius: {{ section.settings.faq_border_radius }}px; overflow: hidden;"{% endif %}>
         <div class="container faq__container">
           {{- section_header -}}
+
+          {%- if section.settings.tabs_hint != blank -%}
+            <p class="faq__tabs-hint">{{ section.settings.tabs_hint }}</p>
+          {%- endif -%}
 
           <div class="faq faq--full-width">
             {%- if faq_leading_content != blank -%}
@@ -1030,6 +1054,13 @@
       "label": "t:global.colors.scheme",
       "default": "scheme-2",
       "visible_if": "{{ section.settings.show_questions_card }}"
+    },
+    {
+      "type": "text",
+      "id": "tabs_hint",
+      "label": "Note under the tabs (phones only)",
+      "info": "With tabs: small box shown under the tabs on phones. Leave blank to hide it.",
+      "default": "Navega entre las pestañas de arriba para leer toda la información de este producto. Infórmate bien y verifica todo antes de comprar."
     },
     {
       "type": "inline_richtext",
