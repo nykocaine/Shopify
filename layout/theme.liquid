@@ -1,3 +1,9 @@
+{%- comment -%}The page content is rendered first, so the head can use what its sections hand over (the reviews' structured data, see sections/reviews.liquid){%- endcomment -%}
+{%- capture main_content -%}{{ content_for_layout }}{%- endcapture -%}
+{%- assign reviews_ld = '' -%}
+{%- if request.page_type == 'product' and main_content contains '<!--reviews-ld:' -%}
+  {%- assign reviews_ld = main_content | split: '<!--reviews-ld:' | last | split: ':reviews-ld-->' | first -%}
+{%- endif -%}
 <!doctype html>
 
 <html lang="{{ request.locale.iso_code }}" dir="{% render 'direction' %}">
@@ -39,7 +45,7 @@
     {%- endunless -%}
 
     {%- render 'social-meta-tags' -%}
-    {%- render 'microdata-schema' -%}
+    {%- render 'microdata-schema', reviews_ld: reviews_ld -%}
     {%- render 'css-variables' -%}
     {%- render 'js-variables' -%}
 
@@ -116,7 +122,6 @@
     - no <h1> in the content: a visually hidden one is added (the shop name on the home page, the page title elsewhere);
     - more than one: the first stays and the others become <h2> (same classes, so they look the same).
     {%- endcomment -%}
-    {%- capture main_content -%}{{ content_for_layout }}{%- endcapture -%}
     {%- assign h1_parts = main_content | split: '<h1' -%}
     {%- assign needs_fallback_h1 = false -%}
 
