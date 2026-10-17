@@ -464,6 +464,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                 var commentsWidget = commentsBox ? commentsBox.querySelector('.carousel-video-comments') : null;
                 var controlsGroup = commentsBox ? commentsBox.querySelector('.carousel-video-controls') : null;
                 var lightboxElement = document.getElementById('{{ instagram_lightbox_id }}');
+                var desktopQuery = window.matchMedia('(min-width: 1000px)');
                 var panel = null;
 
                 function setCommentsOpen(open) {
@@ -474,7 +475,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                   }
 
                   if (lightboxElement) {
-                    lightboxElement.classList.toggle('is-comments-open', open);
+                    lightboxElement.classList.toggle('is-comments-open', open && !desktopQuery.matches);
                   }
 
                   if (commentsWidget) {
@@ -554,6 +555,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                 function showCommentsWidget() {
                   if (commentsWidget && getLightboxReviews().length) {
                     commentsWidget.hidden = false;
+                    document.getElementById('{{ instagram_feed_id }}').classList.add('has-side-comments');
                     commentsWidget.querySelector('.carousel-video-comments__count').textContent = getLightboxReviews().length.toLocaleString();
                   }
                 }
@@ -576,9 +578,22 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                   });
                 }
 
+                {%- comment -%}
+                On desktop the reviews are always open beside the video as soon as it is expanded (there is no button to open or close them);
+                on mobile they only open with the comments button.
+                {%- endcomment -%}
                 new MutationObserver(function () {
                   if (!videoMedia.classList.contains('is-lightbox-expanded')) {
                     setCommentsOpen(false);
+                    return;
+                  }
+
+                  if (desktopQuery.matches && getLightboxReviews().length && !videoMedia.classList.contains('is-comments-open')) {
+                    if (!panel) {
+                      buildPanel();
+                    }
+
+                    setCommentsOpen(true);
                   }
                 }).observe(videoMedia, { attributes: true, attributeFilter: ['class'] });
               });
@@ -1268,13 +1283,27 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   left so video + panel stay centered together; the panel is as tall as the video and fades in beside it.
   {%- endcomment -%}
   @media screen and (min-width: 1000px) {
-    #shopify-section-{{ section.id }} video-media.is-lightbox-expanded {
-      transition: translate 0.45s cubic-bezier(0.32, 0.72, 0, 1), width 0.45s cubic-bezier(0.32, 0.72, 0, 1);
+    {%- comment -%}
+    The feed gets .has-side-comments (script above) when the page has reviews. From then on, on desktop, every expanded video keeps room
+    for the panel from the first frame (nothing resizes or moves when it opens): the video's box is narrower by the panel and the room
+    for the lightbox's own buttons, and video + panel are centered together. The video's buttons follow it.
+    {%- endcomment -%}
+    #{{ instagram_feed_id }}.has-side-comments {
+      --lightbox-media-w: calc(96vw - 33rem);
+      --lightbox-side-shift: 13rem;
     }
 
-    #shopify-section-{{ section.id }} video-media.is-lightbox-expanded.is-comments-open {
-      --lightbox-media-w: calc(96vw - 27rem);
-      translate: calc(-50% - 13.5rem) -50%;
+    #{{ instagram_feed_id }}.has-side-comments video-media.is-lightbox-expanded {
+      translate: calc(-50% - var(--lightbox-side-shift)) -50%;
+    }
+
+    #{{ instagram_feed_id }}.has-side-comments .carousel-video-controls.is-lightbox-expanded {
+      translate: calc(var(--lightbox-box-w) / 2 - 100% - 0.75rem - var(--lightbox-side-shift)) calc(var(--lightbox-box-h) / 2 - 100% - 1.75rem);
+    }
+
+    #{{ instagram_feed_id }}.has-side-comments .carousel-video-comments,
+    #{{ instagram_feed_id }}.has-side-comments .lightbox-comments__close {
+      display: none;
     }
 
     #shopify-section-{{ section.id }} video-media.is-lightbox-expanded > .lightbox-comments {
@@ -1369,24 +1398,30 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  #shopify-section-{{ section.id }} video-media.is-comments-open::after,
-  #shopify-section-{{ section.id }} video-media.is-comments-open > .lightbox-scrubber {
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
+  {%- comment -%}
+  Mobile only: while the reviews panel covers the bottom of the video, everything else over it is hidden. On desktop the panel sits beside
+  the video, so nothing is hidden: the buttons, the arrows and the progress line stay visible.
+  {%- endcomment -%}
+  @media screen and (max-width: 999px) {
+    #shopify-section-{{ section.id }} video-media.is-comments-open::after,
+    #shopify-section-{{ section.id }} video-media.is-comments-open > .lightbox-scrubber {
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
 
-  #shopify-section-{{ section.id }} .carousel-video-controls.is-lightbox-expanded.is-comments-open {
-    opacity: 0 !important;
-    visibility: hidden;
-    pointer-events: none !important;
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.3s !important;
-  }
+    #shopify-section-{{ section.id }} .carousel-video-controls.is-lightbox-expanded.is-comments-open {
+      opacity: 0 !important;
+      visibility: hidden;
+      pointer-events: none !important;
+      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.3s !important;
+    }
 
-  #{{ instagram_lightbox_id }}.is-comments-open .media-lightbox__prev,
-  #{{ instagram_lightbox_id }}.is-comments-open .media-lightbox__next,
-  #{{ instagram_lightbox_id }}.is-comments-open .media-lightbox__cart {
-    opacity: 0;
-    pointer-events: none;
+    #{{ instagram_lightbox_id }}.is-comments-open .media-lightbox__prev,
+    #{{ instagram_lightbox_id }}.is-comments-open .media-lightbox__next,
+    #{{ instagram_lightbox_id }}.is-comments-open .media-lightbox__cart {
+      opacity: 0;
+      pointer-events: none;
+    }
   }
 
   {%- comment -%}
