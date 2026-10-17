@@ -4240,10 +4240,40 @@ var BaseMedia = class extends HTMLElement {
     this._abortController = new AbortController();
     if (this.hasAttribute("autoplay")) {
       inView7(this, this.play.bind(this), { margin: "0px 0px 0px 0px" });
+      this.#watchVisibility();
     }
   }
   disconnectedCallback() {
     this._abortController.abort();
+    this._visibilityObserver?.disconnect();
+  }
+  /**
+   * Rule for every autoplaying video (carousels, feeds, backgrounds): it plays while it is on screen, is paused when it
+   * leaves the screen (battery and data), and starts again every time it comes back, instead of staying stopped - the
+   * theme only calls play() the first time a video comes into view, and mobile browsers pause muted inline videos that
+   * leave the screen on their own. A video that was paused on purpose (pause() called by a visitor action, a carousel
+   * moving to another slide, a group...) is left alone until something plays it again.
+   */
+  #watchVisibility() {
+    if (this.hasAttribute("host") || !("IntersectionObserver" in window)) {
+      return;
+    }
+    this._visibilityObserver?.disconnect();
+    this._visibilityObserver = new IntersectionObserver((entries) => {
+      const entry = entries[entries.length - 1];
+      if (entry.isIntersecting) {
+        if (this._autoPaused) {
+          this._autoPaused = false;
+          this.play();
+        }
+      } else if (this.hasAttribute("autoplay") && !this._manualPause && !this._autoPaused) {
+        this._autoPaused = true;
+        if (this.playing) {
+          this.player.pause();
+        }
+      }
+    });
+    this._visibilityObserver.observe(this);
   }
   get playing() {
     return this.hasAttribute("playing");
@@ -4264,6 +4294,7 @@ var BaseMedia = class extends HTMLElement {
     }
   }
   pause() {
+    this._manualPause = true;
     if (this.playing) {
       this.player.pause();
     }
@@ -4271,6 +4302,8 @@ var BaseMedia = class extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "playing") {
       if (oldValue === null && newValue === "") {
+        this._manualPause = false;
+        this._autoPaused = false;
         this.dispatchEvent(new CustomEvent("media:play", { bubbles: true }));
         if (this.hasAttribute("group")) {
           Array.from(document.querySelectorAll(`[group="${this.getAttribute("group")}"]`)).filter((item) => item !== this).forEach((itemToPause) => {
