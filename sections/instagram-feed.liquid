@@ -1972,6 +1972,22 @@ the first available one); the click is handled by the script near the lightbox b
   {%- endif -%}
 
   {%- comment -%}
+  Desktop (mouse): the zoom button on the video thumbnails only shows while the cursor is over the video (or the
+  button has keyboard focus). Touch devices are untouched. The expanded lightbox state is excluded.
+  {%- endcomment -%}
+  @media (hover: hover) and (pointer: fine) {
+    #shopify-section-{{ section.id }} .instagram-feed__video-cell .content-box:not(:has(.is-lightbox-expanded)) .product-zoom-button {
+      opacity: 0;
+      transition: opacity .2s ease;
+    }
+
+    #shopify-section-{{ section.id }} .instagram-feed__video-cell .content-box:not(:has(.is-lightbox-expanded)):hover .product-zoom-button,
+    #shopify-section-{{ section.id }} .instagram-feed__video-cell .content-box .product-zoom-button:focus-visible {
+      opacity: 1;
+    }
+  }
+
+  {%- comment -%}
   object-fit: cover/display: block for the image case come from the theme's global img rule, and
   the square shape from the existing .aspect-square utility (both in assets/theme.css) - only the
   width (to fill its grid column) and the corner radius are added here.
