@@ -1239,6 +1239,14 @@ the first available one); the click is handled by the script near the lightbox b
     display: flex;
   }
 
+  {%- comment -%}
+  Space between the header (title, subtitle, button) and the carousel: doubled. .section-stack already puts
+  --section-stack-row-gap between its children; this adds the same amount again below the header.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__header {
+    margin-block-end: var(--section-stack-row-gap);
+  }
+
   #shopify-section-{{ section.id }} .instagram-feed__content {
     min-width: 0;
     flex: 1;
