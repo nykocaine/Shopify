@@ -30,6 +30,19 @@
         assign has_mobile_image = true
       endif
 
+      # "Image as background": the image(s) fill the whole popup and the content sits on top of them. Desktop uses the
+      # desktop image, phones the mobile one - each falls back to the other when only one is set.
+      assign image_as_background = false
+      assign bg_image_desktop = nil
+      assign bg_image_mobile = nil
+
+      if section.settings.image_as_background and section.settings.image != blank or section.settings.image_as_background and section.settings.image_mobile != blank
+        assign image_as_background = true
+        assign bg_image_desktop = section.settings.image | default: section.settings.image_mobile
+        assign bg_image_mobile = section.settings.image_mobile | default: section.settings.image
+        assign bg_overlay_alpha = section.settings.bg_overlay_opacity | divided_by: 100.0
+      endif
+
       assign align_mobile = section.settings.text_alignment_mobile
       assign align_desktop = section.settings.text_alignment_desktop
       assign justify_mobile = 'flex-start'
@@ -117,6 +130,48 @@
         @media screen and (max-width: 999px) {
           .newsletter-popup__image--desktop {
             display: none;
+          }
+        }
+      {%- endif -%}
+
+      {%- if image_as_background -%}
+        {%- comment -%}
+        Image as background: the picture covers the whole popup (cropped, never distorted), a flat overlay of the chosen
+        color and strength keeps the text readable, and the content - and the close button, which inherits the color
+        from the popup - is drawn on top in the chosen text color. The side-by-side image blocks are not shown. Same
+        radius/clipping as above. !important because the popup's own background comes from its color scheme.
+        {%- endcomment -%}
+        .modal--newsletter {
+          color: {{ section.settings.bg_text_color }};
+        }
+
+        .modal--newsletter::part(content) {
+          background-image: linear-gradient(rgba({{ section.settings.bg_overlay_color.red }}, {{ section.settings.bg_overlay_color.green }}, {{ section.settings.bg_overlay_color.blue }}, {{ bg_overlay_alpha }}), rgba({{ section.settings.bg_overlay_color.red }}, {{ section.settings.bg_overlay_color.green }}, {{ section.settings.bg_overlay_color.blue }}, {{ bg_overlay_alpha }})), url('{{ bg_image_mobile | image_url: width: 1000 }}') !important;
+          background-size: cover !important;
+          background-position: center !important;
+          background-repeat: no-repeat !important;
+          min-height: min(26rem, 80svh);
+          align-content: end;
+        }
+
+        .newsletter-popup__image {
+          display: none !important;
+        }
+
+        .newsletter-popup__content,
+        .newsletter-popup__content .text-subdued {
+          color: inherit;
+        }
+
+        .newsletter-popup__content .text-subdued {
+          opacity: .8;
+        }
+
+        @media screen and (min-width: 1000px) {
+          .modal--newsletter::part(content) {
+            background-image: linear-gradient(rgba({{ section.settings.bg_overlay_color.red }}, {{ section.settings.bg_overlay_color.green }}, {{ section.settings.bg_overlay_color.blue }}, {{ bg_overlay_alpha }}), rgba({{ section.settings.bg_overlay_color.red }}, {{ section.settings.bg_overlay_color.green }}, {{ section.settings.bg_overlay_color.blue }}, {{ bg_overlay_alpha }})), url('{{ bg_image_desktop | image_url: width: 1600 }}') !important;
+            grid-template-columns: minmax(0, 34rem) !important;
+            min-height: min(30rem, 80svh);
           }
         }
       {%- endif -%}
@@ -297,6 +352,39 @@
       "id": "image_mobile",
       "label": "Imagen para móvil",
       "info": "Opcional. Si la dejas vacía, en móvil se usa la imagen de escritorio."
+    },
+    {
+      "type": "checkbox",
+      "id": "image_as_background",
+      "label": "Usar la imagen como fondo de todo el popup",
+      "info": "La imagen de escritorio y la de móvil cubren todo el contenedor, y el contenido va encima. Si solo subes una, se usa en las dos.",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "bg_overlay_color",
+      "label": "Capa sobre la imagen",
+      "default": "#000000",
+      "visible_if": "{{ section.settings.image_as_background }}"
+    },
+    {
+      "type": "range",
+      "id": "bg_overlay_opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Intensidad de la capa",
+      "info": "Oscurece (o aclara) la imagen para que el texto se lea bien.",
+      "default": 30,
+      "visible_if": "{{ section.settings.image_as_background }}"
+    },
+    {
+      "type": "color",
+      "id": "bg_text_color",
+      "label": "Color del texto sobre la imagen",
+      "default": "#ffffff",
+      "visible_if": "{{ section.settings.image_as_background }}"
     },
     {
       "type": "text_alignment",
