@@ -9,6 +9,30 @@
   that section wrapper, where a section-scoped rule no longer matches (the radius and the square never applied).
   {%- endcomment -%}
   <style>
+    {%- comment -%}
+    Phones: same behavior as the menu drawer and the search drawer - it unfolds from right below the header (header
+    and anything above it stay visible and un-blurred), with the side gutters, the gap at the bottom and the rounded
+    corners (--drawer-border-radius). --menu-offset-top (the header's current bottom edge) is written by the script
+    below. The #cart-drawer id wins over the generic ".drawer-mobile-centered" floating-card rules.
+    {%- endcomment -%}
+    @media screen and (max-width: 699px) {
+      #cart-drawer::part(overlay) {
+        inset-block-start: var(--menu-offset-top, 0px);
+      }
+
+      #cart-drawer::part(content) {
+        position: fixed;
+        inset-block-start: calc(var(--menu-offset-top, 0px) + .5rem);
+        inset-block-end: auto;
+        inset-inline: var(--container-gutter);
+        width: auto;
+        max-width: none;
+        height: calc(100dvh - var(--menu-offset-top, 0px) - .5rem - var(--drawer-block-gap));
+        border-block-start: none;
+        border-radius: var(--drawer-border-radius);
+      }
+    }
+
     #cart-drawer .line-item__media {
       border-radius: var(--drawer-border-radius);
       overflow: hidden;
@@ -32,6 +56,62 @@
       align-self: end;
     }
   </style>
+
+  <script>
+    (function () {
+      if (window.cartDrawerOffsets) return;
+      window.cartDrawerOffsets = true;
+
+      // The cart drawer can be replaced in the DOM when the cart changes, and the dialog events don't bubble, so
+      // they are caught in the capture phase on the document instead of on the element.
+      var phone = window.matchMedia('(max-width: 699px)');
+      var wasSolid = false;
+
+      function drawer() {
+        return document.getElementById('cart-drawer');
+      }
+
+      function calculateOffsets() {
+        var el = drawer();
+        var header = document.querySelector('x-header');
+        if (!el || !el.hasAttribute('open')) return;
+
+        var dpr = window.devicePixelRatio || 1;
+        var offset = header ? Math.max(Math.round(header.getBoundingClientRect().bottom * dpr) / dpr, 0) : 0;
+        el.style.setProperty('--menu-offset-top', offset + 'px');
+      }
+
+      document.addEventListener('dialog:before-show', function (event) {
+        var el = drawer();
+        if (!el || event.target !== el) return;
+
+        calculateOffsets();
+        requestAnimationFrame(calculateOffsets);
+
+        if (phone.matches) {
+          var header = document.querySelector('x-header');
+          wasSolid = header ? header.classList.contains('is-solid') : false;
+          el.dispatchEvent(new CustomEvent('header:disable-transparent-header', { bubbles: true }));
+        }
+      }, true);
+
+      document.addEventListener('dialog:after-show', function (event) {
+        if (event.target === drawer()) calculateOffsets();
+      }, true);
+
+      document.addEventListener('dialog:after-hide', function (event) {
+        var el = drawer();
+        if (!el || event.target !== el) return;
+
+        if (phone.matches && !wasSolid) {
+          el.dispatchEvent(new CustomEvent('header:allow-transparent-header', { bubbles: true }));
+        }
+      }, true);
+
+      window.addEventListener(window.onscrollend !== undefined ? 'scrollend' : 'scroll', calculateOffsets);
+      window.addEventListener('resize', calculateOffsets);
+    })();
+  </script>
 
   {%- if section.settings.mobile_only -%}
     {%- comment -%}
