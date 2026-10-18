@@ -29,8 +29,10 @@ independent from the rest of the theme's buttons.
   assign label_core = label_last | remove: '.' | remove: ',' | remove: '!' | remove: '?' | remove: ':'
   assign label_tail = label_last | remove: label_core
   assign label_head = label_safe | replace_last: label_last, ''
-  assign button_text_html = label_head | append: '<span class="whatsapp-buy-button__last">' | append: label_core | append: '</span>' | append: label_tail
 -%}
+
+{%- comment -%}Markup written out as a template (not built by string appends) so it is output as real HTML, never as visible text{%- endcomment -%}
+{%- capture button_text_html -%}{{ label_head }}<span class="whatsapp-buy-button__last">{{ label_core }}</span>{{ label_tail }}{%- endcapture -%}
 
 {%- comment -%} Without a number the link would be a dead wa.me/?text=..., so nothing is rendered until the block is filled in {%- endcomment -%}
 {%- if wa_phone != blank and button_text != blank -%}
@@ -51,7 +53,7 @@ independent from the rest of the theme's buttons.
   </style>
 
   <a href="{{ wa_href }}" target="_blank" rel="noopener noreferrer" class="link whatsapp-buy-button whatsapp-buy-button--link">
-    {{- button_text_html -}}
+    {{- label_head -}}<span class="whatsapp-buy-button__last">{{- label_core -}}</span>{{- label_tail -}}
   </a>
 {%- else -%}
   {%- comment -%}
