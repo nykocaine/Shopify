@@ -8608,39 +8608,32 @@ shopify-account::part(signed-out-avatar) {
   margin-inline-start: auto;
 }
 
+/* Floating bar: full page width minus the theme's side gutter (same gutter the WhatsApp button uses),
+   rounded with the product section's corner radius (--sticky-atc-radius, set inline by the snippet). */
 .product-sticky-add-to-cart {
   z-index: 2;
   visibility: hidden;
   opacity: 0;
-  border-width: 1px;
+  border: 1px solid rgb(var(--border-color));
+  border-radius: var(--sticky-atc-radius, 12px);
+  background: rgb(var(--background));
   grid-template-columns: minmax(0, 1fr);
   grid-auto-flow: column;
   justify-content: space-between;
   align-items: center;
-  width: min(100%, 40rem);
-  padding: 1rem 2rem 1rem 1rem;
+  width: auto;
+  padding: .75rem 1rem;
   transition: opacity .2s ease-in-out, visibility .2s ease-in-out;
   display: grid;
   position: fixed;
-  inset-block-end: 1.75rem;
-  inset-inline-end: 1.75rem;
-  box-shadow: 0 2px 4px #0000000d;
+  inset-block-end: var(--container-gutter);
+  inset-inline: var(--container-gutter);
+  box-shadow: 0 2px 8px #0000001a;
 }
 
 .product-sticky-add-to-cart.is-visible {
   visibility: visible;
   opacity: 1;
-}
-
-@media screen and (max-width: 699px) {
-  .product-sticky-add-to-cart {
-    box-shadow: none;
-    background: none;
-    border: none;
-    padding: 1rem;
-    inset-block-end: 0;
-    inset-inline-start: 0;
-  }
 }
 
 .products-with-image .product-list {

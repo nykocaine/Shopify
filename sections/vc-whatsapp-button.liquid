@@ -166,7 +166,9 @@
   .vc-whatsapp-button-wrapper {
     position: fixed;
     z-index: 106;
-    bottom: var(--container-gutter);
+    /* --sticky-atc-offset: height of the product page's floating add-to-cart bar while it shows (0 otherwise) */
+    bottom: calc(var(--container-gutter) + var(--sticky-atc-offset, 0px));
+    transition: bottom .2s ease-in-out;
     left: var(--wa-left);
     right: var(--wa-right);
     width: fit-content;
@@ -178,7 +180,7 @@
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.6s ease, visibility 0.6s ease;
+    transition: opacity 0.6s ease, visibility 0.6s ease, bottom .2s ease-in-out;
   }
 
   .vc-whatsapp-button-wrapper[data-appear-delay].is-visible {
