@@ -63,7 +63,7 @@ This component is used to render the sticky add to cart.
         // Absolute bottom position for the WhatsApp button: the top of the bar (its own distance from the
         // screen's bottom edge + its height) plus a 10px gap. Removed when the bar hides, so the button
         // falls back to its normal position.
-        if (bar.classList.contains('is-visible')) {
+        if (bar.classList.contains('is-visible') && bar.offsetHeight > 0) {
           var bottom = parseFloat(getComputedStyle(bar).bottom) || 0;
           document.documentElement.style.setProperty('--sticky-atc-offset', (bottom + bar.offsetHeight + 10) + 'px');
         } else {

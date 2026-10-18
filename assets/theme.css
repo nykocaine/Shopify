@@ -8627,6 +8627,13 @@ shopify-account::part(signed-out-avatar) {
 
 /* Phones only: the button sits flush on the bottom edge of the screen, as if it grew out of it - top
    corners keep the button's own radius, bottom corners are square (+ home-indicator safe area). */
+/* Desktop: no floating add-to-cart (phones only). */
+@media screen and (min-width: 700px) {
+  .product-sticky-add-to-cart {
+    display: none;
+  }
+}
+
 /* No outline on the floating button (the main product's button keeps its own border). */
 .product-sticky-add-to-cart .button {
   --button-border-color: 0 0 0 / 0;
