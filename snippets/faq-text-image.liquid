@@ -299,6 +299,12 @@ media itself - the same <figure>/<figcaption> pattern as blocks/image-with-capti
 
                 this.collapsedHeight = Math.max(minHeight, this.matchTarget.offsetHeight - paddingY - toggleSpace);
 
+                // Snapped down to a whole number of lines so the collapsed box never ends in the
+                // middle of a line (that's what showed up as half-cut letters at the bottom edge).
+                if (lineHeight > 0) {
+                  this.collapsedHeight = Math.max(minHeight, Math.floor(this.collapsedHeight / lineHeight) * lineHeight);
+                }
+
                 if (this.hasAttribute('data-expanded')) {
                   // Keeps the open height in sync with a resize instead of leaving it pinned to
                   // whatever it measured when it was expanded.

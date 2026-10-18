@@ -731,9 +731,16 @@
       clip part of that marker (a bullet, or a two-digit "10."/"11." number) instead of just
       leaving the collapsed/expanding height clip in place.
       {%- endcomment -%}
+      {%- comment -%}
+      overflow-y: clip, not hidden: with overflow-x: visible, "hidden" on the other axis makes the browser
+      compute overflow-x as auto, so the box could clip or scroll the text sideways (cut letters on the
+      left/right edge). "clip" really leaves x visible. The "hidden" line stays as a fallback for
+      browsers that don't know "clip" yet.
+      {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__text-image-text-content {
         overflow-x: visible;
         overflow-y: hidden;
+        overflow-y: clip;
         transition: max-height .3s ease-in-out;
       }
 
