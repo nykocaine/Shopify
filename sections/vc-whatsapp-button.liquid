@@ -495,6 +495,30 @@
   }
 
   document.addEventListener('shopify:section:load', initWhatsappButtons);
+
+  // The product page's "WhatsApp" block (snippets/whatsapp-buy-button.liquid) opens this button's agent list instead
+  // of going straight to one chat, as if the floating button had been tapped. Without agents, or when this button
+  // isn't visible on the current screen, nothing is intercepted and that block's own wa.me link works as a plain link.
+  if (!window.vcWhatsappProductTrigger) {
+    window.vcWhatsappProductTrigger = true;
+
+    document.addEventListener('click', function(event) {
+      var trigger = event.target.closest && event.target.closest('.whatsapp-buy-button');
+      if (!trigger) return;
+
+      var floating = document.querySelector('.vc-whatsapp-button[data-has-agents="true"]');
+      var wrapper = floating && floating.closest('.vc-whatsapp-button-wrapper');
+      if (!floating || !wrapper || wrapper.getClientRects().length === 0) return;
+
+      event.preventDefault();
+      // This button's own "click outside closes the list" handler would otherwise see this click (its target is
+      // outside the wrapper) and close the list right after it opens.
+      event.stopImmediatePropagation();
+
+      wrapper.classList.add('is-visible');
+      floating.click();
+    }, true);
+  }
 })();
 {% endjavascript %}
 

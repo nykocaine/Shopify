@@ -78,9 +78,11 @@ independent from the rest of the theme's buttons.
 {%- endif -%}
 
 {%- comment -%}
-This button acts like the floating WhatsApp button (sections/vc-whatsapp-button.liquid): clicking it opens that
-button's list of agents so the customer can choose, instead of going straight to one chat. Without JS, without a
-visible floating button or without agents there is nothing to open, so the link keeps working as a plain wa.me link.
+This button acts like the floating WhatsApp button: clicking it opens that button's list of agents so the customer
+can choose, instead of going straight to one chat. That behavior lives in ONE place - the script of
+sections/vc-whatsapp-button.liquid, which listens for clicks on ".whatsapp-buy-button" - so this snippet is only
+markup. Without JS, without a visible floating button or without agents there is nothing to open, so the link keeps
+working as a plain wa.me link (the number and message of this block).
 {%- endcomment -%}
 <style>
   .whatsapp-buy-button__last {
@@ -88,26 +90,3 @@ visible floating button or without agents there is nothing to open, so the link 
     text-underline-offset: .2em;
   }
 </style>
-<script>
-  (function () {
-    if (window.waBuyButtonTrigger) return;
-    window.waBuyButtonTrigger = true;
-
-    document.addEventListener('click', function (event) {
-      var trigger = event.target.closest('.whatsapp-buy-button');
-      if (!trigger) return;
-
-      var floating = document.querySelector('.vc-whatsapp-button[data-has-agents="true"]');
-      var wrapper = floating && floating.closest('.vc-whatsapp-button-wrapper');
-      if (!floating || !wrapper || wrapper.getClientRects().length === 0) return;
-
-      event.preventDefault();
-      // The floating button's own "click outside closes the list" handler would otherwise see this click
-      // (target outside its wrapper) and close the list right after it opens.
-      event.stopImmediatePropagation();
-
-      wrapper.classList.add('is-visible');
-      floating.click();
-    }, true);
-  })();
-</script>
