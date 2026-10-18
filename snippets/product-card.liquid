@@ -157,6 +157,31 @@ based on your desired layout (and remove most of the settings associated), and t
     {%- endif -%}
 
     {%- comment -%}
+    Optional decorative icon (eg. a seal/award) over the image: needs the "Show icon on product cards" theme
+    setting AND an SVG/image uploaded in the product's "custom.card_icon" file metafield. Purely decorative
+    and non-interactive, so the whole card stays one clickable link.
+    {%- endcomment -%}
+    {%- if settings.product_card_show_icon -%}
+      {%- liquid
+        assign card_icon = product.metafields.custom.card_icon.value
+        assign card_icon_src = card_icon | image_url: width: 400
+        if card_icon_src == blank
+          assign card_icon_src = card_icon.url
+        endif
+      -%}
+      {%- if card_icon_src != blank -%}
+        <img
+          src="{{ card_icon_src }}"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          class="product-card__icon product-card__icon--{{ settings.product_card_icon_position }}"
+          style="width: {{ settings.product_card_icon_size }}px;"
+        >
+      {%- endif -%}
+    {%- endif -%}
+
+    {%- comment -%}
     Only the image is rounded, not the whole card - .product-card__media already has overflow:
     hidden, so giving it its own radius is enough. Falls back to 0 when no radius is configured.
     {%- endcomment -%}
