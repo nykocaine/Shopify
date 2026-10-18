@@ -36,8 +36,13 @@
       assign bg_image_desktop = nil
       assign bg_image_mobile = nil
 
-      if section.settings.image_as_background and section.settings.image != blank or section.settings.image_as_background and section.settings.image_mobile != blank
+      if section.settings.image_as_background and has_desktop_image
         assign image_as_background = true
+      elsif section.settings.image_as_background and has_mobile_image
+        assign image_as_background = true
+      endif
+
+      if image_as_background
         assign bg_image_desktop = section.settings.image | default: section.settings.image_mobile
         assign bg_image_mobile = section.settings.image_mobile | default: section.settings.image
         assign bg_overlay_alpha = section.settings.bg_overlay_opacity | divided_by: 100.0
