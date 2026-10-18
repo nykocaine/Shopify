@@ -8627,6 +8627,19 @@ shopify-account::part(signed-out-avatar) {
 
 /* Phones only: the button sits flush on the bottom edge of the screen, as if it grew out of it - top
    corners keep the button's own radius, bottom corners are square (+ home-indicator safe area). */
+/* Desktop: no floating add-to-cart (phones only). */
+@media screen and (min-width: 700px) {
+  .product-sticky-add-to-cart {
+    display: none;
+  }
+}
+
+/* No outline on the floating button (the main product's button keeps its own border). */
+.product-sticky-add-to-cart .button {
+  --button-border-color: 0 0 0 / 0;
+  border-color: transparent;
+}
+
 @media screen and (max-width: 699px) {
   .product-sticky-add-to-cart {
     inset-block-end: 0;
@@ -8635,7 +8648,7 @@ shopify-account::part(signed-out-avatar) {
   .product-sticky-add-to-cart .button {
     border-end-start-radius: 0;
     border-end-end-radius: 0;
-    padding-block-end: calc(var(--button-padding-block, .75rem) + env(safe-area-inset-bottom, 0px));
+    padding-block-end: env(safe-area-inset-bottom, 0px);
   }
 }
 
