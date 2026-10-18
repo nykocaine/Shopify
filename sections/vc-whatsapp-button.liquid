@@ -166,8 +166,8 @@
   .vc-whatsapp-button-wrapper {
     position: fixed;
     z-index: 106;
-    /* --sticky-atc-offset: height of the product page's floating add-to-cart bar while it shows (0 otherwise) */
-    bottom: calc(var(--container-gutter) + var(--sticky-atc-offset, 0px));
+    /* --sticky-atc-offset: top edge (+ gap) of the product page's floating add-to-cart bar while it shows; unset otherwise */
+    bottom: var(--sticky-atc-offset, var(--container-gutter));
     transition: bottom .2s ease-in-out;
     left: var(--wa-left);
     right: var(--wa-right);
