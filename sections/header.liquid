@@ -316,37 +316,14 @@
   }
 
   {%- comment -%}
-  Icons row alignment: every item of the secondary nav is a flex box that centers its own content vertically, so an
-  inline icon (which otherwise sits on the text baseline, with a few px of descender space under it) and items with
-  different content (icon only, icon + number) line up on the same center line.
+  Icons alignment. Every icon control is built the same way - a flex item (<li> or <a>/<button>) holding an <svg> -
+  and the header centers each of them on the row. An inline <svg> sits on the text baseline, and its line box adds
+  the text's ascent/descent around it, so the icon ends up a few px off the center of its box; as a block it is
+  exactly its own height. That is the only thing needed to put all of them (menu, search, account, cart) on the same
+  center line - no item gets a box layout of its own (the cart used to, and sat at a different height than the rest).
+  Not touching "display" on the items themselves matters too: the md:hidden / md-max:hidden classes some of them carry
+  rely on it.
   {%- endcomment -%}
-  {%- comment -%}
-  Every item of the icons row (and every icon control of the left side) gets the SAME fixed height (1.5rem) and
-  centers its content in it: the row then centers all of them on one line, whatever the font metrics, the line
-  height or the extra content some item carries (the cart's dot, a count) - none of those can lift or lower one item
-  relative to the others anymore.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .header__secondary-nav > li {
-    display: flex;
-    align-items: center;
-    height: 1.5rem;
-  }
-
-  {%- comment -%}
-  Same box for EVERY icon control of the header (menu button, mobile search, account, search, cart), so they all sit on
-  one center line: each is a flex box centered on its content and every svg is a block, instead of an inline element
-  on the text baseline (whose line box adds a few px of space under the icon). Before, only the cart link had been
-  changed and it ended up at a different height than the rest.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .header__primary-nav > a,
-  #shopify-section-{{ section.id }} .header__primary-nav > button,
-  #shopify-section-{{ section.id }} .header__secondary-nav > li > a,
-  #shopify-section-{{ section.id }} .header__secondary-nav > li > button {
-    display: inline-flex;
-    align-items: center;
-    height: 1.5rem;
-  }
-
   #shopify-section-{{ section.id }} .header__primary-nav svg,
   #shopify-section-{{ section.id }} .header__secondary-nav svg {
     display: block;
@@ -359,8 +336,8 @@
   count is smaller than the body text, with a line height of 1 and tabular digits so it neither lifts the row nor
   changes its width as the digits change. When the cart is empty it is simply "(0)", same as before.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .header__cart-link > a {
-    display: inline-flex;
+  #shopify-section-{{ section.id }} .header__cart-link > a:has(> .header__cart-count-text) {
+    display: flex;
     align-items: center;
     gap: .3rem;
   }
