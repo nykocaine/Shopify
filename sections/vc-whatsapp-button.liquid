@@ -180,10 +180,12 @@
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.6s ease, visibility 0.6s ease, bottom .2s ease-in-out;
+    translate: 0 12px;
+    transition: opacity 0.6s ease, visibility 0.6s ease, translate 0.6s ease, bottom .2s ease-in-out;
   }
 
   .vc-whatsapp-button-wrapper[data-appear-delay].is-visible {
+    translate: 0 0;
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
@@ -263,10 +265,19 @@
     border: 1px solid rgb(var(--border-color));
     overflow: hidden;
     font-family: inherit;
+    transform-origin: center bottom;
+    transition: opacity .25s ease, translate .25s ease, scale .25s ease, visibility .25s;
   }
 
+  /* Closed state keeps the box rendered (display: none can't animate) - faded out, nudged down and slightly
+     smaller; the same transition plays on open and on close. */
   .vc-whatsapp-agents-list[hidden] {
-    display: none;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    translate: 0 10px;
+    scale: .96;
+    pointer-events: none;
   }
 
   .vc-whatsapp-agents-list-header {
@@ -375,7 +386,8 @@
   }
 
   @media (max-width: 749px) {
-    .vc-whatsapp-overlay:not([hidden]) {
+    /* Siempre en el DOM (no display: none) para poder hacer fade al abrir y al cerrar */
+    .vc-whatsapp-overlay {
       display: block;
       position: fixed;
       inset: 0;
@@ -387,6 +399,13 @@
       backdrop-filter: blur(var(--dialog-backdrop-blur));
       -webkit-mask-image: linear-gradient(to top, black 30%, transparent);
       mask-image: linear-gradient(to top, black 30%, transparent);
+      transition: opacity .25s ease, visibility .25s;
+    }
+
+    .vc-whatsapp-overlay[hidden] {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
     }
   }
 {% endstylesheet %}
