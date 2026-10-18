@@ -3654,10 +3654,17 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 .product-card__icon {
   z-index: 2;
   pointer-events: none;
+  width: var(--card-icon-size-mobile, 32px);
   height: auto;
   max-width: 40%;
   margin: .75rem;
   position: absolute;
+}
+
+@media screen and (min-width: 700px) {
+  .product-card__icon {
+    width: var(--card-icon-size, 48px);
+  }
 }
 
 .product-card__icon--top-left { inset-block-start: 0; inset-inline-start: 0; }
