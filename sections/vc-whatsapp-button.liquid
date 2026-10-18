@@ -125,7 +125,7 @@
             <a
               href="#"
               class="vc-whatsapp-agent-item"
-              data-phone-number="{{ block.settings.phone_number }}"
+              data-phone-number="{{ block.settings.phone_number | default: section.settings.phone_number }}"
               data-message="{{ agent_message | escape }}"
               {{ block.shopify_attributes }}
             >
@@ -524,14 +524,14 @@
 
 {% schema %}
 {
-  "name": "VC WhatsApp Button",
+  "name": "Atención por WhatsApp",
   "class": "vc-whatsapp-button-section",
   "settings": [
     { "type": "header", "content": "Estilo de visualización" },
     { "type": "select", "id": "display_style", "label": "Display Style", "options": [{ "value": "floating", "label": "Floating" }, { "value": "docked_tab", "label": "Docked Tab" }], "default": "floating" },
     { "type": "range", "id": "appear_delay", "label": "Aparece después de", "min": 1, "max": 60, "step": 1, "unit": "s", "default": 5, "info": "Segundos que pasan desde que se carga cada página hasta que aparece el botón (también al actualizarla). En el editor del tema siempre se ve." },
     { "type": "header", "content": "Contenido" },
-    { "type": "text", "id": "phone_number", "label": "Número de teléfono principal", "info": "Incluye el código de país (ej. 51987654321 para Perú). Se usa si no agregas agentes." },
+    { "type": "text", "id": "phone_number", "label": "Número de teléfono principal", "info": "Incluye el código de país (ej. 51987654321 para Perú). Es el número de todos: cada agente puede tener el suyo; si no lo tiene, usa este." },
     { "type": "textarea", "id": "default_message", "label": "Mensaje predeterminado", "default": "Hola, estoy interesado en tus productos." },
 
     { "type": "text", "id": "button_text", "label": "Texto del botón (opcional)", "info": "Si se deja en blanco, solo se mostrará el ícono.", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
@@ -566,6 +566,13 @@
     { "type": "header", "content": "Notificación", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "checkbox", "id": "show_badge", "label": "Mostrar punto de notificación", "default": false, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "color", "id": "badge_color", "label": "Color del punto de notificación", "default": "#ff3b30", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
+    { "type": "header", "content": "Botón en la página de producto" },
+    { "type": "checkbox", "id": "show_product_button", "label": "Mostrar el botón de WhatsApp en el producto", "info": "Controla el bloque \"Botón de atención\" de la página de producto: al tocarlo abre la lista de agentes de este botón. Usa el número principal de arriba.", "default": true },
+    { "type": "text", "id": "product_button_text", "label": "Texto del botón", "default": "Consultar por WhatsApp", "visible_if": "{{ section.settings.show_product_button }}" },
+    { "type": "select", "id": "product_button_style", "label": "Estilo del botón", "options": [{ "value": "solid", "label": "Sólido" }, { "value": "link", "label": "Enlace" }], "default": "solid", "visible_if": "{{ section.settings.show_product_button }}" },
+    { "type": "color", "id": "product_button_bg", "label": "Color de fondo", "default": "#25D366", "visible_if": "{{ section.settings.show_product_button and section.settings.product_button_style == 'solid' }}" },
+    { "type": "color", "id": "product_button_text_color", "label": "Color de texto", "default": "#FFFFFF", "visible_if": "{{ section.settings.show_product_button and section.settings.product_button_style == 'solid' }}" },
+    { "type": "textarea", "id": "product_message", "label": "Mensaje de respaldo", "info": "Solo si el botón de la página no puede abrir la lista de agentes (por ejemplo, si este botón está oculto en esa pantalla): abre el chat directo con este mensaje, más el nombre del producto y su enlace.", "default": "Hola, quiero consultar sobre este producto:", "visible_if": "{{ section.settings.show_product_button }}" },
     { "type": "header", "content": "Caja de agentes" },
     { "type": "range", "id": "agents_box_radius", "label": "Radio de la caja de agentes", "min": 0, "max": 40, "step": 1, "unit": "px", "default": 12 },
     { "type": "header", "content": "Comportamiento" },
@@ -578,14 +585,14 @@
       "name": "Agente / Departamento",
       "settings": [
         { "type": "text", "id": "name", "label": "Nombre", "default": "Ventas" },
-        { "type": "text", "id": "phone_number", "label": "Número de teléfono", "info": "Incluye el código de país (ej. 51987654321)" },
+        { "type": "text", "id": "phone_number", "label": "Número de teléfono (opcional)", "info": "Si se deja en blanco, usa el número principal del botón." },
         { "type": "textarea", "id": "message", "label": "Mensaje (opcional)", "info": "Si se deja en blanco, usa el mensaje predeterminado general." }
       ]
     }
   ],
   "max_blocks": 10,
   "presets": [
-    { "name": "VC WhatsApp Button" }
+    { "name": "Atención por WhatsApp" }
   ]
 }
 {% endschema %}

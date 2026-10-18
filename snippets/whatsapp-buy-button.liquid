@@ -13,6 +13,30 @@ independent from the rest of the theme's buttons.
 {%- enddoc -%}
 
 {%- liquid
+  # One source of truth: the "Atención por WhatsApp" section of the overlay group (sections/vc-whatsapp-button.liquid)
+  # - the same main number for everyone, and this button's text, style, colors and fallback message. Its section id
+  # is the key the overlay group stores it under (sections/overlay-group.json). If that section isn't there (deleted
+  # or re-added with another id), the block falls back to its own settings, so the button never disappears.
+  assign advisor = sections['vc_whatsapp_button_YAUfVC']
+  assign hide_button = false
+
+  if advisor != blank and advisor.settings.show_product_button == false
+    assign hide_button = true
+  elsif advisor != blank
+    assign phone_number = advisor.settings.phone_number | default: phone_number
+    assign message = advisor.settings.product_message | default: message
+    assign button_text = advisor.settings.product_button_text | default: button_text
+    assign button_style = advisor.settings.product_button_style | default: button_style
+
+    if advisor.settings.product_button_bg != blank
+      assign background_color = advisor.settings.product_button_bg
+    endif
+
+    if advisor.settings.product_button_text_color != blank
+      assign text_color = advisor.settings.product_button_text_color
+    endif
+  endif
+
   assign wa_text = message
   if product != blank
     assign wa_text = wa_text | append: ' ' | append: product.title | append: ' - ' | append: request.origin | append: product.url
@@ -35,7 +59,7 @@ independent from the rest of the theme's buttons.
 {%- capture button_text_html -%}{{ label_head }}<span class="whatsapp-buy-button__last">{{ label_core }}</span>{{ label_tail }}{%- endcapture -%}
 
 {%- comment -%} Without a number the link would be a dead wa.me/?text=..., so nothing is rendered until the block is filled in {%- endcomment -%}
-{%- if wa_phone != blank and button_text != blank -%}
+{%- if hide_button == false and wa_phone != blank and button_text != blank -%}
 {%- if button_style == 'link' -%}
   {%- comment -%}
   Same "plain text link" positioning as the product description's show-more/less toggle
