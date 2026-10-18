@@ -24,6 +24,27 @@
   }
 </style>
 
+{%- if section.settings.mobile_only -%}
+  {%- comment -%}
+  "Show only on mobile": on screens wider than 699px the header search link no longer opens this drawer - its click is
+  stopped in the capture phase, before the theme's own listener (which opens whatever its aria-controls points to), so
+  the link just goes to the search page. Same technique as sections/cart-drawer.liquid's "Show only on mobile".
+  {%- endcomment -%}
+  <script>
+    (function () {
+      var mobileQuery = window.matchMedia('(max-width: 699px)');
+
+      document.addEventListener('click', function (event) {
+        if (mobileQuery.matches || !event.target.closest) return;
+
+        if (event.target.closest('[aria-controls="search-drawer"]')) {
+          event.stopPropagation();
+        }
+      }, true);
+    })();
+  </script>
+{%- endif -%}
+
 <x-drawer id="search-drawer" unfold class="drawer drawer--search drawer--no-bordered-header color-scheme color-scheme--{{ section.settings.color_scheme.id }}" handle-editor-events>
   <h2 class="h7 search-drawer__title" slot="header">{{ 'search.general.title' | t }}</h2>
 
@@ -102,6 +123,13 @@
   "class": "shopify-section--search-drawer",
   "tag": "section",
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "mobile_only",
+      "label": "Show only on mobile",
+      "info": "On larger screens the search icon opens the search page instead of this drawer.",
+      "default": false
+    },
     {
       "type": "color_scheme",
       "id": "color_scheme",
