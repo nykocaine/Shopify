@@ -699,6 +699,15 @@
         font-size: var(--text-base);
       }
 
+      {%- comment -%}Captions are rich text (so multi-line metafields can be connected): the paragraph wrappers it adds must not add spacing of their own{%- endcomment -%}
+      #shopify-section-{{ section.id }} .faq__text-image-media figcaption p {
+        margin: 0;
+      }
+
+      #shopify-section-{{ section.id }} .faq__text-image-media figcaption p + p {
+        margin-block-start: .5em;
+      }
+
       {%- comment -%}
       align-items: start (not grid's own default, stretch/center): title, text and media all pin to
       the top of the row instead of centering around whichever column is tallest - title/text already
@@ -2303,7 +2312,7 @@
           "info": "If set, this plays instead of the image above."
         },
         {
-          "type": "textarea",
+          "type": "richtext",
           "id": "caption_1",
           "label": "t:global.image.caption"
         },
@@ -2430,7 +2439,7 @@
           "info": "If set, this plays instead of the image above."
         },
         {
-          "type": "textarea",
+          "type": "richtext",
           "id": "caption_2",
           "label": "t:global.image.caption"
         },
@@ -2557,7 +2566,7 @@
           "info": "If set, this plays instead of the image above."
         },
         {
-          "type": "textarea",
+          "type": "richtext",
           "id": "caption_3",
           "label": "t:global.image.caption"
         },
