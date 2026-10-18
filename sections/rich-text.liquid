@@ -91,6 +91,13 @@
         margin-block-start: var(--section-vertical-spacing);
       }
 
+      {%- comment -%}Phones only: that separation is a third smaller (desktop keeps the full spacing){%- endcomment -%}
+      @media screen and (max-width: 699px) {
+        #shopify-section-{{ section.id }}:not(:first-child) {
+          margin-block-start: calc(var(--section-vertical-spacing) * .67);
+        }
+      }
+
       {%- comment -%}
       The space inside this block above its text is its own padding-top, always one full section spacing (what separates it from a
       slideshow). The theme's padding-collapsing logic (theme.css) removes that padding whenever the previous
@@ -173,22 +180,21 @@
                 {%- if join_button_block -%}
                   <style>
                     {%- comment -%}
-                    Mobile-first: the button defaults to flex-basis: 100% (its own full-width line,
-                    below the title/icon) so it stacks normally on narrow screens - only from 700px
-                    up does it shrink back to its own width and get pushed to the end of the row via
-                    margin-inline-start: auto, sitting to the right of the title (and icon, if shown)
-                    on the same line. flex-wrap on the row is still needed as a fallback for a title
-                    long enough that it alone doesn't leave room for the button even on desktop.
+                    Phones: the button shares the title's row (title at the start, button at the end) whenever
+                    both fit on one line; when they don't, flex-wrap drops the button to its own line under the
+                    title, at the start. justify-content: space-between does both: with two items on a line they go
+                    to opposite ends, and a lone item on its line stays at the start (a margin auto on the button
+                    would push it to the end of its own line instead). From 700px up (desktop, unchanged) the
+                    button is pushed to the end of the row via margin-inline-start: auto, to the right of the title
+                    (and icon, if shown); flex-wrap stays as a fallback for a title long enough that it alone doesn't
+                    leave room for the button.
                     {%- endcomment -%}
                     #shopify-section-{{ section.id }}-{{ block.id }}-row {
                       display: flex;
                       flex-wrap: wrap;
                       align-items: center;
+                      justify-content: space-between;
                       gap: .75rem 1rem;
-                    }
-
-                    #shopify-section-{{ section.id }}-{{ block.id }}-row > .rich-text-heading-row__button {
-                      flex-basis: 100%;
                     }
 
                     @media screen and (min-width: 700px) {
