@@ -326,6 +326,26 @@
   }
 
   {%- comment -%}
+  Same box for EVERY icon control of the header (menu button, mobile search, account, search, cart), so they all sit on
+  one center line: each is a flex box centered on its content and every svg is a block, instead of an inline element
+  on the text baseline (whose line box adds a few px of space under the icon). Before, only the cart link had been
+  changed and it ended up at a different height than the rest.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .header__primary-nav > a,
+  #shopify-section-{{ section.id }} .header__primary-nav > button,
+  #shopify-section-{{ section.id }} .header__secondary-nav > li > a,
+  #shopify-section-{{ section.id }} .header__secondary-nav > li > button {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  #shopify-section-{{ section.id }} .header__primary-nav svg,
+  #shopify-section-{{ section.id }} .header__secondary-nav svg {
+    display: block;
+    flex: none;
+  }
+
+  {%- comment -%}
   Cart count as a number (when "Show cart count as a dot" is off): the icon and the count are laid out as one row,
   vertically centered on each other, with a fixed small gap, instead of a number floating at the icon's baseline. The
   count is smaller than the body text, with a line height of 1 and tabular digits so it neither lifts the row nor
