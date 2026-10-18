@@ -2010,6 +2010,14 @@ the first available one); the click is handled by the script near the lightbox b
     }
   }
 
+  {%- comment -%}Desktop only: a little taller than before (4:5 -> 3:4). Same width per item, so no extra items fit in the first view.{%- endcomment -%}
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .instagram-feed__image,
+    #shopify-section-{{ section.id }} .content-box {
+      aspect-ratio: 3 / 4;
+    }
+  }
+
   {%- comment -%}
   The video case never has this problem: its forced aspect-ratio lives on .content-box, an ANCESTOR
   of the element that actually gets .is-lightbox-expanded (video-media) - once that's position: fixed,
