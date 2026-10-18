@@ -5,6 +5,31 @@
   }
 
   {%- comment -%}
+  Phones: the drawer behaves like the menu drawer (assets/theme.css, ".menu-drawer" mobile block) - it unfolds from
+  right below the header, so the header and anything above it stay visible and un-blurred, with the side gutters,
+  the gap at the bottom and the rounded corners (--drawer-border-radius) of the menu. --menu-offset-top (the header's
+  current bottom edge) is written by the script below, same measurement HeaderMenuDrawer does in theme.js.
+  Written with the #search-drawer id so it wins over the generic ".drawer-mobile-centered" floating-card rules.
+  {%- endcomment -%}
+  @media screen and (max-width: 699px) {
+    #search-drawer::part(overlay) {
+      inset-block-start: var(--menu-offset-top, 0px);
+    }
+
+    #search-drawer::part(content) {
+      position: fixed;
+      inset-block-start: calc(var(--menu-offset-top, 0px) + .5rem);
+      inset-block-end: auto;
+      inset-inline: var(--container-gutter);
+      width: auto;
+      max-width: none;
+      height: calc(100dvh - var(--menu-offset-top, 0px) - .5rem - var(--drawer-block-gap));
+      border-block-start: none;
+      border-radius: var(--drawer-border-radius);
+    }
+  }
+
+  {%- comment -%}
   The radius is defined on the drawer itself (not only on .product-card) so every card inside it - the featured
   carousel and the live search results, which are fetched and inserted later - always resolves it. It is then
   applied straight to each card's image box and to the image, so the corners are rounded and clipped even when the
@@ -44,6 +69,66 @@
     })();
   </script>
 {%- endif -%}
+
+<script>
+  (function () {
+    // Same behavior as the menu drawer: measure the header's bottom edge when the drawer opens (and on scroll / resize
+    // while it is open), and, on phones, let a transparent header turn solid while it is open.
+    function drawer() {
+      return document.getElementById('search-drawer');
+    }
+
+    function calculateOffsets() {
+      var el = drawer();
+      var header = document.querySelector('x-header');
+      if (!el || !el.hasAttribute('open')) return;
+
+      var dpr = window.devicePixelRatio || 1;
+      var offset = header ? Math.max(Math.round(header.getBoundingClientRect().bottom * dpr) / dpr, 0) : 0;
+      el.style.setProperty('--menu-offset-top', offset + 'px');
+    }
+
+    var wasSolid = false;
+    var phone = window.matchMedia('(max-width: 699px)');
+
+    // The dialog events don't bubble, so the listeners go on the drawer element itself (looked up once the page has
+    // been parsed - this script sits before the element in the markup).
+    function init() {
+      var el = drawer();
+      if (!el || el.dataset.offsetInit) return;
+      el.dataset.offsetInit = 'true';
+
+      el.addEventListener('dialog:before-show', function () {
+        calculateOffsets();
+        requestAnimationFrame(calculateOffsets);
+
+        if (phone.matches) {
+          var header = document.querySelector('x-header');
+          wasSolid = header ? header.classList.contains('is-solid') : false;
+          el.dispatchEvent(new CustomEvent('header:disable-transparent-header', { bubbles: true }));
+        }
+      });
+
+      el.addEventListener('dialog:after-show', calculateOffsets);
+
+      el.addEventListener('dialog:after-hide', function () {
+        if (phone.matches && !wasSolid) {
+          el.dispatchEvent(new CustomEvent('header:allow-transparent-header', { bubbles: true }));
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+
+    document.addEventListener('shopify:section:load', init);
+    window.addEventListener(window.onscrollend !== undefined ? 'scrollend' : 'scroll', calculateOffsets);
+    window.addEventListener('resize', calculateOffsets);
+  })();
+</script>
 
 <x-drawer id="search-drawer" unfold class="drawer drawer--search drawer--no-bordered-header color-scheme color-scheme--{{ section.settings.color_scheme.id }}" handle-editor-events>
   <h2 class="h7 search-drawer__title" slot="header">{{ 'search.general.title' | t }}</h2>
