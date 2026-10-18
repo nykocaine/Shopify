@@ -8625,6 +8625,20 @@ shopify-account::part(signed-out-avatar) {
   opacity: 1;
 }
 
+/* Phones only: the button sits flush on the bottom edge of the screen, as if it grew out of it - top
+   corners keep the button's own radius, bottom corners are square (+ home-indicator safe area). */
+@media screen and (max-width: 699px) {
+  .product-sticky-add-to-cart {
+    inset-block-end: 0;
+  }
+
+  .product-sticky-add-to-cart .button {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    padding-block-end: calc(var(--button-padding-block, .75rem) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 .products-with-image .product-list {
   position: relative;
 }
