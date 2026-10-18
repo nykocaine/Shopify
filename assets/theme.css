@@ -8634,10 +8634,17 @@ shopify-account::part(signed-out-avatar) {
   }
 }
 
-/* No outline on the floating button (the main product's button keeps its own border). */
+/* No outline on the floating button (the main product's button keeps its own border). Its fill is the same
+   backdrop the theme's popups use (color + opacity + blur from the "dialog backdrop" theme settings) - no
+   color of its own. */
 .product-sticky-add-to-cart .button {
   --button-border-color: 0 0 0 / 0;
+  --button-background: var(--page-overlay);
+  --button-hover-background: var(--page-overlay);
   border-color: transparent;
+  background: rgb(var(--page-overlay));
+  -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
+  backdrop-filter: blur(var(--dialog-backdrop-blur));
 }
 
 @media screen and (max-width: 699px) {
