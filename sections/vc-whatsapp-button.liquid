@@ -113,19 +113,7 @@
   >
     <div class="vc-whatsapp-main-container">
       {% if has_agents %}
-        <div
-          class="vc-whatsapp-agents-list color-scheme color-scheme--{{ section.settings.popup_color_scheme.id }}"
-          {% if section.settings.show_availability %}
-            data-availability
-            data-timezone="{{ section.settings.timezone | escape }}"
-            data-days="{{ section.settings.open_days }}"
-            data-open="{{ section.settings.open_time | escape }}"
-            data-close="{{ section.settings.close_time | escape }}"
-            data-label-available="{{ section.settings.available_label | escape }}"
-            data-label-unavailable="{{ section.settings.unavailable_label | escape }}"
-          {% endif %}
-          hidden
-        >
+        <div class="vc-whatsapp-agents-list color-scheme color-scheme--{{ section.settings.popup_color_scheme.id }}" hidden>
           <div class="vc-whatsapp-agents-list-header">Elige un contacto</div>
           {% for block in agents %}
             {% liquid
@@ -139,19 +127,9 @@
               class="vc-whatsapp-agent-item"
               data-phone-number="{{ block.settings.phone_number }}"
               data-message="{{ agent_message | escape }}"
-              {% if block.settings.custom_hours %}
-                data-open="{{ block.settings.open_time | escape }}"
-                data-close="{{ block.settings.close_time | escape }}"
-              {% endif %}
               {{ block.shopify_attributes }}
             >
-              <span class="vc-whatsapp-agent-name">{{ block.settings.name }}</span>
-              {% if section.settings.show_availability %}
-                <span class="vc-whatsapp-agent-status" data-status="available">
-                  <span class="vc-whatsapp-agent-dot" aria-hidden="true"></span>
-                  <span class="vc-whatsapp-agent-status-text">{{ section.settings.available_label }}</span>
-                </span>
-              {% endif %}
+              {{ block.settings.name }}
             </a>
           {% endfor %}
         </div>
@@ -327,35 +305,6 @@
     border-bottom: none;
   }
 
-  .vc-whatsapp-agent-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .vc-whatsapp-agent-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    flex: none;
-    font-size: .8em;
-    opacity: .75;
-  }
-
-  /* Green = inside the schedule, gray = outside it (the chat still works either way) */
-  .vc-whatsapp-agent-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #25d366;
-    flex: none;
-  }
-
-  .vc-whatsapp-agent-status[data-status="unavailable"] .vc-whatsapp-agent-dot {
-    background: #9a9a9a;
-  }
-
   .vc-whatsapp-agent-item:hover {
     background-color: rgb(var(--text-color) / .04);
   }
@@ -496,59 +445,6 @@
         ? wrapper.parentElement.querySelector('.vc-whatsapp-overlay[data-section-id="' + sectionId + '"]')
         : null;
 
-      // Availability: green "available" dot while the current time (in the configured time zone) is inside the
-      // schedule - the general one from the section settings, or an agent's own hours when it has them.
-      function toMinutes(value) {
-        var match = /^\s*(\d{1,2})(?::(\d{2}))?\s*$/.exec(value || '');
-        return match ? (parseInt(match[1], 10) * 60 + parseInt(match[2] || '0', 10)) : null;
-      }
-
-      function updateAvailability() {
-        if (!agentsList || !agentsList.hasAttribute('data-availability')) return;
-
-        var timeZone = agentsList.dataset.timezone || undefined;
-        var now = new Date();
-        var parts;
-
-        try {
-          parts = new Intl.DateTimeFormat('en-US', { timeZone: timeZone, weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(now);
-        } catch (e) {
-          return;
-        }
-
-        var weekday = '';
-        var minutesNow = 0;
-        parts.forEach(function(part) {
-          if (part.type === 'weekday') weekday = part.value;
-          if (part.type === 'hour') minutesNow += (parseInt(part.value, 10) % 24) * 60;
-          if (part.type === 'minute') minutesNow += parseInt(part.value, 10);
-        });
-
-        var dayIndex = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(weekday);
-        var openDays = (agentsList.dataset.days || '0,1,2,3,4,5,6').split(',');
-        var dayOpen = openDays.indexOf(String(dayIndex)) > -1;
-
-        agentsList.querySelectorAll('.vc-whatsapp-agent-item').forEach(function(item) {
-          var status = item.querySelector('.vc-whatsapp-agent-status');
-          if (!status) return;
-
-          var open = toMinutes(item.dataset.open || agentsList.dataset.open);
-          var close = toMinutes(item.dataset.close || agentsList.dataset.close);
-          var available = dayOpen;
-
-          if (available && open !== null && close !== null) {
-            // A close time earlier than the open time means the schedule runs past midnight
-            available = open <= close ? (minutesNow >= open && minutesNow < close) : (minutesNow >= open || minutesNow < close);
-          }
-
-          status.dataset.status = available ? 'available' : 'unavailable';
-          status.querySelector('.vc-whatsapp-agent-status-text').textContent = available ? agentsList.dataset.labelAvailable : agentsList.dataset.labelUnavailable;
-        });
-      }
-
-      updateAvailability();
-      setInterval(updateAvailability, 60000);
-
       function openWhatsapp(phoneNumber, message) {
         if (!phoneNumber) {
           console.error('WhatsApp button: Phone number is not set.');
@@ -562,7 +458,6 @@
       button.addEventListener('click', function(event) {
         event.preventDefault();
         if (hasAgents && agentsList) {
-          if (agentsList.hidden) updateAvailability();
           agentsList.hidden = !agentsList.hidden;
           button.setAttribute('aria-expanded', String(!agentsList.hidden));
           if (overlay) overlay.hidden = agentsList.hidden;
@@ -647,27 +542,6 @@
     { "type": "header", "content": "Notificación", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "checkbox", "id": "show_badge", "label": "Mostrar punto de notificación", "default": false, "visible_if": "{{ section.settings.display_style == 'floating' }}" },
     { "type": "color", "id": "badge_color", "label": "Color del punto de notificación", "default": "#ff3b30", "visible_if": "{{ section.settings.display_style == 'floating' }}" },
-    { "type": "header", "content": "Disponibilidad y horario" },
-    { "type": "checkbox", "id": "show_availability", "label": "Mostrar disponibilidad en cada agente", "info": "Punto verde y \"Disponible\" dentro del horario; punto gris fuera de él. El chat sigue funcionando fuera de horario.", "default": true },
-    { "type": "select", "id": "open_days", "label": "Días de atención", "options": [
-      { "value": "1,2,3,4,5", "label": "Lunes a viernes" },
-      { "value": "1,2,3,4,5,6", "label": "Lunes a sábado" },
-      { "value": "0,1,2,3,4,5,6", "label": "Todos los días" }
-    ], "default": "1,2,3,4,5,6", "visible_if": "{{ section.settings.show_availability }}" },
-    { "type": "text", "id": "open_time", "label": "Hora de apertura", "info": "Formato 24 h, ej. 09:00. Déjalo en blanco junto con el cierre para estar disponible todo el día.", "default": "09:00", "visible_if": "{{ section.settings.show_availability }}" },
-    { "type": "text", "id": "close_time", "label": "Hora de cierre", "info": "Formato 24 h, ej. 18:00. Si es menor que la apertura, el horario pasa de medianoche.", "default": "18:00", "visible_if": "{{ section.settings.show_availability }}" },
-    { "type": "select", "id": "timezone", "label": "Zona horaria", "options": [
-      { "value": "America/Lima", "label": "Perú (Lima)" },
-      { "value": "America/Bogota", "label": "Colombia (Bogotá)" },
-      { "value": "America/Guayaquil", "label": "Ecuador (Guayaquil)" },
-      { "value": "America/Mexico_City", "label": "México (Ciudad de México)" },
-      { "value": "America/Santiago", "label": "Chile (Santiago)" },
-      { "value": "America/Argentina/Buenos_Aires", "label": "Argentina (Buenos Aires)" },
-      { "value": "America/New_York", "label": "Este de EE. UU. (Nueva York)" },
-      { "value": "Europe/Madrid", "label": "España (Madrid)" }
-    ], "default": "America/Lima", "visible_if": "{{ section.settings.show_availability }}" },
-    { "type": "text", "id": "available_label", "label": "Texto: disponible", "default": "Disponible", "visible_if": "{{ section.settings.show_availability }}" },
-    { "type": "text", "id": "unavailable_label", "label": "Texto: fuera de horario", "default": "Fuera de horario", "visible_if": "{{ section.settings.show_availability }}" },
     { "type": "header", "content": "Caja de agentes" },
     { "type": "range", "id": "agents_box_radius", "label": "Radio de la caja de agentes", "min": 0, "max": 40, "step": 1, "unit": "px", "default": 12 },
     { "type": "header", "content": "Comportamiento" },
@@ -681,11 +555,7 @@
       "settings": [
         { "type": "text", "id": "name", "label": "Nombre", "default": "Ventas" },
         { "type": "text", "id": "phone_number", "label": "Número de teléfono", "info": "Incluye el código de país (ej. 51987654321)" },
-        { "type": "textarea", "id": "message", "label": "Mensaje (opcional)", "info": "Si se deja en blanco, usa el mensaje predeterminado general." },
-        { "type": "header", "content": "Horario propio" },
-        { "type": "checkbox", "id": "custom_hours", "label": "Usar un horario distinto al general", "info": "Usa los mismos días y zona horaria del botón; solo cambian las horas.", "default": false },
-        { "type": "text", "id": "open_time", "label": "Hora de apertura", "info": "Formato 24 h, ej. 09:00", "visible_if": "{{ block.settings.custom_hours }}" },
-        { "type": "text", "id": "close_time", "label": "Hora de cierre", "info": "Formato 24 h, ej. 18:00", "visible_if": "{{ block.settings.custom_hours }}" }
+        { "type": "textarea", "id": "message", "label": "Mensaje (opcional)", "info": "Si se deja en blanco, usa el mensaje predeterminado general." }
       ]
     }
   ],
