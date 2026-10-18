@@ -8608,27 +8608,16 @@ shopify-account::part(signed-out-avatar) {
   margin-inline-start: auto;
 }
 
-/* Floating bar: full page width minus the theme's side gutter (same gutter the WhatsApp button uses),
-   rounded with the product section's corner radius (--sticky-atc-radius, set inline by the snippet). */
+/* Floating add-to-cart: no box of its own - just the same button as the main product's, spanning the page
+   width minus the theme's side gutter (same gutter the WhatsApp button uses). */
 .product-sticky-add-to-cart {
   z-index: 2;
   visibility: hidden;
   opacity: 0;
-  border: 1px solid rgb(var(--border-color));
-  border-radius: var(--sticky-atc-radius, 12px);
-  background: rgb(var(--background));
-  grid-template-columns: minmax(0, 1fr);
-  grid-auto-flow: column;
-  justify-content: space-between;
-  align-items: center;
-  width: auto;
-  padding: .75rem 1rem;
   transition: opacity .2s ease-in-out, visibility .2s ease-in-out;
-  display: grid;
   position: fixed;
   inset-block-end: var(--container-gutter);
   inset-inline: var(--container-gutter);
-  box-shadow: 0 2px 8px #0000001a;
 }
 
 .product-sticky-add-to-cart.is-visible {
