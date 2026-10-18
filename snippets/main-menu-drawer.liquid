@@ -23,7 +23,7 @@ mobile, and for desktop on "drawer" mode.
   </template>
 
   {%- comment -%}
-  This is the main panel being open when the drawer is initially open, and also contains social media and localization selectors
+  This is the main panel being open when the drawer is initially open, and also contains the localization selectors
   {%- endcomment -%}
 
   <header-menu-drawer-panel id="menu-drawer-panel-main" data-main-panel class="menu-drawer__panel">
@@ -87,18 +87,8 @@ mobile, and for desktop on "drawer" mode.
     </div>
 
     {%- capture main_panel_footer -%}
-      {%- capture social_media -%}
-        {%- render 'social-media' -%}
-      {%- endcapture -%}
-
-      {%- if social_media != blank -%}
-        <div class="menu-drawer__footer-item">
-          {{- social_media -}}
-        </div>
-      {%- endif -%}
-
-      {%- if show_country_selector or show_locale_selector or shop.customer_accounts_enabled -%}
-        {%- comment -%}On desktop we show language, country and account link in the header directly, so we remove it from the drawer{%- endcomment -%}
+      {%- if show_country_selector or show_locale_selector -%}
+        {%- comment -%}On desktop we show language and country in the header directly, so we remove them from the drawer{%- endcomment -%}
         <div class="menu-drawer__footer-item lg:hidden">
           <div class="h-stack justify-between">
             {%- if show_country_selector or show_locale_selector -%}
@@ -113,26 +103,6 @@ mobile, and for desktop on "drawer" mode.
                   endif
                 -%}
               </div>
-            {%- endif -%}
-
-            {%- if shop.customer_accounts_enabled -%}
-              {%- comment -%}
-              Same as the header account link (sections/header.liquid): signed in keeps
-              <shopify-account> for its account sheet; signed out skips it and links straight to
-              the login page, since <shopify-account>'s own click always opens its account sheet
-              in place with no way to make it navigate directly instead.
-              {%- endcomment -%}
-              {%- if customer -%}
-                {%- comment -%} Signed-in avatar is the component's own native rendering - no slot content to provide, same as before this change. {%- endcomment -%}
-                <shopify-account menu="{{ section.settings.customer_account_menu }}"></shopify-account>
-              {%- else -%}
-                <a href="{{ routes.account_login_url }}">
-                  <div class="h-stack gap-2.5">
-                    {%- render 'icon' with 'account', mobile_width: 16, width: section.settings.desktop_icon_size -%}
-                    <span class="subheading">{{- 'header.general.account' | t -}}</span>
-                  </div>
-                </a>
-              {%- endif -%}
             {%- endif -%}
           </div>
         </div>
