@@ -320,9 +320,16 @@
   inline icon (which otherwise sits on the text baseline, with a few px of descender space under it) and items with
   different content (icon only, icon + number) line up on the same center line.
   {%- endcomment -%}
+  {%- comment -%}
+  Every item of the icons row (and every icon control of the left side) gets the SAME fixed height (1.5rem) and
+  centers its content in it: the row then centers all of them on one line, whatever the font metrics, the line
+  height or the extra content some item carries (the cart's dot, a count) - none of those can lift or lower one item
+  relative to the others anymore.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .header__secondary-nav > li {
     display: flex;
     align-items: center;
+    height: 1.5rem;
   }
 
   {%- comment -%}
@@ -337,6 +344,7 @@
   #shopify-section-{{ section.id }} .header__secondary-nav > li > button {
     display: inline-flex;
     align-items: center;
+    height: 1.5rem;
   }
 
   #shopify-section-{{ section.id }} .header__primary-nav svg,
