@@ -268,8 +268,8 @@ no need to manually pass the section as it is globally available)
                   {%- endcomment -%}
                   #shopify-section-{{ section.id }} .product-description-collapsible__toggle {
                     color: rgb(var(--text-color) / .5);
-                    text-align: end;
-                    margin-block-start: 1rem;
+                    text-align: start;
+                    margin-block-start: .5rem;
                     display: none;
                   }
 
@@ -308,7 +308,33 @@ no need to manually pass the section as it is globally available)
                 render more than once on the same page.
                 {%- endcomment -%}
                 <script>
-                  if (!window.customElements.get('read-more-text')) {
+                  function fitToLine(content, target) {
+                    // Largest bottom edge (from the top of content) of any text line / media that still fits inside
+                    // target, so the collapsed box ends right under a whole line - never through the middle of one.
+                    // Text rects include the descenders, and the +2px keeps ascenders/descenders from being shaved.
+                    var top = content.getBoundingClientRect().top;
+                    var best = 0;
+                    var range = document.createRange();
+                    var walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+                  
+                    while (walker.nextNode()) {
+                      if (!walker.currentNode.nodeValue.trim()) continue;
+                      range.selectNodeContents(walker.currentNode);
+                      Array.prototype.forEach.call(range.getClientRects(), function (rect) {
+                        var bottom = rect.bottom - top;
+                        if (rect.height > 0 && bottom <= target + 0.5 && bottom > best) best = bottom;
+                      });
+                    }
+                  
+                    content.querySelectorAll('img, svg, video').forEach(function (el) {
+                      var bottom = el.getBoundingClientRect().bottom - top;
+                      if (bottom <= target + 0.5 && bottom > best) best = bottom;
+                    });
+                  
+                    return best > 0 ? Math.ceil(best) + 2 : target;
+                  }
+                  
+if (!window.customElements.get('read-more-text')) {
                     window.customElements.define('read-more-text', class extends HTMLElement {
                       connectedCallback() {
                         var content = this.querySelector('.product-description-collapsible__content');
@@ -321,7 +347,8 @@ no need to manually pass the section as it is globally available)
                         // The CSS max-height (theme.css-driven --text-line-height * N lines) is already
                         // aligned to a whole number of lines - read it back instead of a hardcoded pixel
                         // value, so the collapsed state can never land mid-line.
-                        this.collapsedHeight = parseFloat(getComputedStyle(content).maxHeight) || 120;
+                        this.baseHeight = parseFloat(getComputedStyle(content).maxHeight) || 120;
+                        this.collapsedHeight = this.baseHeight;
 
                         toggle.setAttribute('aria-expanded', 'false');
                         toggle.addEventListener('click', this.onToggleClick.bind(this));
@@ -345,6 +372,10 @@ no need to manually pass the section as it is globally available)
                           this.content.style.maxHeight = this.content.scrollHeight + 'px';
                           return;
                         }
+
+                        // Paragraph/list spacing makes "N lines" land mid-line, so the cut is moved up to the
+                        // bottom of the last whole line that fits.
+                        this.collapsedHeight = fitToLine(this.content, this.baseHeight);
 
                         var overflowing = this.content.scrollHeight - this.collapsedHeight > 1;
                         this.toggleAttribute('data-overflowing', overflowing);
