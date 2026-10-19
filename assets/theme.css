@@ -11614,3 +11614,14 @@ figcaption {
     animation: none;
   }
 }
+
+/* Smooth layout changes when the window or the device changes size (breakpoints): the spacing, gaps and corner
+   radius of the sections' main containers ease over to their new values instead of snapping. Layout switches that
+   can't be animated by CSS (a row turning into a column, grid columns appearing) still change at once, but the
+   spacing around them now moves smoothly. :where() keeps the specificity at zero, so any element that already
+   declares its own transition (the header, drawers, buttons, ...) keeps it. Skipped for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  :where(.shopify-section) :where(.container, .section-spacing, .section-floating, .section-split, .section-split__column, .section-stack, .faq__container, .faq__content, .rich-text, .footer__content, .footer__block-list, .instagram-feed__header, .instagram-feed__content, .product-list, .reviews, .the-method) {
+    transition: padding .4s ease, margin .4s ease, gap .4s ease, border-radius .4s ease, row-gap .4s ease, column-gap .4s ease;
+  }
+}
