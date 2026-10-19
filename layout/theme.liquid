@@ -150,5 +150,37 @@
     <x-toast class="toast">
       {% comment %}Container for notification messages; DO NOT DELETE{% endcomment %}
     </x-toast>
+    {%- comment -%}
+    Crossing a layout breakpoint (resizing the window, rotating a phone, switching device mode) re-flows sections in
+    ways CSS can't animate - a row becoming a column, columns appearing - so they used to snap. The content area and
+    the footer now fade back in (from a softened state) right as a breakpoint is crossed, which hides the snap behind a
+    short, smooth transition. The header is left out so it stays put. Skipped for reduced motion.
+    {%- endcomment -%}
+    <script>
+      (function () {
+        if (!window.matchMedia || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        var root = document.documentElement;
+        var timer;
+
+        function soften() {
+          root.classList.remove('is-breakpoint-fade');
+          void root.offsetWidth;
+          root.classList.add('is-breakpoint-fade');
+          clearTimeout(timer);
+          timer = setTimeout(function () { root.classList.remove('is-breakpoint-fade'); }, 700);
+        }
+
+        ['(max-width: 699px)', '(max-width: 749px)', '(max-width: 999px)', '(max-width: 1149px)'].forEach(function (query) {
+          var list = window.matchMedia(query);
+
+          if (list.addEventListener) {
+            list.addEventListener('change', soften);
+          } else if (list.addListener) {
+            list.addListener(soften);
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
