@@ -160,6 +160,45 @@
     }
   }
 
+  {%- comment -%}
+  Tablets (700-999px): with the blocks wrapping in a flex row, the newsletter sat at the start, the social menu was
+  pushed to the far end by space-between, and the links dropped under the newsletter - a big empty gap in the middle
+  and no clear order. Here the row becomes a two-column grid instead: the newsletter (and any text / logo block)
+  gets its own full-width row, capped to a comfortable reading width, and the link / social blocks sit side by side
+  under it, aligned to the start, each in an equal column. The big logo is capped so it doesn't take the whole
+  width of the card. Phones (accordions, 2-column grid) and desktop (single row) keep their own layouts.
+  {%- endcomment -%}
+  @media screen and (min-width: 700px) and (max-width: 999px) {
+    #shopify-section-{{ section.id }} .footer__block-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      justify-content: start;
+      gap: 2.5rem 2rem;
+    }
+
+    #shopify-section-{{ section.id }} .footer__block,
+    #shopify-section-{{ section.id }} .footer__block--links,
+    #shopify-section-{{ section.id }} .footer__block--social_menu {
+      max-width: none;
+      min-width: 0;
+    }
+
+    #shopify-section-{{ section.id }} .footer__block--newsletter,
+    #shopify-section-{{ section.id }} .footer__block--text,
+    #shopify-section-{{ section.id }} .footer__block--scrolling_logo {
+      grid-column: 1 / -1;
+    }
+
+    #shopify-section-{{ section.id }} .footer__block--newsletter,
+    #shopify-section-{{ section.id }} .footer__block--text {
+      max-width: 34rem;
+    }
+
+    #shopify-section-{{ section.id }} .footer__big-logo--full img {
+      max-width: min(100%, 28rem);
+    }
+  }
+
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} .footer__block-list {
       flex-wrap: nowrap;
