@@ -77,11 +77,9 @@ This component is used to show the product gallery (used in product page and fea
     so they share one baseline and font-size, inherited from the body rather than set here. :empty:hidden
     keeps a slide without alt text from leaving a dangling gap after the counter.
 
-    Defaults to the theme's normal text color (assumes a light/studio product photo, the common case).
-    .is-dark-image (toggled per slide via data-dark-image + assets/theme.js's updateCaption_fn, same
-    event as the caption/counter sync) switches to white with a glow so it stays legible over a dark
-    photo - a merchant opts an image into this by adding "!dark" to its alt text in the Shopify admin,
-    it's not detected automatically from the pixels.
+    Defaults to the theme's normal text color. .is-dark-image switches it to white with a glow when the photo behind the bar is
+    dark: it is set automatically by <product-gallery> (assets/theme.js, updateContrast), which measures the brightness of the
+    image area behind the bar on every slide - nothing to tag in the Shopify admin.
     {%- endcomment -%}
     {%- comment -%}
     .h-stack (theme.css) defaults align-items to center, which centers the counter against the full
@@ -99,6 +97,7 @@ This component is used to show the product gallery (used in product page and fea
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .product-gallery__top-bar {
       color: rgb(var(--text-color));
+      transition: color .3s ease;
     }
 
     {%- comment -%}
@@ -207,13 +206,14 @@ This component is used to show the product gallery (used in product page and fea
   corner, instead of theme.css's own 8px/-12px offsets, so all three corner controls (bar, nav buttons,
   zoom) share one alignment.
 
-  Defaults to the theme's normal text color and switches to white via .is-dark-image, the same "!dark"
-  alt-text tag and <carousel-caption> (assets/theme.js) sync the caption/counter already use - toggled on
-  the outer <product-gallery> element (not .product-gallery__top-bar) since the zoom button lives outside
+  Defaults to the theme's normal text color and switches to white via .is-dark-image, set automatically by
+  <product-gallery> (assets/theme.js, updateContrast) from the brightness of the image behind these bottom corner controls -
+  toggled on the outer <product-gallery> element (not .product-gallery__top-bar) since the zoom button lives outside
   the bar entirely.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-zoom-button {
     color: rgb(var(--text-color));
+    transition: color .3s ease;
     inset-inline-end: var(--container-gutter);
     inset-block-end: 1rem;
   }
@@ -418,9 +418,8 @@ only way to do it on Shopify right now.
 
   if product.variants.size > 1
     for media in product.media
-      # Stripped of the "!dark"/"!light" background-color marker (see caption/counter block below) before
-      # splitting on "#" - otherwise a media tagged eg. "Caption#Color_Red!dark" would read "Red!dark" as
-      # the option value instead of "Red".
+      # Leftover "!dark"/"!light" markers (an old manual tag that is no longer used - the contrast over the photo is now
+      # automatic) are still stripped before splitting on "#", so alt texts that still carry one don't show it or break the option value.
       assign media_alt_clean = media.alt | remove: '!dark' | remove: '!light'
 
       if media_alt_clean contains '#' and media_alt_clean != product.title
@@ -449,15 +448,6 @@ only way to do it on Shopify right now.
     assign default_media_index = 0
     assign default_media_caption = effective_default_media.alt | remove: '!dark' | remove: '!light' | split: '#' | first | strip | escape
 
-    # Merchant-controlled background flag: append "!dark" to a media's alt text (in the Shopify admin) to
-    # mark it as needing white/glow caption text instead of the default dark-on-light styling - see
-    # is-dark-image below and each slide's data-dark-image attribute, kept in sync via <carousel-caption>
-    # (assets/theme.js) the same way data-caption already is. No live pixel sampling; this is a manual tag.
-    assign default_media_is_dark = false
-    if effective_default_media.alt contains '!dark'
-      assign default_media_is_dark = true
-    endif
-
     for media in gallery_media
       if filtered_indexes contains media.position
         assign media_count = media_count | minus: 1
@@ -476,7 +466,7 @@ only way to do it on Shopify right now.
   endif
 %}
 
-<product-gallery id="product-gallery-{{ product_gallery_carousel_id }}" class="product-gallery {{ class }} {% if product != blank and default_media_is_dark %}is-dark-image{% endif %}" form="{{ product_form_id }}" filtered-indexes="{{ filtered_indexes | json }}" {% if enable_media_autoplay %}autoplay-media{% endif %} {% if enable_image_zoom %}allow-zoom="{{ max_image_zoom_level }}" zoom-color-scheme-id="{{ settings.default_color_scheme.id }}"{% endif %}>
+<product-gallery id="product-gallery-{{ product_gallery_carousel_id }}" class="product-gallery {{ class }}" form="{{ product_form_id }}" filtered-indexes="{{ filtered_indexes | json }}" {% if enable_media_autoplay %}autoplay-media{% endif %} {% if enable_image_zoom %}allow-zoom="{{ max_image_zoom_level }}" zoom-color-scheme-id="{{ settings.default_color_scheme.id }}"{% endif %}>
   <div class="product-gallery__image-list">
     {%- comment -%}
     ----------------------------------------------------------------------------------------------------------------------
@@ -496,12 +486,10 @@ only way to do it on Shopify right now.
             the mobile progress bar/counter row, synced to whichever slide is currently in view. Stripped
             of anything from "#" onward, since alt text can also carry the variant-image-set encoding
             described in the IMPLEMENTATION NOTE above (eg. "Some caption#Color_Red") - a real caption
-            should never show that raw suffix. Also stripped of "!dark"/"!light" (the background-color
-            marker, see default_media_is_dark above) for the same reason - data-dark-image below carries
-            that instead, read by the same JS listener (updateCaption_fn) to toggle is-dark-image on
-            .product-gallery__top-bar and the outer <product-gallery> element.
+            should never show that raw suffix. Leftover "!dark"/"!light" markers (an old manual tag, no longer used) are
+            also stripped.
             {%- endcomment -%}
-            <div class="product-gallery__media snap-center {% if media == effective_default_media %}is-initial{% endif %} {% if enable_image_zoom and section.settings.desktop_media_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" data-caption="{{ media.alt | remove: '!dark' | remove: '!light' | split: '#' | first | strip | escape }}" {% if media.alt contains '!dark' %}data-dark-image{% endif %} role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: gallery_media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
+            <div class="product-gallery__media snap-center {% if media == effective_default_media %}is-initial{% endif %} {% if enable_image_zoom and section.settings.desktop_media_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" data-caption="{{ media.alt | remove: '!dark' | remove: '!light' | split: '#' | first | strip | escape }}" role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: gallery_media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
               {%- if effective_default_media == media -%}
                 {%- assign preload = true -%}
               {%- else -%}
@@ -689,7 +677,7 @@ only way to do it on Shopify right now.
       {%- comment -%}BAR{%- endcomment -%}
 
       {%- capture bar_controls -%}
-        <div class="product-gallery__top-bar full-bleed md:unbleed {% if product != blank and default_media_is_dark %}is-dark-image{% endif %}" style="width: 100%;">
+        <div class="product-gallery__top-bar full-bleed md:unbleed" style="width: 100%;">
           <progress-bar track-scroll-target="{{ product_gallery_carousel_id }}" class="progress-bar"></progress-bar>
 
           {%- comment -%}
