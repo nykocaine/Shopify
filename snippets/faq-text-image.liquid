@@ -490,7 +490,8 @@ if (!window.customElements.get('read-more-match-height')) {
 
           {%- render 'media-lightbox', id: media_lightbox_id, show_nav: true -%}
 
-          <progress-bar track-scroll-target="{{ media_carousel_id }}" class="progress-bar w-full"></progress-bar>
+          {%- comment -%}One continuous bar with a slide-wide marker that slides to the current slide (same indicator as the product gallery), not a progress bar{%- endcomment -%}
+          <carousel-segments aria-controls="{{ media_carousel_id }}" class="carousel-segments w-full" style="--segments: {{ slide_count }}; --segment-index: 0;"></carousel-segments>
 
           <script>
             (function () {
