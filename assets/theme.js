@@ -5730,9 +5730,30 @@ var Header = class extends HTMLElement {
     }
     document.addEventListener("header:allow-transparent-header", () => this.classList.remove("is-solid"), { signal: __privateGet(this, _abortController11).signal });
     document.addEventListener("header:disable-transparent-header", () => this.classList.add("is-solid"), { signal: __privateGet(this, _abortController11).signal });
+    this.updateFlushState();
+    window.addEventListener("load", () => this.updateFlushState(), { signal: __privateGet(this, _abortController11).signal });
+    window.addEventListener("pageshow", () => this.updateFlushState(), { signal: __privateGet(this, _abortController11).signal });
+    window.addEventListener("resize", throttle(() => this.updateFlushState()), { signal: __privateGet(this, _abortController11).signal });
+    document.fonts?.ready.then(() => this.updateFlushState());
   }
   disconnectedCallback() {
     __privateGet(this, _abortController11).abort();
+  }
+  /**
+   * Marks the header as "flush" (.is-flush) when the first section of the page starts right where the header ends: no gap, no
+   * margin between them (or it even slides under a transparent header). The header then keeps its bottom corners square (see
+   * sections/header.liquid). Only measured at the very top of the page, where the header is not stuck or slid away.
+   */
+  updateFlushState() {
+    if (window.scrollY > 0 || this.classList.contains("is-hidden")) {
+      return;
+    }
+    const firstSection = document.querySelector("main > .shopify-section");
+    if (!firstSection) {
+      return;
+    }
+    const gap = firstSection.getBoundingClientRect().top - this.getBoundingClientRect().bottom;
+    this.classList.toggle("is-flush", gap <= 1);
   }
 };
 _headerTrackerIntersectionObserver = new WeakMap();
