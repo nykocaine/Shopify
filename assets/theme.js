@@ -3636,6 +3636,95 @@ if (!window.customElements.get("buy-buttons")) {
 // js/common/product/product-gallery.js
 import { PhotoSwipeLightbox } from "vendor";
 var _abortController9, _photoSwipeInstance, _onGestureChangedListener, _settledMedia, _ProductGallery_instances, registerLightboxUi_fn, onSectionRerender_fn, onVariantChange_fn, onMediaChange_fn, onMediaSettle_fn, onCarouselClick_fn, onGestureStart_fn, onGestureChanged_fn;
+// Relative luminance under which the controls over the product photo become plain white. Higher than the point where white and black
+// have the same contrast (0.179) on purpose: on mid tones white looks cleaner than the grey the difference blend gives there.
+var DARK_BACKGROUND_LUMINANCE = 0.45;
+var contrastSamples = /* @__PURE__ */ new Map();
+var srgbToLinear = Array.from({ length: 256 }, (_, value) => {
+  const channel = value / 255;
+  return channel <= 0.04045 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
+});
+function loadContrastSample(source) {
+  if (contrastSamples.has(source)) {
+    return contrastSamples.get(source);
+  }
+  const promise = new Promise((resolve) => {
+    let url;
+    try {
+      url = new URL(source, window.location.href);
+    } catch (error) {
+      resolve(null);
+      return;
+    }
+    if (url.searchParams.has("width") || /shopify\.com$/.test(url.hostname)) {
+      url.searchParams.set("width", "120");
+      url.searchParams.delete("height");
+    }
+    const copy = new Image();
+    copy.crossOrigin = "anonymous";
+    copy.onload = () => {
+      try {
+        const width = copy.naturalWidth;
+        const height = copy.naturalHeight;
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        context.drawImage(copy, 0, 0, width, height);
+        resolve({ width, height, data: context.getImageData(0, 0, width, height).data });
+      } catch (error) {
+        resolve(null);
+      }
+    };
+    copy.onerror = () => resolve(null);
+    copy.src = url.href;
+  });
+  contrastSamples.set(source, promise);
+  return promise;
+}
+function averageLuminance(sample, left, top, right, bottom) {
+  const x0 = Math.max(0, Math.floor(left));
+  const x1 = Math.min(sample.width, Math.max(x0 + 1, Math.ceil(right)));
+  const y0 = Math.max(0, Math.floor(top));
+  const y1 = Math.min(sample.height, Math.max(y0 + 1, Math.ceil(bottom)));
+  let total = 0;
+  let count = 0;
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x < x1; x++) {
+      const index = (y * sample.width + x) * 4;
+      total += 0.2126 * srgbToLinear[sample.data[index]] + 0.7152 * srgbToLinear[sample.data[index + 1]] + 0.0722 * srgbToLinear[sample.data[index + 2]];
+      count += 1;
+    }
+  }
+  return count > 0 ? total / count : 1;
+}
+async function measureImageBands(image) {
+  const source = image.currentSrc || image.src;
+  if (!source) {
+    return null;
+  }
+  const sample = await loadContrastSample(source);
+  if (!sample) {
+    return null;
+  }
+  let visibleLeft = 0;
+  let visibleTop = 0;
+  let visibleWidth = sample.width;
+  let visibleHeight = sample.height;
+  const shownWidth = image.clientWidth;
+  const shownHeight = image.clientHeight;
+  if (shownWidth > 0 && shownHeight > 0 && getComputedStyle(image).objectFit === "cover") {
+    const scale = Math.max(shownWidth / sample.width, shownHeight / sample.height);
+    visibleWidth = shownWidth / scale;
+    visibleHeight = shownHeight / scale;
+    visibleLeft = (sample.width - visibleWidth) / 2;
+    visibleTop = (sample.height - visibleHeight) / 2;
+  }
+  return {
+    top: averageLuminance(sample, visibleLeft, visibleTop, visibleLeft + visibleWidth, visibleTop + visibleHeight * 0.22),
+    bottom: averageLuminance(sample, visibleLeft, visibleTop + visibleHeight * 0.78, visibleLeft + visibleWidth, visibleTop + visibleHeight)
+  };
+}
 var ProductGallery = class extends HTMLElement {
   /* Keep track of the currently settled media */
   constructor() {
@@ -3662,9 +3751,48 @@ var ProductGallery = class extends HTMLElement {
       this.carousel.addEventListener("gesturestart", __privateMethod(this, _ProductGallery_instances, onGestureStart_fn).bind(this), { capture: false, signal: __privateGet(this, _abortController9).signal });
     }
     __privateMethod(this, _ProductGallery_instances, onMediaChange_fn).call(this);
+    this.carousel.addEventListener("carousel:change", (event) => this.updateContrast(event.detail?.cell), { signal: __privateGet(this, _abortController9).signal });
+    window.addEventListener("resize", throttle(() => this.updateContrast(), 250), { signal: __privateGet(this, _abortController9).signal });
+    requestAnimationFrame(() => this.updateContrast());
   }
   disconnectedCallback() {
     __privateGet(this, _abortController9).abort();
+  }
+  /**
+   * Adaptive contrast: the controls drawn over the photo (progress bar, counter, caption, arrows, zoom button) turn plain white when the
+   * photo behind them is not light (on light areas they keep the difference blend of the stylesheet, which gives black). The brightness is measured on a small copy of the shown image, only in the bands where the controls
+   * sit (top: the bar, bottom: arrows and zoom), following how the image is cropped on screen; the result sets .is-dark-image on the
+   * bar(s) (top band, there is one for phones and one for desktop) and on this element (bottom band). A video, a 3D model or an image that cannot be read keeps the default colors.
+   */
+  async updateContrast(cell) {
+    let currentCell = cell;
+    if (!currentCell) {
+      try {
+        currentCell = this.carousel?.selectedCell;
+      } catch (error) {
+        currentCell = null;
+      }
+    }
+    if (!currentCell) {
+      return;
+    }
+    const requestId = (this._contrastRequest || 0) + 1;
+    this._contrastRequest = requestId;
+    let darkTop = false;
+    let darkBottom = false;
+    if (currentCell.getAttribute("data-media-type") === "image") {
+      const image = currentCell.querySelector("img");
+      const bands = image ? await measureImageBands(image) : null;
+      if (requestId !== this._contrastRequest) {
+        return;
+      }
+      if (bands) {
+        darkTop = bands.top < DARK_BACKGROUND_LUMINANCE;
+        darkBottom = bands.bottom < DARK_BACKGROUND_LUMINANCE;
+      }
+    }
+    this.classList.toggle("is-dark-image", darkBottom);
+    this.querySelectorAll(".product-gallery__top-bar").forEach((bar) => bar.classList.toggle("is-dark-image", darkTop));
   }
   get viewInSpaceButton() {
     return this.querySelector("[data-shopify-xr]");

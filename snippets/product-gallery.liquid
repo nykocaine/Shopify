@@ -106,6 +106,15 @@ This component is used to show the product gallery (used in product page and fea
       color: rgb(255 255 255 / .6);
     }
 
+    {%- comment -%}
+    Over a photo that is not light (measured by <product-gallery>, assets/theme.js, updateContrast - top band for the bar,
+    bottom band for the arrows and the zoom button) the blend is switched off and the controls are plain white, instead of the
+    grey the difference blend gives on mid tones. On light areas the difference blend above stays, which gives black.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-gallery__top-bar.is-dark-image {
+      mix-blend-mode: normal;
+    }
+
     #shopify-section-{{ section.id }} .product-gallery__caption {
       padding-inline-end: .5rem;
       display: block;
@@ -168,6 +177,10 @@ This component is used to show the product gallery (used in product page and fea
       mix-blend-mode: difference;
     }
 
+    #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-gallery__nav-buttons {
+      mix-blend-mode: normal;
+    }
+
     #shopify-section-{{ section.id }} .product-gallery__nav-button {
       background: none;
       border: none;
@@ -194,6 +207,10 @@ This component is used to show the product gallery (used in product page and fea
     mix-blend-mode: difference;
     inset-inline-end: var(--container-gutter);
     inset-block-end: 1rem;
+  }
+
+  #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-zoom-button {
+    mix-blend-mode: normal;
   }
 
   {%- comment -%}
