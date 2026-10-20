@@ -91,6 +91,14 @@ This component is used to show the product gallery (used in product page and fea
     }
 
     {%- comment -%}
+    With a single slide the indicator bar is hidden (assets/theme.js): the caption moves up to where the bar was, at the bar's own top
+    inset and keeping the gallery's inner side padding (same box as the bar), instead of leaving the gap that was under the bar.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-gallery__top-bar:has(.carousel-segments[hidden]) .product-gallery__caption-row {
+      margin-block-start: 0;
+    }
+
+    {%- comment -%}
     The whole bar (progress bar, caption and counter) is one blended group. --progress-bar-background-color/--progress-bar-fill-color
     (css-variables.liquid) are what .progress-bar (theme.css) paints from, so they are redefined here; .text-subdued (theme.css) sets
     its own dark color for the counter's "/" and total, so it gets a white-based one.
