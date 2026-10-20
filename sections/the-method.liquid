@@ -46,9 +46,8 @@
   explícito, así que no hay riesgo de que disparen un submit por accidente.
 {%- endcomment -%}
 {%- form 'customer', id: newsletter_form_id -%}
-  {%- if require_email_to_start -%}
-    <input type="hidden" name="contact[tags]" value="newsletter">
-  {%- endif -%}
+  {%- comment -%}Always sent: the same form also carries the e-mail asked at the end of the test (see the result panel){%- endcomment -%}
+  <input type="hidden" name="contact[tags]" value="newsletter">
 
   {%- assign just_subscribed = false -%}
   {%- if require_email_to_start and form.posted_successfully? -%}
@@ -65,7 +64,7 @@
     {%- endcomment -%}
     <div class="the-method-layout{% if section.settings.image != blank %} the-method-layout--has-image{% endif %}{% if just_subscribed %} the-method-layout--quiz-active{% endif %}" data-the-method-layout>
       <div class="the-method-layout__content color-scheme color-scheme--{{ section.settings.content_card_color_scheme.id }}" style="border-radius: {{ section.settings.the_method_border_radius }}px;">
-      <div class="the-method" data-the-method data-section-id="{{ section.id }}">
+      <div class="the-method" data-the-method data-section-id="{{ section.id }}" data-require-email="{{ require_email_to_start }}">
 
       <div class="the-method__meta">
         <button type="button" class="circle-button the-method__back" data-the-method-back {% unless just_subscribed %}hidden{% endunless %}>
@@ -169,7 +168,7 @@
             {%- comment -%} Pregunta con tarjetas + ícono (ej. "¿qué quieres mejorar?") {%- endcomment -%}
             {%- when 'question_cards' -%}
               {%- assign step_index = step_index | plus: 1 -%}
-              <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" {% unless step_index == 1 and just_subscribed %}hidden{% endunless %} {{ block.shopify_attributes }}>
+              <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" {% if block.settings.allow_multiple %}data-multiple="true"{% endif %} style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" {% unless step_index == 1 and just_subscribed %}hidden{% endunless %} {{ block.shopify_attributes }}>
                 <h3 id="the-method-q-{{ section.id }}-{{ step_index }}" class="the-method__question">{{ block.settings.question }}</h3>
 
                 <div class="the-method__options the-method__options--cards" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}">
@@ -206,6 +205,12 @@
                     {%- endif -%}
                   {%- endfor -%}
                 </div>
+
+                {%- if block.settings.allow_multiple -%}
+                  <div class="the-method__continue" data-the-method-continue>
+                    {%- render 'button', type: 'button', content: section.settings.continue_button_text, style: 'solid' -%}
+                  </div>
+                {%- endif -%}
               </div>
 
             {%- comment -%} Pregunta en lista compacta, sin íconos (ej. tipo de piel, sensibilidad) {%- endcomment -%}
@@ -249,14 +254,27 @@
               <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" {% unless step_index == 1 and just_subscribed %}hidden{% endunless %} {{ block.shopify_attributes }}>
                 <h3 id="the-method-q-{{ section.id }}-{{ step_index }}" class="the-method__question">{{ block.settings.question }}</h3>
 
-                <div class="the-method__tone-scale" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}">
-                  {%- for i in (1..6) -%}
-                    {%- liquid
-                      assign color_key = 'swatch_' | append: i | append: '_color'
-                      assign swatch_color = block.settings[color_key]
-                    -%}
-                    <button type="button" class="the-method__tone-swatch" role="radio" aria-checked="false" data-the-method-option data-step="{{ step_index }}" data-key="{{ block.id }}-{{ i }}" style="--tone-color: {{ swatch_color }};" aria-label="Tono {{ i }} de 6"></button>
-                  {%- endfor -%}
+                {%- liquid
+                  assign tone_colors = ''
+                  for i in (1..6)
+                    assign color_key = 'swatch_' | append: i | append: '_color'
+                    assign tone_colors = tone_colors | append: block.settings[color_key]
+                    unless forloop.last
+                      assign tone_colors = tone_colors | append: ','
+                    endunless
+                  endfor
+                  assign tone_start_color = block.settings.swatch_3_color
+                -%}
+                <div class="the-method__tone-slider" style="--tone-gradient: linear-gradient(to right, {{ tone_colors }}); --tone-color: {{ tone_start_color }};" data-tone-colors="{{ tone_colors }}">
+                  <input type="range" min="1" max="6" step="1" value="3" class="the-method__tone-range" data-the-method-tone data-step="{{ step_index }}" data-key-prefix="{{ block.id }}" aria-label="{{ block.settings.question | escape }}">
+                  <div class="the-method__tone-labels" aria-hidden="true">
+                    <span>{{ section.settings.tone_light_label }}</span>
+                    <span>{{ section.settings.tone_dark_label }}</span>
+                  </div>
+                </div>
+
+                <div class="the-method__continue" data-the-method-continue>
+                  {%- render 'button', type: 'button', content: section.settings.continue_button_text, style: 'solid' -%}
                 </div>
               </div>
 
@@ -344,10 +362,18 @@
           {%- endcase -%}
         {%- endfor -%}
 
+        <div class="the-method__panel the-method__panel--analyzing" data-the-method-panel="analyzing" tabindex="-1" role="status" aria-live="polite" hidden>
+          <p class="the-method__analyzing-text">{{ section.settings.analyzing_text }}</p>
+          <span class="the-method__analyzing-line" aria-hidden="true"></span>
+        </div>
+
         <div class="the-method__panel the-method__panel--result" data-the-method-panel="result" tabindex="-1" aria-live="polite" aria-atomic="true" hidden>
           {%- if section.settings.result_eyebrow != blank -%}
             {%- render 'subheading', content: section.settings.result_eyebrow -%}
           {%- endif -%}
+
+          {%- comment -%}Answers given, as small tags: tapping one goes back to that question to change it, then straight back to the result{%- endcomment -%}
+          <div class="the-method__summary" data-the-method-summary aria-label="{{ section.settings.summary_label | escape }}"></div>
 
           {%- for block in result_blocks -%}
             {%- liquid
@@ -404,6 +430,29 @@
               {%- endif -%}
             </div>
           {%- endfor -%}
+
+          <div class="the-method__result-extras" data-the-method-extras hidden>
+            {%- if section.settings.whatsapp_number != blank -%}
+              <div class="the-method__whatsapp" data-the-method-whatsapp data-number="{{ section.settings.whatsapp_number | strip }}" data-message="{{ section.settings.whatsapp_message | escape }}" data-answers-label="{{ section.settings.whatsapp_answers_label | escape }}" data-result-label="{{ section.settings.whatsapp_result_label | escape }}">
+                {%- render 'button', content: section.settings.whatsapp_button_text, href: '#', style: 'outline', external: true -%}
+              </div>
+            {%- endif -%}
+
+            {%- if section.settings.show_result_email -%}
+              <div class="the-method__email-capture" data-the-method-email data-success-text="{{ section.settings.result_email_success | escape }}" data-error-text="{{ section.settings.result_email_error | escape }}">
+                <label for="the-method-result-email-{{ section.id }}" class="the-method__email-capture-label">{{ section.settings.result_email_heading }}</label>
+                <div class="the-method__email-capture-row">
+                  <div class="the-method__email-field-end">
+                    <input id="the-method-result-email-{{ section.id }}" type="email" class="input" placeholder="{{ section.settings.result_email_placeholder | escape }}" autocomplete="email" enterkeyhint="send" data-the-method-email-input>
+                  </div>
+                  <div data-the-method-email-submit>
+                    {%- render 'button', type: 'button', content: section.settings.result_email_button, style: 'solid' -%}
+                  </div>
+                </div>
+                <p class="the-method__email-capture-status" data-the-method-email-status role="status" hidden></p>
+              </div>
+            {%- endif -%}
+          </div>
 
           {%- if routine_blocks.size > 0 -%}
             <div class="the-method__routine" data-the-method-routine hidden>
@@ -953,16 +1002,290 @@
       align-items: center;
     }
   }
+
+  /* ---- Interaction ---- */
+
+  /* "Analyzing" beat before the result: a line of text and a thin line that slides, nothing else */
+  .the-method__panel--analyzing {
+    max-width: none;
+    justify-items: stretch;
+    text-align: start !important;
+    min-height: 8rem;
+    align-content: center;
+  }
+
+  .the-method__analyzing-text {
+    margin: 0;
+    color: rgb(var(--text-color) / 0.7);
+  }
+
+  .the-method__analyzing-line {
+    display: block;
+    width: 100%;
+    max-width: 14rem;
+    height: 2px;
+    border-radius: 2px;
+    background: rgb(var(--text-color) / 0.12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .the-method__analyzing-line:after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 40%;
+    border-radius: 2px;
+    background: rgb(var(--text-color) / 0.6);
+    animation: the-method-analyzing 1.1s ease-in-out infinite;
+  }
+
+  @keyframes the-method-analyzing {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(250%); }
+  }
+
+  /* Continue button (multiple choice and skin tone): hidden until there is an answer to confirm */
+  .the-method__continue .button[disabled] {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  /* Skin tone: one continuous scale (a range) painted with the tones of the block; the handle takes the tone it is on */
+  .the-method__tone-slider {
+    display: grid;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 28rem;
+  }
+
+  .the-method__tone-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 2.25rem;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .the-method__tone-range::-webkit-slider-runnable-track {
+    height: 0.75rem;
+    border-radius: 999px;
+    background: var(--tone-gradient);
+  }
+
+  .the-method__tone-range::-moz-range-track {
+    height: 0.75rem;
+    border-radius: 999px;
+    background: var(--tone-gradient);
+  }
+
+  .the-method__tone-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 2rem;
+    height: 2rem;
+    margin-top: -0.625rem;
+    border-radius: 50%;
+    border: 3px solid rgb(var(--background));
+    background: var(--tone-color);
+    box-shadow: 0 0 0 1px rgb(var(--text-color) / 0.25);
+    transition: transform 0.15s ease;
+  }
+
+  .the-method__tone-range::-moz-range-thumb {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 3px solid rgb(var(--background));
+    background: var(--tone-color);
+    box-shadow: 0 0 0 1px rgb(var(--text-color) / 0.25);
+  }
+
+  .the-method__tone-range:active::-webkit-slider-thumb {
+    transform: scale(1.1);
+  }
+
+  .the-method__tone-range:focus-visible {
+    outline: 2px solid rgb(var(--text-color));
+    outline-offset: 4px;
+    border-radius: 999px;
+  }
+
+  .the-method__tone-labels {
+    display: flex;
+    justify-content: space-between;
+    color: rgb(var(--text-color) / 0.6);
+  }
+
+  /* Answers given, as small tags above the result */
+  .the-method__summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .the-method__summary:empty {
+    display: none;
+  }
+
+  .the-method__summary-tag {
+    appearance: none;
+    cursor: pointer;
+    border: 0;
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    background: rgb(var(--background));
+    color: rgb(var(--text-color));
+    transition: opacity 0.2s ease;
+  }
+
+  @media (pointer: fine) {
+    .the-method__summary-tag:hover {
+      opacity: 0.7;
+    }
+  }
+
+  /* Under the result: send it by WhatsApp and leave the e-mail */
+  .the-method__result-extras {
+    display: grid;
+    gap: var(--the-method-gap);
+  }
+
+  .the-method__result-extras[hidden] {
+    display: none;
+  }
+
+  .the-method__email-capture {
+    display: grid;
+    gap: 0.5rem;
+    max-width: 32rem;
+  }
+
+  .the-method__email-capture-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .the-method__email-field-end {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .the-method__email-capture-status {
+    margin: 0;
+    color: rgb(var(--text-color) / 0.7);
+  }
+
+  .the-method__email-capture-status[hidden] {
+    display: none;
+  }
+
+  /* Routine: a thin line joins the steps, which come in one after another when the result is shown */
+  .the-method__routine-list {
+    position: relative;
+  }
+
+  .the-method__routine-step {
+    position: relative;
+    animation: the-method-step-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .the-method__routine-step:nth-child(2) { animation-delay: 0.08s; }
+  .the-method__routine-step:nth-child(3) { animation-delay: 0.16s; }
+  .the-method__routine-step:nth-child(4) { animation-delay: 0.24s; }
+  .the-method__routine-step:nth-child(5) { animation-delay: 0.32s; }
+
+  .the-method__routine-step:not(:last-child):after {
+    content: "";
+    position: absolute;
+    inset-inline-start: calc(1rem + 0.75rem);
+    inset-block-start: calc(100% - 0.25rem);
+    width: 1px;
+    height: calc(0.75rem + 0.5rem);
+    background: rgb(var(--text-color) / 0.2);
+  }
+
+  @keyframes the-method-step-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* The check of a chosen option draws itself */
+  .the-method__option[aria-checked="true"] .the-method__option-check path {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    animation: the-method-check 0.35s ease-out 0.05s forwards;
+  }
+
+  @keyframes the-method-check {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* Smoother progress */
+  .the-method__progress-fill {
+    transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Change of panel with the View Transitions API (when the browser has it): the panels area morphs to its new size while the old content
+     fades out and the new one comes in. Only that area is animated, not the whole page. Without support, the script falls back to its own
+     animation. */
+  .the-method__panels {
+    view-transition-name: the-method-panels;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+
+  ::view-transition-group(the-method-panels) {
+    animation-duration: 0.26s;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  ::view-transition-old(the-method-panels) {
+    animation: the-method-vt-out 0.12s ease-out both;
+  }
+
+  ::view-transition-new(the-method-panels) {
+    animation: the-method-vt-in 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes the-method-vt-out {
+    to { opacity: 0; }
+  }
+
+  @keyframes the-method-vt-in {
+    from { opacity: 0; transform: translateY(var(--the-method-travel, 8px)); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .the-method__routine-step,
+    .the-method__analyzing-line:after,
+    .the-method__option[aria-checked="true"] .the-method__option-check path {
+      animation: none;
+    }
+
+    .the-method__option[aria-checked="true"] .the-method__option-check path {
+      stroke-dashoffset: 0;
+    }
+  }
 {% endstylesheet %}
 
 {% javascript %}
 (function () {
   var COMBINE_GAP_THRESHOLD = 1;
-  var DURATION = 150;
   var OUT_DURATION = 120;
   var IN_DURATION = 240;
   var HEIGHT_DURATION = 240;
   var SELECT_DELAY = 160;
+  var ANALYZING_DURATION = 1400;
+  var MAX_MULTIPLE = 2;
+  var STORAGE_TTL = 7 * 24 * 60 * 60 * 1000;
 
   var reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -971,22 +1294,32 @@
       return Promise.resolve();
     }
     try {
-      return el.animate(keyframes, { duration: duration || DURATION, easing: easing || 'ease', delay: delay || 0 }).finished.catch(function () {});
+      return el.animate(keyframes, { duration: duration, easing: easing || 'ease', delay: delay || 0 }).finished.catch(function () {});
     } catch (e) {
       return Promise.resolve();
     }
   }
 
-  /* Mirrors the theme's own accordion height-transition (assets/theme.js AccordionDisclosure):
-     measure the current height, lock it + clip overflow, swap content, then tween to the new
-     natural height (via scrollHeight, since the box is currently height-locked) before releasing
-     the inline height so the container stays naturally responsive again. */
-  function animateHeight(panelsEl, fromHeight, toHeight) {
-    return animate(panelsEl, [{ height: fromHeight + 'px' }, { height: toHeight + 'px' }], HEIGHT_DURATION, 'ease-in-out');
+  function track(name, detail) {
+    try {
+      (window.dataLayer = window.dataLayer || []).push(Object.assign({ event: 'the_method_' + name }, detail || {}));
+      document.dispatchEvent(new CustomEvent('the-method:' + name, { detail: detail || {} }));
+    } catch (e) {}
+  }
+
+  function vibrate() {
+    if (navigator.vibrate && !reducedMotionQuery.matches) {
+      try { navigator.vibrate(8); } catch (e) {}
+    }
   }
 
   function initInstance(wrapper) {
-    var options = wrapper.querySelectorAll('[data-the-method-option]');
+    var sectionId = wrapper.getAttribute('data-section-id');
+    var storageKey = 'the-method:' + sectionId + ':v1';
+    var requireEmail = wrapper.getAttribute('data-require-email') === 'true';
+
+    var options = Array.prototype.slice.call(wrapper.querySelectorAll('[data-the-method-option]'));
+    var toneRanges = Array.prototype.slice.call(wrapper.querySelectorAll('[data-the-method-tone]'));
     var startButton = wrapper.querySelector('[data-the-method-start]');
     var backButton = wrapper.querySelector('[data-the-method-back]');
     var restartButton = wrapper.querySelector('[data-the-method-restart]');
@@ -997,23 +1330,28 @@
     var contextNotes = wrapper.querySelectorAll('[data-the-method-context-note]');
     var warningEl = wrapper.querySelector('[data-the-method-warning]');
     var routineEl = wrapper.querySelector('[data-the-method-routine]');
+    var summaryEl = wrapper.querySelector('[data-the-method-summary]');
+    var extrasEl = wrapper.querySelector('[data-the-method-extras]');
+    var panelsEl = wrapper.querySelector('[data-the-method-panels]');
     var layoutEl = wrapper.closest('[data-the-method-layout]');
+    var formEl = wrapper.closest('form');
 
-    // El orden y el total de pasos salen del DOM (uno por bloque de pregunta renderizado),
-    // no de una lista fija — así cualquier cantidad/orden de bloques funciona sin tocar JS.
     var STEPS = Array.prototype.slice.call(wrapper.querySelectorAll('[data-the-method-panel]')).map(function (panel) {
       return panel.getAttribute('data-the-method-panel');
     });
     var totalFlowSteps = STEPS.filter(function (key) { return key.indexOf('step-') === 0; }).length;
 
     var busy = false;
+    var analyzingTimer = null;
 
+    // answers[step] = list of records (one for single choice, up to MAX_MULTIPLE for multiple choice)
     var state = {
       scores: { salicylic: 0, tca: 0 },
       format: null,
       notes: [],
       warnings: [],
-      answeredOptions: {}
+      answers: {},
+      editing: false
     };
 
     function panelFor(key) {
@@ -1021,7 +1359,12 @@
     }
 
     function optionsForStep(step) {
-      return Array.prototype.slice.call(wrapper.querySelectorAll('[data-the-method-option][data-step="' + step + '"]'));
+      return options.filter(function (option) { return option.getAttribute('data-step') === String(step); });
+    }
+
+    function isMultiple(step) {
+      var panel = panelFor('step-' + step);
+      return !!panel && panel.hasAttribute('data-multiple');
     }
 
     function currentPanelKey() {
@@ -1029,37 +1372,96 @@
       return visible ? visible.getAttribute('data-the-method-panel') : STEPS[0];
     }
 
-    function applySelectedState(step) {
-      var selected = state.answeredOptions[step];
-      optionsForStep(step).forEach(function (option) {
-        option.setAttribute('aria-checked', option === selected ? 'true' : 'false');
-      });
+    function recordFromOption(option) {
+      var labelEl = option.querySelector('.the-method__option-label');
+      return {
+        key: option.getAttribute('data-key'),
+        label: labelEl ? labelEl.textContent.trim() : (option.getAttribute('aria-label') || ''),
+        weightSalicylic: Number(option.dataset.weightSalicylic || 0),
+        weightTca: Number(option.dataset.weightTca || 0),
+        format: option.dataset.format || '',
+        note: option.dataset.note || '',
+        warn: option.dataset.warn === 'true',
+        warnNote: option.dataset.warnNote || ''
+      };
     }
 
-    // Recalcula puntajes/formato/notas/advertencias desde cero en base a las respuestas
-    // actualmente marcadas, así volver atrás y cambiar una respuesta no duplica nada.
+    function answeredCount(step) {
+      return (state.answers[step] || []).length;
+    }
+
+    function isAnswered(step) {
+      return answeredCount(step) > 0;
+    }
+
+    // ---- persistence (so a visitor who leaves can come back to where they were) ----
+    function saveProgress(panelKey) {
+      try {
+        var answers = {};
+        Object.keys(state.answers).forEach(function (step) {
+          answers[step] = state.answers[step].map(function (record) { return record.key; });
+        });
+        localStorage.setItem(storageKey, JSON.stringify({ answers: answers, panel: panelKey || currentPanelKey(), ts: Date.now() }));
+      } catch (e) {}
+    }
+
+    function clearProgress() {
+      try { localStorage.removeItem(storageKey); } catch (e) {}
+    }
+
+    // ---- selection state in the DOM ----
+    function toneColorsFor(range) {
+      return (range.parentElement.getAttribute('data-tone-colors') || '').split(',');
+    }
+
+    function paintTone(range) {
+      var colors = toneColorsFor(range);
+      var index = Math.min(Math.max(Number(range.value), 1), colors.length) - 1;
+      if (colors[index]) {
+        range.parentElement.style.setProperty('--tone-color', colors[index]);
+      }
+      range.setAttribute('aria-valuetext', 'Tono ' + range.value + ' de ' + colors.length);
+    }
+
+    function updateContinue(step) {
+      var panel = panelFor('step-' + step);
+      var wrap = panel && panel.querySelector('[data-the-method-continue]');
+      if (!wrap) return;
+      var button = wrap.querySelector('button, a');
+      if (button) button.disabled = !isAnswered(step);
+    }
+
+    function applySelectedState(step) {
+      var selectedKeys = (state.answers[step] || []).map(function (record) { return record.key; });
+      optionsForStep(step).forEach(function (option) {
+        option.setAttribute('aria-checked', selectedKeys.indexOf(option.getAttribute('data-key')) !== -1 ? 'true' : 'false');
+      });
+      toneRanges.forEach(function (range) {
+        if (range.getAttribute('data-step') !== String(step)) return;
+        var record = (state.answers[step] || [])[0];
+        if (record) {
+          range.value = record.key.split('-tone-')[1] || range.value;
+        }
+        paintTone(range);
+      });
+      updateContinue(step);
+    }
+
+    // Recomputes scores/format/notes/warnings from scratch from the answers, so going back and changing one never doubles anything.
     function recomputeFromAnswers() {
       var scores = { salicylic: 0, tca: 0 };
       var format = null;
       var notes = [];
       var warnings = [];
 
-      Object.keys(state.answeredOptions).forEach(function (step) {
-        var option = state.answeredOptions[step];
-        if (!option) return;
-
-        scores.salicylic += Number(option.dataset.weightSalicylic || 0);
-        scores.tca += Number(option.dataset.weightTca || 0);
-
-        if (option.dataset.format && option.dataset.format !== 'auto') {
-          format = option.dataset.format;
-        }
-        if (option.dataset.note) {
-          notes.push(option.dataset.note);
-        }
-        if (option.dataset.warn === 'true' && option.dataset.warnNote) {
-          warnings.push(option.dataset.warnNote);
-        }
+      Object.keys(state.answers).forEach(function (step) {
+        (state.answers[step] || []).forEach(function (record) {
+          scores.salicylic += record.weightSalicylic;
+          scores.tca += record.weightTca;
+          if (record.format && record.format !== 'auto') format = record.format;
+          if (record.note) notes.push(record.note);
+          if (record.warn && record.warnNote) warnings.push(record.warnNote);
+        });
       });
 
       state.scores = scores;
@@ -1114,8 +1516,7 @@
       return Math.abs(state.scores.salicylic - state.scores.tca) <= COMBINE_GAP_THRESHOLD ? 'combo' : 'single';
     }
 
-    // Cada resultado declara a qué método/formato responde ("any" = comodín). Se elige el
-    // más específico que calce, para que varios resultados puedan convivir sin ambigüedad.
+    // Each result declares which method/format it answers to ("any" = wildcard); the most specific match wins.
     function scoreMatch(card, method, format) {
       var cardMethod = card.dataset.matchMethod || 'any';
       var cardFormat = card.dataset.matchFormat || 'any';
@@ -1125,6 +1526,48 @@
       if (cardMethod === method) score += 2;
       if (cardFormat === format) score += 1;
       return score;
+    }
+
+    function answersSummaryText() {
+      return STEPS.filter(function (key) { return key.indexOf('step-') === 0; }).map(function (key) {
+        var step = key.split('-')[1];
+        return (state.answers[step] || []).map(function (record) { return record.label; }).join(' + ');
+      }).filter(Boolean);
+    }
+
+    function renderSummary() {
+      if (!summaryEl) return;
+      summaryEl.textContent = '';
+      STEPS.forEach(function (key) {
+        if (key.indexOf('step-') !== 0) return;
+        var step = key.split('-')[1];
+        var labels = (state.answers[step] || []).map(function (record) { return record.label; }).filter(Boolean);
+        if (!labels.length) return;
+        var tag = document.createElement('button');
+        tag.type = 'button';
+        tag.className = 'the-method__summary-tag';
+        tag.setAttribute('data-edit-step', key);
+        tag.textContent = labels.join(' + ');
+        summaryEl.appendChild(tag);
+      });
+    }
+
+    function prepareExtras(best) {
+      if (extrasEl) extrasEl.hidden = !best;
+
+      var whatsapp = wrapper.querySelector('[data-the-method-whatsapp]');
+      if (whatsapp && best) {
+        var link = whatsapp.querySelector('a');
+        var titleEl = best.querySelector('h3');
+        var lines = [whatsapp.getAttribute('data-message') || ''];
+        var answerLines = answersSummaryText();
+        if (answerLines.length) lines.push((whatsapp.getAttribute('data-answers-label') || '') + ': ' + answerLines.join(' / '));
+        if (titleEl) lines.push((whatsapp.getAttribute('data-result-label') || '') + ': ' + titleEl.textContent.trim());
+        if (link) {
+          link.setAttribute('href', 'https://wa.me/' + whatsapp.getAttribute('data-number').replace(/\D/g, '') + '?text=' + encodeURIComponent(lines.filter(Boolean).join('\n')));
+          link.setAttribute('rel', 'noopener');
+        }
+      }
     }
 
     function showResult() {
@@ -1154,32 +1597,60 @@
       });
 
       if (routineEl) routineEl.hidden = false;
+      renderSummary();
+      prepareExtras(bestScore < 0 ? null : best);
+      track('result', { method: method, format: format });
     }
 
     function updateControls(panelKey) {
       var isIntro = panelKey === 'intro';
+      var isAnalyzing = panelKey === 'analyzing';
       var isQuestion = panelKey.indexOf('step-') === 0;
 
-      if (backButton) backButton.hidden = isIntro;
-      if (restartButton) restartButton.hidden = isIntro;
+      if (backButton) backButton.hidden = isIntro || isAnalyzing;
+      if (restartButton) restartButton.hidden = isIntro || isAnalyzing;
       if (progressWrapper) progressWrapper.hidden = isIntro;
 
-      // La imagen de la intro solo se ve en la intro: al avanzar, la sección colapsa a una
-      // sola columna (y vuelve a dos columnas si se reinicia el test).
+      // The intro image is only seen on the intro: when the test moves on, the section collapses to a single column.
       if (layoutEl) layoutEl.classList.toggle('the-method-layout--quiz-active', !isIntro);
 
-      if (isQuestion && progressCurrent) {
-        var stepNumber = panelKey.split('-')[1];
-        progressCurrent.textContent = stepNumber.length < 2 ? '0' + stepNumber : stepNumber;
-        if (progressFill && totalFlowSteps > 0) {
+      if (progressFill && totalFlowSteps > 0) {
+        if (isQuestion) {
+          var stepNumber = panelKey.split('-')[1];
+          if (progressCurrent) progressCurrent.textContent = stepNumber.length < 2 ? '0' + stepNumber : stepNumber;
           progressFill.style.width = (Number(stepNumber) / totalFlowSteps) * 100 + '%';
+        } else if (isAnalyzing || panelKey === 'result') {
+          progressFill.style.width = '100%';
         }
       }
     }
 
-    // One change of panel: the old one fades out quickly, the controls and the layout settle (progress, buttons, the intro image), and then
-    // the new one rises in while the container eases to its height - all in one smooth move, without waiting for a long sequence. Clicks
-    // that arrive while it runs are ignored (busy), so a double tap can't skip a question.
+    var supportsViewTransitions = typeof document.startViewTransition === 'function';
+
+    function swapPanels(fromEl, toEl, panelKey) {
+      if (fromEl) fromEl.hidden = true;
+      updateControls(panelKey);
+      toEl.hidden = false;
+    }
+
+    function finishTransition(toEl, panelKey) {
+      if (typeof toEl.focus === 'function') {
+        toEl.focus({ preventScroll: true });
+      }
+      saveProgress(panelKey);
+      busy = false;
+
+      if (panelKey === 'analyzing') {
+        clearTimeout(analyzingTimer);
+        analyzingTimer = setTimeout(function () {
+          goTo('result', 1);
+        }, reducedMotionQuery.matches ? 0 : ANALYZING_DURATION);
+      }
+    }
+
+    // One change of panel. With the View Transitions API the area of the panels morphs and cross-fades by itself; otherwise the old panel fades
+    // out, the controls and the layout settle, and the new one rises in while the container eases to its height. Clicks that arrive while it
+    // runs are ignored (busy), so a double tap can't skip a question.
     function goTo(panelKey, direction) {
       if (busy) {
         return Promise.resolve();
@@ -1203,11 +1674,31 @@
 
       if (panelKey.indexOf('step-') === 0) {
         applySelectedState(panelKey.split('-')[1]);
+        track('step', { step: panelKey });
       }
 
-      var panelsEl = wrapper.querySelector('[data-the-method-panels]');
-      var fromHeight = panelsEl ? panelsEl.getBoundingClientRect().height : 0;
+      if (supportsViewTransitions && !reducedMotionQuery.matches) {
+        document.documentElement.style.setProperty('--the-method-travel', travel + 'px');
+        return new Promise(function (resolve) {
+          var transition;
+          try {
+            transition = document.startViewTransition(function () {
+              swapPanels(fromEl, toEl, panelKey);
+            });
+          } catch (e) {
+            swapPanels(fromEl, toEl, panelKey);
+            finishTransition(toEl, panelKey);
+            resolve();
+            return;
+          }
+          transition.finished.catch(function () {}).then(function () {
+            finishTransition(toEl, panelKey);
+            resolve();
+          });
+        });
+      }
 
+      var fromHeight = panelsEl ? panelsEl.getBoundingClientRect().height : 0;
       var chain = Promise.resolve();
 
       if (fromEl) {
@@ -1227,9 +1718,8 @@
           toEl.hidden = false;
 
           var heightAnimation = Promise.resolve();
-
           if (panelsEl) {
-            heightAnimation = animateHeight(panelsEl, fromHeight, panelsEl.scrollHeight);
+            heightAnimation = animate(panelsEl, [{ height: fromHeight + 'px' }, { height: panelsEl.scrollHeight + 'px' }], HEIGHT_DURATION, 'ease-in-out');
           }
 
           return Promise.all([
@@ -1245,10 +1735,7 @@
             panelsEl.style.height = '';
             panelsEl.style.overflow = '';
           }
-          if (typeof toEl.focus === 'function') {
-            toEl.focus({ preventScroll: true });
-          }
-          busy = false;
+          finishTransition(toEl, panelKey);
         })
         .catch(function () {
           if (panelsEl) {
@@ -1262,26 +1749,65 @@
     function goToStepIndex(delta) {
       var index = STEPS.indexOf(currentPanelKey());
       var nextIndex = index + delta;
+      if (nextIndex >= 0 && nextIndex < STEPS.length && STEPS[nextIndex] === 'analyzing' && delta < 0) {
+        nextIndex -= 1;
+      }
       if (nextIndex < 0 || nextIndex >= STEPS.length) return;
       goTo(STEPS[nextIndex], delta > 0 ? 1 : -1);
     }
 
+    // After an answer is confirmed: next question, or, when it was edited from the result, straight back to the (recalculated) result.
+    function advance() {
+      if (state.editing) {
+        state.editing = false;
+        goTo('result', 1);
+      } else {
+        goToStepIndex(1);
+      }
+    }
+
+    function afterAnswer(step) {
+      applySelectedState(step);
+      recomputeFromAnswers();
+      updateWarningBanner();
+      saveProgress();
+      vibrate();
+    }
+
+    // ---- single and multiple choice ----
     options.forEach(function (option) {
       option.addEventListener('click', function () {
-        var step = option.getAttribute('data-step');
         if (busy) return;
-        state.answeredOptions[step] = option;
-        applySelectedState(step);
-        recomputeFromAnswers();
-        updateWarningBanner();
+        var step = option.getAttribute('data-step');
+        var record = recordFromOption(option);
+        var current = state.answers[step] || [];
+
+        if (isMultiple(step)) {
+          var exists = current.some(function (item) { return item.key === record.key; });
+          if (exists) {
+            current = current.filter(function (item) { return item.key !== record.key; });
+          } else {
+            current = current.concat(record);
+            if (current.length > MAX_MULTIPLE) current = current.slice(current.length - MAX_MULTIPLE);
+          }
+          state.answers[step] = current;
+          afterAnswer(step);
+          track('answer', { step: 'step-' + step, answer: record.label });
+          return;
+        }
+
+        state.answers[step] = [record];
+        afterAnswer(step);
+        track('answer', { step: 'step-' + step, answer: record.label });
+
         // A short beat so the chosen option is seen selected before the next question comes in
         if (reducedMotionQuery.matches) {
-          goToStepIndex(1);
+          advance();
         } else {
           busy = true;
           setTimeout(function () {
             busy = false;
-            goToStepIndex(1);
+            advance();
           }, SELECT_DELAY);
         }
       });
@@ -1301,32 +1827,244 @@
       });
     });
 
+    // ---- skin tone scale ----
+    toneRanges.forEach(function (range) {
+      var step = range.getAttribute('data-step');
+
+      function record() {
+        paintTone(range);
+        state.answers[step] = [{
+          key: range.getAttribute('data-key-prefix') + '-tone-' + range.value,
+          label: 'Tono ' + range.value,
+          weightSalicylic: 0,
+          weightTca: 0,
+          format: '',
+          note: '',
+          warn: false,
+          warnNote: ''
+        }];
+        updateContinue(step);
+        saveProgress();
+      }
+
+      range.addEventListener('input', function () {
+        paintTone(range);
+      });
+      range.addEventListener('change', function () {
+        record();
+        vibrate();
+        track('answer', { step: 'step-' + step, answer: 'tono ' + range.value });
+      });
+      // Tapping the handle without moving it still confirms the tone it is on
+      range.addEventListener('click', function () {
+        if (!isAnswered(step)) record();
+      });
+      paintTone(range);
+    });
+
+    // ---- continue (multiple choice and tone) ----
+    wrapper.querySelectorAll('[data-the-method-continue]').forEach(function (wrap) {
+      var panel = wrap.closest('[data-the-method-panel]');
+      var button = wrap.querySelector('button, a');
+      if (button) button.disabled = true;
+      wrap.addEventListener('click', function (event) {
+        if (!panel || busy) return;
+        var step = panel.getAttribute('data-the-method-panel').split('-')[1];
+        if (!isAnswered(step)) return;
+        event.preventDefault();
+        advance();
+      });
+    });
+
+    // ---- intro, back, restart ----
     if (startButton) {
       startButton.addEventListener('click', function () {
+        track('start');
         goTo(STEPS[1] || 'result');
       });
     }
 
     if (backButton) {
       backButton.addEventListener('click', function () {
+        state.editing = false;
         goToStepIndex(-1);
       });
     }
 
     if (restartButton) {
       restartButton.addEventListener('click', function () {
-        state.answeredOptions = {};
+        clearTimeout(analyzingTimer);
+        state.answers = {};
         state.scores = { salicylic: 0, tca: 0 };
         state.format = null;
         state.notes = [];
         state.warnings = [];
+        state.editing = false;
+        clearProgress();
         updateWarningBanner();
         options.forEach(function (option) {
           option.setAttribute('aria-checked', 'false');
         });
+        toneRanges.forEach(function (range) {
+          range.value = 3;
+          paintTone(range);
+        });
+        wrapper.querySelectorAll('[data-the-method-continue]').forEach(function (wrap) {
+          var button = wrap.querySelector('button, a');
+          if (button) button.disabled = true;
+        });
+        track('restart');
         goTo('intro', -1);
       });
     }
+
+    // ---- summary tags: back to one question, then straight to the result again ----
+    if (summaryEl) {
+      summaryEl.addEventListener('click', function (event) {
+        var tag = event.target.closest('[data-edit-step]');
+        if (!tag || busy) return;
+        state.editing = true;
+        goTo(tag.getAttribute('data-edit-step'), -1);
+      });
+    }
+
+    // ---- e-mail at the end of the test (the same customer form of the section, sent without reloading the page) ----
+    var emailBox = wrapper.querySelector('[data-the-method-email]');
+    if (emailBox && formEl) {
+      var emailInput = emailBox.querySelector('[data-the-method-email-input]');
+      var emailStatus = emailBox.querySelector('[data-the-method-email-status]');
+      var emailSubmit = emailBox.querySelector('[data-the-method-email-submit] button');
+      var sending = false;
+
+      function showEmailStatus(text) {
+        emailStatus.textContent = text;
+        emailStatus.hidden = !text;
+      }
+
+      function sendEmail() {
+        if (sending) return;
+        var value = (emailInput.value || '').trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          showEmailStatus(emailBox.getAttribute('data-error-text') || '');
+          emailInput.focus();
+          return;
+        }
+        sending = true;
+        if (emailSubmit) emailSubmit.setAttribute('aria-busy', 'true');
+        var data = new FormData(formEl);
+        data.set('contact[email]', value);
+        fetch(formEl.getAttribute('action') || '/contact', { method: 'POST', body: data, headers: { Accept: 'text/html' } })
+          .then(function (response) {
+            if (!response.ok) throw new Error('bad response');
+            showEmailStatus(emailBox.getAttribute('data-success-text') || '');
+            emailInput.value = '';
+            track('email');
+          })
+          .catch(function () {
+            showEmailStatus(emailBox.getAttribute('data-error-text') || '');
+          })
+          .then(function () {
+            sending = false;
+            if (emailSubmit) emailSubmit.removeAttribute('aria-busy');
+          });
+      }
+
+      if (emailSubmit) emailSubmit.addEventListener('click', sendEmail);
+      emailInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          sendEmail();
+        }
+      });
+    }
+
+    var whatsappLink = wrapper.querySelector('[data-the-method-whatsapp] a');
+    if (whatsappLink) {
+      whatsappLink.addEventListener('click', function () { track('whatsapp'); });
+    }
+
+    // ---- keyboard: 1-9 picks an option of the question in view, Enter confirms ----
+    wrapper.addEventListener('keydown', function (event) {
+      if (event.metaKey || event.ctrlKey || event.altKey || busy) return;
+      var tag = event.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      var key = currentPanelKey();
+      if (key.indexOf('step-') !== 0) return;
+      var step = key.split('-')[1];
+
+      if (/^[1-9]$/.test(event.key)) {
+        var choice = optionsForStep(step)[Number(event.key) - 1];
+        if (choice) {
+          event.preventDefault();
+          choice.click();
+        }
+      }
+    });
+
+    // ---- swipe on phones: to the right goes back, to the left moves on once the question is answered ----
+    var touchStartX = 0;
+    var touchStartY = 0;
+    if (panelsEl) {
+      panelsEl.addEventListener('touchstart', function (event) {
+        var touch = event.changedTouches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      }, { passive: true });
+
+      panelsEl.addEventListener('touchend', function (event) {
+        if (busy || event.target.closest('input[type="range"]')) return;
+        var touch = event.changedTouches[0];
+        var dx = touch.clientX - touchStartX;
+        var dy = touch.clientY - touchStartY;
+        if (Math.abs(dx) < 70 || Math.abs(dy) > 40) return;
+        var key = currentPanelKey();
+        if (key.indexOf('step-') !== 0) return;
+        var step = key.split('-')[1];
+
+        if (dx > 0) {
+          state.editing = false;
+          goToStepIndex(-1);
+        } else if (isAnswered(step)) {
+          advance();
+        }
+      }, { passive: true });
+    }
+
+    // ---- restore where the visitor was (not when an e-mail is required to start, so that gate is never skipped) ----
+    function restoreProgress() {
+      if (requireEmail) return;
+      var saved = null;
+      try { saved = JSON.parse(localStorage.getItem(storageKey) || 'null'); } catch (e) {}
+      if (!saved || !saved.panel || saved.panel === 'intro' || Date.now() - saved.ts > STORAGE_TTL) return;
+      if (!panelFor(saved.panel)) return;
+
+      Object.keys(saved.answers || {}).forEach(function (step) {
+        var records = [];
+        (saved.answers[step] || []).forEach(function (key) {
+          var option = options.filter(function (item) { return item.getAttribute('data-key') === key; })[0];
+          if (option) {
+            records.push(recordFromOption(option));
+          } else if (key.indexOf('-tone-') !== -1) {
+            records.push({ key: key, label: 'Tono ' + key.split('-tone-')[1], weightSalicylic: 0, weightTca: 0, format: '', note: '', warn: false, warnNote: '' });
+          }
+        });
+        if (records.length) state.answers[step] = records;
+      });
+
+      recomputeFromAnswers();
+      Object.keys(state.answers).forEach(applySelectedState);
+
+      var target = saved.panel === 'analyzing' ? 'result' : saved.panel;
+      var fromEl = wrapper.querySelector('[data-the-method-panel]:not([hidden])');
+      var toEl = panelFor(target);
+      if (fromEl && fromEl !== toEl) fromEl.hidden = true;
+      if (target === 'result') showResult();
+      updateControls(target);
+      toEl.hidden = false;
+      if (state.warnings.length) updateWarningBanner();
+    }
+
+    restoreProgress();
   }
 
   function initAll() {
@@ -1632,6 +2370,113 @@
     },
     {
       "type": "header",
+      "content": "Interacción del test"
+    },
+    {
+      "type": "text",
+      "id": "analyzing_text",
+      "label": "Texto mientras se calcula el resultado",
+      "default": "Analizando tus respuestas"
+    },
+    {
+      "type": "text",
+      "id": "continue_button_text",
+      "label": "Texto del botón Continuar",
+      "info": "Se usa en las preguntas de selección múltiple y en la de tono de piel.",
+      "default": "Continuar"
+    },
+    {
+      "type": "text",
+      "id": "tone_light_label",
+      "label": "Extremo claro de la escala de tono",
+      "default": "Más claro"
+    },
+    {
+      "type": "text",
+      "id": "tone_dark_label",
+      "label": "Extremo oscuro de la escala de tono",
+      "default": "Más oscuro"
+    },
+    {
+      "type": "text",
+      "id": "summary_label",
+      "label": "Etiqueta del resumen de respuestas",
+      "default": "Tus respuestas"
+    },
+    {
+      "type": "header",
+      "content": "Resultado: WhatsApp y correo"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_number",
+      "label": "Número de WhatsApp (con código de país, solo dígitos)",
+      "info": "Si lo dejas vacío no se muestra el botón. Ejemplo: 51939061347",
+      "default": ""
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_button_text",
+      "label": "Texto del botón de WhatsApp",
+      "default": "Enviar mi resultado por WhatsApp"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_message",
+      "label": "Mensaje inicial de WhatsApp",
+      "default": "Hola, hice el test y este es mi resultado."
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_answers_label",
+      "label": "Etiqueta de las respuestas en el mensaje",
+      "default": "Mis respuestas"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_result_label",
+      "label": "Etiqueta del resultado en el mensaje",
+      "default": "Resultado"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_result_email",
+      "label": "Pedir el correo al final del test",
+      "info": "Un campo de correo bajo el resultado, que suscribe a tu newsletter sin recargar la página.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "result_email_heading",
+      "label": "Texto sobre el campo de correo",
+      "default": "Recibe tu rutina por correo"
+    },
+    {
+      "type": "text",
+      "id": "result_email_placeholder",
+      "label": "Texto dentro del campo de correo",
+      "default": "Correo electrónico"
+    },
+    {
+      "type": "text",
+      "id": "result_email_button",
+      "label": "Texto del botón del correo",
+      "default": "Enviar"
+    },
+    {
+      "type": "text",
+      "id": "result_email_success",
+      "label": "Mensaje al enviar el correo",
+      "default": "Listo, te escribiremos a tu correo."
+    },
+    {
+      "type": "text",
+      "id": "result_email_error",
+      "label": "Mensaje si el correo no es válido",
+      "default": "Revisa tu correo e inténtalo de nuevo."
+    },
+    {
+      "type": "header",
       "content": "También podría interesarte"
     },
     {
@@ -1664,6 +2509,7 @@
       "name": "Pregunta: tarjetas",
       "settings": [
         { "type": "text", "id": "question", "label": "Pregunta" },
+        { "type": "checkbox", "id": "allow_multiple", "label": "Permitir elegir hasta 2 opciones", "info": "El visitante puede marcar dos respuestas y avanza con el botón Continuar. Los pesos de ambas se suman.", "default": false },
         { "type": "paragraph", "content": "Hasta 5 opciones. Deja el texto en blanco para ocultar una opción. Los pesos definen qué tanto empuja cada respuesta hacia Ácido Salicílico o TCA — pueden ser 0 si la opción no debe influir en el resultado." },
         { "type": "header", "content": "Opción 1" },
         { "type": "text", "id": "option_1_label", "label": "Texto" },
