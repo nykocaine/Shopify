@@ -444,7 +444,8 @@
 
           #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
             gap: 1.5rem;
-            padding: .5rem 1.25rem 0;
+            margin-block-end: -1px;
+            padding: .5rem 0 0 1.25rem;
             background: #ffffff;
             border-start-start-radius: {{ section.settings.faq_border_radius }}px;
             border-start-end-radius: {{ section.settings.faq_border_radius }}px;
@@ -452,29 +453,54 @@
             mask-image: none !important;
           }
 
+          {%- comment -%}
+          The end padding of a scrolling flex row is dropped by some browsers, so the right inset is a real spacer after the last
+          tab (its negative start margin cancels the row's gap): the tabs keep the same side padding on both ends of the bar.
+          {%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__categories::part(tablist)::after {
+            content: "";
+            flex: none;
+            width: 1.25rem;
+            margin-inline-start: -1.5rem;
+          }
+
           #shopify-section-{{ section.id }} .faq__category-tab,
           #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled,
           #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled[aria-selected="true"],
           #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled:hover {
+            position: relative;
             padding: .75rem 0;
             color: rgb(var(--text-color));
             background: none;
             border-radius: 0;
           }
 
-          #shopify-section-{{ section.id }} .faq__category-tab .h6 {
-            text-decoration: none;
-            text-underline-offset: .5rem;
-            text-decoration-thickness: 1px;
+          {%- comment -%}The underline of the active tab is a line that grows in and out (not a text-decoration), so changing tab is gradual.{%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__category-tab::after {
+            content: "";
+            position: absolute;
+            inset-inline: 0;
+            inset-block-end: .5rem;
+            height: 1px;
+            background: currentColor;
+            transform: scaleX(0);
+            transform-origin: left center;
+            transition: transform .35s cubic-bezier(.4, 0, .2, 1);
           }
 
-          #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"] .h6 {
-            text-decoration: underline;
+          #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"]::after {
+            transform: scaleX(1);
           }
 
-          #shopify-section-{{ section.id }} .faq__panel > .faq__columns:first-child {
-            border-start-start-radius: 0;
-            border-start-end-radius: 0;
+          {%- comment -%}
+          The first block of every tab's content has no top rounded corners, so the menu and the content read as one box. The
+          questions container and the first text card of a text + image block are covered; !important because the text card's
+          corner radius is an inline style.
+          {%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__panel > .faq__columns:first-child,
+          #shopify-section-{{ section.id }} .faq__panel > .faq__text-image:first-child .faq__text-image-text {
+            border-start-start-radius: 0 !important;
+            border-start-end-radius: 0 !important;
           }
         }
       {%- else -%}
@@ -917,8 +943,27 @@
                   if (!tab || tablist.scrollWidth <= tablist.clientWidth + 1) return;
 
                   var left = tab.getBoundingClientRect().left - tablist.getBoundingClientRect().left + tablist.scrollLeft;
-                  var inset = parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5;
-                  tablist.scrollTo({ left: Math.max(0, left - inset), behavior: 'smooth' });
+                  var padding = parseFloat(getComputedStyle(tablist).paddingLeft);
+                  var inset = padding > 0 ? padding : parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5;
+                  var target = Math.max(0, left - inset);
+                  var start = tablist.scrollLeft;
+
+                  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    tablist.scrollLeft = target;
+                    return;
+                  }
+
+                  {%- comment -%}Eased slide (slow start, slow end) instead of the browser's own quick smooth scroll, so the move is gentle.{%- endcomment -%}
+                  var duration = 500;
+                  var startTime = null;
+                  function step(now) {
+                    if (startTime === null) startTime = now;
+                    var t = Math.min(1, (now - startTime) / duration);
+                    var eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+                    tablist.scrollLeft = start + (target - start) * eased;
+                    if (t < 1) requestAnimationFrame(step);
+                  }
+                  requestAnimationFrame(step);
                 });
 
                 updateEdgeFade();
