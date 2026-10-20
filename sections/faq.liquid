@@ -8,18 +8,6 @@
           break
         endif
       endfor
-
-      # "Questions container" (show_questions_card): one shared card wrapping every .faq-block__list
-      # in the section (the no-categories flat list, each category's own panel, and the leading
-      # content before the first titled category) - built once here as plain class/style strings
-      # instead of repeating the same conditional at each of those 3 separate render sites.
-      assign questions_card_class = ''
-      assign questions_card_style = ''
-
-      if section.settings.show_questions_card
-        assign questions_card_class = ' faq-content-box color-scheme color-scheme--' | append: section.settings.questions_card_color_scheme.id
-        assign questions_card_style = ' style="border-radius: ' | append: section.settings.faq_border_radius | append: 'px;"'
-      endif
     -%}
 
     {%- comment -%}
@@ -115,7 +103,7 @@
                 {%- assign panel_index = panel_index | plus: 1 -%}
                 {%- assign panel_open = true -%}
                 {%- assign questions_in_panel = 0 -%}
-                <div id="faq-panel-{{ section.id }}-{{ panel_index }}" class="faq__panel faq-block__list{{ questions_card_class }}"{{ questions_card_style }} {% if panel_index > 0 %}hidden{% endif %}>
+                <div id="faq-panel-{{ section.id }}-{{ panel_index }}" class="faq__panel faq-block__list" {% if panel_index > 0 %}hidden{% endif %}>
               {%- endif -%}
 
             {%- when 'question' -%}
@@ -233,7 +221,7 @@
 
     {%- capture section_content -%}
       <div class="faq{% if section.settings.layout != 'split' and section_header_markup != blank %} faq--full-width{% endif %}">
-        <div class="faq__content faq-block__list{{ questions_card_class }}"{{ questions_card_style }}>
+        <div class="faq__content faq-block__list">
           {%- for block in section.blocks -%}
             {%- case block.type -%}
               {%- when 'category' -%}
@@ -788,7 +776,7 @@
 
           <div class="faq faq--full-width">
             {%- if faq_leading_content != blank -%}
-              <div class="faq-block__list{{ questions_card_class }}"{{ questions_card_style }}>
+              <div class="faq-block__list">
                 {{- faq_leading_content -}}
               </div>
             {%- endif -%}
@@ -1045,24 +1033,6 @@
         }
       ],
       "default": "text"
-    },
-    {
-      "type": "header",
-      "content": "Questions container"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_questions_card",
-      "label": "Add background to the questions",
-      "info": "Wraps every question in the section inside one shared container (the section's own corner radius is reused for it), instead of each one individually.",
-      "default": false
-    },
-    {
-      "type": "color_scheme",
-      "id": "questions_card_color_scheme",
-      "label": "t:global.colors.scheme",
-      "default": "scheme-2",
-      "visible_if": "{{ section.settings.show_questions_card }}"
     },
     {
       "type": "inline_richtext",
