@@ -369,32 +369,86 @@
         </div>
 
         <div class="the-method__panel the-method__panel--result" data-the-method-panel="result" tabindex="-1" aria-live="polite" aria-atomic="true" hidden>
-          {%- if section.settings.result_eyebrow != blank -%}
-            {%- render 'subheading', content: section.settings.result_eyebrow -%}
-          {%- endif -%}
+          <div class="the-method__result-head">
+            {%- if section.settings.result_eyebrow != blank -%}
+              <p class="the-method__eyebrow">{{ section.settings.result_eyebrow }}</p>
+            {%- endif -%}
 
-          {%- comment -%}Answers given, as small tags: tapping one goes back to that question to change it, then straight back to the result{%- endcomment -%}
-          <div class="the-method__summary" data-the-method-summary aria-label="{{ section.settings.summary_label | escape }}"></div>
+            {%- comment -%}Answers given, as small tags: tapping one goes back to that question to change it, then straight back to the result{%- endcomment -%}
+            <div class="the-method__summary" data-the-method-summary aria-label="{{ section.settings.summary_label | escape }}"></div>
+          </div>
 
           {%- for block in result_blocks -%}
             {%- liquid
               assign result_product = block.settings.product
               assign result_secondary_product = block.settings.secondary_product
               assign result_rationale = block.settings.rationale
+
+              assign method_label = ''
+              if block.settings.match_method == 'salicylic'
+                assign method_label = 'Ácido salicílico'
+              elsif block.settings.match_method == 'tca'
+                assign method_label = 'TCA'
+              endif
+
+              assign format_label = ''
+              if block.settings.match_format == 'single'
+                assign format_label = 'Un método'
+              elsif block.settings.match_format == 'duo'
+                assign format_label = 'El mismo método dos veces'
+              elsif block.settings.match_format == 'combo'
+                assign format_label = 'Combinar métodos'
+              endif
+
+              assign result_images = result_product.media | where: 'media_type', 'image'
             -%}
 
-            <div class="the-method__result-card" data-product-url="{{ result_product.url }}" data-the-method-result="{{ block.id }}" data-match-method="{{ block.settings.match_method }}" data-match-format="{{ block.settings.match_format }}" hidden {{ block.shopify_attributes }}>
+            <div class="the-method__result-card" data-the-method-result="{{ block.id }}" data-match-method="{{ block.settings.match_method }}" data-match-format="{{ block.settings.match_format }}" hidden {{ block.shopify_attributes }}>
               {%- if result_product != blank -%}
-                <div class="the-method__result-media" data-hide-on-preview>
-                  {%- if result_product.featured_media != blank -%}
-                    {%- render 'media', media: result_product.featured_media, sizes: '(max-width: 699px) 100vw, 480px' -%}
+                <div class="the-method__result-gallery" data-the-method-gallery>
+                  <div class="the-method__result-stage">
+                    {%- if section.settings.result_badge_text != blank -%}
+                      <span class="the-method__result-badge">{{ section.settings.result_badge_text }}</span>
+                    {%- endif -%}
+
+                    {%- for media in result_images limit: 5 -%}
+                      <div class="the-method__result-slide{% if forloop.first %} is-active{% endif %}">
+                        {%- render 'media', media: media, sizes: '(max-width: 899px) 100vw, 560px', preload: false -%}
+                      </div>
+                    {%- endfor -%}
+                  </div>
+
+                  {%- if result_images.size > 1 -%}
+                    <div class="the-method__result-thumbs">
+                      {%- for media in result_images limit: 5 -%}
+                        <button type="button" class="the-method__result-thumb" data-the-method-thumb data-index="{{ forloop.index0 }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                          <span class="sr-only">{{ forloop.index }}</span>
+                          {{- media | image_url: width: 200 | image_tag: loading: 'lazy', widths: '100, 200', sizes: '64px' -}}
+                        </button>
+                      {%- endfor -%}
+                    </div>
                   {%- endif -%}
                 </div>
 
                 <div class="the-method__result-info">
-                  <div data-hide-on-preview>
-                    {%- render 'heading', content: result_product.title, style: 'h3', html_tag: 'h3', instant: true -%}
-                  </div>
+                  {%- if method_label != blank or format_label != blank -%}
+                    <div class="the-method__result-tags">
+                      {%- if method_label != blank -%}<span class="the-method__tag">{{ method_label }}</span>{%- endif -%}
+                      {%- if format_label != blank -%}<span class="the-method__tag">{{ format_label }}</span>{%- endif -%}
+                    </div>
+                  {%- endif -%}
+
+                  {%- render 'heading', content: result_product.title, style: 'h3', html_tag: 'h3', instant: true -%}
+
+                  {%- if result_product.metafields.custom.subtitle != blank or result_product.metafields.custom.subtitle_2 != blank -%}
+                    <p class="the-method__result-subtitle">
+                      {{- result_product.metafields.custom.subtitle -}}
+                      {%- if result_product.metafields.custom.subtitle != blank and result_product.metafields.custom.subtitle_2 != blank %} · {% endif -%}
+                      {{- result_product.metafields.custom.subtitle_2 -}}
+                    </p>
+                  {%- endif -%}
+
+                  {%- render 'product-rating', product: result_product, show_empty: false, show_placeholder: false -%}
 
                   {%- if result_rationale != blank -%}
                     <p class="the-method__rationale">{{ result_rationale }}</p>
@@ -402,39 +456,43 @@
 
                   <p class="the-method__context-note" data-the-method-context-note aria-live="off"></p>
 
-                  {%- comment -%}
-                    The product page itself (its gallery and info, loaded from the product's own page) is shown here once it arrives; until then,
-                    and if it can't be loaded, the title, image and price of this simple card stay.
-                  {%- endcomment -%}
-                  <div class="the-method__product-preview" data-the-method-preview hidden></div>
-
-                  <div data-hide-on-preview>
+                  <div class="the-method__result-price">
                     {%- render 'price-list', product: result_product, context: 'product' -%}
                   </div>
 
+                  {%- assign result_excerpt = result_product.description | strip_html | strip | truncate: 240 -%}
+                  {%- if result_excerpt != blank -%}
+                    <p class="the-method__result-excerpt">{{ result_excerpt }}</p>
+                  {%- endif -%}
+
                   {%- if section.settings.result_cta_text != blank -%}
-                    {%- render 'button', content: section.settings.result_cta_text, href: result_product.url, style: 'solid' -%}
+                    <div class="the-method__result-actions">
+                      {%- render 'button', content: section.settings.result_cta_text, href: result_product.url, style: 'solid' -%}
+                    </div>
                   {%- endif -%}
 
                   {%- if section.settings.show_secondary_recommendation and result_secondary_product != blank -%}
                     <div class="the-method__secondary">
                       {%- if section.settings.secondary_recommendation_heading != blank -%}
-                        <p class="subheading">{{ section.settings.secondary_recommendation_heading }}</p>
+                        <p class="the-method__secondary-heading">{{ section.settings.secondary_recommendation_heading }}</p>
                       {%- endif -%}
 
-                      <div class="the-method__secondary-card">
-                        <div class="the-method__secondary-media">
+                      <a class="the-method__secondary-card" href="{{ result_secondary_product.url }}">
+                        <span class="the-method__secondary-media">
                           {%- if result_secondary_product.featured_media != blank -%}
                             {%- render 'media', media: result_secondary_product.featured_media, sizes: '96px' -%}
                           {%- endif -%}
-                        </div>
+                        </span>
 
-                        <div class="the-method__secondary-info">
-                          {%- render 'heading', content: result_secondary_product.title, style: 'h6', html_tag: 'p', instant: true -%}
-                          {%- render 'price-list', product: result_secondary_product, context: 'card' -%}
-                          {%- render 'button', content: 'product.general.view_details' | t, href: result_secondary_product.url, style: 'link' -%}
-                        </div>
-                      </div>
+                        <span class="the-method__secondary-info">
+                          <span>{{ result_secondary_product.title }}</span>
+                          <span class="the-method__secondary-price">{%- render 'price-list', product: result_secondary_product, context: 'card' -%}</span>
+                        </span>
+
+                        <span class="the-method__secondary-arrow" aria-hidden="true">
+                          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+                        </span>
+                      </a>
                     </div>
                   {%- endif -%}
                 </div>
@@ -480,7 +538,7 @@
   /* All the text of the test (intro, questions, options, descriptions, progress, warning, notes, result, buttons) uses the Body Text
      typography - family, size, weight, style, spacing, no capitals - and nothing is bold unless it is asked for here. Sizes come later,
      from this one rule. */
-  .the-method-layout__content :not(.the-method__product-preview *) {
+  .the-method-layout__content * {
     font-family: var(--text-font-family) !important;
     font-size: var(--text-base) !important;
     font-weight: var(--text-font-weight) !important;
@@ -745,10 +803,6 @@
     text-align: start !important;
   }
 
-  .the-method__panel--result {
-    max-width: 64rem;
-    gap: calc(var(--the-method-gap) * 1.5);
-  }
 
   .the-method__tagline {
     margin: 0;
@@ -944,55 +998,144 @@
     height: 1.75rem;
   }
 
+
+  /* ---- Result: an editorial composition (image stage + info) with the personality of the rest of the test ---- */
+
+  .the-method__panel--result {
+    max-width: none;
+    gap: calc(var(--the-method-gap) * 1.25);
+  }
+
+  .the-method__result-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
   .the-method__result-card {
     display: grid;
-    gap: 2rem;
+    gap: calc(var(--the-method-gap) * 1.25);
     text-align: start;
   }
 
-  /* Product preview: the first part of the product page (gallery, title, rating, price, description...) inside the result, without its buy
-     buttons - the button of the result takes the visitor to the product. */
-  .the-method__panel--result:has(.has-preview) {
-    max-width: none;
+  @media screen and (min-width: 900px) {
+    .the-method__result-card {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      align-items: start;
+      gap: calc(var(--the-method-gap) * 2);
+    }
+
+    .the-method__result-gallery {
+      position: sticky;
+      inset-block-start: calc(var(--sticky-area-height, 0px) + 1rem);
+    }
   }
 
-  .the-method__result-card.has-preview {
+  .the-method__result-gallery {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  /* The image stage: a soft pool of the glow colors behind the product, rounded, with a small floating tag */
+  .the-method__result-stage {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    border-radius: calc(var(--input-border-radius) * 1.5);
+    overflow: hidden;
+    background:
+      radial-gradient(90% 70% at 25% 15%, color-mix(in srgb, var(--the-method-glow-1, #f1c9a6) 55%, transparent), transparent 70%),
+      radial-gradient(70% 60% at 90% 100%, color-mix(in srgb, var(--the-method-glow-2, #fbe3d0) 70%, transparent), transparent 70%),
+      rgb(var(--text-color) / 0.04);
+  }
+
+  .the-method__result-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.45s ease;
+  }
+
+  .the-method__result-slide.is-active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .the-method__result-slide img {
     display: block;
-  }
-
-  .the-method__product-preview {
     width: 100%;
-    animation: the-method-preview-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    height: 100%;
+    object-fit: cover;
   }
 
-  .the-method__product-preview[hidden] {
+  .the-method__result-badge {
+    position: absolute;
+    z-index: 2;
+    inset-block-start: 1rem;
+    inset-inline-start: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: rgb(var(--background) / 0.85);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: rgb(var(--text-color));
+  }
+
+  .the-method__result-badge:before {
+    content: "";
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--the-method-glow-1, currentColor) 60%, rgb(var(--text-color)));
+    animation: the-method-pulse 2.6s ease-out infinite;
+  }
+
+  .the-method__result-thumbs {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .the-method__result-thumbs::-webkit-scrollbar {
     display: none;
   }
 
-  .the-method__product-preview [data-block-type="buy-buttons"],
-  .the-method__product-preview [data-block-type="whatsapp-button"],
-  .the-method__product-preview product-sticky-add-to-cart {
-    display: none !important;
-  }
-
-  .the-method__result-card.has-preview .the-method__result-info {
-    gap: var(--the-method-gap);
-  }
-
-  @keyframes the-method-preview-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .the-method__result-card[hidden] {
-    display: none;
-  }
-
-  .the-method__result-media img {
-    width: 100%;
-    height: auto;
-    display: block;
+  .the-method__result-thumbs .the-method__result-thumb {
+    appearance: none;
+    flex: none;
+    width: 4rem;
+    aspect-ratio: 1;
+    padding: 0;
+    border: 0;
     border-radius: var(--input-border-radius);
+    overflow: hidden;
+    background: rgb(var(--text-color) / 0.04);
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 0.25s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .the-method__result-thumb[aria-selected="true"] {
+    opacity: 1;
+  }
+
+  @media (pointer: fine) {
+    .the-method__result-thumb:hover {
+      opacity: 1;
+      transform: translateY(-2px);
+    }
+  }
+
+  .the-method__result-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .the-method__result-info {
@@ -1000,6 +1143,100 @@
     gap: 1rem;
     align-content: start;
   }
+
+  .the-method__result-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .the-method__tag {
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    background: rgb(var(--text-color) / 0.06);
+    color: rgb(var(--text-color) / 0.75);
+  }
+
+  .the-method__result-info h3 {
+    margin: 0;
+  }
+
+  .the-method__result-subtitle,
+  .the-method__result-excerpt {
+    margin: 0;
+    color: rgb(var(--text-color) / 0.65);
+  }
+
+  .the-method__result-actions {
+    padding-block-start: 0.5rem;
+  }
+
+  /* The second recommendation: one soft row that is a link, with an arrow that moves */
+  .the-method__secondary {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .the-method__secondary-heading {
+    margin: 0;
+    color: rgb(var(--text-color) / 0.6);
+  }
+
+  .the-method__secondary-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: calc(var(--input-border-radius) * 1.25);
+    background: rgb(var(--text-color) / 0.04);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.25s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @media (pointer: fine) {
+    .the-method__secondary-card:hover {
+      background: rgb(var(--text-color) / 0.07);
+      transform: translateY(-2px);
+    }
+
+    .the-method__secondary-card:hover .the-method__secondary-arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  .the-method__secondary-media {
+    flex: none;
+    width: 4rem;
+    border-radius: var(--input-border-radius);
+    overflow: hidden;
+  }
+
+  .the-method__secondary-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .the-method__secondary-info {
+    display: grid;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .the-method__secondary-arrow {
+    flex: none;
+    display: inline-flex;
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .the-method__result-card[hidden] {
+    display: none;
+  }
+
+
 
   .the-method__rationale {
     margin: 0;
@@ -1015,37 +1252,6 @@
     display: none;
   }
 
-  .the-method__secondary {
-    margin-top: 1rem;
-    padding: 1.25rem;
-    background: rgb(var(--input-background, transparent));
-    border-radius: var(--input-border-radius);
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .the-method__secondary-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .the-method__secondary-media {
-    width: 4rem;
-    flex-shrink: 0;
-  }
-
-  .the-method__secondary-media img {
-    width: 100%;
-    height: auto;
-    display: block;
-    border-radius: var(--input-border-radius);
-  }
-
-  .the-method__secondary-info {
-    display: grid;
-    gap: 0.25rem;
-  }
 
 
 
@@ -1054,12 +1260,10 @@
 
 
 
-  @media screen and (min-width: 700px) {
-    .the-method__result-card {
-      grid-template-columns: 1fr 1fr;
-      align-items: center;
-    }
-  }
+
+
+
+
 
   /* ---- Interaction ---- */
 
@@ -1211,6 +1415,17 @@
   .the-method__result-extras {
     display: grid;
     gap: var(--the-method-gap);
+    padding: calc(var(--the-method-gap) * 0.9);
+    border-radius: calc(var(--input-border-radius) * 1.5);
+    background: rgb(var(--text-color) / 0.04);
+    align-items: center;
+  }
+
+  @media screen and (min-width: 900px) {
+    .the-method__result-extras {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: calc(var(--the-method-gap) * 2);
+    }
   }
 
   .the-method__result-extras[hidden] {
@@ -1341,7 +1556,6 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .the-method__product-preview,
     .the-method__analyzing-line:after,
     .the-method__option[aria-checked="true"] .the-method__option-check path {
       animation: none;
@@ -1662,46 +1876,6 @@
       }
     }
 
-    // Loads the product's own page and shows its main section (gallery + info) in the result card. The buy buttons are hidden by the
-    // stylesheet; the form stays in the markup so the gallery keeps working. If anything fails, the simple card stays as it is.
-    function loadPreview(card) {
-      var box = card && card.querySelector('[data-the-method-preview]');
-      var url = card && card.getAttribute('data-product-url');
-      if (!box || !url) return;
-
-      if (box.getAttribute('data-state') === 'ready') {
-        return;
-      }
-      if (box.getAttribute('data-state') === 'loading') {
-        return;
-      }
-      box.setAttribute('data-state', 'loading');
-
-      fetch(url, { credentials: 'same-origin', headers: { Accept: 'text/html' } })
-        .then(function (response) {
-          if (!response.ok) throw new Error('bad response');
-          return response.text();
-        })
-        .then(function (html) {
-          var doc = new DOMParser().parseFromString(html, 'text/html');
-          var source = doc.querySelector('.shopify-section--main-product');
-          if (!source) throw new Error('no main product section');
-
-          var copy = document.importNode(source, true);
-          copy.querySelectorAll('script, product-sticky-add-to-cart').forEach(function (node) { node.remove(); });
-          box.textContent = '';
-          box.appendChild(copy);
-          box.hidden = false;
-          card.querySelectorAll('[data-hide-on-preview]').forEach(function (node) { node.hidden = true; });
-          card.classList.add('has-preview');
-          box.setAttribute('data-state', 'ready');
-        })
-        .catch(function () {
-          box.removeAttribute('data-state');
-          box.hidden = true;
-        });
-    }
-
     function showResult() {
       recomputeFromAnswers();
       updateWarningBanner();
@@ -1730,7 +1904,6 @@
 
       renderSummary();
       prepareExtras(bestScore < 0 ? null : best);
-      if (best && bestScore >= 0) loadPreview(best);
       track('result', { method: method, format: format });
     }
 
@@ -2058,6 +2231,21 @@
         goTo('intro', -1);
       });
     }
+
+    // ---- result gallery: the thumbnails change the image shown ----
+    wrapper.addEventListener('click', function (event) {
+      var thumb = event.target.closest('[data-the-method-thumb]');
+      if (!thumb) return;
+      var gallery = thumb.closest('[data-the-method-gallery]');
+      if (!gallery) return;
+      var index = Number(thumb.getAttribute('data-index'));
+      gallery.querySelectorAll('.the-method__result-slide').forEach(function (slide, position) {
+        slide.classList.toggle('is-active', position === index);
+      });
+      gallery.querySelectorAll('[data-the-method-thumb]').forEach(function (item) {
+        item.setAttribute('aria-selected', item === thumb ? 'true' : 'false');
+      });
+    });
 
     // ---- summary tags: back to one question, then straight to the result again ----
     if (summaryEl) {
@@ -2537,6 +2725,13 @@
       "id": "result_eyebrow",
       "label": "Texto sobre el resultado",
       "default": "Tu método"
+    },
+    {
+      "type": "text",
+      "id": "result_badge_text",
+      "label": "Etiqueta sobre la imagen del resultado",
+      "info": "Una pastilla pequeña sobre la imagen del producto recomendado. Déjala vacía para no mostrarla.",
+      "default": "Recomendado para ti"
     },
     {
       "type": "text",
