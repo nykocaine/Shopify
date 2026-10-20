@@ -429,6 +429,54 @@
             box-shadow: none;
           }
         }
+
+        {%- comment -%}
+        Phones only (test): the category tabs become a menu glued on top of the white questions container, as one single block.
+        The tab row takes the container's own white and its top rounded corners (the corner radius setting); the container
+        loses its top rounded corners and the gap that separated it from the tabs, so the two read as one container with the
+        menu inside. The tabs turn into plain links: no pill, no background, the active one underlined. The edge fade of the
+        scrolling row is switched off here, since it would fade the white of the bar itself.
+        {%- endcomment -%}
+        @media screen and (max-width: 699px) {
+          #shopify-section-{{ section.id }} .faq--full-width {
+            margin-block-start: 0;
+          }
+
+          #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
+            gap: 1.5rem;
+            padding: .5rem 1.25rem 0;
+            background: #ffffff;
+            border-start-start-radius: {{ section.settings.faq_border_radius }}px;
+            border-start-end-radius: {{ section.settings.faq_border_radius }}px;
+            -webkit-mask-image: none !important;
+            mask-image: none !important;
+          }
+
+          #shopify-section-{{ section.id }} .faq__category-tab,
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled,
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled[aria-selected="true"],
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled:hover {
+            padding: .75rem 0;
+            color: rgb(var(--text-color));
+            background: none;
+            border-radius: 0;
+          }
+
+          #shopify-section-{{ section.id }} .faq__category-tab .h6 {
+            text-decoration: none;
+            text-underline-offset: .5rem;
+            text-decoration-thickness: 1px;
+          }
+
+          #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"] .h6 {
+            text-decoration: underline;
+          }
+
+          #shopify-section-{{ section.id }} .faq__panel > .faq__columns:first-child {
+            border-start-start-radius: 0;
+            border-start-end-radius: 0;
+          }
+        }
       {%- else -%}
         {%- comment -%}
         Single list ("Two columns" off): the tab panels are always built as two columns (1st, 3rd, 5th... in the first one,
