@@ -56,13 +56,11 @@
   <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_the_method %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_the_method %} style="border-end-start-radius: {{ section.settings.the_method_border_radius }}px; border-end-end-radius: {{ section.settings.the_method_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="container section-spacing">
     {%- comment -%}
-      Dos tarjetas lado a lado (contenido + imagen), cada una con su propio radio — mismo patrón que
-      .faq-content-box en sections/faq.liquid. Al comenzar el test (data-the-method-layout gana
-      --quiz-active, en JS o ya en el primer render si el correo obligatorio hizo recargar la página
-      directo al paso 1) la grilla colapsa a una sola columna y la imagen se oculta.
+      The content (intro, questions, result) sits directly on the section itself: no card of its own and no image beside it. The section's
+      own padding (.container.section-spacing above) gives the margins.
     {%- endcomment -%}
-    <div class="the-method-layout{% if section.settings.image != blank %} the-method-layout--has-image{% endif %}{% if just_subscribed %} the-method-layout--quiz-active{% endif %}" data-the-method-layout>
-      <div class="the-method-layout__content color-scheme color-scheme--{{ section.settings.content_card_color_scheme.id }}" style="border-radius: {{ section.settings.the_method_border_radius }}px;">
+    <div class="the-method-layout" data-the-method-layout>
+      <div class="the-method-layout__content">
       <div class="the-method" data-the-method data-section-id="{{ section.id }}" data-require-email="{{ require_email_to_start }}">
 
       <div class="the-method__meta">
@@ -469,11 +467,6 @@
       </div>
       </div>
 
-      {%- if section.settings.image != blank -%}
-        <div class="the-method-layout__media the-method-layout__media--{{ section.settings.image_height }}" style="border-radius: {{ section.settings.the_method_border_radius }}px;">
-          {{ section.settings.image | image_url: width: 1600 | image_tag: loading: 'lazy', sizes: '(max-width: 749px) 100vw, 50vw', widths: '375, 550, 750, 1100, 1500' }}
-        </div>
-      {%- endif -%}
     </div>
   </div>
   </div>
@@ -494,63 +487,7 @@
   }
 
   .the-method-layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: calc(var(--container-gutter, 1.5rem) + 0.5rem);
-  }
-
-  /* Con imagen y el test todavía sin empezar: dos columnas iguales en desktop. Mobile siempre
-     se apila. En cuanto el test arranca (--quiz-active, agregado por JS o ya en el primer
-     render si el correo obligatorio hizo recargar la página directo al paso 1), la grilla
-     vuelve a una sola columna y la imagen se oculta - solo se ve en la intro. */
-  @media screen and (min-width: 750px) {
-    .the-method-layout--has-image:not(.the-method-layout--quiz-active) {
-      grid-template-columns: 1fr 1fr;
-      align-items: stretch;
-    }
-  }
-
-  .the-method-layout--quiz-active .the-method-layout__media {
-    display: none;
-  }
-
-  /* Once the test starts, the questions sit directly on the section itself: the inner card (its own background, padding and corners) is
-     gone, so there is no container inside the container. The section's own padding gives the margins. */
-  .the-method-layout--quiz-active .the-method-layout__content {
-    background: none !important;
-    padding: 0;
-    border-radius: 0 !important;
-  }
-
-  .the-method-layout__content {
-    padding: calc(var(--container-gutter) + 0.5rem);
-  }
-
-  .the-method-layout__media {
-    overflow: hidden;
-    min-height: 20rem;
-  }
-
-  .the-method-layout__media img {
     display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* "Adaptable" (sin clase de alto fijo) estira la imagen a la altura del contenido vía
-     align-items: stretch del grid. Los demás tamaños fuerzan una altura fija, igual en
-     mobile y desktop para mantenerlo simple. */
-  .the-method-layout__media--small {
-    height: 20rem;
-  }
-
-  .the-method-layout__media--medium {
-    height: 28rem;
-  }
-
-  .the-method-layout__media--large {
-    height: 36rem;
   }
 
   .the-method {
@@ -1251,10 +1188,6 @@
     display: none;
   }
 
-  .the-method-layout__media {
-    view-transition-name: the-method-media;
-  }
-
   /* The panels area morphs to its new size; the snapshots are not stretched while it does (object-fit none, anchored at the top, clipped),
      and the old and the new content cross-fade with the same duration and curve, so the sum of both is constant - no dip, no flash. */
   ::view-transition-group(the-method-panels) {
@@ -1282,10 +1215,6 @@
   ::view-transition-new(the-method-panels) {
     animation-name: the-method-vt-in;
     animation-fill-mode: both;
-  }
-
-  ::view-transition-group(the-method-media) {
-    animation-duration: 0.2s;
   }
 
   @keyframes the-method-vt-out {
@@ -1366,7 +1295,6 @@
     var summaryEl = wrapper.querySelector('[data-the-method-summary]');
     var extrasEl = wrapper.querySelector('[data-the-method-extras]');
     var panelsEl = wrapper.querySelector('[data-the-method-panels]');
-    var layoutEl = wrapper.closest('[data-the-method-layout]');
     var formEl = wrapper.closest('form');
 
     var STEPS = Array.prototype.slice.call(wrapper.querySelectorAll('[data-the-method-panel]')).map(function (panel) {
@@ -1702,7 +1630,6 @@
       if (progressWrapper) progressWrapper.hidden = isIntro;
 
       // The intro image is only seen on the intro: when the test moves on, the section collapses to a single column.
-      if (layoutEl) layoutEl.classList.toggle('the-method-layout--quiz-active', !isIntro);
 
       if (progressFill && totalFlowSteps > 0) {
         if (isQuestion) {
@@ -2249,48 +2176,18 @@
       "step": 2,
       "unit": "px",
       "label": "Radio de esquina",
-      "info": "Se usa en las esquinas exteriores (si Floating está activo) y también en las dos tarjetas internas: contenido e imagen.",
+      "info": "Se usa en las esquinas exteriores de la sección (si Floating está activo).",
       "default": 0
     },
     {
       "type": "header",
-      "content": "Imagen"
-    },
-    {
-      "type": "image_picker",
-      "id": "image",
-      "label": "Imagen",
-      "info": "Si se agrega, la sección se divide en dos: el contenido a la izquierda (con su padding de siempre) y esta imagen a la derecha, pegada a los bordes y con el mismo radio de esquina de la sección. Sin imagen, se ve igual que antes."
-    },
-    {
-      "type": "select",
-      "id": "image_height",
-      "label": "Alto de la imagen",
-      "options": [
-        { "value": "adapt", "label": "Adaptable (igual al contenido)" },
-        { "value": "small", "label": "Pequeño" },
-        { "value": "medium", "label": "Mediano" },
-        { "value": "large", "label": "Grande" }
-      ],
-      "default": "adapt",
-      "visible_if": "{{ section.settings.image != blank }}"
-    },
-    {
-      "type": "header",
-      "content": "Tarjeta de contenido"
-    },
-    {
-      "type": "color_scheme",
-      "id": "content_card_color_scheme",
-      "label": "Color de la tarjeta de contenido",
-      "info": "Afecta todo el bloque de la izquierda (título, preguntas, botón) — se puede cambiar en cualquier momento desde aquí.",
-      "default": "scheme-1"
+      "content": "Tarjetas de opciones"
     },
     {
       "type": "color_scheme",
       "id": "options_color_scheme",
       "label": "Color de las tarjetas de opciones",
-      "info": "Cada tarjeta de respuesta del cuestionario (fondo, texto y borde de la seleccionada) usa este esquema propio, independiente del de la tarjeta de contenido.",
+      "info": "Cada tarjeta de respuesta del cuestionario (fondo, texto y borde de la seleccionada) usa este esquema propio, independiente del de la sección.",
       "default": "scheme-1"
     },
     {
