@@ -381,16 +381,18 @@
               assign result_rationale = block.settings.rationale
             -%}
 
-            <div class="the-method__result-card" data-the-method-result="{{ block.id }}" data-match-method="{{ block.settings.match_method }}" data-match-format="{{ block.settings.match_format }}" hidden {{ block.shopify_attributes }}>
+            <div class="the-method__result-card" data-product-url="{{ result_product.url }}" data-the-method-result="{{ block.id }}" data-match-method="{{ block.settings.match_method }}" data-match-format="{{ block.settings.match_format }}" hidden {{ block.shopify_attributes }}>
               {%- if result_product != blank -%}
-                <div class="the-method__result-media">
+                <div class="the-method__result-media" data-hide-on-preview>
                   {%- if result_product.featured_media != blank -%}
                     {%- render 'media', media: result_product.featured_media, sizes: '(max-width: 699px) 100vw, 480px' -%}
                   {%- endif -%}
                 </div>
 
                 <div class="the-method__result-info">
-                  {%- render 'heading', content: result_product.title, style: 'h3', html_tag: 'h3', instant: true -%}
+                  <div data-hide-on-preview>
+                    {%- render 'heading', content: result_product.title, style: 'h3', html_tag: 'h3', instant: true -%}
+                  </div>
 
                   {%- if result_rationale != blank -%}
                     <p class="the-method__rationale">{{ result_rationale }}</p>
@@ -398,7 +400,15 @@
 
                   <p class="the-method__context-note" data-the-method-context-note aria-live="off"></p>
 
-                  {%- render 'price-list', product: result_product, context: 'product' -%}
+                  {%- comment -%}
+                    The product page itself (its gallery and info, loaded from the product's own page) is shown here once it arrives; until then,
+                    and if it can't be loaded, the title, image and price of this simple card stay.
+                  {%- endcomment -%}
+                  <div class="the-method__product-preview" data-the-method-preview hidden></div>
+
+                  <div data-hide-on-preview>
+                    {%- render 'price-list', product: result_product, context: 'product' -%}
+                  </div>
 
                   {%- if section.settings.result_cta_text != blank -%}
                     {%- render 'button', content: section.settings.result_cta_text, href: result_product.url, style: 'solid' -%}
@@ -473,7 +483,7 @@
   /* All the text of the test (intro, questions, options, descriptions, progress, warning, notes, result, buttons) uses the Body Text
      typography - family, size, weight, style, spacing, no capitals - and nothing is bold unless it is asked for here. Sizes come later,
      from this one rule. */
-  .the-method-layout__content * {
+  .the-method-layout__content :not(.the-method__product-preview *) {
     font-family: var(--text-font-family) !important;
     font-size: var(--text-base) !important;
     font-weight: var(--text-font-weight) !important;
@@ -889,6 +899,40 @@
     text-align: start;
   }
 
+  /* Product preview: the first part of the product page (gallery, title, rating, price, description...) inside the result, without its buy
+     buttons - the button of the result takes the visitor to the product. */
+  .the-method__panel--result:has(.has-preview) {
+    max-width: none;
+  }
+
+  .the-method__result-card.has-preview {
+    display: block;
+  }
+
+  .the-method__product-preview {
+    width: 100%;
+    animation: the-method-preview-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .the-method__product-preview[hidden] {
+    display: none;
+  }
+
+  .the-method__product-preview [data-block-type="buy-buttons"],
+  .the-method__product-preview [data-block-type="whatsapp-button"],
+  .the-method__product-preview product-sticky-add-to-cart {
+    display: none !important;
+  }
+
+  .the-method__result-card.has-preview .the-method__result-info {
+    gap: var(--the-method-gap);
+  }
+
+  @keyframes the-method-preview-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   .the-method__result-card[hidden] {
     display: none;
   }
@@ -1254,6 +1298,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .the-method__product-preview,
     .the-method__analyzing-line:after,
     .the-method__option[aria-checked="true"] .the-method__option-check path {
       animation: none;
@@ -1575,6 +1620,46 @@
       }
     }
 
+    // Loads the product's own page and shows its main section (gallery + info) in the result card. The buy buttons are hidden by the
+    // stylesheet; the form stays in the markup so the gallery keeps working. If anything fails, the simple card stays as it is.
+    function loadPreview(card) {
+      var box = card && card.querySelector('[data-the-method-preview]');
+      var url = card && card.getAttribute('data-product-url');
+      if (!box || !url) return;
+
+      if (box.getAttribute('data-state') === 'ready') {
+        return;
+      }
+      if (box.getAttribute('data-state') === 'loading') {
+        return;
+      }
+      box.setAttribute('data-state', 'loading');
+
+      fetch(url, { credentials: 'same-origin', headers: { Accept: 'text/html' } })
+        .then(function (response) {
+          if (!response.ok) throw new Error('bad response');
+          return response.text();
+        })
+        .then(function (html) {
+          var doc = new DOMParser().parseFromString(html, 'text/html');
+          var source = doc.querySelector('.shopify-section--main-product');
+          if (!source) throw new Error('no main product section');
+
+          var copy = document.importNode(source, true);
+          copy.querySelectorAll('script, product-sticky-add-to-cart').forEach(function (node) { node.remove(); });
+          box.textContent = '';
+          box.appendChild(copy);
+          box.hidden = false;
+          card.querySelectorAll('[data-hide-on-preview]').forEach(function (node) { node.hidden = true; });
+          card.classList.add('has-preview');
+          box.setAttribute('data-state', 'ready');
+        })
+        .catch(function () {
+          box.removeAttribute('data-state');
+          box.hidden = true;
+        });
+    }
+
     function showResult() {
       recomputeFromAnswers();
       updateWarningBanner();
@@ -1603,6 +1688,7 @@
 
       renderSummary();
       prepareExtras(bestScore < 0 ? null : best);
+      if (best && bestScore >= 0) loadPreview(best);
       track('result', { method: method, format: format });
     }
 
