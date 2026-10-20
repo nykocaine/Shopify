@@ -77,9 +77,8 @@ This component is used to show the product gallery (used in product page and fea
     so they share one baseline and font-size, inherited from the body rather than set here. :empty:hidden
     keeps a slide without alt text from leaving a dangling gap after the counter.
 
-    Defaults to the theme's normal text color. .is-dark-image switches it to white with a glow when the photo behind the bar is
-    dark: it is set automatically by <product-gallery> (assets/theme.js, updateContrast), which measures the brightness of the
-    image area behind the bar on every slide - nothing to tag in the Shopify admin.
+    The controls over the photo (this bar, the arrows and the zoom button) are white with mix-blend-mode: difference, so
+    every pixel behind them inverts: they read on light and dark photos alike, with nothing measured or tagged.
     {%- endcomment -%}
     {%- comment -%}
     .h-stack (theme.css) defaults align-items to center, which centers the counter against the full
@@ -92,33 +91,18 @@ This component is used to show the product gallery (used in product page and fea
     }
 
     {%- comment -%}
-    is-dark-image lives on .product-gallery__top-bar (the common ancestor of both the progress bar and
-    the caption-row) rather than on the caption-row alone, so .progress-bar picks it up too.
+    The whole bar (progress bar, caption and counter) is one blended group. --progress-bar-background-color/--progress-bar-fill-color
+    (css-variables.liquid) are what .progress-bar (theme.css) paints from, so they are redefined here; .text-subdued (theme.css) sets
+    its own dark color for the counter's "/" and total, so it gets a white-based one.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .product-gallery__top-bar {
-      color: rgb(var(--text-color));
-      transition: color .3s ease;
-    }
-
-    {%- comment -%}
-    --progress-bar-background-color/--progress-bar-fill-color (css-variables.liquid, from the color
-    scheme's progress bar settings) are what .progress-bar (theme.css) actually paints from - they're
-    set explicitly there, not left to currentColor's fallback, so color: #fff alone doesn't reach the
-    bar. Redefining both variables here overrides them for anything inside this scope instead.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .product-gallery__top-bar.is-dark-image {
       color: #fff;
+      mix-blend-mode: difference;
       --progress-bar-background-color: rgb(255 255 255 / .3);
       --progress-bar-fill-color: #fff;
     }
 
-    {%- comment -%}
-    .text-subdued (theme.css, used by the counter's "/" and total-count spans) sets its own
-    rgb(var(--text-color) / .6) color rather than inheriting - on a dark image that stays the theme's
-    dark text at 60% opacity, nearly invisible against a dark photo, so it needs its own white-based
-    override here instead of picking up .is-dark-image's color from above.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .product-gallery__top-bar.is-dark-image .text-subdued {
+    #shopify-section-{{ section.id }} .product-gallery__top-bar .text-subdued {
       color: rgb(255 255 255 / .6);
     }
 
@@ -180,11 +164,8 @@ This component is used to show the product gallery (used in product page and fea
       inset-inline-start: var(--container-gutter);
       inset-block-end: 1rem;
       align-items: center;
-      color: rgb(var(--text-color));
-    }
-
-    #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-gallery__nav-buttons {
       color: #fff;
+      mix-blend-mode: difference;
     }
 
     #shopify-section-{{ section.id }} .product-gallery__nav-button {
@@ -206,20 +187,13 @@ This component is used to show the product gallery (used in product page and fea
   corner, instead of theme.css's own 8px/-12px offsets, so all three corner controls (bar, nav buttons,
   zoom) share one alignment.
 
-  Defaults to the theme's normal text color and switches to white via .is-dark-image, set automatically by
-  <product-gallery> (assets/theme.js, updateContrast) from the brightness of the image behind these bottom corner controls -
-  toggled on the outer <product-gallery> element (not .product-gallery__top-bar) since the zoom button lives outside
-  the bar entirely.
+  White with mix-blend-mode: difference, like the bar and the arrows (it blends with the photo behind it).
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-zoom-button {
-    color: rgb(var(--text-color));
-    transition: color .3s ease;
+    color: #fff;
+    mix-blend-mode: difference;
     inset-inline-end: var(--container-gutter);
     inset-block-end: 1rem;
-  }
-
-  #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-zoom-button {
-    color: #fff;
   }
 
   {%- comment -%}
