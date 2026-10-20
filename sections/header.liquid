@@ -23,6 +23,10 @@
   :root {
     --header-is-sticky: {% if section.settings.enable_sticky %}1{% else %}0{% endif %};
     --header-is-visible: 1;
+    /* Line thickness (in real pixels) of the header icons: the icon stroke setting scaled by how big the header icons are drawn
+       (16px phones, Desktop icon size from 700px). The control icons (arrows, zoom, close...) draw their line with exactly this, see
+       .icon--control in theme.css, so they have the same thickness as the header icons everywhere. */
+    --header-icon-line-width: {{ settings.icon_stroke_width }}px;
     {%- if section.settings.transparent_logo != blank %}
     /* The transparent-header logo, shared with videos (media-zoom-style.liquid draws it in their bottom-left corner). Defined here,
        on :root, because the header is the one place guaranteed to have this setting in scope on every page. */
@@ -63,6 +67,12 @@
       transition: transform var(--header-solid-transition), visibility var(--header-solid-transition), top var(--header-solid-transition), background var(--header-solid-transition);
     }
   {%- endif -%}
+
+  @media screen and (min-width: 700px) {
+    :root {
+      --header-icon-line-width: {{ settings.icon_stroke_width | times: section.settings.desktop_icon_size | divided_by: 16.0 }}px;
+    }
+  }
 
   #shopify-section-{{ section.id }} {
     {%- case section.settings.mobile_layout -%}

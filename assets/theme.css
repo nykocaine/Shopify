@@ -4933,6 +4933,14 @@ table caption {
   width: var(--control-icon-size, 16px);
 }
 
+/* Same line thickness as the header icons everywhere: the strokes of the control icons are in real pixels (non-scaling), so the size
+   they are drawn at (22 / 24px) no longer thickens them, and they use --header-icon-line-width (header.liquid). */
+.icon.icon--control :is(path, circle, line, polyline, rect),
+.lightbox-comments__close :is(path, circle, line, polyline) {
+  stroke-width: var(--header-icon-line-width, var(--icon-stroke-width, 1.1px));
+  vector-effect: non-scaling-stroke;
+}
+
 .capped-icon {
   width: auto;
   height: 1cap;
