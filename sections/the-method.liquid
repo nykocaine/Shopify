@@ -14,7 +14,6 @@
   endfor
 
   assign result_blocks = section.blocks | where: 'type', 'result'
-  assign routine_blocks = section.blocks | where: 'type', 'routine_step'
 
   assign require_email_to_start = section.settings.require_email_to_start
   assign newsletter_form_id = 'the-method-newsletter-' | append: section.id
@@ -431,7 +430,7 @@
             </div>
           {%- endfor -%}
 
-          <div class="the-method__result-extras" data-the-method-extras data-routine-label="{{ section.settings.routine_heading | escape }}" hidden>
+          <div class="the-method__result-extras" data-the-method-extras hidden>
             {%- if section.settings.whatsapp_number != blank -%}
               <div class="the-method__whatsapp" data-the-method-whatsapp data-number="{{ section.settings.whatsapp_number | strip }}" data-message="{{ section.settings.whatsapp_message | escape }}" data-answers-label="{{ section.settings.whatsapp_answers_label | escape }}" data-result-label="{{ section.settings.whatsapp_result_label | escape }}">
                 {%- render 'button', content: section.settings.whatsapp_button_text, href: '#', style: 'outline', external: true -%}
@@ -439,7 +438,7 @@
             {%- endif -%}
 
             {%- if section.settings.show_result_email -%}
-              <div class="the-method__email-capture" data-the-method-email data-success-text="{{ section.settings.result_email_success | escape }}" data-error-text="{{ section.settings.result_email_error | escape }}" data-subject="{{ section.settings.result_email_subject | escape }}" data-routine-label="{{ section.settings.routine_heading | escape }}" data-answers-label="{{ section.settings.whatsapp_answers_label | escape }}" data-result-label="{{ section.settings.whatsapp_result_label | escape }}">
+              <div class="the-method__email-capture" data-the-method-email data-success-text="{{ section.settings.result_email_success | escape }}" data-error-text="{{ section.settings.result_email_error | escape }}" data-subject="{{ section.settings.result_email_subject | escape }}" data-answers-label="{{ section.settings.whatsapp_answers_label | escape }}" data-result-label="{{ section.settings.whatsapp_result_label | escape }}">
                 <label for="the-method-result-email-{{ section.id }}" class="the-method__email-capture-label">{{ section.settings.result_email_heading }}</label>
                 <div class="the-method__email-capture-row">
                   <div class="the-method__email-field-end">
@@ -454,35 +453,6 @@
               </div>
             {%- endif -%}
           </div>
-
-          {%- if routine_blocks.size > 0 -%}
-            <div class="the-method__routine" data-the-method-routine hidden>
-              {%- if section.settings.routine_heading != blank -%}
-                <p class="subheading">{{ section.settings.routine_heading }}</p>
-              {%- endif -%}
-
-              <ol class="the-method__routine-list">
-                {%- for block in routine_blocks -%}
-                  <li class="the-method__routine-step" {{ block.shopify_attributes }}>
-                    {%- unless block.settings.icon == 'none' -%}
-                      <span class="the-method__routine-step-icon">{%- render 'the-method-icon', icon: block.settings.icon -%}</span>
-                    {%- endunless -%}
-                    <span class="the-method__routine-step-body">
-                      {%- if block.settings.title != blank -%}
-                        <span class="the-method__routine-step-title">{{ block.settings.title }}</span>
-                      {%- endif -%}
-                      {%- if block.settings.description != blank -%}
-                        <span class="the-method__routine-step-description">{{ block.settings.description }}</span>
-                      {%- endif -%}
-                      {%- if block.settings.product != blank -%}
-                        {%- render 'button', content: block.settings.product.title, href: block.settings.product.url, style: 'link' -%}
-                      {%- endif -%}
-                    </span>
-                  </li>
-                {%- endfor -%}
-              </ol>
-            </div>
-          {%- endif -%}
         </div>
 
       </div>
@@ -500,7 +470,7 @@
 {%- endform -%}
 
 {% stylesheet %}
-  /* All the text of the test (intro, questions, options, descriptions, progress, warning, notes, result, routine, buttons) uses the Body Text
+  /* All the text of the test (intro, questions, options, descriptions, progress, warning, notes, result, buttons) uses the Body Text
      typography - family, size, weight, style, spacing, no capitals - and nothing is bold unless it is asked for here. Sizes come later,
      from this one rule. */
   .the-method-layout__content * {
@@ -956,46 +926,12 @@
     gap: 0.25rem;
   }
 
-  .the-method__routine[hidden] {
-    display: none;
-  }
 
-  .the-method__routine-list {
-    display: grid;
-    gap: 0.75rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
 
-  .the-method__routine-step {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: rgb(var(--input-background, transparent));
-    border-radius: var(--input-border-radius);
-  }
 
-  .the-method__routine-step-icon {
-    display: inline-flex;
-    flex-shrink: 0;
-    color: rgb(var(--text-color));
-  }
 
-  .the-method__routine-step-icon svg {
-    width: 1.5rem;
-    height: 1.5rem;
-  }
 
-  .the-method__routine-step-body {
-    display: grid;
-    gap: 0.25rem;
-  }
 
-  .the-method__routine-step-description {
-    color: rgb(var(--text-color) / 0.75);
-  }
 
   @media screen and (min-width: 700px) {
     .the-method__result-card {
@@ -1196,35 +1132,9 @@
     display: none;
   }
 
-  /* Routine: a thin line joins the steps, which come in one after another when the result is shown */
-  .the-method__routine-list {
-    position: relative;
-  }
 
-  .the-method__routine-step {
-    position: relative;
-    animation: the-method-step-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
 
-  .the-method__routine-step:nth-child(2) { animation-delay: 0.08s; }
-  .the-method__routine-step:nth-child(3) { animation-delay: 0.16s; }
-  .the-method__routine-step:nth-child(4) { animation-delay: 0.24s; }
-  .the-method__routine-step:nth-child(5) { animation-delay: 0.32s; }
 
-  .the-method__routine-step:not(:last-child):after {
-    content: "";
-    position: absolute;
-    inset-inline-start: calc(1rem + 0.75rem);
-    inset-block-start: calc(100% - 0.25rem);
-    width: 1px;
-    height: calc(0.75rem + 0.5rem);
-    background: rgb(var(--text-color) / 0.2);
-  }
-
-  @keyframes the-method-step-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
 
   /* The check of a chosen option draws itself */
   .the-method__option[aria-checked="true"] .the-method__option-check path {
@@ -1276,7 +1186,6 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .the-method__routine-step,
     .the-method__analyzing-line:after,
     .the-method__option[aria-checked="true"] .the-method__option-check path {
       animation: none;
@@ -1341,7 +1250,6 @@
     var resultCards = wrapper.querySelectorAll('[data-the-method-result]');
     var contextNotes = wrapper.querySelectorAll('[data-the-method-context-note]');
     var warningEl = wrapper.querySelector('[data-the-method-warning]');
-    var routineEl = wrapper.querySelector('[data-the-method-routine]');
     var summaryEl = wrapper.querySelector('[data-the-method-summary]');
     var extrasEl = wrapper.querySelector('[data-the-method-extras]');
     var panelsEl = wrapper.querySelector('[data-the-method-panels]');
@@ -1564,25 +1472,13 @@
       });
     }
 
-    // The routine shown under the result, as plain lines ("Limpieza: ...") - used by the WhatsApp message and by the e-mail
-    function routineLines() {
-      var lines = [];
-      wrapper.querySelectorAll('.the-method__routine-step').forEach(function (step, index) {
-        var title = step.querySelector('.the-method__routine-step-title');
-        var description = step.querySelector('.the-method__routine-step-description');
-        var text = (title ? title.textContent.trim() : '') + (description ? ': ' + description.textContent.trim() : '');
-        if (text) lines.push((index + 1) + '. ' + text);
-      });
-      return lines;
-    }
-
     function visibleResultCard() {
       var found = null;
       resultCards.forEach(function (card) { if (!card.hidden) found = card; });
       return found;
     }
 
-    // The whole result as text: answers, recommended method (with its link) and the daily routine
+    // The whole result as text: answers and recommended method (with its link)
     function resultText(labels) {
       var lines = [];
       var answerLines = answersSummaryText();
@@ -1591,12 +1487,6 @@
       var link = card ? card.querySelector('.the-method__result-info a') : null;
       if (answerLines.length) lines.push(labels.answers + ': ' + answerLines.join(' / '));
       if (title) lines.push(labels.result + ': ' + title + (link ? ' - ' + link.href : ''));
-      var routine = routineLines();
-      if (routine.length) {
-        lines.push('');
-        lines.push(labels.routine + ':');
-        lines = lines.concat(routine);
-      }
       return lines;
     }
 
@@ -1608,8 +1498,7 @@
         var link = whatsapp.querySelector('a');
         var lines = [whatsapp.getAttribute('data-message') || ''].concat(resultText({
           answers: whatsapp.getAttribute('data-answers-label') || '',
-          result: whatsapp.getAttribute('data-result-label') || '',
-          routine: extrasEl ? extrasEl.getAttribute('data-routine-label') || '' : ''
+          result: whatsapp.getAttribute('data-result-label') || ''
         }));
         if (link) {
           link.setAttribute('href', 'https://wa.me/' + whatsapp.getAttribute('data-number').replace(/\D/g, '') + '?text=' + encodeURIComponent(lines.filter(Boolean).join('\n')));
@@ -1644,7 +1533,6 @@
         el.textContent = note;
       });
 
-      if (routineEl) routineEl.hidden = false;
       renderSummary();
       prepareExtras(bestScore < 0 ? null : best);
       track('result', { method: method, format: format });
@@ -1998,7 +1886,7 @@
       }
 
       // Two sends, both without reloading the page: the newsletter subscription (the section's customer form) and a message to the store with
-      // the e-mail, the answers, the recommended method and the daily routine, so the result and the routine can be sent back to that e-mail.
+      // the e-mail, the answers and the recommended method, so the result can be sent back to that e-mail.
       function sendEmail() {
         if (sending) return;
         var value = (emailInput.value || '').trim();
@@ -2012,8 +1900,7 @@
 
         var labels = {
           answers: emailBox.getAttribute('data-answers-label') || '',
-          result: emailBox.getAttribute('data-result-label') || '',
-          routine: emailBox.getAttribute('data-routine-label') || ''
+          result: emailBox.getAttribute('data-result-label') || ''
         };
         var subject = emailBox.getAttribute('data-subject') || '';
         var text = resultText(labels).join('\n');
@@ -2526,7 +2413,7 @@
       "type": "text",
       "id": "result_email_heading",
       "label": "Texto sobre el campo de correo",
-      "default": "Recibe tu rutina por correo"
+      "default": "Recibe tu resultado por correo"
     },
     {
       "type": "text",
@@ -2544,19 +2431,19 @@
       "type": "text",
       "id": "result_email_success",
       "label": "Mensaje al enviar el correo",
-      "default": "Listo, recibimos tu resultado y tu rutina diaria. Te escribiremos a tu correo."
+      "default": "Listo, recibimos tu resultado. Te escribiremos a tu correo."
     },
     {
       "type": "text",
       "id": "result_email_subject",
       "label": "Asunto del correo",
-      "default": "Mi resultado y mi rutina diaria"
+      "default": "Mi resultado del test"
     },
     {
       "type": "text",
       "id": "result_email_mailto_text",
       "label": "Texto del enlace para abrirlo en el correo propio",
-      "info": "Aparece tras enviar: abre el programa de correo del visitante con el resultado y la rutina ya escritos, dirigido a su propio correo.",
+      "info": "Aparece tras enviar: abre el programa de correo del visitante con el resultado ya escrito, dirigido a su propio correo.",
       "default": "Abrir el resultado en mi correo"
     },
     {
@@ -2580,17 +2467,6 @@
       "id": "secondary_recommendation_heading",
       "label": "Título",
       "default": "También podría interesarte"
-    },
-    {
-      "type": "header",
-      "content": "Rutina diaria"
-    },
-    {
-      "type": "text",
-      "id": "routine_heading",
-      "label": "Título",
-      "default": "Tu rutina diaria",
-      "info": "Solo se muestra si agregas al menos un bloque \"Paso de rutina diaria\"."
     }
   ],
   "blocks": [
@@ -2757,16 +2633,6 @@
         { "type": "product", "id": "product", "label": "Producto" },
         { "type": "textarea", "id": "rationale", "label": "Explicación" },
         { "type": "product", "id": "secondary_product", "label": "Producto secundario (opcional)" }
-      ]
-    },
-    {
-      "type": "routine_step",
-      "name": "Paso de rutina diaria",
-      "settings": [
-        { "type": "text", "id": "title", "label": "Título", "default": "Paso" },
-        { "type": "textarea", "id": "description", "label": "Descripción" },
-        { "type": "select", "id": "icon", "label": "Ícono", "options": [{ "value": "none", "label": "Ninguno" }, { "value": "sun", "label": "Sol (día)" }, { "value": "moon", "label": "Luna (noche)" }, { "value": "drop", "label": "Gota" }, { "value": "shield", "label": "Escudo (protección)" }, { "value": "spark", "label": "Destello" }], "default": "sun" },
-        { "type": "product", "id": "product", "label": "Producto (opcional)" }
       ]
     }
   ],
