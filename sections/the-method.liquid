@@ -180,6 +180,8 @@
                       assign wsal_key = 'option_' | append: i | append: '_weight_salicylic'
                       assign wtca_key = 'option_' | append: i | append: '_weight_tca'
                       assign opt_label = block.settings[label_key]
+                      assign desc_key = 'option_' | append: i | append: '_description'
+                      assign opt_desc = block.settings[desc_key]
                       assign opt_icon = block.settings[icon_key]
                       assign opt_weight_salicylic = block.settings[wsal_key]
                       assign opt_weight_tca = block.settings[wtca_key]
@@ -192,7 +194,12 @@
                               {%- render 'the-method-icon', icon: opt_icon -%}
                             </span>
                           {%- endunless -%}
-                          <span class="the-method__option-label">{{ opt_label }}</span>
+                          <span class="the-method__option-text">
+                            <span class="the-method__option-label">{{ opt_label }}</span>
+                            {%- if opt_desc != blank -%}
+                              <span class="the-method__option-description">{{ opt_desc }}</span>
+                            {%- endif -%}
+                          </span>
                         </span>
                         <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 16 -%}</span>
                       </button>
@@ -215,13 +222,20 @@
                       assign wtca_key = 'option_' | append: i | append: '_weight_tca'
                       assign note_key = 'option_' | append: i | append: '_note'
                       assign opt_label = block.settings[label_key]
+                      assign desc_key = 'option_' | append: i | append: '_description'
+                      assign opt_desc = block.settings[desc_key]
                       assign opt_weight_salicylic = block.settings[wsal_key]
                       assign opt_weight_tca = block.settings[wtca_key]
                       assign opt_note = block.settings[note_key]
                     -%}
                     {%- if opt_label != blank -%}
                       <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="{{ step_index }}" data-key="{{ block.id }}-{{ i }}" data-weight-salicylic="{{ opt_weight_salicylic }}" data-weight-tca="{{ opt_weight_tca }}" data-note="{{ opt_note | escape }}">
-                        <span class="the-method__option-label">{{ opt_label }}</span>
+                        <span class="the-method__option-text">
+                            <span class="the-method__option-label">{{ opt_label }}</span>
+                            {%- if opt_desc != blank -%}
+                              <span class="the-method__option-description">{{ opt_desc }}</span>
+                            {%- endif -%}
+                          </span>
                         <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 14 -%}</span>
                       </button>
                     {%- endif -%}
@@ -259,6 +273,8 @@
                       assign icon_key = 'option_' | append: i | append: '_icon'
                       assign format_key = 'option_' | append: i | append: '_format'
                       assign opt_label = block.settings[label_key]
+                      assign desc_key = 'option_' | append: i | append: '_description'
+                      assign opt_desc = block.settings[desc_key]
                       assign opt_icon = block.settings[icon_key]
                       assign opt_format = block.settings[format_key]
                     -%}
@@ -270,7 +286,12 @@
                               {%- render 'the-method-icon', icon: opt_icon -%}
                             </span>
                           {%- endunless -%}
-                          <span class="the-method__option-label">{{ opt_label }}</span>
+                          <span class="the-method__option-text">
+                            <span class="the-method__option-label">{{ opt_label }}</span>
+                            {%- if opt_desc != blank -%}
+                              <span class="the-method__option-description">{{ opt_desc }}</span>
+                            {%- endif -%}
+                          </span>
                         </span>
                         <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 18 -%}</span>
                       </button>
@@ -300,12 +321,19 @@
                       assign warns_key = 'option_' | append: i | append: '_warns'
                       assign note_key = 'option_' | append: i | append: '_note'
                       assign opt_label = block.settings[label_key]
+                      assign desc_key = 'option_' | append: i | append: '_description'
+                      assign opt_desc = block.settings[desc_key]
                       assign opt_warns = block.settings[warns_key]
                       assign opt_note = block.settings[note_key]
                     -%}
                     {%- if opt_label != blank -%}
                       <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="{{ step_index }}" data-key="{{ block.id }}-{{ i }}" data-warn="{{ opt_warns }}" data-warn-note="{{ opt_note | escape }}">
-                        <span class="the-method__option-label">{{ opt_label }}</span>
+                        <span class="the-method__option-text">
+                            <span class="the-method__option-label">{{ opt_label }}</span>
+                            {%- if opt_desc != blank -%}
+                              <span class="the-method__option-description">{{ opt_desc }}</span>
+                            {%- endif -%}
+                          </span>
                         <span class="the-method__option-check">{%- render 'icon' with 'success-checkmark', width: 14 -%}</span>
                       </button>
                     {%- endif -%}
@@ -686,6 +714,26 @@
     align-items: center;
     gap: 0.75rem;
     min-width: 0;
+  }
+
+  /* All the option icons share one minimal line style: the thickness of the header icons, in real pixels, with round ends */
+  .the-method-icon :is(path, circle) {
+    stroke-width: var(--header-icon-line-width, 1.1px);
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* Option text: the label and, under it, an optional short description (one or two lines) in a softer color */
+  .the-method__option-text {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .the-method__option-description {
+    font-size: var(--text-sm, 0.875rem);
+    line-height: 1.4;
+    color: rgb(var(--text-color) / 0.6);
   }
 
   .the-method__option-icon {
@@ -1570,26 +1618,31 @@
         { "type": "paragraph", "content": "Hasta 5 opciones. Deja el texto en blanco para ocultar una opción. Los pesos definen qué tanto empuja cada respuesta hacia Ácido Salicílico o TCA — pueden ser 0 si la opción no debe influir en el resultado." },
         { "type": "header", "content": "Opción 1" },
         { "type": "text", "id": "option_1_label", "label": "Texto" },
+        { "type": "text", "id": "option_1_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "select", "id": "option_1_icon", "label": "Ícono", "options": [{ "value": "none", "label": "Ninguno" }, { "value": "dots", "label": "Puntos dispersos" }, { "value": "drop", "label": "Gota" }, { "value": "ring", "label": "Anillo" }, { "value": "waves", "label": "Ondas" }, { "value": "unsure", "label": "Tres puntos" }], "default": "dots" },
         { "type": "range", "id": "option_1_weight_salicylic", "label": "Peso → Ácido Salicílico", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "range", "id": "option_1_weight_tca", "label": "Peso → TCA", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "header", "content": "Opción 2" },
         { "type": "text", "id": "option_2_label", "label": "Texto" },
+        { "type": "text", "id": "option_2_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "select", "id": "option_2_icon", "label": "Ícono", "options": [{ "value": "none", "label": "Ninguno" }, { "value": "dots", "label": "Puntos dispersos" }, { "value": "drop", "label": "Gota" }, { "value": "ring", "label": "Anillo" }, { "value": "waves", "label": "Ondas" }, { "value": "unsure", "label": "Tres puntos" }], "default": "drop" },
         { "type": "range", "id": "option_2_weight_salicylic", "label": "Peso → Ácido Salicílico", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "range", "id": "option_2_weight_tca", "label": "Peso → TCA", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "header", "content": "Opción 3" },
         { "type": "text", "id": "option_3_label", "label": "Texto" },
+        { "type": "text", "id": "option_3_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "select", "id": "option_3_icon", "label": "Ícono", "options": [{ "value": "none", "label": "Ninguno" }, { "value": "dots", "label": "Puntos dispersos" }, { "value": "drop", "label": "Gota" }, { "value": "ring", "label": "Anillo" }, { "value": "waves", "label": "Ondas" }, { "value": "unsure", "label": "Tres puntos" }], "default": "ring" },
         { "type": "range", "id": "option_3_weight_salicylic", "label": "Peso → Ácido Salicílico", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "range", "id": "option_3_weight_tca", "label": "Peso → TCA", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "header", "content": "Opción 4" },
         { "type": "text", "id": "option_4_label", "label": "Texto" },
+        { "type": "text", "id": "option_4_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "select", "id": "option_4_icon", "label": "Ícono", "options": [{ "value": "none", "label": "Ninguno" }, { "value": "dots", "label": "Puntos dispersos" }, { "value": "drop", "label": "Gota" }, { "value": "ring", "label": "Anillo" }, { "value": "waves", "label": "Ondas" }, { "value": "unsure", "label": "Tres puntos" }], "default": "waves" },
         { "type": "range", "id": "option_4_weight_salicylic", "label": "Peso → Ácido Salicílico", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "range", "id": "option_4_weight_tca", "label": "Peso → TCA", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "header", "content": "Opción 5 (opcional)" },
         { "type": "text", "id": "option_5_label", "label": "Texto" },
+        { "type": "text", "id": "option_5_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "select", "id": "option_5_icon", "label": "Ícono", "options": [{ "value": "none", "label": "Ninguno" }, { "value": "dots", "label": "Puntos dispersos" }, { "value": "drop", "label": "Gota" }, { "value": "ring", "label": "Anillo" }, { "value": "waves", "label": "Ondas" }, { "value": "unsure", "label": "Tres puntos" }], "default": "unsure" },
         { "type": "range", "id": "option_5_weight_salicylic", "label": "Peso → Ácido Salicílico", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "range", "id": "option_5_weight_tca", "label": "Peso → TCA", "min": -5, "max": 5, "step": 1, "default": 0 }
@@ -1603,26 +1656,31 @@
         { "type": "paragraph", "content": "Hasta 5 opciones, sin ícono. La nota (opcional) aparece junto al resultado final solo si esa opción fue elegida — útil para aclaraciones tipo \"al tratarse de piel seca...\"." },
         { "type": "header", "content": "Opción 1" },
         { "type": "text", "id": "option_1_label", "label": "Texto" },
+        { "type": "text", "id": "option_1_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "range", "id": "option_1_weight_salicylic", "label": "Peso → Ácido Salicílico", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "range", "id": "option_1_weight_tca", "label": "Peso → TCA", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "textarea", "id": "option_1_note", "label": "Nota (opcional)" },
         { "type": "header", "content": "Opción 2" },
         { "type": "text", "id": "option_2_label", "label": "Texto" },
+        { "type": "text", "id": "option_2_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "range", "id": "option_2_weight_salicylic", "label": "Peso → Ácido Salicílico", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "range", "id": "option_2_weight_tca", "label": "Peso → TCA", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "textarea", "id": "option_2_note", "label": "Nota (opcional)" },
         { "type": "header", "content": "Opción 3" },
         { "type": "text", "id": "option_3_label", "label": "Texto" },
+        { "type": "text", "id": "option_3_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "range", "id": "option_3_weight_salicylic", "label": "Peso → Ácido Salicílico", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "range", "id": "option_3_weight_tca", "label": "Peso → TCA", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "textarea", "id": "option_3_note", "label": "Nota (opcional)" },
         { "type": "header", "content": "Opción 4" },
         { "type": "text", "id": "option_4_label", "label": "Texto" },
+        { "type": "text", "id": "option_4_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "range", "id": "option_4_weight_salicylic", "label": "Peso → Ácido Salicílico", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "range", "id": "option_4_weight_tca", "label": "Peso → TCA", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "textarea", "id": "option_4_note", "label": "Nota (opcional)" },
         { "type": "header", "content": "Opción 5 (opcional)" },
         { "type": "text", "id": "option_5_label", "label": "Texto" },
+        { "type": "text", "id": "option_5_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "range", "id": "option_5_weight_salicylic", "label": "Peso → Ácido Salicílico", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "range", "id": "option_5_weight_tca", "label": "Peso → TCA", "min": -5, "max": 5, "step": 1, "default": 0 },
         { "type": "textarea", "id": "option_5_note", "label": "Nota (opcional)" }
@@ -1650,18 +1708,22 @@
         { "type": "paragraph", "content": "Hasta 4 opciones. \"Automático\" deja que el resultado se calcule según los pesos de las preguntas anteriores; las demás fuerzan ese formato de una vez." },
         { "type": "header", "content": "Opción 1" },
         { "type": "text", "id": "option_1_label", "label": "Texto" },
+        { "type": "text", "id": "option_1_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "select", "id": "option_1_icon", "label": "Ícono", "options": [{ "value": "none", "label": "Ninguno" }, { "value": "circle", "label": "Un círculo" }, { "value": "two-circles", "label": "Dos círculos" }, { "value": "overlap-circles", "label": "Círculos superpuestos" }, { "value": "unsure", "label": "Tres puntos" }], "default": "circle" },
         { "type": "select", "id": "option_1_format", "label": "Formato", "options": [{ "value": "auto", "label": "Automático" }, { "value": "single", "label": "Un método" }, { "value": "duo", "label": "Mismo método (duo)" }, { "value": "combo", "label": "Combinar métodos" }], "default": "single" },
         { "type": "header", "content": "Opción 2" },
         { "type": "text", "id": "option_2_label", "label": "Texto" },
+        { "type": "text", "id": "option_2_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "select", "id": "option_2_icon", "label": "Ícono", "options": [{ "value": "none", "label": "Ninguno" }, { "value": "circle", "label": "Un círculo" }, { "value": "two-circles", "label": "Dos círculos" }, { "value": "overlap-circles", "label": "Círculos superpuestos" }, { "value": "unsure", "label": "Tres puntos" }], "default": "two-circles" },
         { "type": "select", "id": "option_2_format", "label": "Formato", "options": [{ "value": "auto", "label": "Automático" }, { "value": "single", "label": "Un método" }, { "value": "duo", "label": "Mismo método (duo)" }, { "value": "combo", "label": "Combinar métodos" }], "default": "duo" },
         { "type": "header", "content": "Opción 3" },
         { "type": "text", "id": "option_3_label", "label": "Texto" },
+        { "type": "text", "id": "option_3_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "select", "id": "option_3_icon", "label": "Ícono", "options": [{ "value": "none", "label": "Ninguno" }, { "value": "circle", "label": "Un círculo" }, { "value": "two-circles", "label": "Dos círculos" }, { "value": "overlap-circles", "label": "Círculos superpuestos" }, { "value": "unsure", "label": "Tres puntos" }], "default": "overlap-circles" },
         { "type": "select", "id": "option_3_format", "label": "Formato", "options": [{ "value": "auto", "label": "Automático" }, { "value": "single", "label": "Un método" }, { "value": "duo", "label": "Mismo método (duo)" }, { "value": "combo", "label": "Combinar métodos" }], "default": "combo" },
         { "type": "header", "content": "Opción 4 (opcional)" },
         { "type": "text", "id": "option_4_label", "label": "Texto" },
+        { "type": "text", "id": "option_4_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "select", "id": "option_4_icon", "label": "Ícono", "options": [{ "value": "none", "label": "Ninguno" }, { "value": "circle", "label": "Un círculo" }, { "value": "two-circles", "label": "Dos círculos" }, { "value": "overlap-circles", "label": "Círculos superpuestos" }, { "value": "unsure", "label": "Tres puntos" }], "default": "unsure" },
         { "type": "select", "id": "option_4_format", "label": "Formato", "options": [{ "value": "auto", "label": "Automático" }, { "value": "single", "label": "Un método" }, { "value": "duo", "label": "Mismo método (duo)" }, { "value": "combo", "label": "Combinar métodos" }], "default": "auto" }
       ]
@@ -1675,22 +1737,27 @@
         { "type": "text", "id": "disclaimer", "label": "Aclaración (opcional)", "default": "Este test es orientativo y no reemplaza la evaluación de un profesional de la salud." },
         { "type": "header", "content": "Opción 1" },
         { "type": "text", "id": "option_1_label", "label": "Texto" },
+        { "type": "text", "id": "option_1_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "checkbox", "id": "option_1_warns", "label": "Genera advertencia", "default": false },
         { "type": "textarea", "id": "option_1_note", "label": "Texto de la advertencia (si aplica)" },
         { "type": "header", "content": "Opción 2" },
         { "type": "text", "id": "option_2_label", "label": "Texto" },
+        { "type": "text", "id": "option_2_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "checkbox", "id": "option_2_warns", "label": "Genera advertencia", "default": false },
         { "type": "textarea", "id": "option_2_note", "label": "Texto de la advertencia (si aplica)" },
         { "type": "header", "content": "Opción 3" },
         { "type": "text", "id": "option_3_label", "label": "Texto" },
+        { "type": "text", "id": "option_3_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "checkbox", "id": "option_3_warns", "label": "Genera advertencia", "default": false },
         { "type": "textarea", "id": "option_3_note", "label": "Texto de la advertencia (si aplica)" },
         { "type": "header", "content": "Opción 4" },
         { "type": "text", "id": "option_4_label", "label": "Texto" },
+        { "type": "text", "id": "option_4_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "checkbox", "id": "option_4_warns", "label": "Genera advertencia", "default": false },
         { "type": "textarea", "id": "option_4_note", "label": "Texto de la advertencia (si aplica)" },
         { "type": "header", "content": "Opción 5 (opcional)" },
         { "type": "text", "id": "option_5_label", "label": "Texto" },
+        { "type": "text", "id": "option_5_description", "label": "Descripción (opcional)", "info": "Una o dos líneas bajo el texto de la opción, para que el cliente entienda a qué se refiere." },
         { "type": "checkbox", "id": "option_5_warns", "label": "Genera advertencia", "default": false },
         { "type": "textarea", "id": "option_5_note", "label": "Texto de la advertencia (si aplica)" }
       ]
