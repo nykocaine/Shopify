@@ -5742,6 +5742,7 @@ _isVisible2 = new WeakMap();
 _Header_instances = new WeakSet();
 onHeaderTrackerIntersection_fn = function(entries) {
   this.classList.toggle("is-solid", !entries[0].isIntersecting);
+  this.classList.toggle("is-scrolled", !entries[0].isIntersecting);
 };
 detectMousePosition_fn = function(event) {
   if (event.clientY < 100 && window.matchMedia("screen and (pointer: fine)").matches) {

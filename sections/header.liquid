@@ -118,8 +118,26 @@
 
   #shopify-section-{{ section.id }} .header {
     --header-padding-inline: calc(var(--container-gutter) + 0.5rem);
-    transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition);
+    transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition){% if section.settings.floating_header %}, border-bottom-left-radius var(--header-solid-transition), border-bottom-right-radius var(--header-solid-transition){% endif %};
   }
+
+  {%- if section.settings.floating_header -%}
+    {%- comment -%}
+    Floating header corners: at rest (top of the page, not scrolled) the bottom corners are as round as the top ones; once
+    the page is scrolled (.is-scrolled, set by the header-scroll-tracker observer in theme.js, so it ignores the solid
+    state the menu/search/cart drawers force) they go back to square. The radius transitions with the same
+    --header-solid-transition as the background, so corners and background change together in both directions.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .header--floating {
+      border-bottom-left-radius: {{ section.settings.header_border_radius }}px;
+      border-bottom-right-radius: {{ section.settings.header_border_radius }}px;
+    }
+
+    #shopify-section-{{ section.id }} .header--floating.is-scrolled {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  {%- endif -%}
 
   #shopify-section-{{ section.id }} .header__logo-image {
     transition: opacity var(--header-solid-transition) var(--header-content-delay);
@@ -139,7 +157,7 @@
     }
 
     #shopify-section-{{ section.id }} .header {
-      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius .8s cubic-bezier(.33, 0, .2, 1), border-bottom-right-radius .8s cubic-bezier(.33, 0, .2, 1);
+      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius var(--header-solid-transition), border-bottom-right-radius var(--header-solid-transition);
     }
 
     :root:has(header-menu-drawer[open], #search-drawer[open], #cart-drawer[open]) #shopify-section-{{ section.id }} .header {
@@ -395,7 +413,7 @@
 </style>
 
 <height-observer variable="header">
-  <x-header class="header {% if section.settings.floating_header %}header--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.hide_on_scroll and header_logo_only == false %}hide-on-scroll{% endif %} style="padding-block: {{ section.settings.header_height_padding }}px; {% if section.settings.floating_header %}border-top-left-radius: {{ section.settings.header_border_radius }}px; border-top-right-radius: {{ section.settings.header_border_radius }}px; border-bottom-left-radius: 0; border-bottom-right-radius: 0;{% endif %}">
+  <x-header class="header {% if section.settings.floating_header %}header--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.hide_on_scroll and header_logo_only == false %}hide-on-scroll{% endif %} style="padding-block: {{ section.settings.header_height_padding }}px; {% if section.settings.floating_header %}border-top-left-radius: {{ section.settings.header_border_radius }}px; border-top-right-radius: {{ section.settings.header_border_radius }}px;{% endif %}">
     {%- comment -%}
     --------------------------------------------------------------------------------------------------------------------
     LOGO AREA
