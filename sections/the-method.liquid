@@ -504,6 +504,14 @@
     display: none;
   }
 
+  /* Once the test starts, the questions sit directly on the section itself: the inner card (its own background, padding and corners) is
+     gone, so there is no container inside the container. The section's own padding gives the margins. */
+  .the-method-layout--quiz-active .the-method-layout__content {
+    background: none !important;
+    padding: 0;
+    border-radius: 0 !important;
+  }
+
   .the-method-layout__content {
     padding: calc(var(--container-gutter) + 0.5rem);
   }
@@ -541,12 +549,28 @@
     gap: calc(var(--the-method-gap) * 1.5);
   }
 
+  /* Back | progress | restart on three fixed columns: the progress always stays in the middle, whichever of the buttons is shown or
+     hidden, and the row keeps its height, so nothing moves when the question changes. */
   .the-method__meta {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
     gap: 1rem;
-    min-height: 1.5rem;
+    min-height: var(--control-button-size, 1.75rem);
+  }
+
+  .the-method__back {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .the-method__progress {
+    grid-column: 2;
+  }
+
+  .the-method__restart {
+    grid-column: 3;
+    justify-self: end;
   }
 
   /* Back/restart reuse the theme's own circular step-control button (.circle-button) as-is —
@@ -594,6 +618,8 @@
 
   .the-method__progress-text {
     margin: 0;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
     color: rgb(var(--text-color) / 0.6);
   }
 
@@ -945,9 +971,9 @@
   /* "Analyzing" beat before the result: a line of text and a thin line that slides, nothing else */
   .the-method__panel--analyzing {
     max-width: none;
-    justify-items: stretch;
-    text-align: start !important;
-    min-height: 8rem;
+    justify-items: center;
+    text-align: center !important;
+    min-height: 16rem;
     align-content: center;
   }
 
@@ -959,7 +985,8 @@
   .the-method__analyzing-line {
     display: block;
     width: 100%;
-    max-width: 14rem;
+    max-width: 12rem;
+    margin-inline: auto;
     height: 2px;
     border-radius: 2px;
     background: rgb(var(--text-color) / 0.12);
@@ -1117,6 +1144,16 @@
     color: rgb(var(--text-color) / 0.7);
   }
 
+  @media screen and (max-width: 699px) {
+    .the-method__email-capture-row {
+      flex-direction: column;
+    }
+
+    .the-method__email-capture-row .button {
+      width: 100%;
+    }
+  }
+
   .the-method__email-mailto {
     justify-self: start;
     text-decoration: underline;
@@ -1162,22 +1199,53 @@
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none;
+    mix-blend-mode: normal;
   }
 
+  /* The old page image is not needed (only the panels area is animated): showing both at once, blended, was a brightness flash */
+  ::view-transition-old(root) {
+    display: none;
+  }
+
+  .the-method-layout__media {
+    view-transition-name: the-method-media;
+  }
+
+  /* The panels area morphs to its new size; the snapshots are not stretched while it does (object-fit none, anchored at the top, clipped),
+     and the old and the new content cross-fade with the same duration and curve, so the sum of both is constant - no dip, no flash. */
   ::view-transition-group(the-method-panels) {
     animation-duration: 0.26s;
-    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: clip;
+  }
+
+  ::view-transition-old(the-method-panels),
+  ::view-transition-new(the-method-panels) {
+    height: 100%;
+    width: 100%;
+    object-fit: none;
+    object-position: 0 0;
+    mix-blend-mode: normal;
+    animation-duration: 0.26s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   ::view-transition-old(the-method-panels) {
-    animation: the-method-vt-out 0.12s ease-out both;
+    animation-name: the-method-vt-out;
+    animation-fill-mode: both;
   }
 
   ::view-transition-new(the-method-panels) {
-    animation: the-method-vt-in 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-name: the-method-vt-in;
+    animation-fill-mode: both;
+  }
+
+  ::view-transition-group(the-method-media) {
+    animation-duration: 0.2s;
   }
 
   @keyframes the-method-vt-out {
+    from { opacity: 1; }
     to { opacity: 0; }
   }
 
