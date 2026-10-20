@@ -450,6 +450,19 @@
 {%- endform -%}
 
 {% stylesheet %}
+  /* All the text of the test (intro, questions, options, descriptions, progress, warning, notes, result, routine, buttons) uses the Body Text
+     typography - family, size, weight, style, spacing, no capitals - and nothing is bold unless it is asked for here. Sizes come later,
+     from this one rule. */
+  .the-method-layout__content * {
+    font-family: var(--text-font-family) !important;
+    font-size: var(--text-base) !important;
+    font-weight: var(--text-font-weight) !important;
+    font-style: var(--text-font-style) !important;
+    letter-spacing: var(--text-letter-spacing) !important;
+    line-height: var(--text-line-height) !important;
+    text-transform: none !important;
+  }
+
   .the-method-layout {
     display: grid;
     grid-template-columns: 1fr;
@@ -561,9 +574,6 @@
 
   .the-method__progress-text {
     margin: 0;
-    font-size: var(--text-xs);
-    letter-spacing: var(--subheading-letter-spacing);
-    text-transform: uppercase;
     color: rgb(var(--text-color) / 0.6);
   }
 
@@ -589,8 +599,7 @@
     padding: 0.75rem 1rem;
     border-radius: var(--input-border-radius);
     background: rgb(var(--text-color) / 0.06);
-    border: 1px solid rgb(var(--text-color) / 0.15);
-    font-size: var(--text-sm, 0.875rem);
+    overflow: hidden;
     color: rgb(var(--text-color) / 0.85);
   }
 
@@ -600,7 +609,6 @@
 
   .the-method__screening-note {
     margin: 0;
-    font-size: var(--text-sm, 0.875rem);
     color: rgb(var(--text-color) / 0.6);
   }
 
@@ -731,8 +739,6 @@
   }
 
   .the-method__option-description {
-    font-size: var(--text-sm, 0.875rem);
-    line-height: 1.4;
     color: rgb(var(--text-color) / 0.6);
   }
 
@@ -861,7 +867,6 @@
 
   .the-method__context-note {
     margin: 0;
-    font-size: var(--text-sm, 0.875rem);
     color: rgb(var(--text-color) / 0.6);
   }
 
@@ -938,10 +943,6 @@
     gap: 0.25rem;
   }
 
-  .the-method__routine-step-title {
-    font-weight: 600;
-  }
-
   .the-method__routine-step-description {
     color: rgb(var(--text-color) / 0.75);
   }
@@ -958,8 +959,10 @@
 (function () {
   var COMBINE_GAP_THRESHOLD = 1;
   var DURATION = 150;
-  var HEIGHT_DURATION = 250;
-  var STAGGER_STEP = 40;
+  var OUT_DURATION = 120;
+  var IN_DURATION = 240;
+  var HEIGHT_DURATION = 240;
+  var SELECT_DELAY = 160;
 
   var reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -982,16 +985,6 @@
     return animate(panelsEl, [{ height: fromHeight + 'px' }, { height: toHeight + 'px' }], HEIGHT_DURATION, 'ease-in-out');
   }
 
-  function staggerOptions(panelEl) {
-    var items = panelEl.querySelectorAll('[data-the-method-option]');
-    items.forEach(function (item, index) {
-      animate(item, [
-        { opacity: 0, transform: 'translateY(6px)' },
-        { opacity: 1, transform: 'translateY(0)' }
-      ], DURATION, 'ease', index * STAGGER_STEP);
-    });
-  }
-
   function initInstance(wrapper) {
     var options = wrapper.querySelectorAll('[data-the-method-option]');
     var startButton = wrapper.querySelector('[data-the-method-start]');
@@ -1012,6 +1005,8 @@
       return panel.getAttribute('data-the-method-panel');
     });
     var totalFlowSteps = STEPS.filter(function (key) { return key.indexOf('step-') === 0; }).length;
+
+    var busy = false;
 
     var state = {
       scores: { salicylic: 0, tca: 0 },
@@ -1073,18 +1068,41 @@
       state.warnings = warnings;
     }
 
+    // The banner opens and closes smoothly (height + fade) instead of popping in and pushing everything down at once.
     function updateWarningBanner() {
       if (!warningEl) return;
       var unique = state.warnings.filter(function (note, index) {
         return note && state.warnings.indexOf(note) === index;
       });
+
       if (unique.length === 0) {
-        warningEl.hidden = true;
-        warningEl.textContent = '';
+        if (warningEl.hidden) return;
+        var closedFrom = warningEl.offsetHeight;
+        animate(warningEl, [
+          { opacity: 1, height: closedFrom + 'px', paddingBlock: getComputedStyle(warningEl).paddingBlockStart },
+          { opacity: 0, height: '0px', paddingBlock: '0px' }
+        ], HEIGHT_DURATION, 'ease-in-out').then(function () {
+          if (state.warnings.length === 0) {
+            warningEl.hidden = true;
+            warningEl.textContent = '';
+          }
+        });
         return;
       }
+
+      var text = unique.join(' ');
+      if (!warningEl.hidden) {
+        warningEl.textContent = text;
+        return;
+      }
+
+      warningEl.textContent = text;
       warningEl.hidden = false;
-      warningEl.textContent = unique.join(' ');
+      var openTo = warningEl.offsetHeight;
+      animate(warningEl, [
+        { opacity: 0, height: '0px', paddingBlock: '0px' },
+        { opacity: 1, height: openTo + 'px', paddingBlock: getComputedStyle(warningEl).paddingBlockStart }
+      ], HEIGHT_DURATION, 'ease-in-out');
     }
 
     function resolveMethod() {
@@ -1159,9 +1177,16 @@
       }
     }
 
+    // One change of panel: the old one fades out quickly, the controls and the layout settle (progress, buttons, the intro image), and then
+    // the new one rises in while the container eases to its height - all in one smooth move, without waiting for a long sequence. Clicks
+    // that arrive while it runs are ignored (busy), so a double tap can't skip a question.
     function goTo(panelKey, direction) {
+      if (busy) {
+        return Promise.resolve();
+      }
+
       direction = direction || 1;
-      var travel = 10 * direction;
+      var travel = 8 * direction;
 
       var fromEl = wrapper.querySelector('[data-the-method-panel]:not([hidden])');
       var toEl = panelFor(panelKey);
@@ -1169,6 +1194,8 @@
       if (!toEl || toEl === fromEl) {
         return Promise.resolve();
       }
+
+      busy = true;
 
       if (panelKey === 'result') {
         showResult();
@@ -1184,42 +1211,33 @@
       var chain = Promise.resolve();
 
       if (fromEl) {
-        chain = chain
-          .then(function () {
-            return animate(fromEl, [
-              { opacity: 1, transform: 'translateY(0)' },
-              { opacity: 0, transform: 'translateY(' + (-travel) + 'px)' }
-            ]);
-          })
-          .then(function () {
-            fromEl.hidden = true;
-          });
+        chain = animate(fromEl, [{ opacity: 1 }, { opacity: 0 }], OUT_DURATION, 'ease-out').then(function () {
+          fromEl.hidden = true;
+        });
       }
 
       return chain
         .then(function () {
-          var heightAnimation = Promise.resolve();
-
           if (panelsEl) {
             panelsEl.style.height = fromHeight + 'px';
             panelsEl.style.overflow = 'hidden';
           }
 
+          updateControls(panelKey);
           toEl.hidden = false;
 
-          if (panelsEl) {
-            var toHeight = panelsEl.scrollHeight;
-            heightAnimation = animateHeight(panelsEl, fromHeight, toHeight);
-          }
+          var heightAnimation = Promise.resolve();
 
-          staggerOptions(toEl);
+          if (panelsEl) {
+            heightAnimation = animateHeight(panelsEl, fromHeight, panelsEl.scrollHeight);
+          }
 
           return Promise.all([
             heightAnimation,
             animate(toEl, [
               { opacity: 0, transform: 'translateY(' + travel + 'px)' },
               { opacity: 1, transform: 'translateY(0)' }
-            ])
+            ], IN_DURATION, 'cubic-bezier(0.22, 1, 0.36, 1)')
           ]);
         })
         .then(function () {
@@ -1227,10 +1245,17 @@
             panelsEl.style.height = '';
             panelsEl.style.overflow = '';
           }
-          updateControls(panelKey);
           if (typeof toEl.focus === 'function') {
-            toEl.focus({ preventScroll: false });
+            toEl.focus({ preventScroll: true });
           }
+          busy = false;
+        })
+        .catch(function () {
+          if (panelsEl) {
+            panelsEl.style.height = '';
+            panelsEl.style.overflow = '';
+          }
+          busy = false;
         });
     }
 
@@ -1244,11 +1269,21 @@
     options.forEach(function (option) {
       option.addEventListener('click', function () {
         var step = option.getAttribute('data-step');
+        if (busy) return;
         state.answeredOptions[step] = option;
         applySelectedState(step);
         recomputeFromAnswers();
         updateWarningBanner();
-        goToStepIndex(1);
+        // A short beat so the chosen option is seen selected before the next question comes in
+        if (reducedMotionQuery.matches) {
+          goToStepIndex(1);
+        } else {
+          busy = true;
+          setTimeout(function () {
+            busy = false;
+            goToStepIndex(1);
+          }, SELECT_DELAY);
+        }
       });
 
       option.addEventListener('keydown', function (event) {
