@@ -10,6 +10,8 @@
   the gap at the bottom and the rounded corners (--drawer-border-radius) of the menu. --menu-offset-top (the header's
   current bottom edge) is written by the script below, same measurement HeaderMenuDrawer does in theme.js.
   Written with the #search-drawer id so it wins over the generic ".drawer-mobile-centered" floating-card rules.
+  Its height fits its content (the field, the suggestions, the results), up to half of the screen; past that the body of the drawer
+  scrolls inside it. It no longer fills the screen.
   {%- endcomment -%}
   @media screen and (max-width: 699px) {
     #search-drawer::part(overlay) {
@@ -23,7 +25,8 @@
       inset-inline: var(--container-gutter);
       width: auto;
       max-width: none;
-      height: calc(100dvh - var(--menu-offset-top, 0px) - .5rem - var(--drawer-block-gap));
+      height: auto;
+      max-height: min(50dvh, calc(100dvh - var(--menu-offset-top, 0px) - .5rem - var(--drawer-block-gap)));
       border-block-start: none;
       border-radius: var(--drawer-border-radius);
     }
@@ -131,7 +134,8 @@
 </script>
 
 <x-drawer id="search-drawer" unfold class="drawer drawer--search drawer--no-bordered-header color-scheme color-scheme--{{ section.settings.color_scheme.id }}" handle-editor-events>
-  <h2 class="h7 search-drawer__title" slot="header">{{ 'search.general.title' | t }}</h2>
+  {%- comment -%}No visible title (just the close button); kept for screen readers only{%- endcomment -%}
+  <h2 class="sr-only" slot="header">{{ 'search.general.title' | t }}</h2>
 
   <form action="{{ routes.search_url }}" id="predictive-search-form" method="GET" aria-owns="predictive-search" class="search-drawer__form" role="search">
     <label for="search-drawer-input" class="sr-only">{{ 'search.general.drawer_placeholder' | t }}</label>
