@@ -139,12 +139,14 @@
     }
 
     {%- comment -%}
-    Going square (scrolling down) is almost instant instead of following the slow background transition. The returning
+    Going square (scrolling down) is instant instead of following the slow background transition. The returning
     (rounding) direction keeps --header-solid-transition. Not applied while a drawer is open, so the drawers' own
-    opening timing below still wins there.
+    opening timing below still wins there, nor on pages whose first section sits flush against the header (the
+    transparent-header case, same condition theme.css uses): there the corners keep following the header's
+    transition, together with the background.
     {%- endcomment -%}
-    :root:not(:has(header-menu-drawer[open], #search-drawer[open], #cart-drawer[open])) #shopify-section-{{ section.id }} .header--floating.is-scrolled {
-      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius .08s linear, border-bottom-right-radius .08s linear;
+    :root:not(:has(header-menu-drawer[open], #search-drawer[open], #cart-drawer[open])):not(:has(.shopify-section:first-child [allow-transparent-header])) #shopify-section-{{ section.id }} .header--floating.is-scrolled {
+      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius 0s, border-bottom-right-radius 0s;
     }
   {%- endif -%}
 
