@@ -431,7 +431,7 @@
             </div>
           {%- endfor -%}
 
-          <div class="the-method__result-extras" data-the-method-extras hidden>
+          <div class="the-method__result-extras" data-the-method-extras data-routine-label="{{ section.settings.routine_heading | escape }}" hidden>
             {%- if section.settings.whatsapp_number != blank -%}
               <div class="the-method__whatsapp" data-the-method-whatsapp data-number="{{ section.settings.whatsapp_number | strip }}" data-message="{{ section.settings.whatsapp_message | escape }}" data-answers-label="{{ section.settings.whatsapp_answers_label | escape }}" data-result-label="{{ section.settings.whatsapp_result_label | escape }}">
                 {%- render 'button', content: section.settings.whatsapp_button_text, href: '#', style: 'outline', external: true -%}
@@ -439,7 +439,7 @@
             {%- endif -%}
 
             {%- if section.settings.show_result_email -%}
-              <div class="the-method__email-capture" data-the-method-email data-success-text="{{ section.settings.result_email_success | escape }}" data-error-text="{{ section.settings.result_email_error | escape }}">
+              <div class="the-method__email-capture" data-the-method-email data-success-text="{{ section.settings.result_email_success | escape }}" data-error-text="{{ section.settings.result_email_error | escape }}" data-subject="{{ section.settings.result_email_subject | escape }}" data-routine-label="{{ section.settings.routine_heading | escape }}" data-answers-label="{{ section.settings.whatsapp_answers_label | escape }}" data-result-label="{{ section.settings.whatsapp_result_label | escape }}">
                 <label for="the-method-result-email-{{ section.id }}" class="the-method__email-capture-label">{{ section.settings.result_email_heading }}</label>
                 <div class="the-method__email-capture-row">
                   <div class="the-method__email-field-end">
@@ -450,6 +450,7 @@
                   </div>
                 </div>
                 <p class="the-method__email-capture-status" data-the-method-email-status role="status" hidden></p>
+                <a class="the-method__email-mailto" data-the-method-email-mailto href="#" hidden>{{ section.settings.result_email_mailto_text }}</a>
               </div>
             {%- endif -%}
           </div>
@@ -1180,6 +1181,17 @@
     color: rgb(var(--text-color) / 0.7);
   }
 
+  .the-method__email-mailto {
+    justify-self: start;
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+    color: rgb(var(--text-color) / 0.8);
+  }
+
+  .the-method__email-mailto[hidden] {
+    display: none;
+  }
+
   .the-method__email-capture-status[hidden] {
     display: none;
   }
@@ -1552,17 +1564,53 @@
       });
     }
 
+    // The routine shown under the result, as plain lines ("Limpieza: ...") - used by the WhatsApp message and by the e-mail
+    function routineLines() {
+      var lines = [];
+      wrapper.querySelectorAll('.the-method__routine-step').forEach(function (step, index) {
+        var title = step.querySelector('.the-method__routine-step-title');
+        var description = step.querySelector('.the-method__routine-step-description');
+        var text = (title ? title.textContent.trim() : '') + (description ? ': ' + description.textContent.trim() : '');
+        if (text) lines.push((index + 1) + '. ' + text);
+      });
+      return lines;
+    }
+
+    function visibleResultCard() {
+      var found = null;
+      resultCards.forEach(function (card) { if (!card.hidden) found = card; });
+      return found;
+    }
+
+    // The whole result as text: answers, recommended method (with its link) and the daily routine
+    function resultText(labels) {
+      var lines = [];
+      var answerLines = answersSummaryText();
+      var card = visibleResultCard();
+      var title = card && card.querySelector('h3') ? card.querySelector('h3').textContent.trim() : '';
+      var link = card ? card.querySelector('.the-method__result-info a') : null;
+      if (answerLines.length) lines.push(labels.answers + ': ' + answerLines.join(' / '));
+      if (title) lines.push(labels.result + ': ' + title + (link ? ' - ' + link.href : ''));
+      var routine = routineLines();
+      if (routine.length) {
+        lines.push('');
+        lines.push(labels.routine + ':');
+        lines = lines.concat(routine);
+      }
+      return lines;
+    }
+
     function prepareExtras(best) {
       if (extrasEl) extrasEl.hidden = !best;
 
       var whatsapp = wrapper.querySelector('[data-the-method-whatsapp]');
       if (whatsapp && best) {
         var link = whatsapp.querySelector('a');
-        var titleEl = best.querySelector('h3');
-        var lines = [whatsapp.getAttribute('data-message') || ''];
-        var answerLines = answersSummaryText();
-        if (answerLines.length) lines.push((whatsapp.getAttribute('data-answers-label') || '') + ': ' + answerLines.join(' / '));
-        if (titleEl) lines.push((whatsapp.getAttribute('data-result-label') || '') + ': ' + titleEl.textContent.trim());
+        var lines = [whatsapp.getAttribute('data-message') || ''].concat(resultText({
+          answers: whatsapp.getAttribute('data-answers-label') || '',
+          result: whatsapp.getAttribute('data-result-label') || '',
+          routine: extrasEl ? extrasEl.getAttribute('data-routine-label') || '' : ''
+        }));
         if (link) {
           link.setAttribute('href', 'https://wa.me/' + whatsapp.getAttribute('data-number').replace(/\D/g, '') + '?text=' + encodeURIComponent(lines.filter(Boolean).join('\n')));
           link.setAttribute('rel', 'noopener');
@@ -1941,6 +1989,16 @@
         emailStatus.hidden = !text;
       }
 
+      var mailtoLink = emailBox.querySelector('[data-the-method-email-mailto]');
+
+      function post(body) {
+        return fetch(formEl.getAttribute('action') || '/contact', { method: 'POST', body: body, headers: { Accept: 'text/html' } }).then(function (response) {
+          if (!response.ok) throw new Error('bad response');
+        });
+      }
+
+      // Two sends, both without reloading the page: the newsletter subscription (the section's customer form) and a message to the store with
+      // the e-mail, the answers, the recommended method and the daily routine, so the result and the routine can be sent back to that e-mail.
       function sendEmail() {
         if (sending) return;
         var value = (emailInput.value || '').trim();
@@ -1951,22 +2009,42 @@
         }
         sending = true;
         if (emailSubmit) emailSubmit.setAttribute('aria-busy', 'true');
-        var data = new FormData(formEl);
-        data.set('contact[email]', value);
-        fetch(formEl.getAttribute('action') || '/contact', { method: 'POST', body: data, headers: { Accept: 'text/html' } })
-          .then(function (response) {
-            if (!response.ok) throw new Error('bad response');
-            showEmailStatus(emailBox.getAttribute('data-success-text') || '');
-            emailInput.value = '';
-            track('email');
-          })
-          .catch(function () {
-            showEmailStatus(emailBox.getAttribute('data-error-text') || '');
-          })
-          .then(function () {
-            sending = false;
-            if (emailSubmit) emailSubmit.removeAttribute('aria-busy');
-          });
+
+        var labels = {
+          answers: emailBox.getAttribute('data-answers-label') || '',
+          result: emailBox.getAttribute('data-result-label') || '',
+          routine: emailBox.getAttribute('data-routine-label') || ''
+        };
+        var subject = emailBox.getAttribute('data-subject') || '';
+        var text = resultText(labels).join('\n');
+
+        var subscribe = new FormData(formEl);
+        subscribe.set('contact[email]', value);
+
+        var message = new FormData();
+        message.set('form_type', 'contact');
+        message.set('utf8', '\u2713');
+        message.set('contact[email]', value);
+        message.set('contact[body]', subject + '\n\n' + text);
+
+        Promise.all([
+          post(subscribe).then(function () { return true; }, function () { return false; }),
+          post(message).then(function () { return true; }, function () { return false; })
+        ]).then(function (results) {
+          if (!results[0] && !results[1]) throw new Error('both failed');
+          showEmailStatus(emailBox.getAttribute('data-success-text') || '');
+          if (mailtoLink) {
+            mailtoLink.setAttribute('href', 'mailto:' + encodeURIComponent(value).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text));
+            mailtoLink.hidden = false;
+          }
+          emailInput.value = '';
+          track('email');
+        }).catch(function () {
+          showEmailStatus(emailBox.getAttribute('data-error-text') || '');
+        }).then(function () {
+          sending = false;
+          if (emailSubmit) emailSubmit.removeAttribute('aria-busy');
+        });
       }
 
       if (emailSubmit) emailSubmit.addEventListener('click', sendEmail);
@@ -2466,7 +2544,20 @@
       "type": "text",
       "id": "result_email_success",
       "label": "Mensaje al enviar el correo",
-      "default": "Listo, te escribiremos a tu correo."
+      "default": "Listo, recibimos tu resultado y tu rutina diaria. Te escribiremos a tu correo."
+    },
+    {
+      "type": "text",
+      "id": "result_email_subject",
+      "label": "Asunto del correo",
+      "default": "Mi resultado y mi rutina diaria"
+    },
+    {
+      "type": "text",
+      "id": "result_email_mailto_text",
+      "label": "Texto del enlace para abrirlo en el correo propio",
+      "info": "Aparece tras enviar: abre el programa de correo del visitante con el resultado y la rutina ya escritos, dirigido a su propio correo.",
+      "default": "Abrir el resultado en mi correo"
     },
     {
       "type": "text",
