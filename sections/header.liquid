@@ -128,14 +128,12 @@
     state the menu/search/cart drawers force) they go square again, instantly. Going back to round (scrolling up to the
     top) follows --header-solid-transition, like the background.
 
-    Pages whose first section sits flush against the header never get the round bottom corners: a floating section with
-    no gap above it (.section-floating--block-end alone, e.g. the contact form) or a section under a transparent header
-    (allow-transparent-header, same condition theme.css uses). There the header and the section read as one block.
-    Besides those two CSS conditions, theme.js (Header.updateFlushState) measures the real gap between the header and the
-    first section and sets .is-flush on the header when there is none, which covers every other page.
-    first-of-type (not first-child) because theme.liquid may put a visually hidden <h1> before the first section inside <main>.
+    Flush rule, automatic and per device: when the first section starts exactly where the header ends (no gap at all) the bottom
+    corners stay square (.is-flush); with any gap they are round. theme.js (Header.updateFlushState) measures the real gap
+    on load, on every resize / breakpoint change and when the header or the first section change size, so the same page can
+    be flush on a phone and spaced on a desktop. No per-page or per-section list.
     {%- endcomment -%}
-    :root:not(:has(main > .shopify-section:first-of-type .section-floating--block-end)):not(:has(.shopify-section:first-child [allow-transparent-header])) #shopify-section-{{ section.id }} .header--floating:not(.is-scrolled, .is-flush) {
+    #shopify-section-{{ section.id }} .header--floating:not(.is-scrolled, .is-flush) {
       border-bottom-left-radius: {{ section.settings.header_border_radius }}px;
       border-bottom-right-radius: {{ section.settings.header_border_radius }}px;
     }

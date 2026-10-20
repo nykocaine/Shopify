@@ -5731,28 +5731,42 @@ var Header = class extends HTMLElement {
     document.addEventListener("header:allow-transparent-header", () => this.classList.remove("is-solid"), { signal: __privateGet(this, _abortController11).signal });
     document.addEventListener("header:disable-transparent-header", () => this.classList.add("is-solid"), { signal: __privateGet(this, _abortController11).signal });
     this.updateFlushState();
-    window.addEventListener("load", () => this.updateFlushState(), { signal: __privateGet(this, _abortController11).signal });
-    window.addEventListener("pageshow", () => this.updateFlushState(), { signal: __privateGet(this, _abortController11).signal });
-    window.addEventListener("resize", throttle(() => this.updateFlushState()), { signal: __privateGet(this, _abortController11).signal });
+    const flushSignal = { signal: __privateGet(this, _abortController11).signal };
+    window.addEventListener("load", () => this.updateFlushState(), flushSignal);
+    window.addEventListener("pageshow", () => this.updateFlushState(), flushSignal);
+    window.addEventListener("resize", throttle(() => this.updateFlushState()), flushSignal);
     document.fonts?.ready.then(() => this.updateFlushState());
+    this._flushObserver = new ResizeObserver(() => this.updateFlushState());
+    this._flushObserver.observe(this);
+    const firstSection = document.querySelector("main > .shopify-section");
+    if (firstSection) {
+      this._flushObserver.observe(firstSection);
+    }
   }
   disconnectedCallback() {
     __privateGet(this, _abortController11).abort();
+    this._flushObserver?.disconnect();
   }
   /**
-   * Marks the header as "flush" (.is-flush) when the first section of the page starts right where the header ends: no gap, no
-   * margin between them (or it even slides under a transparent header). The header then keeps its bottom corners square (see
-   * sections/header.liquid). Only measured at the very top of the page, where the header is not stuck or slid away.
+   * Marks the header as "flush" (.is-flush) when what sits under it starts exactly where the header ends: no gap, no margin
+   * between them (or it even slides under a transparent header). The header then keeps its bottom corners square (see
+   * sections/header.liquid); with any gap at all they are round. It is measured, not guessed from classes, so it follows
+   * each breakpoint by itself: the same page can be flush on a phone and spaced on a desktop. What is measured is the first
+   * visible block of the first section (its floating card / color-scheme wrapper, or a transparent-header block), since the
+   * section wrapper itself can include the outer margin or not depending on the section. Re-measured when the viewport or
+   * the header / first section change size, when fonts load and when the page comes back to the top. Only measured near
+   * the top of the page, where the header is not stuck or slid away.
    */
   updateFlushState() {
-    if (window.scrollY > 0 || this.classList.contains("is-hidden")) {
+    if (window.scrollY > 2 || this.classList.contains("is-hidden")) {
       return;
     }
     const firstSection = document.querySelector("main > .shopify-section");
     if (!firstSection) {
       return;
     }
-    const gap = firstSection.getBoundingClientRect().top - this.getBoundingClientRect().bottom;
+    const target = firstSection.querySelector(".section-floating, .color-scheme, [allow-transparent-header]") ?? firstSection;
+    const gap = target.getBoundingClientRect().top - this.getBoundingClientRect().bottom;
     this.classList.toggle("is-flush", gap <= 1);
   }
 };
@@ -5764,6 +5778,9 @@ _Header_instances = new WeakSet();
 onHeaderTrackerIntersection_fn = function(entries) {
   this.classList.toggle("is-solid", !entries[0].isIntersecting);
   this.classList.toggle("is-scrolled", !entries[0].isIntersecting);
+  if (entries[0].isIntersecting) {
+    requestAnimationFrame(() => this.updateFlushState());
+  }
 };
 detectMousePosition_fn = function(event) {
   if (event.clientY < 100 && window.matchMedia("screen and (pointer: fine)").matches) {
