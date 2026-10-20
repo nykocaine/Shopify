@@ -140,7 +140,13 @@
 
   <form action="{{ routes.search_url }}" id="predictive-search-form" method="GET" aria-owns="predictive-search" class="search-drawer__form" role="search">
     <label for="search-drawer-input" class="sr-only">{{ 'search.general.drawer_placeholder' | t }}</label>
-    <input id="search-drawer-input" type="search" class="search-drawer__input input" name="q" placeholder="{{ 'search.general.drawer_placeholder' | t }}" autocomplete="off" autocapitalize="off" enterkeyhint="search">
+    <div class="search-field">
+      <input id="search-drawer-input" type="search" class="search-drawer__input input" name="q" placeholder="{{ 'search.general.drawer_placeholder' | t }}" autocomplete="off" autocapitalize="off" enterkeyhint="search">
+      <button type="submit" class="search-field__button">
+        <span class="sr-only">{{ 'header.general.search' | t }}</span>
+        {%- render 'icon' with 'search', width: 16 -%}
+      </button>
+    </div>
   </form>
 
   <predictive-search id="predictive-search">

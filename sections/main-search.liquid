@@ -467,7 +467,13 @@
           {%- unless search.performed -%}
           <form class="max-w-xs md:max-w-md" action="{{ routes.search_url }}" method="get" role="search">
             <label for="search-page-input-empty" class="sr-only">{{ 'search.general.search_placeholder' | t }}</label>
-            <input id="search-page-input-empty" type="search" name="q" class="search-form__input input" placeholder="{{ 'search.general.search_placeholder' | t }}" autocomplete="off" autocorrect="off">
+            <div class="search-field">
+              <input id="search-page-input-empty" type="search" name="q" class="search-form__input input" placeholder="{{ 'search.general.search_placeholder' | t }}" autocomplete="off" autocorrect="off">
+              <button type="submit" class="search-field__button">
+                <span class="sr-only">{{ 'header.general.search' | t }}</span>
+                {%- render 'icon' with 'search', width: 16 -%}
+              </button>
+            </div>
           </form>
           {%- endunless -%}
         </div>
