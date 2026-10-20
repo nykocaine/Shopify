@@ -282,6 +282,26 @@ This component is used to show the product gallery (used in product page and fea
     }
   {%- endif -%}
 
+  {%- comment -%}
+  Phone thumbnails (mobile controls = Thumbnails): a plain strip of rounded thumbnails under the gallery that scrolls like its own
+  carousel and takes the gallery to the tapped image. No outline and no underline on the selected one: it is told apart by the
+  others being dimmed.
+  {%- endcomment -%}
+  @media screen and (max-width: 999px) {
+    #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker {
+      opacity: .55;
+      transition: opacity .25s ease;
+    }
+
+    #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker[aria-current="true"] {
+      opacity: 1;
+    }
+
+    #shopify-section-{{ section.id }} .scroll-marker-group--thumbnails .scroll-marker:after {
+      display: none;
+    }
+  }
+
   {%- if desktop_carousel_controls == 'thumbnails_left' -%}
     @media screen and (min-width: 1000px) {
       {%- comment -%}
