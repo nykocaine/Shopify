@@ -3761,7 +3761,7 @@ var ProductGallery = class extends HTMLElement {
    * Adaptive contrast: the controls drawn over the photo (progress bar, counter, caption, arrows, zoom button) turn white when the
    * photo behind them is dark. The brightness is measured on a small copy of the shown image, only in the bands where the controls
    * sit (top: the bar, bottom: arrows and zoom), following how the image is cropped on screen; the result sets .is-dark-image on the
-   * bar (top band) and on this element (bottom band). A video, a 3D model or an image that cannot be read keeps the default colors.
+   * bar(s) (top band, there is one for phones and one for desktop) and on this element (bottom band). A video, a 3D model or an image that cannot be read keeps the default colors.
    */
   async updateContrast(cell) {
     let currentCell = cell;
@@ -3791,7 +3791,7 @@ var ProductGallery = class extends HTMLElement {
       }
     }
     this.classList.toggle("is-dark-image", darkBottom);
-    this.querySelector(".product-gallery__top-bar")?.classList.toggle("is-dark-image", darkTop);
+    this.querySelectorAll(".product-gallery__top-bar").forEach((bar) => bar.classList.toggle("is-dark-image", darkTop));
   }
   get viewInSpaceButton() {
     return this.querySelector("[data-shopify-xr]");
