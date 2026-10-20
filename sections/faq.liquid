@@ -64,7 +64,6 @@
               class="faq__category-tab {% if block.settings.category_tab_style == 'filled' %}faq__category-tab--filled{% endif %}"
               aria-controls="faq-panel-{{ section.id }}-{{ panel_index }}"
               aria-selected="{% if panel_index == 0 %}true{% else %}false{% endif %}"
-              {% if block.settings.tab_border_color != blank %}style="border-color: rgb({{ block.settings.tab_border_color.rgb }});"{% endif %}
               {{ block.shopify_attributes }}
             >
               {%- if block.settings.custom_icon != blank -%}
@@ -546,12 +545,12 @@
         white-space: nowrap;
         color: rgb(var(--text-color) / .5);
         background: none;
-        border: 1px solid rgb(var(--text-color) / .3);
+        border: 0;
         border-radius: 999px;
         align-items: center;
         gap: .5rem;
         padding: .625rem 1.125rem;
-        transition: color .2s ease, border-color .2s ease;
+        transition: color .2s ease;
         display: inline-flex;
         flex: none;
       }
@@ -565,7 +564,6 @@
       @media screen and (pointer: fine) {
         #shopify-section-{{ section.id }} .faq__category-tab:hover {
           color: rgb(var(--text-color) / .8);
-          border-color: rgb(var(--text-color) / .5);
         }
       }
 
@@ -581,7 +579,6 @@
       #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"] {
         color: rgb(var(--text-color));
         background: none;
-        border-color: rgb(var(--text-color));
       }
 
       #shopify-section-{{ section.id }} .faq__category-tab-icon {
@@ -608,14 +605,12 @@
       #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled {
         color: rgb(var(--button-text-primary));
         background: rgb(var(--button-background-primary) / .5);
-        border-color: transparent;
-        transition: color .2s ease, border-color .2s ease, background-color .2s ease;
+        transition: color .2s ease, background-color .2s ease;
       }
 
       #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled[aria-selected="true"] {
         color: rgb(var(--button-text-primary));
         background: rgb(var(--button-background-primary));
-        border-color: transparent;
       }
 
       @media screen and (pointer: fine) {
@@ -623,14 +618,6 @@
           background: rgb(var(--button-hover-background));
         }
       }
-
-      {%- comment -%}
-      "Tab border color" (block.settings.tab_border_color, "Tab" header below) overrides whichever
-      style (Outline or Filled) is active for this one tab - set as a plain inline border-color (not a
-      custom property threaded through the rules above) specifically so it wins over both styles'
-      border-color declarations uniformly, the same way an inline style on any element already beats an
-      external class rule without needing !important or to duplicate the override per style.
-      {%- endcomment -%}
 
       {%- comment -%}
       ============================================================
@@ -1573,12 +1560,6 @@
             }
           ],
           "default": "outline"
-        },
-        {
-          "type": "color",
-          "id": "tab_border_color",
-          "label": "Tab border color",
-          "info": "Works with both Outline and Filled. Leave blank to use the default (the text color for Outline, none for Filled)."
         }
       ]
     },
