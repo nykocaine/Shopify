@@ -442,6 +442,22 @@
             box-shadow: none;
           }
         }
+      {%- else -%}
+        {%- comment -%}
+        Single list ("Two columns" off): the tab panels are always built as two columns (1st, 3rd, 5th... in the first one,
+        2nd, 4th, 6th... in the second one), and each item carries its position as a flex "order". Without any style for those
+        wrappers the first column was shown whole and then the second one, so the questions came out as 1, 3, 5... then
+        2, 4, 6.... Here the two columns dissolve (display: contents) inside a flex column, so the order puts the questions
+        back in their real sequence, same as phones do with "Two columns" on. Everything else keeps the accordion's own look.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} .faq__columns {
+          display: flex;
+          flex-direction: column;
+        }
+
+        #shopify-section-{{ section.id }} .faq__column {
+          display: contents;
+        }
       {%- endif -%}
 
       {%- comment -%}
