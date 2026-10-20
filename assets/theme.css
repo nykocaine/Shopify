@@ -9080,7 +9080,9 @@ shopify-account::part(signed-out-avatar) {
 }
 
 /* Search fields (search drawer and search page): the field with the search icon inside it, at the end of the bar (the icon is the
-   submit button). The text stays at the start; the padding on the end side keeps it from running under the icon. */
+   submit button). The text stays at the start; the padding on the end side keeps it from running under the icon. The margin is reset
+   with !important because inside a .prose block (the search page) the prose rules add a top margin to the button and pushed the
+   icon out of the field; height: 100% because a button does not stretch between top and bottom offsets. */
 .search-field {
   display: block;
   position: relative;
@@ -9099,8 +9101,14 @@ shopify-account::part(signed-out-avatar) {
   padding-inline: 1rem;
   display: grid;
   position: absolute;
-  inset-block: 0;
+  inset-block-start: 0;
   inset-inline-end: 0;
+  margin: 0 !important;
+  height: 100%;
+}
+
+.search-field__button .icon {
+  margin: 0 !important;
 }
 
 .search-form__input::-webkit-search-cancel-button {
