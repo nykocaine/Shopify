@@ -581,6 +581,16 @@
         background: none;
       }
 
+      {%- comment -%}
+      The tab label is a .h6, and .h6 (heading styles in theme.css) renders with -webkit-font-smoothing: antialiased, which draws
+      the glyphs thinner and so looks lighter than the same color elsewhere (the color itself carries no opacity). Back to the
+      normal smoothing, and the label takes the tab's color explicitly.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .faq__category-tab .h6 {
+        color: inherit;
+        -webkit-font-smoothing: auto;
+      }
+
       #shopify-section-{{ section.id }} .faq__category-tab-icon {
         flex: none;
       }
