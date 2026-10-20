@@ -1452,6 +1452,31 @@ var CarouselPageIndicator = class extends HTMLElement {
   }
   connectedCallback() {
     this.carousel.addEventListener("carousel:change", __privateMethod(this, _CarouselPageIndicator_instances, updateIndicator_fn).bind(this));
+    this.refreshPageSize();
+    window.addEventListener("resize", () => this.refreshPageSize());
+  }
+  /**
+   * The total only counts the slides that are really there: not the ones with the "hidden" attribute and not the ones a media query
+   * takes out of the layout (eg. the product gallery's first image on desktop, where it is shown in its own static column instead
+   * and is hidden with CSS, not with the attribute). Also refreshed on resize, since crossing that breakpoint changes the count.
+   */
+  refreshPageSize() {
+    if (!this.pageSize) {
+      return;
+    }
+    let pageSize = 0;
+    Array.from(this.carousel.children).forEach((item) => {
+      if (!item.hidden && getComputedStyle(item).display !== "none") {
+        pageSize += 1;
+      }
+    });
+    if (pageSize > 0) {
+      this.pageSize.innerText = pageSize.toString();
+      const selectedIndex = this.carousel.selectedIndex;
+      if (this.currentSlideIndex && Number.isInteger(selectedIndex)) {
+        this.currentSlideIndex.innerText = (Math.min(selectedIndex, pageSize - 1) + 1).toString();
+      }
+    }
   }
   get carousel() {
     return document.getElementById(this.getAttribute("aria-controls"));
@@ -1465,13 +1490,7 @@ var CarouselPageIndicator = class extends HTMLElement {
 };
 _CarouselPageIndicator_instances = new WeakSet();
 updateIndicator_fn = function(event) {
-  let pageSize = 0;
-  Array.from(this.carousel.children).forEach((item) => {
-    if (!item.hidden) {
-      pageSize += 1;
-    }
-  });
-  this.pageSize.innerText = pageSize.toString();
+  this.refreshPageSize();
   this.currentSlideIndex.innerText = (event.detail.index + 1).toString();
 };
 if (!window.customElements.get("carousel-prev-button")) {
