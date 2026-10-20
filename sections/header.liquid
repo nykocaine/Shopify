@@ -124,8 +124,8 @@
   {%- if section.settings.floating_header -%}
     {%- comment -%}
     Floating header corners: at rest (top of the page, not scrolled) the bottom corners are as round as the top ones; once
-    the page is scrolled (.is-scrolled, set by the header-scroll-tracker observer in theme.js, so it ignores the solid
-    state the menu/search/cart drawers force) they go square again, instantly. Going back to round (scrolling up to the
+    the page is scrolled (.is-scrolled, set by theme.js from the very first pixel of scroll, so it neither waits for the
+    header-scroll-tracker nor follows the solid state the menu/search/cart drawers force) they go square again, instantly. Going back to round (scrolling up to the
     top) follows --header-solid-transition, like the background.
 
     Flush rule, automatic and per device: when the first section starts exactly where the header ends (no gap at all) the bottom
