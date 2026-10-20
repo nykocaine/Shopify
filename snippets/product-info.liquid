@@ -178,21 +178,29 @@ no need to manually pass the section as it is globally available)
             {%- endif -%}
 
           {%- when 'rating' -%}
+            {%- comment -%}
+            The rating (number + star) is a link to the reviews section of the page, scrolled to by the small script in
+            sections/main-product.liquid (data-scroll-to-reviews). It stays visually identical to a plain rating.
+            {%- endcomment -%}
             {%- if block.settings.side_text != blank -%}
               <div class="product-rating-row">
                 <p class="product-rating-row__text">{{ block.settings.side_text }}</p>
-                {%- if product != blank -%}
-                  {%- render 'product-rating', product: product, alignment: 'end', show_empty: block.settings.show_empty, show_placeholder: false -%}
-                {%- else -%}
-                  {%- render 'product-rating', alignment: 'end', show_placeholder: true -%}
-                {%- endif -%}
+                <a href="#reviews" class="product-rating-link" data-scroll-to-reviews>
+                  {%- if product != blank -%}
+                    {%- render 'product-rating', product: product, alignment: 'end', show_empty: block.settings.show_empty, show_placeholder: false -%}
+                  {%- else -%}
+                    {%- render 'product-rating', alignment: 'end', show_placeholder: true -%}
+                  {%- endif -%}
+                </a>
               </div>
             {%- else -%}
-              {%- if product != blank -%}
-                {%- render 'product-rating', product: product, alignment: alignment, show_empty: block.settings.show_empty, show_placeholder: false -%}
-              {%- else -%}
-                {%- render 'product-rating', alignment: alignment, show_placeholder: true -%}
-              {%- endif -%}
+              <a href="#reviews" class="product-rating-link" data-scroll-to-reviews>
+                {%- if product != blank -%}
+                  {%- render 'product-rating', product: product, alignment: alignment, show_empty: block.settings.show_empty, show_placeholder: false -%}
+                {%- else -%}
+                  {%- render 'product-rating', alignment: alignment, show_placeholder: true -%}
+                {%- endif -%}
+              </a>
             {%- endif -%}
 
           {%- when 'separator' -%}

@@ -157,6 +157,14 @@
 
   /* Rating block's optional side text: match the product card subtitle's muted color
      (.product-subtitle in theme.css → rgb(var(--text-color) / .7)). */
+  /* The rating is a link to the reviews: no link look, just the pointer. */
+  #shopify-section-{{ section.id }} .product-rating-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
   #shopify-section-{{ section.id }} .product-rating-row__text {
     color: rgb(var(--text-color) / 0.7);
   }
@@ -870,6 +878,23 @@
 
 {%- render 'product-sticky-add-to-cart', product: product, product_form_id: product_form_id -%}
 {%- render 'product-quick-buy', product: product -%}
+
+<script>
+  // Tapping the rating (number + star) of the product info scrolls to the page's reviews section
+  document.addEventListener('click', function (event) {
+    var link = event.target.closest('[data-scroll-to-reviews]');
+    if (!link || link.closest('dialog, x-drawer, x-modal, [role="dialog"]')) return;
+
+    event.preventDefault();
+
+    var reviews = document.querySelector('.reviews[id^="reviews-"]');
+    if (!reviews) return;
+
+    var target = reviews.closest('.shopify-section') || reviews;
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+  });
+</script>
 
 {%- if product -%}
 <script>
