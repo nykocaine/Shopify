@@ -265,7 +265,7 @@
                   assign tone_start_color = block.settings.swatch_3_color
                 -%}
                 <div class="the-method__tone-slider" style="--tone-gradient: linear-gradient(to right, {{ tone_colors }}); --tone-color: {{ tone_start_color }};" data-tone-colors="{{ tone_colors }}">
-                  <input type="range" min="1" max="6" step="1" value="3" class="the-method__tone-range" data-the-method-tone data-step="{{ step_index }}" data-key-prefix="{{ block.id }}" aria-label="{{ block.settings.question | escape }}">
+                  <input type="range" min="1" max="6" step="1" value="3" class="the-method__tone-range" data-the-method-tone data-step="{{ step_index }}" data-key-prefix="{{ block.id }}" data-dark-from="{{ block.settings.dark_tone_from }}" data-dark-warning="{{ block.settings.dark_tone_warning | escape }}" data-dark-weight-salicylic="{{ block.settings.dark_weight_salicylic }}" data-dark-weight-tca="{{ block.settings.dark_weight_tca }}" aria-label="{{ block.settings.question | escape }}">
                   <div class="the-method__tone-labels" aria-hidden="true">
                     <span>{{ section.settings.tone_light_label }}</span>
                     <span>{{ section.settings.tone_dark_label }}</span>
@@ -1918,21 +1918,31 @@
     });
 
     // ---- skin tone scale ----
+    // The record of a tone answer: from the "deep tone" the block sets, it can carry a warning and a weight towards one method or the other
+    function toneRecord(range, value) {
+      var darkFrom = Number(range.getAttribute('data-dark-from') || 7);
+      var isDeep = Number(value) >= darkFrom;
+      var warning = isDeep ? (range.getAttribute('data-dark-warning') || '') : '';
+      return {
+        key: range.getAttribute('data-key-prefix') + '-tone-' + value,
+        label: 'Tono ' + value,
+        weightSalicylic: isDeep ? Number(range.getAttribute('data-dark-weight-salicylic') || 0) : 0,
+        weightTca: isDeep ? Number(range.getAttribute('data-dark-weight-tca') || 0) : 0,
+        format: '',
+        note: '',
+        warn: !!warning,
+        warnNote: warning
+      };
+    }
+
     toneRanges.forEach(function (range) {
       var step = range.getAttribute('data-step');
 
       function record() {
         paintTone(range);
-        state.answers[step] = [{
-          key: range.getAttribute('data-key-prefix') + '-tone-' + range.value,
-          label: 'Tono ' + range.value,
-          weightSalicylic: 0,
-          weightTca: 0,
-          format: '',
-          note: '',
-          warn: false,
-          warnNote: ''
-        }];
+        state.answers[step] = [toneRecord(range, range.value)];
+        recomputeFromAnswers();
+        updateWarningBanner();
         updateContinue(step);
         saveProgress();
       }
@@ -2164,7 +2174,8 @@
           if (option) {
             records.push(recordFromOption(option));
           } else if (key.indexOf('-tone-') !== -1) {
-            records.push({ key: key, label: 'Tono ' + key.split('-tone-')[1], weightSalicylic: 0, weightTca: 0, format: '', note: '', warn: false, warnNote: '' });
+            var toneRange = toneRanges.filter(function (item) { return key.indexOf(item.getAttribute('data-key-prefix') + '-tone-') === 0; })[0];
+            records.push(toneRange ? toneRecord(toneRange, key.split('-tone-')[1]) : { key: key, label: 'Tono ' + key.split('-tone-')[1], weightSalicylic: 0, weightTca: 0, format: '', note: '', warn: false, warnNote: '' });
           }
         });
         if (records.length) state.answers[step] = records;
@@ -2711,13 +2722,18 @@
       "name": "Pregunta: tono de piel",
       "settings": [
         { "type": "text", "id": "question", "label": "Pregunta" },
-        { "type": "paragraph", "content": "Escala visual de 6 tonos (no afecta el resultado, solo se muestra como parte del test)." },
+        { "type": "paragraph", "content": "Escala continua de 6 tonos. Por defecto solo se muestra como parte del test; con los ajustes de abajo, los tonos más profundos pueden mostrar una advertencia y empujar el resultado hacia un método u otro." },
         { "type": "color", "id": "swatch_1_color", "label": "Tono 1", "default": "#FBE3D0" },
         { "type": "color", "id": "swatch_2_color", "label": "Tono 2", "default": "#F1C9A6" },
         { "type": "color", "id": "swatch_3_color", "label": "Tono 3", "default": "#DFA97B" },
         { "type": "color", "id": "swatch_4_color", "label": "Tono 4", "default": "#B87F55" },
         { "type": "color", "id": "swatch_5_color", "label": "Tono 5", "default": "#8A5A3B" },
-        { "type": "color", "id": "swatch_6_color", "label": "Tono 6", "default": "#5A3824" }
+        { "type": "color", "id": "swatch_6_color", "label": "Tono 6", "default": "#5A3824" },
+        { "type": "header", "content": "Tonos profundos" },
+        { "type": "range", "id": "dark_tone_from", "label": "Desde qué tono se considera profundo", "min": 2, "max": 6, "step": 1, "default": 5 },
+        { "type": "textarea", "id": "dark_tone_warning", "label": "Advertencia para tonos profundos", "info": "Aparece en la caja de advertencia cuando el visitante elige ese tono o uno más profundo. Déjala vacía si no quieres advertencia. Conviene que el texto lo revise tu equipo médico." },
+        { "type": "range", "id": "dark_weight_salicylic", "label": "Peso → Ácido Salicílico (tonos profundos)", "min": -5, "max": 5, "step": 1, "default": 0 },
+        { "type": "range", "id": "dark_weight_tca", "label": "Peso → TCA (tonos profundos)", "min": -5, "max": 5, "step": 1, "default": 0 }
       ]
     },
     {
