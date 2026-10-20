@@ -20,6 +20,11 @@ to open the filters drawer.
   else
     assign show_mobile_floating_button = false
   endif
+
+  # Section setting "Show the floating Filter and sort button" (main-collection): off hides this button everywhere it is used.
+  if section.settings.show_floating_filter_button == false
+    assign show_mobile_floating_button = false
+  endif
 -%}
 
 {%- if show_mobile_floating_button -%}
