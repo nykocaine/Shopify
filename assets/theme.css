@@ -5122,6 +5122,27 @@ table caption {
   display: block;
 }
 
+/* Product gallery indicator: the bar split into one segment per slide, only the current slide's segment is painted (not a progress bar).
+   Colors come from the same variables as .progress-bar, so the gallery's contrast handling keeps working. */
+.carousel-segments {
+  gap: 4px;
+  width: 100%;
+  min-height: var(--progress-bar-height, 3px);
+  display: flex;
+}
+
+.carousel-segments__item {
+  background: var(--progress-bar-background-color, color-mix(in srgb, currentColor 20%, transparent));
+  border-radius: var(--progress-bar-radius, 0px);
+  height: var(--progress-bar-height, 3px);
+  transition: background-color .3s ease;
+  flex: 1 1 0;
+}
+
+.carousel-segments__item.is-active {
+  background: var(--progress-bar-fill-color, currentColor);
+}
+
 .progress-bar--limit-width {
   max-width: min(25vw, 180px);
   height: 2px;

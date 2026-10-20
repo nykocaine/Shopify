@@ -669,7 +669,13 @@ only way to do it on Shopify right now.
 
       {%- capture bar_controls -%}
         <div class="product-gallery__top-bar full-bleed md:unbleed" style="width: 100%;">
-          <progress-bar track-scroll-target="{{ product_gallery_carousel_id }}" class="progress-bar"></progress-bar>
+          <carousel-segments aria-controls="{{ product_gallery_carousel_id }}" class="carousel-segments">
+            {%- if product != blank -%}
+              {%- for segment_index in (1..media_count) -%}
+                <span class="carousel-segments__item {% if segment_index == default_media_index %}is-active{% endif %}"></span>
+              {%- endfor -%}
+            {%- endif -%}
+          </carousel-segments>
 
           {%- comment -%}
           Numbering sits inline with the alt-text caption (both meta info about the current slide) rather

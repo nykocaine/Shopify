@@ -1526,6 +1526,51 @@ updateCaption_fn = function(event) {
   const cell = event.detail.cell;
   this.textContent = cell?.getAttribute("data-caption") || "";
 };
+var CarouselSegments = class extends HTMLElement {
+  connectedCallback() {
+    this._abortController = new AbortController();
+    this.carousel?.addEventListener("carousel:change", (event) => this.render(event.detail?.index), { signal: this._abortController.signal });
+    window.addEventListener("resize", throttle(() => this.render(), 150), { signal: this._abortController.signal });
+    this.render();
+  }
+  disconnectedCallback() {
+    this._abortController?.abort();
+  }
+  get carousel() {
+    return document.getElementById(this.getAttribute("aria-controls"));
+  }
+  /**
+   * Segmented indicator, not a progress bar: the bar is split into as many segments as there are slides actually in the carousel (not
+   * the hidden ones, nor the ones a media query takes out of the layout) and only the segment of the current slide is painted.
+   */
+  render(index) {
+    const carousel = this.carousel;
+    if (!carousel) {
+      return;
+    }
+    let count = 0;
+    try {
+      count = carousel.cells.length;
+    } catch (error) {
+      count = Array.from(carousel.children).filter((item) => !item.hidden && getComputedStyle(item).display !== "none").length;
+    }
+    if (count !== this.children.length) {
+      this.replaceChildren(...Array.from({ length: count }, () => {
+        const segment = document.createElement("span");
+        segment.className = "carousel-segments__item";
+        return segment;
+      }));
+    }
+    let current = index;
+    if (!Number.isInteger(current)) {
+      current = carousel.selectedIndex;
+    }
+    Array.from(this.children).forEach((segment, position) => segment.classList.toggle("is-active", position === current));
+  }
+};
+if (!window.customElements.get("carousel-segments")) {
+  window.customElements.define("carousel-segments", CarouselSegments);
+}
 if (!window.customElements.get("carousel-caption")) {
   window.customElements.define("carousel-caption", CarouselCaption);
 }
