@@ -1540,8 +1540,9 @@ var CarouselSegments = class extends HTMLElement {
     return document.getElementById(this.getAttribute("aria-controls"));
   }
   /**
-   * Segmented indicator, not a progress bar: the bar is split into as many segments as there are slides actually in the carousel (not
-   * the hidden ones, nor the ones a media query takes out of the layout) and only the segment of the current slide is painted.
+   * Indicator of the current slide: one continuous bar divided in as many parts as there are slides actually in the carousel (not the
+   * hidden ones, nor the ones a media query takes out of the layout). A single painted part, the width of one slide, slides along the bar
+   * to the position of the current slide (see .carousel-segments in theme.css, driven by --segments and --segment-index).
    */
   render(index) {
     const carousel = this.carousel;
@@ -1554,18 +1555,12 @@ var CarouselSegments = class extends HTMLElement {
     } catch (error) {
       count = Array.from(carousel.children).filter((item) => !item.hidden && getComputedStyle(item).display !== "none").length;
     }
-    if (count !== this.children.length) {
-      this.replaceChildren(...Array.from({ length: count }, () => {
-        const segment = document.createElement("span");
-        segment.className = "carousel-segments__item";
-        return segment;
-      }));
-    }
     let current = index;
     if (!Number.isInteger(current)) {
       current = carousel.selectedIndex;
     }
-    Array.from(this.children).forEach((segment, position) => segment.classList.toggle("is-active", position === current));
+    this.style.setProperty("--segments", Math.max(1, count).toString());
+    this.style.setProperty("--segment-index", Math.min(Math.max(0, Number.isInteger(current) ? current : 0), Math.max(0, count - 1)).toString());
   }
 };
 if (!window.customElements.get("carousel-segments")) {

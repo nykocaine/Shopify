@@ -5122,25 +5122,31 @@ table caption {
   display: block;
 }
 
-/* Product gallery indicator: the bar split into one segment per slide, only the current slide's segment is painted (not a progress bar).
-   Colors come from the same variables as .progress-bar, so the gallery's contrast handling keeps working. */
+/* Product gallery indicator: one continuous bar; a painted part, as wide as one slide (1 / number of slides), slides along it to the
+   current slide. Not a progress bar. Colors come from the same variables as .progress-bar, so the gallery's contrast handling keeps working. */
 .carousel-segments {
-  gap: 4px;
-  width: 100%;
-  min-height: var(--progress-bar-height, 3px);
-  display: flex;
-}
-
-.carousel-segments__item {
   background: var(--progress-bar-background-color, color-mix(in srgb, currentColor 20%, transparent));
   border-radius: var(--progress-bar-radius, 0px);
+  width: 100%;
   height: var(--progress-bar-height, 3px);
-  transition: background-color .3s ease;
-  flex: 1 1 0;
+  display: block;
+  position: relative;
+  overflow: hidden;
 }
 
-.carousel-segments__item.is-active {
+.carousel-segments:before {
+  content: "";
   background: var(--progress-bar-fill-color, currentColor);
+  width: calc(100% / var(--segments, 1));
+  transform: translateX(calc(var(--segment-index, 0) * 100%));
+  transition: transform .45s cubic-bezier(.4, 0, .2, 1);
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+}
+
+[dir="rtl"] .carousel-segments:before {
+  transform: translateX(calc(var(--segment-index, 0) * -100%));
 }
 
 .progress-bar--limit-width {
