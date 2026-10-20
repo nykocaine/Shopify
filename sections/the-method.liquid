@@ -59,7 +59,7 @@
       The content (intro, questions, result) sits directly on the section itself: no card of its own and no image beside it. The section's
       own padding (.container.section-spacing above) gives the margins.
     {%- endcomment -%}
-    <div class="the-method-layout" data-the-method-layout>
+    <div class="the-method-layout{% if section.settings.show_glow %} the-method-layout--glow{% endif %}" style="--the-method-glow-1: {{ section.settings.glow_color_1 }}; --the-method-glow-2: {{ section.settings.glow_color_2 }};" data-the-method-layout>
       <div class="the-method-layout__content">
       <div class="the-method" data-the-method data-section-id="{{ section.id }}" data-require-email="{{ require_email_to_start }}">
 
@@ -97,6 +97,10 @@
       <div class="the-method__panels" data-the-method-panels>
 
         <div class="the-method__panel the-method__panel--intro justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="intro" tabindex="-1" {% if just_subscribed %}hidden{% endif %}>
+          {%- if section.settings.intro_eyebrow != blank -%}
+            <p class="the-method__eyebrow">{{ section.settings.intro_eyebrow }}</p>
+          {%- endif -%}
+
           {%- if section.settings.heading != blank or section.settings.show_icon -%}
             {%- capture method_title -%}
               {%- if section.settings.heading != blank -%}
@@ -147,11 +151,11 @@
             {%- endcapture -%}
             {%- if require_email_to_start -%}
               <button type="submit" class="button the-method__cta" {% if cta_style != blank %}style="{{ cta_style | strip }}"{% endif %}>
-                <button-content class="button__content">{{ section.settings.start_button_text }}</button-content>
+                <button-content class="button__content">{{ section.settings.start_button_text }}<svg class="the-method__cta-arrow" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button-content>
               </button>
             {%- else -%}
               <button type="button" class="button the-method__cta" data-the-method-start {% if cta_style != blank %}style="{{ cta_style | strip }}"{% endif %}>
-                <button-content class="button__content">{{ section.settings.start_button_text }}</button-content>
+                <button-content class="button__content">{{ section.settings.start_button_text }}<svg class="the-method__cta-arrow" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button-content>
               </button>
             {%- endif -%}
           {%- endif -%}
@@ -488,6 +492,116 @@
 
   .the-method-layout {
     display: block;
+  }
+
+  /* ---- Personality (still minimal) ---- */
+
+  /* With no image beside it, a centered intro sits in the middle of the section (its box is capped at 40rem) instead of at the start */
+  .the-method__panel--intro.justify-items-center {
+    margin-inline: auto;
+  }
+
+  .the-method-layout {
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* Two soft pools of color in opposite corners of the section, behind everything, drifting very slowly */
+  .the-method-layout--glow:before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: calc(-1 * (var(--container-gutter) + 0.5rem));
+    pointer-events: none;
+    background:
+      radial-gradient(55% 60% at 100% 0%, color-mix(in srgb, var(--the-method-glow-1) 55%, transparent), transparent 70%),
+      radial-gradient(45% 55% at 0% 100%, color-mix(in srgb, var(--the-method-glow-2) 50%, transparent), transparent 70%);
+    animation: the-method-glow 20s ease-in-out infinite alternate;
+  }
+
+  @keyframes the-method-glow {
+    from { transform: scale(1) translate3d(0, 0, 0); }
+    to { transform: scale(1.08) translate3d(-1%, 1%, 0); }
+  }
+
+  /* A small pill above the title of the intro, with a dot that breathes */
+  .the-method__eyebrow {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: rgb(var(--text-color) / 0.06);
+    color: rgb(var(--text-color) / 0.75);
+  }
+
+  .the-method__eyebrow:before {
+    content: "";
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--the-method-glow-1, currentColor) 60%, rgb(var(--text-color)));
+    animation: the-method-pulse 2.6s ease-out infinite;
+  }
+
+  @keyframes the-method-pulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--the-method-glow-1, currentColor) 70%, transparent); }
+    70%, 100% { box-shadow: 0 0 0 0.5rem transparent; }
+  }
+
+  /* Start button: the arrow moves on hover */
+  .the-method__cta .button__content {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .the-method__cta-arrow {
+    flex: none;
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @media (pointer: fine) {
+    .the-method__cta:hover .the-method__cta-arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  /* Option cards: numbered (01, 02...) and they rise a little when pointed at */
+  .the-method__options {
+    counter-reset: the-method-option;
+  }
+
+  .the-method__options .the-method__option {
+    counter-increment: the-method-option;
+    transition: border-color 0.2s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+  }
+
+  .the-method__options .the-method__option:before {
+    content: counter(the-method-option, decimal-leading-zero);
+    flex: none;
+    margin-inline-end: 0.25rem;
+    color: rgb(var(--text-color) / 0.35);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .the-method__option-main {
+    flex: 1;
+  }
+
+  @media (pointer: fine) {
+    .the-method__options .the-method__option:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgb(var(--text-color) / 0.08);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .the-method-layout--glow:before,
+    .the-method__eyebrow:before {
+      animation: none;
+    }
   }
 
   .the-method {
@@ -2178,6 +2292,36 @@
       "label": "Radio de esquina",
       "info": "Se usa en las esquinas exteriores de la sección (si Floating está activo).",
       "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Personalidad"
+    },
+    {
+      "type": "text",
+      "id": "intro_eyebrow",
+      "label": "Texto de la etiqueta sobre el título",
+      "info": "Una pastilla pequeña sobre el título de la introducción. Déjala vacía para no mostrarla.",
+      "default": "6 preguntas · 2 minutos"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_glow",
+      "label": "Mostrar resplandor de color de fondo",
+      "info": "Dos manchas de color muy suaves en las esquinas de la sección, que se mueven despacio.",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "glow_color_1",
+      "label": "Color del resplandor (arriba a la derecha)",
+      "default": "#f1c9a6"
+    },
+    {
+      "type": "color",
+      "id": "glow_color_2",
+      "label": "Color del resplandor (abajo a la izquierda)",
+      "default": "#fbe3d0"
     },
     {
       "type": "header",
