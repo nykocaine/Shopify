@@ -94,7 +94,7 @@
         mantenerse visible a través de los cambios de panel una vez que se activa (ver
         screening_question más abajo). No bloquea el avance del test, solo informa.
       {%- endcomment -%}
-      <p class="the-method__warning color-scheme color-scheme--{{ section.settings.warning_color_scheme.id }}" data-the-method-warning hidden role="status"></p>
+      <p class="the-method__warning color-scheme color-scheme--{{ section.settings.warning_color_scheme.id }}"{% if section.settings.warning_background_color != blank or section.settings.warning_text_color != blank %} style="{% if section.settings.warning_background_color != blank %}--the-method-warning-bg: {{ section.settings.warning_background_color }};{% endif %}{% if section.settings.warning_text_color != blank %}--the-method-warning-text: {{ section.settings.warning_text_color }};{% endif %}"{% endif %} data-the-method-warning hidden role="status"></p>
 
       <div class="the-method__panels" data-the-method-panels>
 
@@ -654,9 +654,9 @@
     margin: 0;
     padding: 0.75rem 1rem;
     border-radius: var(--input-border-radius);
-    background: rgb(var(--background));
+    background: var(--the-method-warning-bg, rgb(var(--background)));
     overflow: hidden;
-    color: rgb(var(--text-color));
+    color: var(--the-method-warning-text, rgb(var(--text-color)));
   }
 
   .the-method__warning[hidden] {
@@ -2288,6 +2288,18 @@
       "label": "Color de la caja de advertencia",
       "info": "La caja que aparece arriba del cuestionario cuando una respuesta genera una advertencia tiene su propio esquema.",
       "default": "scheme-2"
+    },
+    {
+      "type": "color",
+      "id": "warning_background_color",
+      "label": "Fondo de la caja de advertencia",
+      "info": "Opcional. Si eliges un color, reemplaza el fondo del esquema de arriba. Déjalo vacío para usar el del esquema."
+    },
+    {
+      "type": "color",
+      "id": "warning_text_color",
+      "label": "Color del texto de la advertencia",
+      "info": "Opcional. Si eliges un color, reemplaza el texto del esquema de arriba. Déjalo vacío para usar el del esquema."
     },
     {
       "type": "header",
