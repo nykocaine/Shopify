@@ -204,7 +204,7 @@
           {%- endunless -%}
 
           {%- if has_categories -%}
-            <x-tabs class="section-header__controls faq__categories" transition="unfold">
+            <x-tabs class="section-header__controls faq__categories" transition="unfold"{% if section.settings.two_columns %} data-tabs-loop{% endif %}>
               <template shadowrootmode="open">
                 <slot part="tablist" role="tablist" name="tab"></slot>
               </template>
@@ -437,6 +437,10 @@
         menu inside. The tabs turn into plain links: no pill, no background, the active one underlined. The edge fade of the
         scrolling row is switched off here, since it would fade the white of the bar itself.
         {%- endcomment -%}
+        #shopify-section-{{ section.id }} .faq__category-tab.faq__tab-clone {
+          display: none;
+        }
+
         @media screen and (max-width: 699px) {
           #shopify-section-{{ section.id }} .faq--full-width {
             margin-block-start: 0;
@@ -454,7 +458,7 @@
             border-start-end-radius: {{ section.settings.faq_border_radius }}px;
           }
 
-          #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
+          #shopify-section-{{ section.id }} .faq__categories.faq__categories::part(tablist) {
             box-sizing: border-box;
             gap: 3rem;
             padding: .5rem 0 0 1.25rem;
@@ -464,22 +468,30 @@
           The end padding of a scrolling flex row is dropped by some browsers, so the right inset is a real spacer after the last
           tab (its negative start margin cancels the row's gap): the tabs keep the same side padding on both ends of the bar.
           {%- endcomment -%}
-          #shopify-section-{{ section.id }} .faq__categories::part(tablist)::after {
+          #shopify-section-{{ section.id }} .faq__categories.faq__categories::part(tablist)::after {
             content: "";
             flex: none;
             width: 1.25rem;
             margin-inline-start: -3rem;
           }
 
-          #shopify-section-{{ section.id }} .faq__category-tab,
-          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled,
-          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled[aria-selected="true"],
-          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab--filled:hover {
+          {%- comment -%}Doubled class: these rules sit before the base tab rules further down in this file and must win over them.{%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab,
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled,
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled[aria-selected="true"],
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled:hover {
             position: relative;
             padding: .75rem 0;
             color: rgb(var(--text-color));
             background: none;
             border-radius: 0;
+          }
+
+          {%- comment -%}Looping menu (see the script below): decorative copies of the tabs, shown after the real ones, only on phones.{%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__tab-clone.faq__tab-clone.faq__tab-clone {
+            display: inline-flex;
+            cursor: pointer;
+            user-select: none;
           }
 
           {%- comment -%}The underline of the active tab is a line that grows in and out (not a text-decoration), so changing tab is gradual.{%- endcomment -%}
@@ -945,36 +957,108 @@
                 scroll at the end of the row, so the last tabs simply go as far left as they can). The
                 .5rem inset matches the left edge fade width, so the tab isn't faded out.
                 {%- endcomment -%}
-                tabs.addEventListener('click', function (event) {
-                  var tab = event.target.closest('[slot="tab"]');
-                  if (!tab || tablist.scrollWidth <= tablist.clientWidth + 1) return;
+                var loop = tabs.hasAttribute('data-tabs-loop');
+                var phone = window.matchMedia('(max-width: 699px)');
+                var animating = false;
+                var forwarding = false;
 
-                  var left = tab.getBoundingClientRect().left - tablist.getBoundingClientRect().left + tablist.scrollLeft;
-                  var padding = parseFloat(getComputedStyle(tablist).paddingLeft);
-                  var inset = padding > 0 ? padding : parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5;
-                  var target = Math.max(0, left - inset);
+                function realTabs() {
+                  return Array.prototype.slice.call(tabs.querySelectorAll(':scope > button[slot="tab"]'));
+                }
+
+                function leftOf(element) {
+                  return element.getBoundingClientRect().left - tablist.getBoundingClientRect().left + tablist.scrollLeft;
+                }
+
+                function loopWidth() {
+                  var first = realTabs()[0];
+                  var clone = tabs.querySelector(':scope > .faq__tab-clone');
+                  return first && clone ? leftOf(clone) - leftOf(first) : 0;
+                }
+
+                {%- comment -%}
+                Looping menu (phones, "Two columns" layout): after the real tabs the row shows decorative copies of them, so when the
+                last tab is picked it can slide all the way to the left and the first tabs follow it on its right, like an endless
+                carousel. The copies are not tabs for x-tabs (no button inside, aria-hidden): tapping one selects the matching real
+                tab. When a slide ends on a copy, the row jumps back (invisibly, the copy and the real tab look the same) to the real tab.
+                {%- endcomment -%}
+                tabs.querySelectorAll(':scope > .faq__tab-clone').forEach(function (clone) { clone.remove(); });
+
+                if (loop) {
+                  realTabs().forEach(function (button, index) {
+                    var clone = document.createElement('span');
+                    clone.setAttribute('slot', 'tab');
+                    clone.setAttribute('aria-hidden', 'true');
+                    clone.className = button.className + ' faq__tab-clone';
+                    clone.setAttribute('data-clone-of', index);
+                    clone.innerHTML = button.innerHTML;
+                    tabs.appendChild(clone);
+                  });
+                }
+
+                {%- comment -%}Eased slide (slow start, slow end) instead of the browser's own quick smooth scroll, so the move is gentle.{%- endcomment -%}
+                function slideTo(target, onDone) {
                   var start = tablist.scrollLeft;
 
                   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                     tablist.scrollLeft = target;
+                    if (onDone) onDone();
                     return;
                   }
 
-                  {%- comment -%}Eased slide (slow start, slow end) instead of the browser's own quick smooth scroll, so the move is gentle.{%- endcomment -%}
                   var duration = 500;
                   var startTime = null;
+                  animating = true;
                   function step(now) {
                     if (startTime === null) startTime = now;
                     var t = Math.min(1, (now - startTime) / duration);
                     var eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
                     tablist.scrollLeft = start + (target - start) * eased;
-                    if (t < 1) requestAnimationFrame(step);
+                    if (t < 1) {
+                      requestAnimationFrame(step);
+                    } else {
+                      animating = false;
+                      if (onDone) onDone();
+                    }
                   }
                   requestAnimationFrame(step);
+                }
+
+                {%- comment -%}Tapping a tab slides the row so that tab sits at the left edge, at the same distance as the row's own left padding (.5rem when it has none).{%- endcomment -%}
+                tabs.addEventListener('click', function (event) {
+                  var tab = event.target.closest('[slot="tab"]');
+                  if (!tab || forwarding) return;
+
+                  var isClone = tab.classList.contains('faq__tab-clone');
+                  if (isClone && !(loop && phone.matches)) return;
+                  if (!isClone && tablist.scrollWidth <= tablist.clientWidth + 1) return;
+
+                  var padding = parseFloat(getComputedStyle(tablist).paddingLeft);
+                  var inset = padding > 0 ? padding : parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5;
+
+                  if (isClone) {
+                    var width = loopWidth();
+                    var real = realTabs()[parseInt(tab.getAttribute('data-clone-of'), 10)];
+                    forwarding = true;
+                    if (real) real.click();
+                    forwarding = false;
+                    slideTo(Math.max(0, leftOf(tab) - inset), function () {
+                      tablist.scrollLeft = Math.max(0, tablist.scrollLeft - width);
+                    });
+                    return;
+                  }
+
+                  slideTo(Math.max(0, leftOf(tab) - inset));
                 });
 
                 updateEdgeFade();
-                tablist.addEventListener('scroll', updateEdgeFade, { passive: true });
+                tablist.addEventListener('scroll', function () {
+                  if (loop && phone.matches && !animating) {
+                    var width = loopWidth();
+                    if (width > 0 && tablist.scrollLeft >= width) tablist.scrollLeft -= width;
+                  }
+                  updateEdgeFade();
+                }, { passive: true });
                 window.addEventListener('resize', updateEdgeFade);
               });
             }
