@@ -96,7 +96,7 @@
         mantenerse visible a través de los cambios de panel una vez que se activa (ver
         screening_question más abajo). No bloquea el avance del test, solo informa.
       {%- endcomment -%}
-      <p class="the-method__warning" data-the-method-warning hidden role="status"></p>
+      <p class="the-method__warning color-scheme color-scheme--{{ section.settings.warning_color_scheme.id }}" data-the-method-warning hidden role="status"></p>
 
       <div class="the-method__panels" data-the-method-panels>
 
@@ -187,7 +187,7 @@
                       assign opt_weight_tca = block.settings[wtca_key]
                     -%}
                     {%- if opt_label != blank -%}
-                      <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="{{ step_index }}" data-key="{{ block.id }}-{{ i }}" data-weight-salicylic="{{ opt_weight_salicylic }}" data-weight-tca="{{ opt_weight_tca }}">
+                      <button type="button" class="the-method__option color-scheme color-scheme--{{ section.settings.options_color_scheme.id }}" role="radio" aria-checked="false" data-the-method-option data-step="{{ step_index }}" data-key="{{ block.id }}-{{ i }}" data-weight-salicylic="{{ opt_weight_salicylic }}" data-weight-tca="{{ opt_weight_tca }}">
                         <span class="the-method__option-main">
                           {%- unless opt_icon == 'none' -%}
                             <span class="the-method__option-icon">
@@ -229,7 +229,7 @@
                       assign opt_note = block.settings[note_key]
                     -%}
                     {%- if opt_label != blank -%}
-                      <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="{{ step_index }}" data-key="{{ block.id }}-{{ i }}" data-weight-salicylic="{{ opt_weight_salicylic }}" data-weight-tca="{{ opt_weight_tca }}" data-note="{{ opt_note | escape }}">
+                      <button type="button" class="the-method__option color-scheme color-scheme--{{ section.settings.options_color_scheme.id }}" role="radio" aria-checked="false" data-the-method-option data-step="{{ step_index }}" data-key="{{ block.id }}-{{ i }}" data-weight-salicylic="{{ opt_weight_salicylic }}" data-weight-tca="{{ opt_weight_tca }}" data-note="{{ opt_note | escape }}">
                         <span class="the-method__option-text">
                             <span class="the-method__option-label">{{ opt_label }}</span>
                             {%- if opt_desc != blank -%}
@@ -279,7 +279,7 @@
                       assign opt_format = block.settings[format_key]
                     -%}
                     {%- if opt_label != blank -%}
-                      <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="{{ step_index }}" data-key="{{ block.id }}-{{ i }}" data-format="{{ opt_format }}">
+                      <button type="button" class="the-method__option color-scheme color-scheme--{{ section.settings.options_color_scheme.id }}" role="radio" aria-checked="false" data-the-method-option data-step="{{ step_index }}" data-key="{{ block.id }}-{{ i }}" data-format="{{ opt_format }}">
                         <span class="the-method__option-main">
                           {%- unless opt_icon == 'none' -%}
                             <span class="the-method__option-icon">
@@ -327,7 +327,7 @@
                       assign opt_note = block.settings[note_key]
                     -%}
                     {%- if opt_label != blank -%}
-                      <button type="button" class="the-method__option" role="radio" aria-checked="false" data-the-method-option data-step="{{ step_index }}" data-key="{{ block.id }}-{{ i }}" data-warn="{{ opt_warns }}" data-warn-note="{{ opt_note | escape }}">
+                      <button type="button" class="the-method__option color-scheme color-scheme--{{ section.settings.options_color_scheme.id }}" role="radio" aria-checked="false" data-the-method-option data-step="{{ step_index }}" data-key="{{ block.id }}-{{ i }}" data-warn="{{ opt_warns }}" data-warn-note="{{ opt_note | escape }}">
                         <span class="the-method__option-text">
                             <span class="the-method__option-label">{{ opt_label }}</span>
                             {%- if opt_desc != blank -%}
@@ -598,9 +598,9 @@
     margin: 0;
     padding: 0.75rem 1rem;
     border-radius: var(--input-border-radius);
-    background: rgb(var(--text-color) / 0.06);
+    background: rgb(var(--background));
     overflow: hidden;
-    color: rgb(var(--text-color) / 0.85);
+    color: rgb(var(--text-color));
   }
 
   .the-method__warning[hidden] {
@@ -693,7 +693,7 @@
     appearance: none;
     text-align: start;
     cursor: pointer;
-    background: rgb(var(--input-background, transparent));
+    background: rgb(var(--background));
     color: rgb(var(--text-color));
     border: 1px solid transparent;
     border-radius: var(--input-border-radius);
@@ -1417,6 +1417,20 @@
       "label": "Color de la tarjeta de contenido",
       "info": "Afecta todo el bloque de la izquierda (título, preguntas, botón) — se puede cambiar en cualquier momento desde aquí.",
       "default": "scheme-1"
+    },
+    {
+      "type": "color_scheme",
+      "id": "options_color_scheme",
+      "label": "Color de las tarjetas de opciones",
+      "info": "Cada tarjeta de respuesta del cuestionario (fondo, texto y borde de la seleccionada) usa este esquema propio, independiente del de la tarjeta de contenido.",
+      "default": "scheme-1"
+    },
+    {
+      "type": "color_scheme",
+      "id": "warning_color_scheme",
+      "label": "Color de la caja de advertencia",
+      "info": "La caja que aparece arriba del cuestionario cuando una respuesta genera una advertencia tiene su propio esquema.",
+      "default": "scheme-2"
     },
     {
       "type": "header",
