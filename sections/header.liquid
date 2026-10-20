@@ -131,8 +131,9 @@
     Pages whose first section sits flush against the header never get the round bottom corners: a floating section with
     no gap above it (.section-floating--block-end alone, e.g. the contact form) or a section under a transparent header
     (allow-transparent-header, same condition theme.css uses). There the header and the section read as one block.
+    first-of-type (not first-child) because theme.liquid may put a visually hidden <h1> before the first section inside <main>.
     {%- endcomment -%}
-    :root:not(:has(main > .shopify-section:first-child .section-floating--block-end)):not(:has(.shopify-section:first-child [allow-transparent-header])) #shopify-section-{{ section.id }} .header--floating:not(.is-scrolled) {
+    :root:not(:has(main > .shopify-section:first-of-type .section-floating--block-end)):not(:has(.shopify-section:first-child [allow-transparent-header])) #shopify-section-{{ section.id }} .header--floating:not(.is-scrolled) {
       border-bottom-left-radius: {{ section.settings.header_border_radius }}px;
       border-bottom-right-radius: {{ section.settings.header_border_radius }}px;
     }
