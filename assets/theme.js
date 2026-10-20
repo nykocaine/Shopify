@@ -1471,6 +1471,7 @@ var CarouselPageIndicator = class extends HTMLElement {
       }
     });
     if (pageSize > 0) {
+      this.hidden = pageSize <= 1;
       this.pageSize.innerText = pageSize.toString();
       const selectedIndex = this.carousel.selectedIndex;
       if (this.currentSlideIndex && Number.isInteger(selectedIndex)) {
@@ -1559,6 +1560,7 @@ var CarouselSegments = class extends HTMLElement {
     if (!Number.isInteger(current)) {
       current = carousel.selectedIndex;
     }
+    this.hidden = count <= 1;
     this.style.setProperty("--segments", Math.max(1, count).toString());
     this.style.setProperty("--segment-index", Math.min(Math.max(0, Number.isInteger(current) ? current : 0), Math.max(0, count - 1)).toString());
   }
