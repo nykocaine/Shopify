@@ -474,6 +474,7 @@
           {%- endcomment -%}
           #shopify-section-{{ section.id }} .faq__categories {
             margin-block-end: -1px;
+            transition: width .35s cubic-bezier(.4, 0, .2, 1);
             background: var(--faq-box-background);
             border-start-start-radius: {{ section.settings.faq_border_radius }}px;
             border-start-end-radius: {{ section.settings.faq_border_radius }}px;
@@ -1243,6 +1244,37 @@
                   updateEdgeFade();
                 }, { passive: true });
                 window.addEventListener('resize', updateEdgeFade);
+
+                {%- unless faq_page -%}
+                {%- comment -%}
+                Glued bar: when the content of the open category starts with a text + image block whose text is a white card, the bar ends
+                exactly where that card ends (not over the media next to it), so bar and card read as one piece. Anything else (questions,
+                a block without a card) keeps the bar at the full width. It follows the tab changes (the panels' hidden attribute) and the
+                screen size, and only works while the bar is glued (glue_query: phones by default, see the top of this file).
+                {%- endcomment -%}
+                var glue = window.matchMedia({{ glue_query | json }});
+                var panels = root.querySelector('.faq__panels');
+
+                function fitBarToCard() {
+                  tabs.style.width = '';
+                  if (!glue.matches || !panels) return;
+
+                  var panel = panels.querySelector('.faq__panel:not([hidden])');
+                  var first = panel && panel.firstElementChild;
+                  var card = first && first.classList.contains('faq__text-image') ? first.querySelector('.faq__text-image-text--card') : null;
+                  if (!card) return;
+
+                  var width = card.getBoundingClientRect().right - tabs.getBoundingClientRect().left;
+                  if (width > 0 && width < tabs.parentElement.clientWidth - 1) tabs.style.width = width + 'px';
+                }
+
+                if (panels) {
+                  new MutationObserver(function () { requestAnimationFrame(fitBarToCard); }).observe(panels, { attributes: true, attributeFilter: ['hidden'], subtree: true });
+                }
+                window.addEventListener('resize', fitBarToCard);
+                glue.addEventListener('change', fitBarToCard);
+                fitBarToCard();
+                {%- endunless -%}
               });
             }
 
