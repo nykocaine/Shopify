@@ -118,22 +118,6 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
   </script>
 {%- endif -%}
 
-{%- if section.settings.floating_reviews -%}
-  <style>
-    {%- comment -%}
-    The side gutter of the floating card sits on the section wrapper itself, outside the section, instead of on the card inside it:
-    the editor's outline then spans only the card, which still respects the page's side padding.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} {
-      margin-inline: var(--container-gutter);
-    }
-
-    #shopify-section-{{ section.id }} .section-floating {
-      margin-inline: 0;
-    }
-  </style>
-{%- endif -%}
-
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_reviews %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_reviews %} style="border-radius: {{ section.settings.reviews_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div id="reviews-{{ section.id }}" class="reviews section-stack">

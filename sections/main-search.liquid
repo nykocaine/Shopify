@@ -383,14 +383,6 @@
         visibility: hidden;
       }
 
-    {%- else -%}
-      {%- comment -%}
-      A toolbar that is not sticky is not positioned, so z-index would do nothing: while the filters sheet is open (theme.css lifts the
-      toolbar above the blur layer behind the header) it gets position: relative, which changes nothing about where it sits.
-      {%- endcomment -%}
-      :root[data-facets-veil] #shopify-section-{{ section.id }} .collection__toolbar {
-        position: relative;
-      }
     {%- endif -%}
   {%- endif -%}
 
@@ -440,22 +432,6 @@
     }
   {%- endif -%}
 </style>
-
-{%- if section.settings.floating_search -%}
-  <style>
-    {%- comment -%}
-    The side gutter of the floating card sits on the section wrapper itself, outside the section, instead of on the card inside it:
-    the editor's outline then spans only the card, which still respects the page's side padding.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} {
-      margin-inline: var(--container-gutter);
-    }
-
-    #shopify-section-{{ section.id }} .section-floating {
-      margin-inline: 0;
-    }
-  </style>
-{%- endif -%}
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_search %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_search %} style="border-end-start-radius: {{ section.settings.search_border_radius }}px; border-end-end-radius: {{ section.settings.search_border_radius }}px; overflow: hidden;"{% endif %}>
   {%- if search.performed == false or search.performed and search.results_count == 0 and has_active_filters == false -%}

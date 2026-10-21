@@ -2506,6 +2506,22 @@ main > .shopify-section:first-child .section-floating--block {
   margin-inline: var(--container-gutter);
 }
 
+/* The side gutter of a floating card (section, header or footer) is a margin of the section's own wrapper, outside the section, and
+   not of the card inside it: the editor's outline then spans only the card, which still respects the page's side padding. One rule
+   for every floating section instead of one per section; it applies on its own wherever a card is floating (the card class is only
+   there when the section's floating setting is on). Only for the card that is the section's outermost element (a direct child of the
+   wrapper, or of the form / the height observer that wraps it), never for a floating card nested inside a section, like the
+   collection toolbar. */
+.shopify-section:has(> :is(.section-floating, .footer--floating)),
+.shopify-section:has(> :is(form, height-observer) > :is(.section-floating, .header--floating)) {
+  margin-inline: var(--container-gutter);
+}
+
+.shopify-section > :is(.section-floating, .footer--floating),
+.shopify-section > :is(form, height-observer) > :is(.section-floating, .header--floating) {
+  margin-inline: 0;
+}
+
 .section-floating--block {
   margin-block: var(--section-vertical-spacing);
 }
@@ -6296,10 +6312,14 @@ product-rerender {
   }
 }
 
-/* Mobile and tablet (below 1000px), where the filters are a sheet hanging from the toolbar and the page cannot scroll while it
-   is open: the header and the bar stay exactly where they are stuck, on screen, and the sheet hangs below them. They are NOT
-   released from sticky (that threw them back to the top of the page, out of view, when the page had been scrolled, and the sheet
-   then covered the top of the screen). If the header had slid away on scroll it comes back while the sheet is open. */
+/* Filters sheet, mobile and tablet (below 1000px): a sheet hanging from the toolbar; the page cannot scroll while it is open.
+   - The header and the bar stay exactly where they are stuck, on screen, and the sheet hangs below them. They are NOT released from
+     sticky (that threw them back to the top of the page, out of view, when the page had been scrolled, and the sheet then covered
+     the top of the screen). If the header had slid away on scroll it comes back while the sheet is open.
+   - The overlay's blur and veil start where the sheet starts, under the toolbar, so the header and the toolbar (and the gaps around
+     their cards) would show the page behind them unblurred. :root::before is the same blur and veil over that top strip, from the
+     top of the screen down to the sheet. It sits above the page content and below the header and the toolbar (both stay crisp on top
+     of it), and fades in and out with the sheet (FacetsDrawer sets --facets-drawer-top and data-facets-veil on <html>). */
 @media screen and (max-width: 999px) {
   :root[data-facets-open] .shopify-section--header,
   :root[data-facets-open] .collection__toolbar {
@@ -6307,14 +6327,7 @@ product-rerender {
     visibility: visible !important;
     transition: none !important;
   }
-}
 
-/* Filters sheet (below 1000px): the overlay's blur and veil start where the sheet starts, under the toolbar, so the header and the
-   toolbar (and the gaps around their cards) would show the page behind them unblurred. This layer is the same blur and veil over
-   that top strip, from the top of the screen down to the sheet. It sits above the page content and below the header and the toolbar
-   (both stay crisp on top of it, see the rules below), and fades in and out with the sheet (FacetsDrawer sets --facets-drawer-top and
-   data-facets-veil on <html>). */
-@media screen and (max-width: 999px) {
   :root::before {
     content: "";
     position: fixed;
@@ -6338,9 +6351,8 @@ product-rerender {
   }
 
   /* The header's own page-colored bands (behind the floating header and in its gap above it while stuck) are opaque, so they would
-     hide this layer and leave a flat page color behind the header: while the sheet is open they are see-through, and the layer's
-     blur and veil show behind the header's and the toolbar's cards instead. The layer (z-index 4) sits under the header group (5)
-     and the toolbar is lifted above it, so both stay crisp on top. */
+     hide the layer and leave a flat page color behind the header: while the sheet is open they are see-through. The layer's z-index (4)
+     sits under the header group (5) and the toolbar is lifted above it (5), so both stay crisp on top. */
   :root[data-facets-veil] .shopify-section-group-header-group:has(.header--floating) {
     background: transparent !important;
   }
@@ -6349,15 +6361,20 @@ product-rerender {
     background: transparent !important;
   }
 
-  /* !important: each section sets the toolbar's own z-index (2) with an id selector, which would otherwise win */
+  /* !important: each section sets the toolbar's own z-index (2) with an id selector, which would otherwise win. The position is only
+     for a toolbar that is not sticky (a z-index needs one); at zero specificity (:where) it never overrides a sticky one. */
   :root[data-facets-veil] .collection__toolbar {
     z-index: 5 !important;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  :root::before {
-    transition: none !important;
+  :where(:root[data-facets-veil] .collection__toolbar) {
+    position: relative;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root::before {
+      transition: none;
+    }
   }
 }
 

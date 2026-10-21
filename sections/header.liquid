@@ -133,18 +133,6 @@
 
   {%- if section.settings.floating_header -%}
     {%- comment -%}
-    The side gutter of the floating header sits on the section wrapper itself, outside the section, instead of on the header inside it:
-    the editor's outline then spans only the header, which still respects the page's side padding.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} {
-      margin-inline: var(--container-gutter);
-    }
-
-    #shopify-section-{{ section.id }} .header--floating {
-      margin-inline: 0;
-    }
-
-    {%- comment -%}
     Floating header corners: at rest (top of the page, not scrolled) the bottom corners are as round as the top ones; once
     the page is scrolled (.is-scrolled, set by theme.js from the very first pixel of scroll, so it neither waits for the
     header-scroll-tracker nor follows the solid state the menu/search/cart drawers force) they go square again, instantly. Going back to round (scrolling up to the

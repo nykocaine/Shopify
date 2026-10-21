@@ -2937,8 +2937,7 @@ var FacetsDrawer = class extends Drawer {
     }
     const toolbar = document.querySelector(".collection__toolbar");
     const top = toolbar ? Math.max(0, Math.round(toolbar.getBoundingClientRect().bottom)) : 0;
-    this.style.setProperty("--facets-drawer-top", `${top}px`);
-    // The same blur and veil as the overlay, behind the header and the toolbar too (theme.css, :root::before): they stay on top of it
+    // On <html>, so the drawer (a descendant) inherits it and so does the blur layer behind the header and the toolbar (theme.css, :root::before)
     document.documentElement.style.setProperty("--facets-drawer-top", `${top}px`);
     document.documentElement.setAttribute("data-facets-veil", "");
     const content = this.getShadowPartByName("content");

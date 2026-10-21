@@ -293,22 +293,6 @@
     {%- assign allow_transparent_header = true -%}
   {%- endif -%}
 
-{%- if section.settings.floating_media_blocks -%}
-  <style>
-    {%- comment -%}
-    The side gutter of the floating card sits on the section wrapper itself, outside the section, instead of on the card inside it:
-    the editor's outline then spans only the card, which still respects the page's side padding.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} {
-      margin-inline: var(--container-gutter);
-    }
-
-    #shopify-section-{{ section.id }} .section-floating {
-      margin-inline: 0;
-    }
-  </style>
-{%- endif -%}
-
   <div {% if allow_transparent_header %}allow-transparent-header{% endif %} class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_media_blocks %} section-floating section-floating--block-end{% endif %}">
     <div class="{% unless allow_transparent_header %}section-spacing{% endunless %}">
       <div class="section-stack">
