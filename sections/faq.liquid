@@ -1247,9 +1247,9 @@
 
                 {%- unless faq_page -%}
                 {%- comment -%}
-                Glued bar: when the content of the open category starts with a text + image block whose text is a white card, the bar ends
-                exactly where that card ends (not over the media next to it), so bar and card read as one piece. Anything else (questions,
-                a block without a card) keeps the bar at the full width. It follows the tab changes (the panels' hidden attribute) and the
+                Glued bar: it ends exactly where the first container of the open category's content ends - the white text card of a text + image
+                block, or the first of the two columns of questions - and not over the media or the second column next to it, so bar and
+                container read as one piece. Content without such a container keeps the bar at the full width. It follows the tab changes (the panels' hidden attribute) and the
                 screen size, and only works while the bar is glued (glue_query: phones by default, see the top of this file).
                 {%- endcomment -%}
                 var glue = window.matchMedia({{ glue_query | json }});
@@ -1261,8 +1261,17 @@
 
                   var panel = panels.querySelector('.faq__panel:not([hidden])');
                   var first = panel && panel.firstElementChild;
-                  var card = first && first.classList.contains('faq__text-image') ? first.querySelector('.faq__text-image-text--card') : null;
-                  if (!card) return;
+                  if (!first) return;
+
+                  {%- comment -%}
+                  The first container of the content: the text card of a text + image block, or the first of the two white columns of the
+                  questions (from 1000px; on phones the columns dissolve into one container, they have no box of their own and the bar keeps
+                  the full width). When there are two containers, only the first one counts.
+                  {%- endcomment -%}
+                  var card = first.classList.contains('faq__text-image')
+                    ? first.querySelector('.faq__text-image-text--card')
+                    : first.querySelector('.faq__column');
+                  if (!card || card.getBoundingClientRect().width === 0) return;
 
                   var width = card.getBoundingClientRect().right - tabs.getBoundingClientRect().left;
                   if (width > 0 && width < tabs.parentElement.clientWidth - 1) tabs.style.width = width + 'px';
