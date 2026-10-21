@@ -159,48 +159,6 @@
               </button>
             {%- endif -%}
           {%- endif -%}
-
-          {%- if section.settings.show_specimens -%}
-            <div class="the-method__specimens" aria-hidden="true">
-              <figure class="the-method__specimen">
-                <svg viewBox="0 0 100 80" width="104" height="83">
-                  <path pathLength="1" d="M50 28 L69 39 L69 61 L50 72 L31 61 L31 39 Z"/>
-                  <path pathLength="1" d="M64 43 L64 57"/>
-                  <path pathLength="1" d="M46.5 66.5 L35.5 60"/>
-                  <path pathLength="1" d="M35.5 40 L46.5 33.5"/>
-                  <path pathLength="1" class="is-accent" d="M69 39 L82 31.5"/>
-                  <path pathLength="1" class="is-accent" d="M50 28 L50 14"/>
-                  <text x="89" y="30">OH</text>
-                  <text x="50" y="9">COOH</text>
-                </svg>
-                <figcaption class="the-method__specimen-caption">
-                  <span class="the-method__specimen-name">Ácido salicílico</span>
-                  <span class="the-method__specimen-formula">C₇H₆O₃</span>
-                </figcaption>
-              </figure>
-              <span class="the-method__specimens-plus">+</span>
-              <figure class="the-method__specimen">
-                <svg viewBox="0 0 100 80" width="104" height="83">
-                  <path pathLength="1" d="M38 44 L64 44"/>
-                  <path pathLength="1" class="is-accent" d="M38 44 L38 22"/>
-                  <path pathLength="1" class="is-accent" d="M38 44 L38 64"/>
-                  <path pathLength="1" class="is-accent" d="M38 44 L22 44"/>
-                  <path pathLength="1" d="M61 44 L61 24"/>
-                  <path pathLength="1" d="M67 44 L67 24"/>
-                  <path pathLength="1" d="M64 44 L82 56"/>
-                  <text x="38" y="17">Cl</text>
-                  <text x="38" y="75">Cl</text>
-                  <text x="14" y="47">Cl</text>
-                  <text x="64" y="19">O</text>
-                  <text x="90" y="60">OH</text>
-                </svg>
-                <figcaption class="the-method__specimen-caption">
-                  <span class="the-method__specimen-name">TCA</span>
-                  <span class="the-method__specimen-formula">C₂HCl₃O₂</span>
-                </figcaption>
-              </figure>
-            </div>
-          {%- endif -%}
         </div>
 
         {%- assign step_index = 0 -%}
@@ -212,7 +170,6 @@
             {%- when 'question_cards' -%}
               {%- assign step_index = step_index | plus: 1 -%}
               <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" {% if block.settings.allow_multiple %}data-multiple="true"{% endif %} style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" {% unless step_index == 1 and just_subscribed %}hidden{% endunless %} {{ block.shopify_attributes }}>
-                <p class="the-method__hint">{%- if block.settings.allow_multiple -%}{{ section.settings.hint_multiple }}{%- else -%}{{ section.settings.hint_single }}{%- endif -%}</p>
                 <h3 id="the-method-q-{{ section.id }}-{{ step_index }}" class="the-method__question">{{ block.settings.question }}</h3>
 
                 <div class="the-method__options the-method__options--cards" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}">
@@ -261,7 +218,6 @@
             {%- when 'question_compact' -%}
               {%- assign step_index = step_index | plus: 1 -%}
               <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" {% unless step_index == 1 and just_subscribed %}hidden{% endunless %} {{ block.shopify_attributes }}>
-                <p class="the-method__hint">{{ section.settings.hint_single }}</p>
                 <h3 id="the-method-q-{{ section.id }}-{{ step_index }}" class="the-method__question">{{ block.settings.question }}</h3>
 
                 <div class="the-method__options the-method__options--compact" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}">
@@ -297,7 +253,6 @@
             {%- when 'question_tone' -%}
               {%- assign step_index = step_index | plus: 1 -%}
               <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" {% unless step_index == 1 and just_subscribed %}hidden{% endunless %} {{ block.shopify_attributes }}>
-                <p class="the-method__hint">{{ section.settings.hint_slide }}</p>
                 <h3 id="the-method-q-{{ section.id }}-{{ step_index }}" class="the-method__question">{{ block.settings.question }}</h3>
 
                 {%- liquid
@@ -328,7 +283,6 @@
             {%- when 'question_format' -%}
               {%- assign step_index = step_index | plus: 1 -%}
               <div class="the-method__panel the-method__panel--question justify-items-{{ text_alignment_class }}" style="text-align: {{ text_alignment }};" data-the-method-panel="step-{{ step_index }}" tabindex="-1" role="group" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}" {% unless step_index == 1 and just_subscribed %}hidden{% endunless %} {{ block.shopify_attributes }}>
-                <p class="the-method__hint">{{ section.settings.hint_single }}</p>
                 <h3 id="the-method-q-{{ section.id }}-{{ step_index }}" class="the-method__question">{{ block.settings.question }}</h3>
 
                 <div class="the-method__options the-method__options--editorial" role="radiogroup" aria-labelledby="the-method-q-{{ section.id }}-{{ step_index }}">
@@ -454,7 +408,7 @@
                 <div class="the-method__result-gallery" data-the-method-gallery>
                   <div class="the-method__result-stage">
                     {%- if section.settings.result_badge_text != blank -%}
-                      <span class="the-method__result-badge"><span class="the-method__badge-text">{{ section.settings.result_badge_text }}</span></span>
+                      <span class="the-method__result-badge">{{ section.settings.result_badge_text }}</span>
                     {%- endif -%}
 
                     {%- for media in result_images limit: 5 -%}
@@ -583,15 +537,9 @@
 {%- endform -%}
 
 {% stylesheet %}
-  /* ==========================================================================
-     THE METHOD - "ficha de laboratorio"
-     Paper and ink: hairline rules instead of boxes, numbered ledger rows for the answers (the chosen one is stamped in ink), the
-     two molecules of the method as little line drawings, an arch window for the product, a sticker, a pH strip while it thinks.
-     Everything is laid on the section's own colors; the two "glow" colors of the settings are the only accent.
-     ========================================================================== */
-
-  /* All the text of the test uses the Body Text typography - family, size, weight, style, spacing, no capitals - and nothing is bold.
-     Only the few display moments below (the question, the intro title, the numerals, the price) get a bigger size. */
+  /* All the text of the test (intro, questions, options, descriptions, progress, warning, notes, result, buttons) uses the Body Text
+     typography - family, size, weight, style, spacing, no capitals - and nothing is bold unless it is asked for here. Sizes come later,
+     from this one rule. */
   .the-method-layout__content * {
     font-family: var(--text-font-family) !important;
     font-size: var(--text-base) !important;
@@ -602,44 +550,118 @@
     text-transform: none !important;
   }
 
-  .the-method-layout__content .the-method__question,
-  .the-method-layout__content .the-method__panel--intro h2 {
-    font-family: var(--heading-font-family) !important;
-    font-weight: var(--heading-font-weight) !important;
-    font-size: clamp(1.75rem, 1.2rem + 2vw, 2.75rem) !important;
-    line-height: 1.05 !important;
-    letter-spacing: var(--heading-letter-spacing) !important;
-    text-wrap: balance;
+  .the-method-layout {
+    display: block;
   }
 
-  .the-method-layout__content .the-method__result-price * {
-    font-size: 1.25rem !important;
-  }
+  /* ---- Personality (still minimal) ---- */
 
-  .the-method-layout__content .the-method__badge-text {
-    font-size: 0.8125rem !important;
-    line-height: 1.15 !important;
-  }
-
-  .the-method-layout__content .the-method__specimen text {
-    font-size: 6.5px !important;
-    line-height: 1 !important;
+  /* With no image beside it, a centered intro sits in the middle of the section (its box is capped at 40rem) instead of at the start */
+  .the-method__panel--intro.justify-items-center {
+    margin-inline: auto;
   }
 
   .the-method-layout {
-    --tm-ink: rgb(var(--text-color));
-    --tm-mute: rgb(var(--text-color) / 0.6);
-    --tm-line: rgb(var(--text-color) / 0.16);
-    --tm-wash: rgb(var(--text-color) / 0.04);
-    --tm-accent: color-mix(in srgb, var(--the-method-glow-2, #df9fc5) 70%, rgb(var(--text-color)));
-    --tm-tint: rgb(var(--text-color) / 0.05);
-    --tm-ease: cubic-bezier(0.22, 1, 0.36, 1);
-    display: block;
     position: relative;
+    isolation: isolate;
   }
 
-  .the-method-layout--glow {
-    --tm-tint: color-mix(in srgb, var(--the-method-glow-1, #f3dee9) 70%, transparent);
+  /* Two soft pools of color in opposite corners of the section, behind everything, drifting very slowly */
+  .the-method-layout--glow:before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: calc(-1 * (var(--container-gutter) + 0.5rem));
+    pointer-events: none;
+    background:
+      radial-gradient(55% 60% at 100% 0%, color-mix(in srgb, var(--the-method-glow-1) 55%, transparent), transparent 70%),
+      radial-gradient(45% 55% at 0% 100%, color-mix(in srgb, var(--the-method-glow-2) 50%, transparent), transparent 70%);
+    animation: the-method-glow 20s ease-in-out infinite alternate;
+  }
+
+  @keyframes the-method-glow {
+    from { transform: scale(1) translate3d(0, 0, 0); }
+    to { transform: scale(1.08) translate3d(-1%, 1%, 0); }
+  }
+
+  /* A small pill above the title of the intro, with a dot that breathes */
+  .the-method__eyebrow {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: rgb(var(--text-color) / 0.06);
+    color: rgb(var(--text-color) / 0.75);
+  }
+
+  .the-method__eyebrow:before {
+    content: "";
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--the-method-glow-1, currentColor) 60%, rgb(var(--text-color)));
+    animation: the-method-pulse 2.6s ease-out infinite;
+  }
+
+  @keyframes the-method-pulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--the-method-glow-1, currentColor) 70%, transparent); }
+    70%, 100% { box-shadow: 0 0 0 0.5rem transparent; }
+  }
+
+  /* Start button: the arrow moves on hover */
+  .the-method__cta .button__content {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .the-method__cta-arrow {
+    flex: none;
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @media (pointer: fine) {
+    .the-method__cta:hover .the-method__cta-arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  /* Option cards: numbered (01, 02...) and they rise a little when pointed at */
+  .the-method__options {
+    counter-reset: the-method-option;
+  }
+
+  .the-method__options .the-method__option {
+    counter-increment: the-method-option;
+    transition: border-color 0.2s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+  }
+
+  .the-method__options .the-method__option:before {
+    content: counter(the-method-option, decimal-leading-zero);
+    flex: none;
+    margin-inline-end: 0.25rem;
+    color: rgb(var(--text-color) / 0.35);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .the-method__option-main {
+    flex: 1;
+  }
+
+  @media (pointer: fine) {
+    .the-method__options .the-method__option:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgb(var(--text-color) / 0.08);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .the-method-layout--glow:before,
+    .the-method__eyebrow:before {
+      animation: none;
+    }
   }
 
   .the-method {
@@ -648,8 +670,8 @@
     gap: calc(var(--the-method-gap) * 1.5);
   }
 
-  /* ---- Top row: back | progress | restart on three fixed columns, so nothing moves when the question changes ---- */
-
+  /* Back | progress | restart on three fixed columns: the progress always stays in the middle, whichever of the buttons is shown or
+     hidden, and the row keeps its height, so nothing moves when the question changes. */
   .the-method__meta {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
@@ -658,26 +680,47 @@
     min-height: var(--control-button-size, 1.75rem);
   }
 
-  .the-method__back { grid-column: 1; justify-self: start; }
-  .the-method__progress { grid-column: 2; }
-  .the-method__restart { grid-column: 3; justify-self: end; }
+  .the-method__back {
+    grid-column: 1;
+    justify-self: start;
+  }
 
+  .the-method__progress {
+    grid-column: 2;
+  }
+
+  .the-method__restart {
+    grid-column: 3;
+    justify-self: end;
+  }
+
+  /* Back/restart reuse the theme's own circular step-control button (.circle-button) as-is —
+     size, colors, hover and disabled states all come from that shared system, not from THE METHOD. */
   .the-method__back[hidden],
-  .the-method__restart[hidden],
-  .the-method__progress[hidden] {
+  .the-method__restart[hidden] {
     display: none;
   }
 
-  .the-method__meta .circle-button:before { display: none; }
-  .the-method__meta .circle-button { opacity: 0.7; transition: opacity 0.2s ease, transform 0.25s var(--tm-ease); }
-
-  @media (pointer: fine) {
-    .the-method__meta .circle-button:hover { opacity: 1; }
-    .the-method__back:hover { transform: translateX(-3px); }
-    .the-method__restart:hover { transform: rotate(-90deg); }
+  /* Minimal controls: no round background behind back / restart, only the icon (same thin line as the header icons), a little more
+     transparent until hovered. The restart glyph is an open arc with a small arrowhead, not a closed ball. */
+  .the-method__meta .circle-button:before {
+    display: none;
   }
 
-  .the-method__restart svg { width: 1.125rem; height: 1.125rem; }
+  .the-method__meta .circle-button {
+    opacity: 0.7;
+  }
+
+  @media (pointer: fine) {
+    .the-method__meta .circle-button:hover {
+      opacity: 1;
+    }
+  }
+
+  .the-method__restart svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
 
   .the-method__restart svg path {
     stroke-width: var(--header-icon-line-width, 1.1px);
@@ -686,63 +729,59 @@
 
   .the-method__progress {
     display: grid;
-    gap: 0.4rem;
+    gap: 0.35rem;
     justify-items: center;
+  }
+
+  .the-method__progress[hidden] {
+    display: none;
   }
 
   .the-method__progress-text {
     margin: 0;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
-    color: var(--tm-mute);
+    color: rgb(var(--text-color) / 0.6);
   }
 
   .the-method__progress-track {
     display: block;
-    width: 7rem;
+    width: 6rem;
     height: 2px;
-    background: var(--tm-line);
-    position: relative;
+    border-radius: 2px;
+    background: rgb(var(--text-color) / 0.12);
+    overflow: hidden;
   }
 
   .the-method__progress-fill {
     display: block;
     height: 100%;
     width: 0%;
-    position: relative;
-    background: var(--tm-ink);
-    transition: width 0.45s var(--tm-ease);
+    background: rgb(var(--text-color) / 0.6);
+    transition: width 0.25s ease-in-out;
   }
-
-  /* A small dot rides the end of the line */
-  .the-method__progress-fill:after {
-    content: "";
-    position: absolute;
-    inset-inline-end: -3px;
-    inset-block-start: 50%;
-    width: 7px;
-    height: 7px;
-    margin-top: -3.5px;
-    border-radius: 50%;
-    background: var(--tm-accent);
-  }
-
-  /* ---- Warning (background and text colors come from the settings) ---- */
 
   .the-method__warning {
     margin: 0;
-    padding: 0.85rem 1.1rem;
-    border-radius: 0.4rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--input-border-radius);
     background: var(--the-method-warning-bg, #ffffff);
-    color: var(--the-method-warning-text, #000000);
     overflow: hidden;
+    color: var(--the-method-warning-text, #000000);
   }
 
-  .the-method__warning[hidden] { display: none; }
+  .the-method__warning[hidden] {
+    display: none;
+  }
 
-  /* ---- Panels ---- */
+  .the-method__screening-note {
+    margin: 0;
+    color: rgb(var(--text-color) / 0.6);
+  }
 
-  .the-method__panels { position: relative; }
+  .the-method__panels {
+    position: relative;
+  }
 
   .the-method__panel {
     display: grid;
@@ -750,459 +789,230 @@
     max-width: 40rem;
   }
 
-  .the-method__panel[hidden] { display: none; }
-  .the-method__panel:focus { outline: none; }
+  .the-method__panel[hidden] {
+    display: none;
+  }
 
-  /* A centered intro sits in the middle of the section */
-  .the-method__panel--intro.justify-items-center { margin-inline: auto; }
+  .the-method__panel:focus {
+    outline: none;
+  }
 
-  /* The questions use the whole width and read from the start edge, so the question and its answers share one left line */
+  /* The questions use the whole width of the section (the 40rem cap is for the intro text) and are aligned to the start, so the question
+     and its options share the same left edge; the intro keeps the alignment chosen in the section settings. */
   .the-method__panel--question {
     max-width: none;
     justify-items: stretch;
     text-align: start !important;
-    gap: calc(var(--the-method-gap) * 1.1);
   }
 
-  /* ---- Small label with a rule: intro eyebrow, result eyebrow, question hint ---- */
-
-  .the-method__eyebrow,
-  .the-method__hint {
-    margin: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--tm-mute);
-  }
-
-  .the-method__eyebrow:before,
-  .the-method__hint:before,
-  .the-method__panel--intro .the-method__eyebrow:after {
-    content: "";
-    flex: none;
-    width: 1.75rem;
-    height: 1px;
-    background: var(--tm-accent);
-  }
-
-  .the-method__panel--result .the-method__eyebrow:after { display: none; }
-
-  .the-method__hint { color: var(--tm-accent); }
 
   .the-method__tagline {
     margin: 0;
-    max-width: 34rem;
-    color: rgb(var(--text-color) / 0.72);
+    color: rgb(var(--text-color) / 0.7);
   }
 
-  .the-method__cta { min-width: 12rem; }
-  .the-method__email-field { width: 100%; max-width: 22rem; }
-
-  .the-method__cta .button__content {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
+  .the-method__cta {
+    min-width: 12rem;
   }
 
-  .the-method__cta-arrow {
-    flex: none;
-    transition: transform 0.25s var(--tm-ease);
-  }
-
-  @media (pointer: fine) {
-    .the-method__cta:hover .the-method__cta-arrow { transform: translateX(4px); }
-  }
-
-  .the-method__question { margin: 0; }
-
-  /* ---- Intro: the two molecules of the method, drawn as specimens ---- */
-
-  .the-method__specimens {
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: clamp(1.25rem, 5vw, 2.5rem);
-    margin-top: calc(var(--the-method-gap) * 0.75);
-    padding-top: calc(var(--the-method-gap) * 1.25);
+  .the-method__email-field {
     width: 100%;
-    border-top: 1px dashed var(--tm-line);
+    max-width: 22rem;
   }
 
-  .the-method__specimen {
-    display: grid;
-    justify-items: center;
-    gap: 0.5rem;
+  .the-method__question {
     margin: 0;
   }
 
-  .the-method__specimen svg {
-    width: 6.5rem;
-    height: auto;
-    overflow: visible;
-    color: var(--tm-ink);
-  }
-
-  .the-method__specimen svg path,
-  .the-method__specimen svg line {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1px;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    animation: the-method-draw 1.8s var(--tm-ease) 0.2s forwards;
-  }
-
-  .the-method__specimen svg .is-accent {
-    stroke: var(--tm-accent);
-  }
-
-  .the-method__specimen svg text {
-    fill: var(--tm-accent);
-    text-anchor: middle;
-    font-family: var(--text-font-family);
-  }
-
-  .the-method__specimen:nth-of-type(2) svg path,
-  .the-method__specimen:nth-of-type(2) svg line {
-    animation-delay: 0.6s;
-  }
-
-  @keyframes the-method-draw {
-    to { stroke-dashoffset: 0; }
-  }
-
-  .the-method__specimen-caption {
-    display: grid;
-    justify-items: center;
-    gap: 0.1rem;
-  }
-
-  .the-method__specimen-name { color: var(--tm-ink); }
-  .the-method__specimen-formula { color: var(--tm-mute); }
-
-  .the-method__specimens-plus {
-    align-self: center;
-    color: var(--tm-accent);
-    padding-bottom: 2.25rem;
-  }
-
-  /* ---- Answers: a numbered ledger, the chosen row is stamped in ink ---- */
-
+  /* Options: a single vertical stack on phones and tablets; from 1000px always two columns, like the FAQ questions, read from
+     left to right (1st on the left, 2nd on the right...; with an odd number the extra one ends up alone at the bottom left). Every
+     kind of question (cards, compact list, editorial cards) splits in two. */
   .the-method__options {
     display: flex;
     flex-direction: column;
+    gap: 0.75rem;
     width: 100%;
-    counter-reset: the-method-option;
-    border-top: 1px solid var(--tm-line);
   }
 
-  /* From 1000px two columns read left to right, like the FAQ */
   @media screen and (min-width: 1000px) {
     .the-method__options {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       align-items: stretch;
-      column-gap: calc(var(--the-method-gap) * 1.5);
+      column-gap: 0.75rem;
     }
   }
 
-  /* Scoped under .the-method__options so it beats the theme's own button reset without !important */
+  /* Scoped under .the-method__options (not just .the-method__option alone) so background/border
+     reliably beat the theme's own global button reset (assets/theme.css:80-85, which targets
+     [type="button"] and sets background-color: transparent at the same specificity) without
+     needing !important. */
   .the-method__options .the-method__option {
-    counter-increment: the-method-option;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    justify-content: space-between;
+    gap: 0.75rem;
     width: 100%;
     appearance: none;
     text-align: start;
     cursor: pointer;
+    background: rgb(var(--background));
+    color: rgb(var(--text-color));
+    border: 1px solid transparent;
+    border-radius: var(--input-border-radius);
+    padding: var(--input-padding-block) var(--input-padding-inline);
     font: inherit;
-    padding: 1.15rem 1rem;
-    border: 0;
-    border-bottom: 1px solid var(--tm-line);
-    border-radius: 0;
-    color: inherit;
-    background-color: transparent;
-    background-image: linear-gradient(rgb(var(--text-color)), rgb(var(--text-color)));
-    background-repeat: no-repeat;
-    background-position: 0 100%;
-    background-size: 100% 0%;
-    transition: background-size 0.4s var(--tm-ease), color 0.25s ease, background-color 0.2s ease;
+    transition: border-color 0.2s ease, transform 0.15s ease;
   }
 
-  /* The numeral: big, in the heading font, quiet until the row is pointed at */
-  .the-method__options .the-method__option:before {
-    content: counter(the-method-option, decimal-leading-zero);
-    flex: none;
-    min-width: 2.25rem;
-    font-family: var(--heading-font-family);
-    font-size: 1.375rem;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-    color: color-mix(in srgb, currentColor 35%, transparent);
-    transition: color 0.25s ease, transform 0.3s var(--tm-ease);
+  .the-method__option:active {
+    transform: scale(0.98);
+  }
+
+  .the-method__option:focus-visible {
+    outline: 2px solid rgb(var(--text-color));
+    outline-offset: 2px;
+  }
+
+  /* Selection changes only the border — background is always the same form-input color, never tinted */
+  .the-method__options .the-method__option[aria-checked="true"] {
+    border-color: var(--input-border-color, rgb(var(--text-color) / 0.3));
+    background: rgb(var(--input-background, transparent));
+    box-shadow: inset 0 0 0 1px var(--input-border-color, rgb(var(--text-color) / 0.3));
   }
 
   .the-method__option-main {
-    flex: 1;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     min-width: 0;
   }
 
-  .the-method__option-text {
-    display: grid;
-    gap: 0.2rem;
-    min-width: 0;
-    flex: 1;
-    transition: transform 0.3s var(--tm-ease);
-  }
-
-  .the-method__option-label { text-wrap: pretty; }
-
-  .the-method__option-description {
-    color: color-mix(in srgb, currentColor 62%, transparent);
-  }
-
-  .the-method__option-icon {
-    display: inline-flex;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    width: 2.75rem;
-    height: 2.75rem;
-    border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
-    border-radius: 50%;
-    transition: border-color 0.25s ease, transform 0.35s var(--tm-ease);
-  }
-
-  .the-method__option-icon svg { width: 1.375rem; height: 1.375rem; }
-
-  /* All the option icons share one thin line: the thickness of the header icons, round ends */
+  /* All the option icons share one minimal line style: the thickness of the header icons, in real pixels, with round ends */
   .the-method-icon :is(path, circle) {
     stroke-width: var(--header-icon-line-width, 1.1px);
     vector-effect: non-scaling-stroke;
   }
 
-  /* The mark at the end: an empty circle that gets its check */
+  /* Option text: the label and, under it, an optional short description (one or two lines) in a softer color */
+  .the-method__option-text {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .the-method__option-description {
+    color: rgb(var(--text-color) / 0.6);
+  }
+
+  .the-method__option-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    color: rgb(var(--text-color));
+  }
+
+  .the-method__option-icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
   .the-method__option-check {
     display: inline-flex;
     flex-shrink: 0;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+
+  .the-method__option-check {
     align-items: center;
     justify-content: center;
     width: 1.5rem;
     height: 1.5rem;
-    border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
     border-radius: 50%;
-    transition: border-color 0.25s ease, background-color 0.25s ease;
+    background: rgb(var(--text-color));
+    color: rgb(var(--background));
   }
 
   .the-method__option-check .icon {
     width: 0.8rem;
     height: 0.8rem;
-    opacity: 0;
-    transform: scale(0.5);
-    transition: opacity 0.15s ease, transform 0.3s var(--tm-ease);
   }
-
-  @media (pointer: fine) {
-    .the-method__options .the-method__option[aria-checked="false"]:hover {
-      background-color: var(--tm-wash);
-    }
-
-    .the-method__option[aria-checked="false"]:hover:before { color: var(--tm-accent); transform: translateX(2px); }
-    .the-method__option[aria-checked="false"]:hover .the-method__option-text { transform: translateX(4px); }
-    .the-method__option[aria-checked="false"]:hover .the-method__option-icon { transform: rotate(-8deg) scale(1.05); }
-    .the-method__option[aria-checked="false"]:hover .the-method__option-check { border-color: currentColor; }
-  }
-
-  .the-method__option:active { transform: scale(0.99); }
-
-  .the-method__option:focus-visible {
-    outline: 2px solid rgb(var(--text-color));
-    outline-offset: -2px;
-  }
-
-  /* Chosen: the row fills with ink from the bottom, the text turns to paper */
-  .the-method__options .the-method__option[aria-checked="true"] {
-    background-size: 100% 100%;
-    color: rgb(var(--background));
-  }
-
-  .the-method__option[aria-checked="true"]:before { color: color-mix(in srgb, currentColor 60%, transparent); }
-  .the-method__option[aria-checked="true"] .the-method__option-icon { border-color: color-mix(in srgb, currentColor 45%, transparent); }
 
   .the-method__option[aria-checked="true"] .the-method__option-check {
-    border-color: currentColor;
-    background-color: rgb(var(--background));
-    color: rgb(var(--text-color));
-  }
-
-  .the-method__option[aria-checked="true"] .the-method__option-check .icon {
     opacity: 1;
     transform: scale(1);
   }
 
-  /* The check draws itself */
-  .the-method__option[aria-checked="true"] .the-method__option-check path {
-    stroke-dasharray: 24;
-    stroke-dashoffset: 24;
-    animation: the-method-check 0.35s ease-out 0.1s forwards;
-  }
-
-  @keyframes the-method-check {
-    to { stroke-dashoffset: 0; }
-  }
-
-  /* Compact list (skin type, sensitivity, safety): same ledger, lighter rows */
+  /* Steps tipo "lista compacta" (tipo de piel, sensibilidad, seguridad) — misma tarjeta, más liviana */
   .the-method__options--compact .the-method__option {
-    padding-block: 0.95rem;
+    padding: calc(var(--input-padding-block) * 0.85) var(--input-padding-inline);
   }
 
-  /* Format question: bigger rows */
-  .the-method__options--editorial .the-method__option {
-    padding-block: 1.6rem;
-  }
-
-  .the-method__options--editorial .the-method__option-icon {
-    width: 3.25rem;
-    height: 3.25rem;
-  }
-
-  .the-method__options--editorial .the-method__option-icon svg { width: 1.625rem; height: 1.625rem; }
-
-  .the-method__screening-note {
-    margin: 0;
-    padding-inline-start: 1rem;
-    border-inline-start: 2px solid var(--tm-accent);
-    color: var(--tm-mute);
-  }
-
-  .the-method__continue .button[disabled] {
-    opacity: 0.4;
-    pointer-events: none;
-  }
-
-  /* ---- Skin tone: one continuous scale painted with the tones of the block ---- */
-
-  .the-method__tone-slider {
-    display: grid;
+  /* Pregunta de tono de piel: esferas con brillo, usando los colores reales definidos en el bloque */
+  .the-method__tone-scale {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 0.75rem;
     width: 100%;
-    max-width: 32rem;
+    max-width: 26rem;
+    margin-inline: auto;
   }
 
-  .the-method__tone-range {
-    -webkit-appearance: none;
+  /* Scoped under .the-method__tone-scale (not just .the-method__tone-swatch alone) so this
+     reliably beats the theme's own global button reset (assets/theme.css:80-85, which targets
+     [type="button"] and sets background-color: transparent at the same specificity) without
+     needing !important. */
+  .the-method__tone-scale .the-method__tone-swatch {
     appearance: none;
-    width: 100%;
-    height: 2.5rem;
-    margin: 0;
-    background: transparent;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    /* Soft highlight (top-left) + soft shadow (bottom-right) over the real tone color gives the
+       glossy sphere look, without needing an image asset or JS. */
+    background:
+      radial-gradient(circle at 32% 26%, rgb(255 255 255 / 0.55) 0%, rgb(255 255 255 / 0) 45%),
+      radial-gradient(circle at 72% 78%, rgb(0 0 0 / 0.22) 0%, rgb(0 0 0 / 0) 55%),
+      var(--tone-color);
     cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
   }
 
-  .the-method__tone-range::-webkit-slider-runnable-track {
-    height: 0.875rem;
-    border-radius: 999px;
-    background: var(--tone-gradient);
-    box-shadow: inset 0 0 0 1px rgb(var(--text-color) / 0.12);
+  .the-method__tone-scale .the-method__tone-swatch:hover {
+    transform: scale(1.08);
   }
 
-  .the-method__tone-range::-moz-range-track {
-    height: 0.875rem;
-    border-radius: 999px;
-    background: var(--tone-gradient);
-    box-shadow: inset 0 0 0 1px rgb(var(--text-color) / 0.12);
-  }
-
-  .the-method__tone-range::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 2.25rem;
-    height: 2.25rem;
-    margin-top: -0.69rem;
-    border-radius: 50%;
-    border: 4px solid rgb(var(--background));
-    background: var(--tone-color);
-    box-shadow: 0 0 0 1px rgb(var(--text-color) / 0.5), 0 4px 10px rgb(var(--text-color) / 0.18);
-    transition: transform 0.2s var(--tm-ease);
-  }
-
-  .the-method__tone-range::-moz-range-thumb {
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 50%;
-    border: 4px solid rgb(var(--background));
-    background: var(--tone-color);
-    box-shadow: 0 0 0 1px rgb(var(--text-color) / 0.5), 0 4px 10px rgb(var(--text-color) / 0.18);
-  }
-
-  .the-method__tone-range:active::-webkit-slider-thumb { transform: scale(1.12); }
-
-  .the-method__tone-range:focus-visible {
+  .the-method__tone-scale .the-method__tone-swatch:focus-visible {
     outline: 2px solid rgb(var(--text-color));
-    outline-offset: 4px;
-    border-radius: 999px;
+    outline-offset: 3px;
   }
 
-  .the-method__tone-labels {
-    display: flex;
-    justify-content: space-between;
-    color: var(--tm-mute);
+  /* Selected swatch stays the same size — the ring (with a visible gap) is the only selection cue */
+  .the-method__tone-scale .the-method__tone-swatch[aria-checked="true"] {
+    box-shadow: 0 0 0 3px rgb(var(--background)), 0 0 0 4.5px rgb(var(--text-color) / 0.55);
   }
 
-  /* ---- Thinking: a pH strip with a marker that slides over it ---- */
-
-  .the-method__panel--analyzing {
-    max-width: none;
-    justify-items: center;
-    text-align: center !important;
-    min-height: 16rem;
-    align-content: center;
-    gap: 1.25rem;
+  /* Pregunta de formato: tarjetas editoriales más grandes (mismo sistema, otra escala) */
+  .the-method__options--editorial {
+    gap: 1rem;
   }
 
-  .the-method__analyzing-text {
-    margin: 0;
-    color: rgb(var(--text-color) / 0.75);
+  .the-method__options--editorial .the-method__option {
+    padding: 1.5rem;
   }
 
-  .the-method__analyzing-line {
-    display: block;
-    width: 100%;
-    max-width: 15rem;
-    height: 0.5rem;
-    border-radius: 999px;
-    position: relative;
-    background: linear-gradient(90deg, #e9a08f, #f1c9a6 30%, #e2dc9a 55%, #a9d0a6 80%, #86bfae);
-    box-shadow: inset 0 0 0 1px rgb(var(--text-color) / 0.08);
+  .the-method__options--editorial .the-method__option-icon svg {
+    width: 1.75rem;
+    height: 1.75rem;
   }
 
-  .the-method__analyzing-line:after {
-    content: "";
-    position: absolute;
-    inset-block-start: 50%;
-    inset-inline-start: 0;
-    width: 1.1rem;
-    height: 1.1rem;
-    margin-top: -0.55rem;
-    margin-inline-start: -0.55rem;
-    border-radius: 50%;
-    background: rgb(var(--background));
-    box-shadow: 0 0 0 1.5px rgb(var(--text-color)), 0 3px 8px rgb(var(--text-color) / 0.2);
-    animation: the-method-analyzing 1.6s var(--tm-ease) infinite alternate;
-  }
 
-  @keyframes the-method-analyzing {
-    from { inset-inline-start: 0; }
-    to { inset-inline-start: 100%; }
-  }
-
-  /* ---- Result: the ficha - arch window with the product, then the prescription ---- */
+  /* ---- Result: an editorial composition (image stage + info) with the personality of the rest of the test ---- */
 
   .the-method__panel--result {
     max-width: none;
@@ -1210,52 +1020,23 @@
   }
 
   .the-method__result-head {
-    display: grid;
-    gap: 0.9rem;
-    justify-items: start;
-  }
-
-  /* The answers given, as dashed little tags: tap one to change it */
-  .the-method__summary {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .the-method__summary:empty { display: none; }
-
-  .the-method__summary-tag {
-    appearance: none;
-    cursor: pointer;
-    padding: 0.35rem 0.8rem;
-    border: 1px dashed color-mix(in srgb, currentColor 35%, transparent);
-    border-radius: 0.3rem;
-    background: transparent;
-    color: inherit;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-  }
-
-  @media (pointer: fine) {
-    .the-method__summary-tag:hover {
-      border-style: solid;
-      border-color: currentColor;
-      background: var(--tm-wash);
-    }
+    align-items: center;
+    gap: 0.75rem;
   }
 
   .the-method__result-card {
     display: grid;
-    gap: calc(var(--the-method-gap) * 1.5);
+    gap: calc(var(--the-method-gap) * 1.25);
     text-align: start;
   }
 
-  .the-method__result-card[hidden] { display: none; }
-
   @media screen and (min-width: 900px) {
     .the-method__result-card {
-      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
       align-items: start;
-      gap: calc(var(--the-method-gap) * 2.5);
+      gap: calc(var(--the-method-gap) * 2);
     }
 
     .the-method__result-gallery {
@@ -1266,23 +1047,24 @@
 
   .the-method__result-gallery {
     display: grid;
-    gap: 1.25rem;
+    gap: 0.75rem;
   }
 
-  /* The stage is an arch, like an apothecary window */
+  /* The image stage: a soft pool of the glow colors behind the product, rounded, with a small floating tag */
   .the-method__result-stage {
-    --tm-arch: 999px 999px calc(var(--input-border-radius) * 1.5) calc(var(--input-border-radius) * 1.5);
     position: relative;
     aspect-ratio: 4 / 5;
-    border-radius: var(--tm-arch);
-    background: var(--tm-tint);
+    border-radius: calc(var(--input-border-radius) * 1.5);
+    overflow: hidden;
+    background:
+      radial-gradient(90% 70% at 25% 15%, color-mix(in srgb, var(--the-method-glow-1, #f1c9a6) 55%, transparent), transparent 70%),
+      radial-gradient(70% 60% at 90% 100%, color-mix(in srgb, var(--the-method-glow-2, #fbe3d0) 70%, transparent), transparent 70%),
+      rgb(var(--text-color) / 0.04);
   }
 
   .the-method__result-slide {
     position: absolute;
     inset: 0;
-    border-radius: var(--tm-arch);
-    overflow: hidden;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.45s ease;
@@ -1300,71 +1082,66 @@
     object-fit: cover;
   }
 
-  /* A round sticker stuck on the corner of the arch */
   .the-method__result-badge {
     position: absolute;
     z-index: 2;
-    inset-inline-end: -0.5rem;
-    inset-block-end: 2rem;
-    display: grid;
-    place-items: center;
-    width: 6.75rem;
-    height: 6.75rem;
-    padding: 0.75rem;
-    border-radius: 50%;
-    text-align: center;
-    background: rgb(var(--text-color));
-    color: rgb(var(--background));
-    box-shadow: 0 0 0 3px rgb(var(--background));
-    rotate: -9deg;
-    animation: the-method-sticker 0.6s var(--tm-ease) 0.3s both;
+    inset-block-start: 1rem;
+    inset-inline-start: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: rgb(var(--background) / 0.85);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: rgb(var(--text-color));
   }
 
   .the-method__result-badge:before {
     content: "";
-    position: absolute;
-    inset: 0.3rem;
-    border: 1px dashed color-mix(in srgb, currentColor 50%, transparent);
+    width: 0.4rem;
+    height: 0.4rem;
     border-radius: 50%;
-  }
-
-  @keyframes the-method-sticker {
-    from { opacity: 0; scale: 1.6; rotate: 12deg; }
+    background: color-mix(in srgb, var(--the-method-glow-1, currentColor) 60%, rgb(var(--text-color)));
+    animation: the-method-pulse 2.6s ease-out infinite;
   }
 
   .the-method__result-thumbs {
     display: flex;
-    justify-content: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     overflow-x: auto;
-    padding: 4px;
     scrollbar-width: none;
   }
 
-  .the-method__result-thumbs::-webkit-scrollbar { display: none; }
+  .the-method__result-thumbs::-webkit-scrollbar {
+    display: none;
+  }
 
   .the-method__result-thumbs .the-method__result-thumb {
     appearance: none;
     flex: none;
-    width: 3.25rem;
+    width: 4rem;
     aspect-ratio: 1;
     padding: 0;
     border: 0;
-    border-radius: 50%;
+    border-radius: var(--input-border-radius);
     overflow: hidden;
-    background: var(--tm-tint);
-    opacity: 0.55;
+    background: rgb(var(--text-color) / 0.04);
+    opacity: 0.5;
     cursor: pointer;
-    transition: opacity 0.25s ease, box-shadow 0.25s ease, transform 0.25s var(--tm-ease);
+    transition: opacity 0.25s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .the-method__result-thumb[aria-selected="true"] {
     opacity: 1;
-    box-shadow: 0 0 0 2px rgb(var(--background)), 0 0 0 3px rgb(var(--text-color));
   }
 
   @media (pointer: fine) {
-    .the-method__result-thumb:hover { opacity: 1; transform: translateY(-2px); }
+    .the-method__result-thumb:hover {
+      opacity: 1;
+      transform: translateY(-2px);
+    }
   }
 
   .the-method__result-thumb img {
@@ -1376,11 +1153,9 @@
 
   .the-method__result-info {
     display: grid;
-    gap: 1.1rem;
+    gap: 1rem;
     align-content: start;
   }
-
-  .the-method__result-info h3 { margin: 0; }
 
   .the-method__result-tags {
     display: flex;
@@ -1388,23 +1163,15 @@
     gap: 0.5rem;
   }
 
-  /* Tags with a small diamond */
   .the-method__tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    padding: 0.3rem 0.75rem;
-    border: 1px solid var(--tm-line);
-    border-radius: 0.3rem;
-    color: rgb(var(--text-color) / 0.8);
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    background: rgb(var(--text-color) / 0.06);
+    color: rgb(var(--text-color) / 0.75);
   }
 
-  .the-method__tag:before {
-    content: "";
-    width: 0.4rem;
-    height: 0.4rem;
-    background: var(--tm-accent);
-    rotate: 45deg;
+  .the-method__result-info h3 {
+    margin: 0;
   }
 
   .the-method__result-subtitle,
@@ -1413,43 +1180,20 @@
     color: rgb(var(--text-color) / 0.65);
   }
 
-  /* Why this method: set apart like a note in the margin */
-  .the-method__rationale {
-    margin: 0;
-    padding-inline-start: 1rem;
-    border-inline-start: 2px solid var(--tm-accent);
-    color: rgb(var(--text-color) / 0.85);
+  .the-method__result-actions {
+    padding-block-start: 0.5rem;
   }
 
-  .the-method__context-note {
-    margin: 0;
-    color: var(--tm-mute);
-  }
-
-  .the-method__context-note:empty { display: none; }
-
-  /* Price on the left, the button on the right, between two dashed rules */
-  .the-method__result-buy {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding-block: 1.25rem;
-    border-block: 1px dashed var(--tm-line);
-  }
-
-  .the-method__result-price { min-width: 0; }
-
-  /* The second recommendation: a quiet dashed row that is a link */
+  /* The second recommendation: one soft row that is a link, with an arrow that moves */
   .the-method__secondary {
     display: grid;
     gap: 0.75rem;
+    margin-top: 0.5rem;
   }
 
   .the-method__secondary-heading {
     margin: 0;
-    color: var(--tm-mute);
+    color: rgb(var(--text-color) / 0.6);
   }
 
   .the-method__secondary-card {
@@ -1457,42 +1201,40 @@
     align-items: center;
     gap: 1rem;
     padding: 0.75rem;
-    border: 1px dashed var(--tm-line);
-    border-radius: 0.5rem;
+    border-radius: calc(var(--input-border-radius) * 1.25);
+    background: rgb(var(--text-color) / 0.04);
     color: inherit;
     text-decoration: none;
-    transition: background-color 0.25s ease, border-color 0.25s ease;
+    transition: background-color 0.25s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   @media (pointer: fine) {
     .the-method__secondary-card:hover {
-      background: var(--tm-wash);
-      border-style: solid;
-      border-color: rgb(var(--text-color) / 0.4);
+      background: rgb(var(--text-color) / 0.07);
+      transform: translateY(-2px);
     }
 
-    .the-method__secondary-card:hover .the-method__secondary-arrow { transform: translateX(4px); }
+    .the-method__secondary-card:hover .the-method__secondary-arrow {
+      transform: translateX(4px);
+    }
   }
 
   .the-method__secondary-media {
     flex: none;
-    width: 3.5rem;
-    aspect-ratio: 1;
-    border-radius: 999px 999px 0.3rem 0.3rem;
+    width: 4rem;
+    border-radius: var(--input-border-radius);
     overflow: hidden;
-    background: var(--tm-tint);
   }
 
   .the-method__secondary-media img {
     display: block;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
   }
 
   .the-method__secondary-info {
     display: grid;
-    gap: 0.2rem;
+    gap: 0.25rem;
     flex: 1;
     min-width: 0;
   }
@@ -1500,18 +1242,219 @@
   .the-method__secondary-arrow {
     flex: none;
     display: inline-flex;
-    transition: transform 0.25s var(--tm-ease);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  /* ---- Under the result: WhatsApp and e-mail, on a tinted strip ---- */
+  .the-method__result-card[hidden] {
+    display: none;
+  }
 
+
+
+  .the-method__rationale {
+    margin: 0;
+    padding-inline-start: 1rem;
+    border-inline-start: 2px solid color-mix(in srgb, var(--the-method-glow-1, currentColor) 80%, rgb(var(--text-color)));
+    color: rgb(var(--text-color) / 0.85);
+  }
+
+  /* Price and button on one row, between two hairlines */
+  .the-method__result-buy {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 1.1rem;
+    border-block: 1px solid rgb(var(--text-color) / 0.12);
+  }
+
+  .the-method__result-actions {
+    padding-block-start: 0;
+  }
+
+  /* On phones the image stage is a square, not a tall 4:5 that pushes the info far down */
+  @media screen and (max-width: 899px) {
+    .the-method__result-stage {
+      aspect-ratio: 1 / 1;
+    }
+  }
+
+  .the-method__context-note {
+    margin: 0;
+    color: rgb(var(--text-color) / 0.6);
+  }
+
+  .the-method__context-note:empty {
+    display: none;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* ---- Interaction ---- */
+
+  /* "Analyzing" beat before the result: a line of text and a thin line that slides, nothing else */
+  .the-method__panel--analyzing {
+    max-width: none;
+    justify-items: center;
+    text-align: center !important;
+    min-height: 16rem;
+    align-content: center;
+  }
+
+  .the-method__analyzing-text {
+    margin: 0;
+    color: rgb(var(--text-color) / 0.7);
+  }
+
+  .the-method__analyzing-line {
+    display: block;
+    width: 100%;
+    max-width: 12rem;
+    margin-inline: auto;
+    height: 2px;
+    border-radius: 2px;
+    background: rgb(var(--text-color) / 0.12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .the-method__analyzing-line:after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 40%;
+    border-radius: 2px;
+    background: rgb(var(--text-color) / 0.6);
+    animation: the-method-analyzing 1.1s ease-in-out infinite;
+  }
+
+  @keyframes the-method-analyzing {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(250%); }
+  }
+
+  /* Continue button (multiple choice and skin tone): hidden until there is an answer to confirm */
+  .the-method__continue .button[disabled] {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  /* Skin tone: one continuous scale (a range) painted with the tones of the block; the handle takes the tone it is on */
+  .the-method__tone-slider {
+    display: grid;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 28rem;
+  }
+
+  .the-method__tone-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 2.25rem;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .the-method__tone-range::-webkit-slider-runnable-track {
+    height: 0.75rem;
+    border-radius: 999px;
+    background: var(--tone-gradient);
+  }
+
+  .the-method__tone-range::-moz-range-track {
+    height: 0.75rem;
+    border-radius: 999px;
+    background: var(--tone-gradient);
+  }
+
+  .the-method__tone-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 2rem;
+    height: 2rem;
+    margin-top: -0.625rem;
+    border-radius: 50%;
+    border: 3px solid rgb(var(--background));
+    background: var(--tone-color);
+    box-shadow: 0 0 0 1px rgb(var(--text-color) / 0.25);
+    transition: transform 0.15s ease;
+  }
+
+  .the-method__tone-range::-moz-range-thumb {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 3px solid rgb(var(--background));
+    background: var(--tone-color);
+    box-shadow: 0 0 0 1px rgb(var(--text-color) / 0.25);
+  }
+
+  .the-method__tone-range:active::-webkit-slider-thumb {
+    transform: scale(1.1);
+  }
+
+  .the-method__tone-range:focus-visible {
+    outline: 2px solid rgb(var(--text-color));
+    outline-offset: 4px;
+    border-radius: 999px;
+  }
+
+  .the-method__tone-labels {
+    display: flex;
+    justify-content: space-between;
+    color: rgb(var(--text-color) / 0.6);
+  }
+
+  /* Answers given, as small tags above the result */
+  .the-method__summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .the-method__summary:empty {
+    display: none;
+  }
+
+  .the-method__summary-tag {
+    appearance: none;
+    cursor: pointer;
+    border: 0;
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    background: rgb(var(--background));
+    color: rgb(var(--text-color));
+    transition: opacity 0.2s ease;
+  }
+
+  @media (pointer: fine) {
+    .the-method__summary-tag:hover {
+      opacity: 0.7;
+    }
+  }
+
+  /* Under the result: send it by WhatsApp and leave the e-mail */
   .the-method__result-extras {
     display: grid;
     gap: var(--the-method-gap);
-    padding: calc(var(--the-method-gap) * 1.1);
-    border: 1px dashed var(--tm-line);
-    border-radius: 0.75rem;
-    background: var(--tm-tint);
+    padding: calc(var(--the-method-gap) * 0.9);
+    border-radius: calc(var(--input-border-radius) * 1.5);
+    background: rgb(var(--text-color) / 0.04);
     align-items: center;
   }
 
@@ -1522,7 +1465,9 @@
     }
   }
 
-  .the-method__result-extras[hidden] { display: none; }
+  .the-method__result-extras[hidden] {
+    display: none;
+  }
 
   .the-method__email-capture {
     display: grid;
@@ -1543,14 +1488,17 @@
 
   .the-method__email-capture-status {
     margin: 0;
-    color: rgb(var(--text-color) / 0.75);
+    color: rgb(var(--text-color) / 0.7);
   }
 
-  .the-method__email-capture-status[hidden] { display: none; }
-
   @media screen and (max-width: 699px) {
-    .the-method__email-capture-row { flex-direction: column; }
-    .the-method__email-capture-row .button { width: 100%; }
+    .the-method__email-capture-row {
+      flex-direction: column;
+    }
+
+    .the-method__email-capture-row .button {
+      width: 100%;
+    }
   }
 
   .the-method__email-mailto {
@@ -1560,7 +1508,33 @@
     color: rgb(var(--text-color) / 0.8);
   }
 
-  .the-method__email-mailto[hidden] { display: none; }
+  .the-method__email-mailto[hidden] {
+    display: none;
+  }
+
+  .the-method__email-capture-status[hidden] {
+    display: none;
+  }
+
+
+
+
+
+  /* The check of a chosen option draws itself */
+  .the-method__option[aria-checked="true"] .the-method__option-check path {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    animation: the-method-check 0.35s ease-out 0.05s forwards;
+  }
+
+  @keyframes the-method-check {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* Smoother progress */
+  .the-method__progress-fill {
+    transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
 
   /* Change of panel with the View Transitions API (when the browser has it): the panels area morphs to its new size while the old content
      fades out and the new one comes in. Only that area is animated, not the whole page. Without support, the script falls back to its own
@@ -1620,15 +1594,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .the-method__analyzing-line:after,
-    .the-method__result-badge,
     .the-method__option[aria-checked="true"] .the-method__option-check path {
       animation: none;
-    }
-
-    .the-method__specimen svg path,
-    .the-method__specimen svg line {
-      animation: none;
-      stroke-dashoffset: 0;
     }
 
     .the-method__option[aria-checked="true"] .the-method__option-check path {
@@ -2559,34 +2526,27 @@
       "type": "text",
       "id": "intro_eyebrow",
       "label": "Texto de la etiqueta sobre el título",
-      "info": "Una línea pequeña con filetes sobre el título de la introducción. Déjala vacía para no mostrarla.",
+      "info": "Una pastilla pequeña sobre el título de la introducción. Déjala vacía para no mostrarla.",
       "default": "6 preguntas · 2 minutos"
     },
     {
       "type": "checkbox",
       "id": "show_glow",
-      "label": "Teñir con los colores de acento",
-      "info": "Usa los dos colores de abajo para teñir el arco del producto y las franjas del resultado. Apagado, se usa un gris suave.",
-      "default": true
-    },
-    {
-      "type": "checkbox",
-      "id": "show_specimens",
-      "label": "Mostrar las dos moléculas en la introducción",
-      "info": "Dibujo de línea del ácido salicílico y del TCA bajo el botón de comenzar.",
+      "label": "Mostrar resplandor de color de fondo",
+      "info": "Dos manchas de color muy suaves en las esquinas de la sección, que se mueven despacio.",
       "default": true
     },
     {
       "type": "color",
       "id": "glow_color_1",
-      "label": "Color de acento 1 (tinte)",
-      "default": "#f3dee9"
+      "label": "Color del resplandor (arriba a la derecha)",
+      "default": "#f1c9a6"
     },
     {
       "type": "color",
       "id": "glow_color_2",
-      "label": "Color de acento 2 (filetes y marcas)",
-      "default": "#df9fc5"
+      "label": "Color del resplandor (abajo a la izquierda)",
+      "default": "#fbe3d0"
     },
     {
       "type": "header",
@@ -2595,8 +2555,8 @@
     {
       "type": "color_scheme",
       "id": "options_color_scheme",
-      "label": "Color de la respuesta elegida",
-      "info": "La fila elegida se rellena con la tinta (texto) de este esquema y el texto pasa al color de fondo del mismo. El resto de filas van sobre el fondo de la sección.",
+      "label": "Color de las tarjetas de opciones",
+      "info": "Cada tarjeta de respuesta del cuestionario (fondo, texto y borde de la seleccionada) usa este esquema propio, independiente del de la sección.",
       "default": "scheme-1"
     },
     {
@@ -2806,8 +2766,8 @@
     {
       "type": "text",
       "id": "result_badge_text",
-      "label": "Texto del sello sobre la imagen del resultado",
-      "info": "Un sello redondo pegado al arco del producto recomendado. Corto (2-3 palabras). Déjalo vacío para no mostrarlo.",
+      "label": "Etiqueta sobre la imagen del resultado",
+      "info": "Una pastilla pequeña sobre la imagen del producto recomendado. Déjala vacía para no mostrarla.",
       "default": "Recomendado para ti"
     },
     {
@@ -2825,24 +2785,6 @@
       "id": "analyzing_text",
       "label": "Texto mientras se calcula el resultado",
       "default": "Analizando tus respuestas"
-    },
-    {
-      "type": "text",
-      "id": "hint_single",
-      "label": "Pista bajo cada pregunta (una respuesta)",
-      "default": "Elige una"
-    },
-    {
-      "type": "text",
-      "id": "hint_multiple",
-      "label": "Pista bajo la pregunta de varias respuestas",
-      "default": "Elige hasta 2"
-    },
-    {
-      "type": "text",
-      "id": "hint_slide",
-      "label": "Pista bajo la pregunta del tono de piel",
-      "default": "Desliza hasta tu tono"
     },
     {
       "type": "text",
