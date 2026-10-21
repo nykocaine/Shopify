@@ -23,6 +23,7 @@ the same snippets. Each item gets a <figcaption> below it (its own per-slide cap
 media itself - the same <figure>/<figcaption> pattern as blocks/image-with-caption.liquid.
 
 @param {object} block - the "text_image" block to render
+@param {number} [fit_from] - width in px from which the media sits next to the text, where the gallery fits the height of the text card (default 700)
 @param {number} [faq_border_radius] - the section's own corner radius (Corner radius setting), applied to the media (and the text card, when enabled) so they match the section's rounded corners
 {%- enddoc -%}
 
@@ -312,7 +313,22 @@ if (!window.customElements.get('read-more-match-height')) {
                 return parseFloat(getComputedStyle(this).getPropertyValue('--faq-bar-height')) || 0;
               }
 
+              // True while the media sits next to the card (two or more grid columns): then the card sets the height and the gallery fits it
+              // (see the "fit" rules in the style block of this snippet), so the card must not collapse to the gallery - it would chase itself.
+              mediaIsBeside() {
+                var block = this.closest('.faq__text-image');
+                return !!block && getComputedStyle(block).gridTemplateColumns.trim().split(/\s+/).length > 1;
+              }
+
               measure() {
+                if (this.mediaIsBeside()) {
+                  this.removeAttribute('data-expanded');
+                  this.removeAttribute('data-overflowing');
+                  this.content.style.maxHeight = '';
+                  this.toggle.setAttribute('aria-expanded', 'false');
+                  return;
+                }
+
                 // matchTarget.offsetHeight is the TOTAL card's target height, but collapsedHeight
                 // below clamps only the inner .faq__text-image-text-content - so this card's own
                 // padding (.faq-content-box) and the toggle's own space (shown or not) both have to
@@ -722,6 +738,68 @@ if (!window.customElements.get('read-more-match-height')) {
               position: static;
               inset: auto;
             }
+          }
+        {%- endif -%}
+
+        {%- if has_text_column -%}
+          {%- comment -%}
+          Gallery + captions take the height of the text (the white card) next to them, never the other way round. From 700px, when the media sits
+          beside the text: contain: size makes the media column add nothing to the row's height (the row is as tall as the card), and the
+          column then stretches to that height (align-self) as a flex column - the photos/videos take what is left under the captions
+          (flex: 1 1 0), the captions keep their own height. Photos fill their box (object-fit: cover, the "image-cover" class).
+          Phones keep the stacked layout, and so does any width where the section stacks the block (fit_from).
+          {%- endcomment -%}
+          @media screen and (min-width: {{ fit_from | default: 700 }}px) {
+            #{{ media_wrapper_id }} {
+              contain: size;
+              align-self: stretch;
+              display: flex;
+              flex-direction: column;
+              min-height: 0;
+            }
+
+            #{{ media_wrapper_id }} .content-box {
+              height: 100%;
+              min-height: 0;
+            }
+
+            #{{ media_wrapper_id }} .content-box > .content-box__background-media {
+              position: absolute;
+              inset: 0;
+            }
+
+            {%- if is_carousel -%}
+              #{{ media_carousel_id }} {
+                flex: 1 1 0;
+                min-height: 6rem;
+                align-items: stretch;
+              }
+
+              #{{ media_carousel_id }} > .snap-start {
+                height: 100%;
+              }
+
+              #{{ media_caption_row_id }},
+              carousel-segments[aria-controls="{{ media_carousel_id }}"] {
+                flex: none;
+              }
+            {%- else -%}
+              #{{ media_wrapper_id }} > figure {
+                flex: 1 1 0;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+              }
+
+              #{{ media_wrapper_id }} > figure > .faq__text-image-media-frame {
+                flex: 1 1 0;
+                min-height: 6rem;
+              }
+
+              #{{ media_wrapper_id }} > figure > figcaption {
+                flex: none;
+              }
+            {%- endif -%}
           }
         {%- endif -%}
 

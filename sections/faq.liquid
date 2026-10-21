@@ -17,6 +17,13 @@
         assign faq_page = true
       endif
 
+      # Width from which the media of a text + image block sits next to its text (the gallery then fits the height of the text card). The FAQ page
+      # with categories stacks the block up to 1199px (the menu takes its share, see the end of the style block).
+      assign text_image_fit_from = 700
+      if faq_page and has_categories
+        assign text_image_fit_from = 1200
+      endif
+
       assign glue_query = '(max-width: 699px)'
       if section.settings.categories_glued_bar
         assign glue_query = '(min-width: 0px)'
@@ -67,7 +74,7 @@
                   endif
                 endif
               elsif block.type == 'text_image'
-                render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius
+                render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius, fit_from: text_image_fit_from
               endif
             endif
           endfor
@@ -185,7 +192,7 @@
                   {%- assign faq_column_a = '' -%}
                   {%- assign faq_column_b = '' -%}
                 {%- endif -%}
-                {%- render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius -%}
+                {%- render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius, fit_from: text_image_fit_from -%}
               {%- endif -%}
           {%- endcase -%}
         {%- endfor -%}
@@ -281,7 +288,7 @@
                 -%}
 
               {%- when 'text_image' -%}
-                {%- render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius -%}
+                {%- render 'faq-text-image', block: block, faq_border_radius: section.settings.faq_border_radius, fit_from: text_image_fit_from -%}
             {%- endcase -%}
           {%- endfor -%}
         </div>
@@ -565,14 +572,12 @@
           }
 
           {%- comment -%}
-          align-self: start: the gallery keeps its own height (the card is cut to it, so it must not depend on the row). It rises over the
-          bar (negative margin) and is painted above it (z-index), so the bar, while it is still being fitted to the card, never covers the top
-          of the first photo.
+          The gallery rises over the bar (negative margin) and is painted above it (z-index). It stretches to the row (snippets/faq-text-image.liquid
+          fits it to the card), so with the negative margin it ends where the card ends and starts at the top of the bar.
           {%- endcomment -%}
           #shopify-section-{{ section.id }} .faq__panel > .faq__text-image--with-image:first-child .faq__text-image-media {
             position: relative;
             z-index: 1;
-            align-self: start;
             margin-block-start: calc(-1 * var(--faq-bar-height, 0px));
           }
         }
