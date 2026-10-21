@@ -11,6 +11,20 @@
       {%- endif -%}
     }
 
+    {%- unless section.settings.full_width -%}
+      {%- comment -%}
+      The page's side gutter (the .container margin) sits on the section wrapper itself, outside the section, instead of on the
+      slideshow inside it: the editor's outline then spans only the slideshow, which still respects the page's side padding.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} {
+        margin-inline: max(var(--container-gutter), 50% - var(--container-max-width) / 2);
+      }
+
+      #shopify-section-{{ section.id }} .slideshow-wrapper {
+        margin-inline: 0;
+      }
+    {%- endunless -%}
+
     {%- comment -%}
     The text's distance from the slide's edges is the same inner padding as the floating containers (container gutter + 0.5rem,
     see faq.liquid / reviews.liquid), at every width. .content-box
