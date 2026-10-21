@@ -550,8 +550,15 @@
             align-items: stretch;
           }
 
+          {%- comment -%}
+          align-self: start: the gallery keeps its own height (the card is cut to it, so it must not depend on the row). It rises over the
+          bar (negative margin) and is painted above it (z-index), so the bar, while it is still being fitted to the card, never covers the top
+          of the first photo.
+          {%- endcomment -%}
           #shopify-section-{{ section.id }} .faq__panel > .faq__text-image--with-image:first-child .faq__text-image-media {
-            align-self: stretch;
+            position: relative;
+            z-index: 1;
+            align-self: start;
             margin-block-start: calc(-1 * var(--faq-bar-height, 0px));
           }
         }
@@ -580,13 +587,17 @@
         }
 
         {%- comment -%}
-        From 1000px the questions are two separate white columns, not one container: glued under the bar they lose their top corners too,
-        so they read as hanging from it.
+        From 1000px the questions are two separate white columns, not one container: the first one hangs from the bar (no top corners), and
+        the second one rises to the top of the bar like the gallery does, with its own rounded corners.
         {%- endcomment -%}
         @media screen and (min-width: 1000px) and {{ glue_query }} {
-          #shopify-section-{{ section.id }} .faq__panel > .faq__columns:first-child .faq__column {
+          #shopify-section-{{ section.id }} .faq__panel > .faq__columns:first-child .faq__column:first-child {
             border-start-start-radius: 0;
             border-start-end-radius: 0;
+          }
+
+          #shopify-section-{{ section.id }} .faq__panel > .faq__columns:first-child .faq__column:nth-child(2) {
+            margin-block-start: calc(-1 * var(--faq-bar-height, 0px));
           }
         }
         {%- endunless -%}
@@ -1274,7 +1285,6 @@
                 var panels = root.querySelector('.faq__panels');
 
                 function fitBarToCard() {
-                  tabs.style.width = '';
                   {%- comment -%}The height of the bar (minus the pixel it overlaps the content by), for the gallery next to the first card to rise to the top of the bar.{%- endcomment -%}
                   if (glue.matches) {
                     root.style.setProperty('--faq-bar-height', (tabs.getBoundingClientRect().height - 1) + 'px');
@@ -1283,11 +1293,11 @@
                   }
                   {%- comment -%}The text card of the first block is cut to the gallery's height minus the bar: it measures again (snippets/faq-text-image.liquid).{%- endcomment -%}
                   window.dispatchEvent(new Event('faq-bar-resize'));
-                  if (!glue.matches || !panels) return;
+                  if (!glue.matches || !panels) { tabs.style.width = ''; return; }
 
                   var panel = panels.querySelector('.faq__panel:not([hidden])');
                   var first = panel && panel.firstElementChild;
-                  if (!first) return;
+                  if (!first) { tabs.style.width = ''; return; }
 
                   {%- comment -%}
                   The first container of the content: the text card of a text + image block, or the first of the two white columns of the
@@ -1297,10 +1307,10 @@
                   var card = first.classList.contains('faq__text-image')
                     ? first.querySelector('.faq__text-image-text--card')
                     : first.querySelector('.faq__column');
-                  if (!card || card.getBoundingClientRect().width === 0) return;
+                  if (!card || card.getBoundingClientRect().width === 0) { tabs.style.width = ''; return; }
 
                   var width = card.getBoundingClientRect().right - tabs.getBoundingClientRect().left;
-                  if (width > 0 && width < tabs.parentElement.clientWidth - 1) tabs.style.width = width + 'px';
+                  tabs.style.width = width > 0 && width < tabs.parentElement.clientWidth - 1 ? width + 'px' : '';
                 }
 
                 if (panels) {
