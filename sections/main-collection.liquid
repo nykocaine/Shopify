@@ -94,6 +94,14 @@
       #shopify-section-{{ section.id }} .collection__sidebar {
         top: calc(var(--sticky-area-height) + var(--collection-toolbar-height, 0px) + 20px);
       }
+    {%- else -%}
+      {%- comment -%}
+      A toolbar that is not sticky is not positioned, so z-index would do nothing: while the filters sheet is open (theme.css lifts the
+      toolbar above the blur layer behind the header) it gets position: relative, which changes nothing about where it sits.
+      {%- endcomment -%}
+      :root[data-facets-veil] #shopify-section-{{ section.id }} .collection__toolbar {
+        position: relative;
+      }
     {%- endif -%}
   {%- endif -%}
 

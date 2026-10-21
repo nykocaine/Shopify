@@ -6349,8 +6349,9 @@ product-rerender {
     background: transparent !important;
   }
 
+  /* !important: each section sets the toolbar's own z-index (2) with an id selector, which would otherwise win */
   :root[data-facets-veil] .collection__toolbar {
-    z-index: 5;
+    z-index: 5 !important;
   }
 }
 
