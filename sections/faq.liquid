@@ -204,7 +204,7 @@
           {%- endunless -%}
 
           {%- if has_categories -%}
-            <x-tabs class="section-header__controls faq__categories" transition="unfold"{% if section.settings.two_columns %} data-tabs-loop{% endif %}>
+            <x-tabs class="section-header__controls faq__categories" transition="unfold"{% if section.settings.two_columns and template.suffix != 'faq' %} data-tabs-loop{% endif %}>
               <template shadowrootmode="open">
                 <slot part="tablist" role="tablist" name="tab"></slot>
               </template>
@@ -474,6 +474,25 @@
             width: 1.25rem;
             margin-inline-start: -3rem;
           }
+
+          {%- if template.suffix == 'faq' -%}
+            {%- comment -%}
+            The FAQ page only (the same section sits on other pages, which keep the sideways-scrolling row): the tabs are one under the
+            other instead of a row you scroll sideways, all in view, each one still a plain link with the active one underlined. No
+            looping copies of them either (data-tabs-loop is left off on this page, see the markup above), so no end spacer.
+            {%- endcomment -%}
+            #shopify-section-{{ section.id }} .faq__categories.faq__categories::part(tablist) {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 0;
+              overflow: visible;
+              padding-inline-end: 1.25rem;
+            }
+
+            #shopify-section-{{ section.id }} .faq__categories.faq__categories::part(tablist)::after {
+              display: none;
+            }
+          {%- endif -%}
 
           {%- comment -%}Doubled class: these rules sit before the base tab rules further down in this file and must win over them.{%- endcomment -%}
           #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab,
