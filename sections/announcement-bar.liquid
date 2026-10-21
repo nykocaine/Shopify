@@ -32,14 +32,15 @@
       }
 
       {%- comment -%}
-      The half-section gap above the bar lives on <height-observer> (not on the section wrapper) so
+      The gap above the bar is half of the bar's own height (one text line plus its two vertical paddings, halved),
+      no longer the theme's section spacing. It lives on <height-observer> (not on the section wrapper) so
       --announcement-bar-height, measured from its border box, includes it. Everything that offsets
       itself by that variable (the sticky header's top, the slideshow's min-height, the menu overlay)
       then lines up with the bar's real height. Looks the same as before; only what gets measured changes.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} height-observer {
         display: block;
-        padding-block-start: calc(var(--section-vertical-spacing) / 2);
+        padding-block-start: calc((1lh + {{ section.settings.vertical_padding | times: 2 }}px) / 2);
         {%- if section.settings.enable_sticky %}
         background: rgb(var(--page-background));
         {%- endif %}
