@@ -833,9 +833,9 @@
             gap: 2rem;
           }
 
-          {%- comment -%}The label takes the size of a title (the section's own title is an h3), not the body text size; same line height on every tab so they all have the same height.{%- endcomment -%}
+          {%- comment -%}The label takes a heading size ("Categories heading size" setting, h3 by default), not the body text size; same line height on every tab so they all have the same height.{%- endcomment -%}
           #shopify-section-{{ section.id }} .faq__category-tab .h6 {
-            font-size: var(--text-h3);
+            font-size: var(--text-{{ section.settings.category_title_tag }});
             line-height: var(--heading-line-height);
           }
 
@@ -1555,6 +1555,55 @@
       "type": "select",
       "id": "title_tag",
       "label": "t:global.text.heading_size",
+      "options": [
+        {
+          "value": "display-xl",
+          "label": "Display XL"
+        },
+        {
+          "value": "display-l",
+          "label": "Display L"
+        },
+        {
+          "value": "display-m",
+          "label": "Display M"
+        },
+        {
+          "value": "h1",
+          "label": "XX-Large"
+        },
+        {
+          "value": "h2",
+          "label": "X-Large"
+        },
+        {
+          "value": "h3",
+          "label": "Large"
+        },
+        {
+          "value": "h4",
+          "label": "Medium"
+        },
+        {
+          "value": "h5",
+          "label": "Small"
+        },
+        {
+          "value": "h6",
+          "label": "X-Small"
+        },
+        {
+          "value": "h7",
+          "label": "XX-Small"
+        }
+      ],
+      "default": "h3"
+    },
+    {
+      "type": "select",
+      "id": "category_title_tag",
+      "label": "Categories heading size",
+      "info": "Product page, desktop only: size of the category tabs when they are shown as a row above the content.",
       "options": [
         {
           "value": "display-xl",
