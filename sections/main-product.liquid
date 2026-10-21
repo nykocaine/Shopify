@@ -238,7 +238,7 @@
         {%- else -%}
           --product-grid: auto / minmax(0, {{ section.settings.product_media_size | divided_by: 100.0 }}fr) minmax(0, {{ 100.0 | minus: section.settings.product_media_size | divided_by: 100.0 }}fr);
         {%- endif -%}
-        --product-column-gap: {% case section.settings.column_spacing %}{%- when 'none' -%}0px{%- when 'sm' -%}calc(var(--container-gutter) / 2){%- when 'md' -%}var(--container-gutter){%- else -%}calc(var(--container-gutter) * 1.5){%- endcase -%};
+        --product-column-gap: {% case section.settings.column_spacing %}{%- when 'none' -%}0px{%- when 'sm' -%}{% if section.settings.floating_product %}var(--card-gap){% else %}calc(var(--container-gutter) / 2){% endif %}{%- when 'md' -%}var(--container-gutter){%- else -%}calc(var(--container-gutter) * 1.5){%- endcase -%};
       }
 
       {%- comment -%}
