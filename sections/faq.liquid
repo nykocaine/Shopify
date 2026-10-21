@@ -21,6 +21,14 @@
       if section.settings.categories_glued_bar
         assign glue_query = '(min-width: 0px)'
       endif
+
+      # Product page, desktop (1000px and up): the categories are not glued to the content, they are a plain row of text above it (see the
+      # "unglued" rules in the style block below). Tablet and phones keep the glued bar.
+      assign product_page_loose_tabs = false
+      if template.name == 'product' and section.settings.categories_glued_bar
+        assign product_page_loose_tabs = true
+        assign glue_query = '(max-width: 999px)'
+      endif
     -%}
 
     {%- comment -%}
@@ -812,6 +820,28 @@
           background: rgb(var(--button-hover-background));
         }
       }
+
+      {%- if product_page_loose_tabs -%}
+        {%- comment -%}
+        Product page, desktop only: the categories sit above the content as plain text (no background, no pill), spread over the
+        whole row from edge to edge instead of glued to the questions. Doubled classes so it wins over the base and "filled" rules above.
+        {%- endcomment -%}
+        @media screen and (min-width: 1000px) {
+          #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
+            justify-content: space-between;
+          }
+
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab,
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled,
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled[aria-selected="true"],
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled:hover {
+            padding-inline: 0;
+            color: rgb(var(--text-color));
+            background: none;
+            border-radius: 0;
+          }
+        }
+      {%- endif -%}
 
       {%- comment -%}
       ============================================================
