@@ -627,6 +627,12 @@
         overflow-x: auto;
       }
 
+      @media screen and (min-width: 700px) {
+        #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
+          gap: var(--card-gap);
+        }
+      }
+
       {%- comment -%}
       Edge fade instead of a hard-clipped cut when the tab row overflows and scrolls (script further
       down toggles is-overflowing/at-start/at-end on .faq__categories itself, based on the tablist's
@@ -775,6 +781,13 @@
         display: grid;
       }
 
+      {%- comment -%}On desktop the title, text and media of a block sit side by side: the same gap as every other pair of columns (--card-gap, theme.css).{%- endcomment -%}
+      @media screen and (min-width: 700px) {
+        #shopify-section-{{ section.id }} .faq__text-image {
+          column-gap: var(--card-gap);
+        }
+      }
+
       {%- comment -%}
       flex column + gap: with a carousel (more than one media item), this stacks the scrolling
       product-list above its progress bar with some breathing room between them. With a single media
@@ -889,7 +902,7 @@
         ============================================================
         {%- endcomment -%}
         #shopify-section-{{ section.id }} {
-          --faq-menu-gap: 1.8rem;
+          --faq-menu-row-gap: 1.8rem;
           --faq-menu-min-width: 12rem;
           --faq-menu-padding: 1.25rem;
         }
@@ -952,10 +965,10 @@
         }
 
         {%- if faq_page -%}
-          {%- comment -%}Phones, FAQ page: the gap between the menu box and the questions box (from 700px they sit side by side, see below).{%- endcomment -%}
+          {%- comment -%}Phones, FAQ page: the gap between the menu box and the questions box, one above the other (from 700px they sit side by side, with --card-gap, see below).{%- endcomment -%}
           @media screen and (max-width: 699px) {
             #shopify-section-{{ section.id }} .faq--full-width {
-              margin-block-start: var(--faq-menu-gap);
+              margin-block-start: var(--faq-menu-row-gap);
             }
           }
         {%- endif -%}
@@ -972,7 +985,7 @@
           #shopify-section-{{ section.id }} .faq__container {
             display: grid;
             grid-template-columns: minmax(var(--faq-menu-min-width), 1fr) minmax(0, 4fr);
-            column-gap: var(--faq-menu-gap);
+            column-gap: var(--card-gap);
             align-items: start;
           }
 
