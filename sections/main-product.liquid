@@ -787,6 +787,22 @@
   {%- endif -%}
 </style>
 
+{%- if section.settings.floating_product -%}
+  <style>
+    {%- comment -%}
+    The side gutter of the floating card sits on the section wrapper itself, outside the section, instead of on the card inside it:
+    the editor's outline then spans only the card, which still respects the page's side padding.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} {
+      margin-inline: var(--container-gutter);
+    }
+
+    #shopify-section-{{ section.id }} .section-floating {
+      margin-inline: 0;
+    }
+  </style>
+{%- endif -%}
+
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product %} section-floating section-floating--block-end{% endif %}" {% if section.settings.allow_transparent_header and product.media.size > 0 %}allow-transparent-header{% endif %}>
   <div class="container">
     {%- capture product_form_id -%}product-form-main-{{ product.id }}-{{ section.id }}{%- endcapture -%}

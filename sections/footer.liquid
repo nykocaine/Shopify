@@ -3,6 +3,18 @@
     #shopify-section-{{ section.id }} {
       margin-block-end: calc(var(--section-vertical-spacing) / 2);
     }
+
+    {%- comment -%}
+    The side gutter of the floating footer sits on the section wrapper itself, outside the section, instead of on the footer inside it:
+    the editor's outline then spans only the footer, which still respects the page's side padding.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} {
+      margin-inline: var(--container-gutter);
+    }
+
+    #shopify-section-{{ section.id }} .footer--floating {
+      margin-inline: 0;
+    }
   </style>
 {%- endif -%}
 
