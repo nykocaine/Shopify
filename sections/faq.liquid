@@ -539,6 +539,40 @@
         }
 
         {%- comment -%}
+        Glued bar, side by side (from 700px): the first text + image block of the content is one piece with the bar. Its gallery (photos,
+        captions and the progress bar under them) starts at the very top of the bar and ends where the white container ends, and the text
+        card stretches to the same bottom: both always have the same height, whichever of them is taller (the photos fill what is left
+        after the captions, cropped to fit; the --faq-bar-height variable is set by the script below). Only the first block of the open
+        category: the ones below keep their own layout.
+        {%- endcomment -%}
+        @media screen and (min-width: 700px) and {{ glue_query }} {
+          #shopify-section-{{ section.id }} .faq__panel > .faq__text-image--with-image:first-child {
+            align-items: stretch;
+          }
+
+          #shopify-section-{{ section.id }} .faq__panel > .faq__text-image--with-image:first-child .faq__text-image-media {
+            align-self: stretch;
+            margin-block-start: calc(-1 * var(--faq-bar-height, 0px));
+          }
+
+          #shopify-section-{{ section.id }} .faq__panel > .faq__text-image--with-image:first-child .faq__text-image-media > product-list {
+            flex: 1 1 auto;
+            min-height: 0;
+            align-items: stretch;
+          }
+
+          #shopify-section-{{ section.id }} .faq__panel > .faq__text-image--with-image:first-child .faq__text-image-media > figure {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+          }
+
+          #shopify-section-{{ section.id }} .faq__panel > .faq__text-image--with-image:first-child .faq__text-image-media > figure > .faq__text-image-media-frame {
+            flex: 1 1 auto;
+          }
+        }
+
+        {%- comment -%}
         Gap between the tabs of the bar: 3rem on phones, where the bar is a row you scroll sideways (and loops), and the shared gap between
         side-by-side elements (--card-gap, theme.css) from 700px. The spacer after the last tab cancels exactly this gap.
         {%- endcomment -%}
@@ -1257,6 +1291,12 @@
 
                 function fitBarToCard() {
                   tabs.style.width = '';
+                  {%- comment -%}The height of the bar (minus the pixel it overlaps the content by), for the gallery next to the first card to rise to the top of the bar.{%- endcomment -%}
+                  if (glue.matches) {
+                    root.style.setProperty('--faq-bar-height', (tabs.getBoundingClientRect().height - 1) + 'px');
+                  } else {
+                    root.style.removeProperty('--faq-bar-height');
+                  }
                   if (!glue.matches || !panels) return;
 
                   var panel = panels.querySelector('.faq__panel:not([hidden])');
