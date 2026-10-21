@@ -48,19 +48,12 @@
   <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_the_method %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_the_method %} style="border-end-start-radius: {{ section.settings.the_method_border_radius }}px; border-end-end-radius: {{ section.settings.the_method_border_radius }}px; overflow: hidden;"{% endif %}>
     <div class="container section-spacing">
       <div class="the-method-soon" style="--the-method-glow-1: {{ section.settings.glow_color_1 }}; --the-method-glow-2: {{ section.settings.glow_color_2 }};" role="status">
-        <svg class="the-method-soon__flask" viewBox="0 0 80 100" aria-hidden="true">
-          <defs>
-            <clipPath id="the-method-flask-{{ section.id }}"><path d="M33 8 V38 L10 80 Q6 92 18 92 H62 Q74 92 70 80 L47 38 V8 Z"/></clipPath>
-          </defs>
-          <g clip-path="url(#the-method-flask-{{ section.id }})">
-            <g class="the-method-soon__liquid">
-              <path class="the-method-soon__wave" d="M-80 0 Q-60 -7 -40 0 T0 0 T40 0 T80 0 T120 0 T160 0 V90 H-80 Z"/>
-              <circle class="the-method-soon__bubble" cx="30" cy="30" r="2.2"/>
-              <circle class="the-method-soon__bubble the-method-soon__bubble--2" cx="44" cy="40" r="1.6"/>
-              <circle class="the-method-soon__bubble the-method-soon__bubble--3" cx="37" cy="46" r="1.2"/>
-            </g>
-          </g>
-          <path class="the-method-soon__glass" d="M28 8 H52 M33 8 V38 L10 80 Q6 92 18 92 H62 Q74 92 70 80 L47 38 V8"/>
+        <svg class="the-method-soon__drop" viewBox="0 0 80 100" aria-hidden="true">
+          <path class="the-method-soon__surface" d="M6 80 H74"/>
+          <ellipse class="the-method-soon__ripple" cx="40" cy="80" rx="34" ry="7"/>
+          <ellipse class="the-method-soon__ripple the-method-soon__ripple--2" cx="40" cy="80" rx="34" ry="7"/>
+          <ellipse class="the-method-soon__ripple the-method-soon__ripple--3" cx="40" cy="80" rx="34" ry="7"/>
+          <path class="the-method-soon__falling" d="M40 6 C46 14 50 19 50 24 a10 10 0 0 1 -20 0 C30 19 34 14 40 6 Z"/>
         </svg>
 
         {%- if section.settings.coming_soon_eyebrow != blank -%}
@@ -1661,8 +1654,8 @@
     margin: 0;
   }
 
-  /* A flask: the liquid rises and falls, the wave drifts, bubbles come up */
-  .the-method-soon__flask {
+  /* A drop falls onto a still surface and the ripples spread out */
+  .the-method-soon__drop {
     width: 5rem;
     height: auto;
     margin-bottom: 0.5rem;
@@ -1670,46 +1663,45 @@
     color: rgb(var(--text-color));
   }
 
-  .the-method-soon__glass {
+  .the-method-soon__surface {
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.2;
+    stroke-opacity: 0.25;
+    stroke-width: 1;
     stroke-linecap: round;
-    stroke-linejoin: round;
   }
 
-  .the-method-soon__liquid {
-    transform: translateY(78px);
-    animation: the-method-soon-fill 5s ease-in-out infinite alternate;
+  .the-method-soon__falling {
+    fill: color-mix(in srgb, var(--the-method-glow-2, #df9fc5) 80%, rgb(var(--text-color)));
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: the-method-soon-fall 3.2s infinite;
   }
 
-  .the-method-soon__wave {
-    fill: color-mix(in srgb, var(--the-method-glow-2, #df9fc5) 75%, transparent);
-    animation: the-method-soon-wave 2.6s linear infinite;
-  }
-
-  .the-method-soon__bubble {
-    fill: rgb(var(--background));
+  .the-method-soon__ripple {
+    fill: none;
+    stroke: color-mix(in srgb, var(--the-method-glow-2, #df9fc5) 80%, rgb(var(--text-color)));
+    stroke-width: 1;
     opacity: 0;
-    animation: the-method-soon-bubble 2.8s ease-in infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: the-method-soon-ripple 3.2s ease-out infinite;
   }
 
-  .the-method-soon__bubble--2 { animation-delay: 0.9s; animation-duration: 3.3s; }
-  .the-method-soon__bubble--3 { animation-delay: 1.7s; animation-duration: 2.5s; }
+  .the-method-soon__ripple--2 { animation-delay: 0.25s; }
+  .the-method-soon__ripple--3 { animation-delay: 0.5s; }
 
-  @keyframes the-method-soon-fill {
-    from { transform: translateY(78px); }
-    to { transform: translateY(52px); }
+  @keyframes the-method-soon-fall {
+    0% { transform: translateY(0) scale(0.2); opacity: 0; animation-timing-function: ease-out; }
+    12% { transform: translateY(0) scale(1); opacity: 1; animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6); }
+    38% { transform: translateY(50px) scale(0.85, 1.15); opacity: 1; }
+    40%, 100% { transform: translateY(54px) scale(0.2); opacity: 0; }
   }
 
-  @keyframes the-method-soon-wave {
-    to { transform: translateX(80px); }
-  }
-
-  @keyframes the-method-soon-bubble {
-    0% { transform: translateY(40px); opacity: 0; }
-    20% { opacity: 0.9; }
-    100% { transform: translateY(-14px); opacity: 0; }
+  @keyframes the-method-soon-ripple {
+    0%, 38% { transform: scale(0.05); opacity: 0; }
+    40% { transform: scale(0.05); opacity: 0.9; }
+    85%, 100% { transform: scale(1); opacity: 0; }
   }
 
   .the-method-soon__eyebrow {
@@ -1756,14 +1748,16 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .the-method-soon__liquid,
-    .the-method-soon__wave,
-    .the-method-soon__bubble,
+    .the-method-soon__falling,
+    .the-method-soon__ripple,
     .the-method-soon__steps span {
       animation: none;
     }
 
     .the-method-soon__steps span:first-child { opacity: 1; }
+
+    .the-method-soon__ripple--2 { opacity: 0.5; transform: scale(0.6); }
+    .the-method-soon__ripple--3 { opacity: 0.25; }
   }
 {% endstylesheet %}
 
