@@ -282,6 +282,74 @@
   </style>
 {%- endif -%}
 
+{%- if section.settings.show_loader and request.design_mode == false -%}
+  <style>
+    {%- comment -%}
+    A short loading screen when the page opens (about a second, pure CSS - it hides itself, no script): a flat book whose page turns,
+    and a line of text. Flat colors only: no shadows, no gradients. Not shown inside the theme editor.
+    {%- endcomment -%}
+    .rc-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: grid;
+      place-content: center;
+      justify-items: center;
+      gap: 1.25rem;
+      animation: rc-loader-out 0.45s ease 1.3s forwards;
+    }
+
+    .rc-loader__book {
+      width: 4.5rem;
+      height: 4.5rem;
+    }
+
+    .rc-loader__cover { fill: rgb(var(--text-color)); }
+    .rc-loader__page { fill: rgb(var(--background)); }
+    .rc-loader__line { fill: rgb(var(--text-color) / 0.25); }
+
+    .rc-loader__turning {
+      fill: rgb(var(--background));
+      stroke: rgb(var(--text-color));
+      stroke-width: 1;
+      transform-box: view-box;
+      transform-origin: 32px 33px;
+      animation: rc-loader-turn 0.9s ease-in-out 0.1s infinite;
+    }
+
+    .rc-loader__text {
+      margin: 0;
+      color: rgb(var(--text-color) / 0.75);
+    }
+
+    @keyframes rc-loader-turn {
+      0% { transform: scaleX(1); }
+      100% { transform: scaleX(-1); }
+    }
+
+    @keyframes rc-loader-out {
+      to { opacity: 0; visibility: hidden; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .rc-loader__turning { animation: none; }
+    }
+  </style>
+
+  <div class="rc-loader color-scheme color-scheme--{{ section.settings.color_scheme.id }}" role="status" aria-live="polite">
+    <svg class="rc-loader__book" viewBox="0 0 64 64" aria-hidden="true">
+      <rect class="rc-loader__cover" x="6" y="12" width="52" height="42" rx="3"/>
+      <rect class="rc-loader__page" x="10" y="16" width="21" height="34" rx="1"/>
+      <rect class="rc-loader__page" x="33" y="16" width="21" height="34" rx="1"/>
+      <rect class="rc-loader__line" x="13" y="21" width="15" height="2"/>
+      <rect class="rc-loader__line" x="13" y="27" width="15" height="2"/>
+      <rect class="rc-loader__line" x="13" y="33" width="11" height="2"/>
+      <rect class="rc-loader__turning" x="33" y="16" width="21" height="34" rx="1"/>
+    </svg>
+    <p class="rc-loader__text">{{ section.settings.loader_text }}</p>
+  </div>
+{%- endif -%}
+
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_libro_reclamaciones %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_libro_reclamaciones %} style="border-end-start-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; border-end-end-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div class="container">
@@ -314,6 +382,20 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_loader",
+      "label": "Mostrar pantalla de carga al abrir la página",
+      "info": "Un libro que pasa la página durante aproximadamente un segundo. No se muestra dentro del editor.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "loader_text",
+      "label": "Texto de la pantalla de carga",
+      "default": "Cargando el libro de reclamaciones",
+      "visible_if": "{{ section.settings.show_loader }}"
     },
     {
       "type": "checkbox",
