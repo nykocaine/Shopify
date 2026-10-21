@@ -4989,6 +4989,15 @@ var Tabs = class extends HTMLElement {
       toPanel.style.clipPath = "";
       return;
     }
+    if (this.getAttribute("transition") === "fade-down") {
+      // Soft cross-fade that flows from the top down: the panel that leaves sinks a little while it fades out, the new one comes in
+      // from slightly above and settles down. No clipping, so anything that rises above a panel's box stays visible while it plays.
+      await animate8(fromPanel, { opacity: [1, 0], transform: ["translateY(0)", "translateY(10px)"] }, { duration: this.animationDuration });
+      fromPanel.hidden = true;
+      toPanel.hidden = false;
+      await animate8(toPanel, { opacity: [0, 1], transform: ["translateY(-10px)", "translateY(0)"] }, { duration: this.animationDuration });
+      return;
+    }
     await animate8(fromPanel, { opacity: [1, 0], transform: ["translateY(0)", "translateY(10px)"] }, { duration: this.animationDuration });
     fromPanel.hidden = true;
     toPanel.hidden = false;
