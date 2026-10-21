@@ -39,6 +39,20 @@
         margin-block-start: calc((1lh + {{ section.settings.vertical_padding | times: 2 }}px) / 2);
       }
 
+      {%- unless section.settings.full_width -%}
+        {%- comment -%}
+        The side gutter of the page (the .container margin) sits on the section wrapper itself, outside the section, instead of on the
+        bar inside it: the editor's blue outline then spans only the bar, and the bar still respects the page's side padding.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} {
+          margin-inline: max(var(--container-gutter), 50% - var(--container-max-width) / 2);
+        }
+
+        #shopify-section-{{ section.id }} .announcement-bar-wrapper {
+          margin-inline: 0;
+        }
+      {%- endunless -%}
+
       #shopify-section-{{ section.id }} height-observer {
         display: block;
         {%- if section.settings.enable_sticky %}
