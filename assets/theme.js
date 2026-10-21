@@ -2938,6 +2938,9 @@ var FacetsDrawer = class extends Drawer {
     const toolbar = document.querySelector(".collection__toolbar");
     const top = toolbar ? Math.max(0, Math.round(toolbar.getBoundingClientRect().bottom)) : 0;
     this.style.setProperty("--facets-drawer-top", `${top}px`);
+    // The same blur and veil as the overlay, behind the header and the toolbar too (theme.css, :root::before): they stay on top of it
+    document.documentElement.style.setProperty("--facets-drawer-top", `${top}px`);
+    document.documentElement.setAttribute("data-facets-veil", "");
     const content = this.getShadowPartByName("content");
     const overlay = this.getShadowPartByName("overlay");
     content.style.willChange = overlay.style.willChange = "clip-path";
@@ -2982,6 +2985,7 @@ var FacetsDrawer = class extends Drawer {
       });
       return controls;
     }
+    document.documentElement.removeAttribute("data-facets-veil");
     content.style.willChange = overlay.style.willChange = "clip-path";
     const options = { duration: 0.4, ease: [0.33, 0, 0.2, 1] };
     const fold = { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] };

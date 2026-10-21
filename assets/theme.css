@@ -6309,6 +6309,41 @@ product-rerender {
   }
 }
 
+/* Filters sheet (below 1000px): the overlay's blur and veil start where the sheet starts, under the toolbar, so the header and the
+   toolbar (and the gaps around their cards) would show the page behind them unblurred. This layer is the same blur and veil over
+   that top strip, from the top of the screen down to the sheet. It sits above the page content and below the header and the toolbar
+   (both stay crisp on top of it), and fades in and out with the sheet (FacetsDrawer sets --facets-drawer-top and
+   data-facets-veil on <html>). */
+@media screen and (max-width: 999px) {
+  :root::before {
+    content: "";
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    height: var(--facets-drawer-top, 0px);
+    z-index: 1;
+    pointer-events: none;
+    background: rgb(var(--page-overlay));
+    -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
+    backdrop-filter: blur(var(--dialog-backdrop-blur));
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .3s ease, visibility 0s linear .3s;
+  }
+
+  :root[data-facets-veil]::before {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .45s ease, visibility 0s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root::before {
+    transition: none !important;
+  }
+}
+
 .drawer--cart .tab-pills {
   grid-template-rows: auto minmax(0, 1fr);
 }
