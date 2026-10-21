@@ -313,22 +313,33 @@ if (!window.customElements.get('read-more-match-height')) {
                 return parseFloat(getComputedStyle(this).getPropertyValue('--faq-bar-height')) || 0;
               }
 
-              // True while the media sits next to the card (two or more grid columns): then the card sets the height and the gallery fits it
-              // (see the "fit" rules in the style block of this snippet), so the card must not collapse to the gallery - it would chase itself.
+              // True while the media sits next to the card (two or more grid columns).
               mediaIsBeside() {
                 var block = this.closest('.faq__text-image');
                 return !!block && getComputedStyle(block).gridTemplateColumns.trim().split(/\s+/).length > 1;
               }
 
-              measure() {
-                if (this.mediaIsBeside()) {
-                  this.removeAttribute('data-expanded');
-                  this.removeAttribute('data-overflowing');
-                  this.content.style.maxHeight = '';
-                  this.toggle.setAttribute('aria-expanded', 'false');
-                  return;
-                }
+              // The gallery's own height (what its size setting asks for), not the one it is fitted to: next to the card the gallery is fitted to the
+              // card's height (see the "fit" rules in the style block of this snippet), so for a moment the fit is switched off (data-natural), the
+              // height read, and the fit switched back on - all synchronous, nothing is painted in between. That natural height is the limit of the card.
+              naturalMediaHeight() {
+                var block = this.closest('.faq__text-image');
+                if (!block || !this.mediaIsBeside()) return this.matchTarget.offsetHeight;
 
+                block.setAttribute('data-natural', '');
+                var height = this.matchTarget.offsetHeight;
+                block.removeAttribute('data-natural');
+                return height;
+              }
+
+              // While the card is open ("Show more") the gallery keeps the height it had with the card closed: only the card grows.
+              pinGallery() {
+                var block = this.closest('.faq__text-image');
+                if (!block) return;
+                block.style.setProperty('--faq-gallery-height', (this.collapsedHeight + this.chromeHeight + this.barHeight()) + 'px');
+              }
+
+              measure() {
                 // matchTarget.offsetHeight is the TOTAL card's target height, but collapsedHeight
                 // below clamps only the inner .faq__text-image-text-content - so this card's own
                 // padding (.faq-content-box) and the toggle's own space (shown or not) both have to
@@ -342,6 +353,7 @@ if (!window.customElements.get('read-more-match-height')) {
                 this.toggle.style.display = 'block';
                 var toggleSpace = this.toggle.offsetHeight + parseFloat(getComputedStyle(this.toggle).marginBlockStart);
                 this.toggle.style.display = '';
+                this.chromeHeight = paddingY + toggleSpace;
 
                 // Floor (data-min-lines, same --text-line-height token product-info.liquid's own
                 // line-based collapse uses): a short enough carousel could otherwise leave nothing of
@@ -352,16 +364,20 @@ if (!window.customElements.get('read-more-match-height')) {
                 var lineHeight = parseFloat(getComputedStyle(this.content).lineHeight) || 0;
                 var minHeight = minLines * lineHeight;
 
-                this.collapsedHeight = Math.max(minHeight, this.matchTarget.offsetHeight - this.barHeight() - paddingY - toggleSpace);
+                this.collapsedHeight = Math.max(minHeight, this.naturalMediaHeight() - this.barHeight() - paddingY - toggleSpace);
 
                 // Moved up to the bottom of the last whole line that fits (measured, so paragraph
                 // spacing is accounted for) - the collapsed box never ends in the middle of a line.
-                this.collapsedHeight = Math.max(fitToLine(this.content, this.collapsedHeight), minHeight);
+                // Only when the text really is longer than the limit: text that fits entirely must not be cut to its last line (short texts).
+                if (this.content.scrollHeight - this.collapsedHeight > 1) {
+                  this.collapsedHeight = Math.max(fitToLine(this.content, this.collapsedHeight), minHeight);
+                }
 
                 if (this.hasAttribute('data-expanded')) {
                   // Keeps the open height in sync with a resize instead of leaving it pinned to
                   // whatever it measured when it was expanded.
                   this.content.style.maxHeight = this.content.scrollHeight + 'px';
+                  this.pinGallery();
                   return;
                 }
 
@@ -374,6 +390,7 @@ if (!window.customElements.get('read-more-match-height')) {
                 var expanding = !this.hasAttribute('data-expanded');
 
                 if (expanding) {
+                  this.pinGallery();
                   this.content.style.maxHeight = this.content.scrollHeight + 'px';
                   this.setAttribute('data-expanded', '');
                 } else {
@@ -742,6 +759,10 @@ if (!window.customElements.get('read-more-match-height')) {
         {%- endif -%}
 
         {%- if has_text_column -%}
+          #{{ text_image_id }}[data-natural] #{{ media_wrapper_id }} {
+            align-self: start;
+          }
+
           {%- comment -%}
           Gallery + captions take the height of the text (the white card) next to them, never the other way round. From 700px, when the media sits
           beside the text: contain: size makes the media column add nothing to the row's height (the row is as tall as the card), and the
@@ -750,7 +771,7 @@ if (!window.customElements.get('read-more-match-height')) {
           Phones keep the stacked layout, and so does any width where the section stacks the block (fit_from).
           {%- endcomment -%}
           @media screen and (min-width: {{ fit_from | default: 700 }}px) {
-            #{{ media_wrapper_id }} {
+            #{{ text_image_id }}:not([data-natural]) #{{ media_wrapper_id }} {
               contain: size;
               align-self: stretch;
               display: flex;
@@ -758,48 +779,54 @@ if (!window.customElements.get('read-more-match-height')) {
               min-height: 0;
             }
 
-            #{{ media_wrapper_id }} .content-box {
+            #{{ text_image_id }}:not([data-natural]) #{{ media_wrapper_id }} .content-box {
               height: 100%;
               min-height: 0;
             }
 
-            #{{ media_wrapper_id }} .content-box > .content-box__background-media {
+            #{{ text_image_id }}:not([data-natural]) #{{ media_wrapper_id }} .content-box > .content-box__background-media {
               position: absolute;
               inset: 0;
             }
 
             {%- if is_carousel -%}
-              #{{ media_carousel_id }} {
+              #{{ text_image_id }}:not([data-natural]) #{{ media_carousel_id }} {
                 flex: 1 1 0;
                 min-height: 6rem;
                 align-items: stretch;
               }
 
-              #{{ media_carousel_id }} > .snap-start {
+              #{{ text_image_id }}:not([data-natural]) #{{ media_carousel_id }} > .snap-start {
                 height: 100%;
               }
 
-              #{{ media_caption_row_id }},
-              carousel-segments[aria-controls="{{ media_carousel_id }}"] {
+              #{{ text_image_id }}:not([data-natural]) #{{ media_caption_row_id }},
+              #{{ text_image_id }}:not([data-natural]) carousel-segments[aria-controls="{{ media_carousel_id }}"] {
                 flex: none;
               }
             {%- else -%}
-              #{{ media_wrapper_id }} > figure {
+              #{{ text_image_id }}:not([data-natural]) #{{ media_wrapper_id }} > figure {
                 flex: 1 1 0;
                 min-height: 0;
                 display: flex;
                 flex-direction: column;
               }
 
-              #{{ media_wrapper_id }} > figure > .faq__text-image-media-frame {
+              #{{ text_image_id }}:not([data-natural]) #{{ media_wrapper_id }} > figure > .faq__text-image-media-frame {
                 flex: 1 1 0;
                 min-height: 6rem;
               }
 
-              #{{ media_wrapper_id }} > figure > figcaption {
+              #{{ text_image_id }}:not([data-natural]) #{{ media_wrapper_id }} > figure > figcaption {
                 flex: none;
               }
             {%- endif -%}
+
+            {%- comment -%}"Show more" open: the gallery keeps the height it had with the card closed (--faq-gallery-height, set by the script above), only the card grows.{%- endcomment -%}
+            #{{ text_image_id }}:not([data-natural]):has(read-more-match-height[data-expanded]) #{{ media_wrapper_id }} {
+              align-self: start;
+              height: var(--faq-gallery-height);
+            }
           }
         {%- endif -%}
 
