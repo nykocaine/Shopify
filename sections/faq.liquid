@@ -839,6 +839,32 @@
             line-height: var(--heading-line-height);
           }
 
+          {%- comment -%}Selected category: underlined (a line that grows in and out, as in the glued bar) and at 70% opacity.{%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab {
+            position: relative;
+            transition: opacity .35s cubic-bezier(.4, 0, .2, 1);
+          }
+
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab[aria-selected="true"] {
+            opacity: .7;
+          }
+
+          #shopify-section-{{ section.id }} .faq__category-tab::after {
+            content: "";
+            position: absolute;
+            inset-inline: 0;
+            inset-block-end: .25rem;
+            height: 1px;
+            background: currentColor;
+            transform: scaleX(0);
+            transform-origin: left center;
+            transition: transform .35s cubic-bezier(.4, 0, .2, 1);
+          }
+
+          #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"]::after {
+            transform: scaleX(1);
+          }
+
           #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab,
           #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled,
           #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled[aria-selected="true"],
