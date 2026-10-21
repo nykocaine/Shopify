@@ -282,83 +282,7 @@
   </style>
 {%- endif -%}
 
-{%- if section.settings.show_loader and request.design_mode == false -%}
-  <style>
-    {%- comment -%}
-    A short loading screen over the section only (about a second, pure CSS - it hides itself, no script): a layer with just the theme's
-    dialog blur (no background color) over the form, and on it, centered both ways, a thin-line book whose page turns and a line of text.
-    Flat colors only: no shadows, no gradients. Not shown inside the theme editor.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} > div {
-      position: relative;
-    }
-
-    .rc-loader {
-      position: absolute;
-      inset: 0;
-      z-index: 5;
-      display: grid;
-      place-content: center;
-      justify-items: center;
-      gap: 1rem;
-      -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
-      backdrop-filter: blur(var(--dialog-backdrop-blur));
-      animation: rc-loader-out 0.45s ease 1.3s forwards;
-    }
-
-    .rc-loader__book {
-      width: 2.5rem;
-      height: 2.5rem;
-      color: rgb(var(--text-color) / 0.85);
-    }
-
-    .rc-loader__book path {
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1px;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      vector-effect: non-scaling-stroke;
-    }
-
-    .rc-loader__turning {
-      transform-box: view-box;
-      transform-origin: 32px 32px;
-      animation: rc-loader-turn 1s ease-in-out 0.1s infinite;
-    }
-
-    .rc-loader__text {
-      margin: 0;
-      color: rgb(var(--text-color) / 0.6);
-    }
-
-    @keyframes rc-loader-turn {
-      0% { transform: scaleX(1); }
-      100% { transform: scaleX(-1); }
-    }
-
-    @keyframes rc-loader-out {
-      to { opacity: 0; visibility: hidden; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .rc-loader__turning { animation: none; }
-    }
-  </style>
-
-{%- endif -%}
-
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_libro_reclamaciones %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_libro_reclamaciones %} style="border-end-start-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; border-end-end-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; overflow: hidden;"{% endif %}>
-  {%- if section.settings.show_loader and request.design_mode == false -%}
-    <div class="rc-loader" role="status" aria-live="polite">
-      <svg class="rc-loader__book" viewBox="0 0 64 64" aria-hidden="true">
-        <path d="M32 14 C26 11 16 11 8 13 V48 C16 46 26 46 32 49 C38 46 48 46 56 48 V13 C48 11 38 11 32 14 Z"/>
-        <path d="M32 14 V49"/>
-        <path class="rc-loader__turning" d="M32 14 C38 11 48 11 56 13 V48 C48 46 38 46 32 49 Z"/>
-      </svg>
-      <p class="rc-loader__text">{{ section.settings.loader_text }}</p>
-    </div>
-  {%- endif -%}
   <div class="section-spacing">
     <div class="container">
       <div class="section-stack">
@@ -390,20 +314,6 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_loader",
-      "label": "Mostrar pantalla de carga al abrir la página",
-      "info": "Un libro de línea fina que pasa la página durante aproximadamente un segundo, solo sobre esta sección. No se muestra dentro del editor.",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "loader_text",
-      "label": "Texto de la pantalla de carga",
-      "default": "Cargando el libro de reclamaciones",
-      "visible_if": "{{ section.settings.show_loader }}"
     },
     {
       "type": "checkbox",
