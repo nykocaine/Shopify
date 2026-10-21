@@ -8,6 +8,23 @@
           break
         endif
       endfor
+
+      # The categories as a vertical menu on the left instead of a row of tabs: always on the FAQ page (template "faq"), where it is
+      # the layout on every screen size, and on any other page where the section asks for it, from tablet width up (below 700px
+      # those keep the row of tabs).
+      assign faq_page = false
+      if template.suffix == 'faq'
+        assign faq_page = true
+      endif
+
+      assign side_menu = false
+      assign side_menu_from = '700px'
+      if has_categories and faq_page
+        assign side_menu = true
+        assign side_menu_from = '0px'
+      elsif has_categories and section.settings.categories_side_menu
+        assign side_menu = true
+      endif
     -%}
 
     {%- comment -%}
@@ -204,7 +221,7 @@
           {%- endunless -%}
 
           {%- if has_categories -%}
-            <x-tabs class="section-header__controls faq__categories" transition="unfold"{% if section.settings.two_columns and template.suffix != 'faq' %} data-tabs-loop{% endif %}>
+            <x-tabs class="section-header__controls faq__categories" transition="unfold"{% if section.settings.two_columns and faq_page == false %} data-tabs-loop{% endif %}>
               <template shadowrootmode="open">
                 <slot part="tablist" role="tablist" name="tab"></slot>
               </template>
@@ -446,7 +463,7 @@
           display: none;
         }
 
-        {%- unless template.suffix == 'faq' -%}
+        {%- unless faq_page -%}
         @media screen and (max-width: 699px) {
           #shopify-section-{{ section.id }} .faq--full-width {
             margin-block-start: 0;
@@ -859,15 +876,16 @@
         display: inline;
       }
 
-      {%- if template.suffix == 'faq' and has_categories -%}
+      {%- if side_menu -%}
         {%- comment -%}
         ============================================================
-        THE FAQ PAGE ONLY (template "faq") - the categories are a vertical menu, not a row of tabs. The same section sits on other
-        pages, which keep their tabs: nothing here applies there. Two forms only:
-        - Phones (below 700px): the menu is a white box with all four corners rounded, and under it, separated by a gap, the box of
-          questions, also with all four corners rounded.
-        - From 700px (tablet and desktop): the menu is a column on the left, about 20% of the section (never narrower than 12rem, so on a
-          tablet its text still fits), and the questions fill the rest on its right (their two columns from 1000px on, as always). The menu stays in view while the page scrolls.
+        CATEGORIES AS A VERTICAL MENU - not a row of tabs. Always on the FAQ page (template "faq"), and on any other page whose section has
+        "Categories menu on the left" on. Two forms:
+        - Phones (below 700px): on the FAQ page, the menu is a white box with all four corners rounded and, under it, separated by a
+          gap, the box of questions, also fully rounded. Anywhere else phones keep the row of tabs.
+        - From 700px (tablet and desktop): the menu is a column on the left, about 20% of the section (never narrower than the minimum
+          below, so on a tablet its text still fits), and the questions fill the rest on its right (their two columns from 1000px on,
+          as always). The menu stays in view while the page scrolls.
         ============================================================
         {%- endcomment -%}
         #shopify-section-{{ section.id }} {
@@ -876,65 +894,71 @@
           --faq-menu-padding: 1.25rem;
         }
 
-        #shopify-section-{{ section.id }} .faq__categories {
-          background: var(--faq-box-background);
-          border-radius: {{ section.settings.faq_border_radius }}px;
+        @media screen and (min-width: {{ side_menu_from }}) {
+          #shopify-section-{{ section.id }} .faq__categories {
+            background: var(--faq-box-background);
+            border-radius: {{ section.settings.faq_border_radius }}px;
+          }
+
+          {%- comment -%}border-box: the list is 100% wide (base rule above), so with its side padding added on top it ran past the right edge of the box.{%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
+            box-sizing: border-box;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0;
+            overflow: visible;
+            padding: .5rem var(--faq-menu-padding);
+          }
+
+          {%- comment -%}Doubled class: these must win over the base tab rules (and the "filled" style) above.{%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab,
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled,
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled[aria-selected="true"],
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled:hover {
+            position: relative;
+            padding: .75rem 0;
+            text-align: start;
+            white-space: normal;
+            color: rgb(var(--text-color));
+            background: none;
+            border-radius: 0;
+            max-width: 100%;
+            min-width: 0;
+          }
+
+          {%- comment -%}A long word (like "contraindicaciones") in a narrow menu breaks instead of running out of its box.{%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__category-tab,
+          #shopify-section-{{ section.id }} .faq__category-tab .h6 {
+            overflow-wrap: anywhere;
+            hyphens: auto;
+          }
+
+          {%- comment -%}The underline of the active tab is a line that grows in and out (not a text-decoration), so changing tab is gradual.{%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__category-tab::after {
+            content: "";
+            position: absolute;
+            inset-inline: 0;
+            inset-block-end: .5rem;
+            height: 1px;
+            background: currentColor;
+            transform: scaleX(0);
+            transform-origin: left center;
+            transition: transform .35s cubic-bezier(.4, 0, .2, 1);
+          }
+
+          #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"]::after {
+            transform: scaleX(1);
+          }
         }
 
-        {%- comment -%}border-box: the list is 100% wide (base rule above), so with its side padding added on top it ran past the right edge of the box.{%- endcomment -%}
-        #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
-          box-sizing: border-box;
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 0;
-          overflow: visible;
-          padding: .5rem var(--faq-menu-padding);
-        }
-
-        {%- comment -%}Phones: the gap between the menu box and the questions box (from 700px they sit side by side, see below).{%- endcomment -%}
-        #shopify-section-{{ section.id }} .faq--full-width {
-          margin-block-start: var(--faq-menu-gap);
-        }
-
-        {%- comment -%}Doubled class: these must win over the base tab rules (and the "filled" style) above.{%- endcomment -%}
-        #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab,
-        #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled,
-        #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled[aria-selected="true"],
-        #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled:hover {
-          position: relative;
-          padding: .75rem 0;
-          text-align: start;
-          white-space: normal;
-          color: rgb(var(--text-color));
-          background: none;
-          border-radius: 0;
-          max-width: 100%;
-          min-width: 0;
-        }
-
-        {%- comment -%}A long word (like "contraindicaciones") in a narrow menu breaks instead of running out of its box.{%- endcomment -%}
-        #shopify-section-{{ section.id }} .faq__category-tab,
-        #shopify-section-{{ section.id }} .faq__category-tab .h6 {
-          overflow-wrap: anywhere;
-          hyphens: auto;
-        }
-
-        {%- comment -%}The underline of the active tab is a line that grows in and out (not a text-decoration), so changing tab is gradual.{%- endcomment -%}
-        #shopify-section-{{ section.id }} .faq__category-tab::after {
-          content: "";
-          position: absolute;
-          inset-inline: 0;
-          inset-block-end: .5rem;
-          height: 1px;
-          background: currentColor;
-          transform: scaleX(0);
-          transform-origin: left center;
-          transition: transform .35s cubic-bezier(.4, 0, .2, 1);
-        }
-
-        #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"]::after {
-          transform: scaleX(1);
-        }
+        {%- if faq_page -%}
+          {%- comment -%}Phones, FAQ page: the gap between the menu box and the questions box (from 700px they sit side by side, see below).{%- endcomment -%}
+          @media screen and (max-width: 699px) {
+            #shopify-section-{{ section.id }} .faq--full-width {
+              margin-block-start: var(--faq-menu-gap);
+            }
+          }
+        {%- endif -%}
 
         @media screen and (min-width: 700px) {
           {%- comment -%}
@@ -1314,6 +1338,13 @@
       "label": "White containers, two columns on desktop",
       "info": "With tabs: the questions sit on white rounded containers - one on phones, two columns on desktop read from left to right.",
       "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "categories_side_menu",
+      "label": "Categories menu on the left (tablet and desktop)",
+      "info": "With categories: from tablet width up, they become a vertical menu on the left (about 20%) that stays in view while scrolling, and the questions take the rest. Phones keep the row of tabs. The FAQ page always uses the menu, on every screen size.",
+      "default": false
     },
     {
       "type": "checkbox",
