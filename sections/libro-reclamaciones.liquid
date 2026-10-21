@@ -285,41 +285,49 @@
 {%- if section.settings.show_loader and request.design_mode == false -%}
   <style>
     {%- comment -%}
-    A short loading screen when the page opens (about a second, pure CSS - it hides itself, no script): a flat book whose page turns,
-    and a line of text. Flat colors only: no shadows, no gradients. Not shown inside the theme editor.
+    A short loading screen over the section only (about a second, pure CSS - it hides itself, no script): a thin-line book whose page
+    turns, and a line of text. Flat colors only: no shadows, no gradients. Not shown inside the theme editor.
     {%- endcomment -%}
+    #shopify-section-{{ section.id }} > div {
+      position: relative;
+    }
+
     .rc-loader {
-      position: fixed;
+      position: absolute;
       inset: 0;
-      z-index: 1000;
+      z-index: 5;
       display: grid;
-      place-content: center;
+      align-content: start;
       justify-items: center;
-      gap: 1.25rem;
+      gap: 1rem;
+      padding-block-start: min(10rem, 25vh);
       animation: rc-loader-out 0.45s ease 1.3s forwards;
     }
 
     .rc-loader__book {
-      width: 4.5rem;
-      height: 4.5rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      color: rgb(var(--text-color) / 0.85);
     }
 
-    .rc-loader__cover { fill: rgb(var(--text-color)); }
-    .rc-loader__page { fill: rgb(var(--background)); }
-    .rc-loader__line { fill: rgb(var(--text-color) / 0.25); }
+    .rc-loader__book path {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1px;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+    }
 
     .rc-loader__turning {
-      fill: rgb(var(--background));
-      stroke: rgb(var(--text-color));
-      stroke-width: 1;
       transform-box: view-box;
-      transform-origin: 32px 33px;
-      animation: rc-loader-turn 0.9s ease-in-out 0.1s infinite;
+      transform-origin: 32px 32px;
+      animation: rc-loader-turn 1s ease-in-out 0.1s infinite;
     }
 
     .rc-loader__text {
       margin: 0;
-      color: rgb(var(--text-color) / 0.75);
+      color: rgb(var(--text-color) / 0.6);
     }
 
     @keyframes rc-loader-turn {
@@ -336,21 +344,19 @@
     }
   </style>
 
-  <div class="rc-loader color-scheme color-scheme--{{ section.settings.color_scheme.id }}" role="status" aria-live="polite">
-    <svg class="rc-loader__book" viewBox="0 0 64 64" aria-hidden="true">
-      <rect class="rc-loader__cover" x="6" y="12" width="52" height="42" rx="3"/>
-      <rect class="rc-loader__page" x="10" y="16" width="21" height="34" rx="1"/>
-      <rect class="rc-loader__page" x="33" y="16" width="21" height="34" rx="1"/>
-      <rect class="rc-loader__line" x="13" y="21" width="15" height="2"/>
-      <rect class="rc-loader__line" x="13" y="27" width="15" height="2"/>
-      <rect class="rc-loader__line" x="13" y="33" width="11" height="2"/>
-      <rect class="rc-loader__turning" x="33" y="16" width="21" height="34" rx="1"/>
-    </svg>
-    <p class="rc-loader__text">{{ section.settings.loader_text }}</p>
-  </div>
 {%- endif -%}
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_libro_reclamaciones %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_libro_reclamaciones %} style="border-end-start-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; border-end-end-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; overflow: hidden;"{% endif %}>
+  {%- if section.settings.show_loader and request.design_mode == false -%}
+    <div class="rc-loader color-scheme color-scheme--{{ section.settings.color_scheme.id }}" role="status" aria-live="polite">
+      <svg class="rc-loader__book" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 14 C26 11 16 11 8 13 V48 C16 46 26 46 32 49 C38 46 48 46 56 48 V13 C48 11 38 11 32 14 Z"/>
+        <path d="M32 14 V49"/>
+        <path class="rc-loader__turning" d="M32 14 C38 11 48 11 56 13 V48 C48 46 38 46 32 49 Z"/>
+      </svg>
+      <p class="rc-loader__text">{{ section.settings.loader_text }}</p>
+    </div>
+  {%- endif -%}
   <div class="section-spacing">
     <div class="container">
       <div class="section-stack">
@@ -387,7 +393,7 @@
       "type": "checkbox",
       "id": "show_loader",
       "label": "Mostrar pantalla de carga al abrir la página",
-      "info": "Un libro que pasa la página durante aproximadamente un segundo. No se muestra dentro del editor.",
+      "info": "Un libro de línea fina que pasa la página durante aproximadamente un segundo, solo sobre esta sección. No se muestra dentro del editor.",
       "default": true
     },
     {
