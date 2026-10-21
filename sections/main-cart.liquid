@@ -202,6 +202,22 @@ full-bleed background image/video): this section has no such background, and .ca
 position: sticky - any overflow other than visible on an ancestor breaks that stickiness. The
 corner radius below still rounds the box's own background fine without it.
 {%- endcomment -%}
+{%- if section.settings.floating_cart -%}
+  <style>
+    {%- comment -%}
+    The side gutter of the floating card sits on the section wrapper itself, outside the section, instead of on the card inside it:
+    the editor's outline then spans only the card, which still respects the page's side padding.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} {
+      margin-inline: var(--container-gutter);
+    }
+
+    #shopify-section-{{ section.id }} .section-floating {
+      margin-inline: 0;
+    }
+  </style>
+{%- endif -%}
+
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_cart %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_cart %} style="border-end-start-radius: {{ section.settings.cart_border_radius }}px; border-end-end-radius: {{ section.settings.cart_border_radius }}px;"{% endif %}>
   <div class="section-spacing">
     <div class="container">
