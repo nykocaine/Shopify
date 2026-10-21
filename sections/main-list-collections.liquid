@@ -1,3 +1,19 @@
+{%- if section.settings.floating_list_collections -%}
+  <style>
+    {%- comment -%}
+    The side gutter of the floating card sits on the section wrapper itself, outside the section, instead of on the card inside it:
+    the editor's outline then spans only the card, which still respects the page's side padding.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} {
+      margin-inline: var(--container-gutter);
+    }
+
+    #shopify-section-{{ section.id }} .section-floating {
+      margin-inline: 0;
+    }
+  </style>
+{%- endif -%}
+
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_list_collections %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_list_collections %} style="border-end-start-radius: {{ section.settings.list_collections_border_radius }}px; border-end-end-radius: {{ section.settings.list_collections_border_radius }}px; overflow: hidden;"{% endif %}>
   {%- if collections.size == 0 -%}
     <div class="empty-state">
