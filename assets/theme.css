@@ -6274,24 +6274,39 @@ product-rerender {
   }
 }
 
-/* While the filters are open, the header and the bar (with the panel inside it) do not follow the scroll: they are released
-   from their sticky behavior and stay in their place in the page, so they scroll away like any other content. The header does
-   not slide (hide on scroll) either. Everything returns to normal once the panel closes (FacetsDrawer sets and clears
-   data-facets-open on <html>). */
-:root[data-facets-open] .shopify-section--header {
-  position: relative !important;
-  top: auto !important;
-  transform: none !important;
-  visibility: visible !important;
-  transition: none !important;
+/* Desktop (1000px and up), where the filters panel lives inside the toolbar: while it is open, the header and the bar (with the
+   panel inside it) do not follow the scroll: they are released from their sticky behavior and stay in their place in the page, so
+   they scroll away like any other content. The header does not slide (hide on scroll) either. Everything returns to normal once
+   the panel closes (FacetsDrawer sets and clears data-facets-open on <html>). */
+@media screen and (min-width: 1000px) {
+  :root[data-facets-open] .shopify-section--header {
+    position: relative !important;
+    top: auto !important;
+    transform: none !important;
+    visibility: visible !important;
+    transition: none !important;
+  }
+
+  :root[data-facets-open] .collection__toolbar {
+    position: relative !important;
+    top: auto !important;
+    transform: none !important;
+    visibility: visible !important;
+    transition: none !important;
+  }
 }
 
-:root[data-facets-open] .collection__toolbar {
-  position: relative !important;
-  top: auto !important;
-  transform: none !important;
-  visibility: visible !important;
-  transition: none !important;
+/* Mobile and tablet (below 1000px), where the filters are a sheet hanging from the toolbar and the page cannot scroll while it
+   is open: the header and the bar stay exactly where they are stuck, on screen, and the sheet hangs below them. They are NOT
+   released from sticky (that threw them back to the top of the page, out of view, when the page had been scrolled, and the sheet
+   then covered the top of the screen). If the header had slid away on scroll it comes back while the sheet is open. */
+@media screen and (max-width: 999px) {
+  :root[data-facets-open] .shopify-section--header,
+  :root[data-facets-open] .collection__toolbar {
+    transform: none !important;
+    visibility: visible !important;
+    transition: none !important;
+  }
 }
 
 .drawer--cart .tab-pills {
