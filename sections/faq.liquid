@@ -441,6 +441,7 @@
           display: none;
         }
 
+        {%- unless template.suffix == 'faq' -%}
         @media screen and (max-width: 699px) {
           #shopify-section-{{ section.id }} .faq--full-width {
             margin-block-start: 0;
@@ -475,24 +476,6 @@
             margin-inline-start: -3rem;
           }
 
-          {%- if template.suffix == 'faq' -%}
-            {%- comment -%}
-            The FAQ page only (the same section sits on other pages, which keep the sideways-scrolling row): the tabs are one under the
-            other instead of a row you scroll sideways, all in view, each one still a plain link with the active one underlined. No
-            looping copies of them either (data-tabs-loop is left off on this page, see the markup above), so no end spacer.
-            {%- endcomment -%}
-            #shopify-section-{{ section.id }} .faq__categories.faq__categories::part(tablist) {
-              flex-direction: column;
-              align-items: flex-start;
-              gap: 0;
-              overflow: visible;
-              padding-inline-end: 1.25rem;
-            }
-
-            #shopify-section-{{ section.id }} .faq__categories.faq__categories::part(tablist)::after {
-              display: none;
-            }
-          {%- endif -%}
 
           {%- comment -%}Doubled class: these rules sit before the base tab rules further down in this file and must win over them.{%- endcomment -%}
           #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab,
@@ -540,30 +523,8 @@
             border-start-start-radius: 0 !important;
             border-start-end-radius: 0 !important;
           }
-
-          {%- if template.suffix == 'faq' -%}
-            {%- comment -%}
-            The FAQ page only: the menu and the questions are two separate boxes again, not one glued block. The gap between them is the
-            same one the header row keeps above the questions on wider screens (1.8rem), the menu's bottom corners are rounded like its
-            top ones, and the questions' top corners are rounded back (these rules come after the ones above, and both are !important).
-            {%- endcomment -%}
-            #shopify-section-{{ section.id }} .faq--full-width {
-              margin-block-start: 1.8rem;
-            }
-
-            #shopify-section-{{ section.id }} .faq__categories {
-              margin-block-end: 0;
-              border-end-start-radius: {{ section.settings.faq_border_radius }}px;
-              border-end-end-radius: {{ section.settings.faq_border_radius }}px;
-            }
-
-            #shopify-section-{{ section.id }} .faq__panel > .faq__columns:first-child,
-            #shopify-section-{{ section.id }} .faq__panel > .faq__text-image:first-child .faq__text-image-text {
-              border-start-start-radius: {{ section.settings.faq_border_radius }}px !important;
-              border-start-end-radius: {{ section.settings.faq_border_radius }}px !important;
-            }
-          {%- endif -%}
         }
+        {%- endunless -%}
       {%- else -%}
         {%- comment -%}
         Single list ("Two columns" off): the tab panels are always built as two columns (1st, 3rd, 5th... in the first one,
@@ -892,6 +853,89 @@
       #shopify-section-{{ section.id }} read-more-match-height[data-expanded] .faq__text-image-text-toggle__label-less {
         display: inline;
       }
+
+      {%- if template.suffix == 'faq' and has_categories -%}
+        {%- comment -%}
+        ============================================================
+        THE FAQ PAGE ONLY (template "faq") - the categories are a vertical menu, not a row of tabs. The same section sits on other
+        pages, which keep their tabs: nothing here applies there. Two forms only:
+        - Phones (below 700px): the menu is a white box with all four corners rounded, and under it, separated by a gap, the box of
+          questions, also with all four corners rounded.
+        - From 700px (tablet and desktop): the menu is a column on the left, about 20% of the section, and the questions fill the other
+          80% on its right (their two columns from 1000px on, as always). The menu stays in view while the page scrolls.
+        ============================================================
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} .faq__categories {
+          --faq-bar-background: #ffffff;
+          background: var(--faq-bar-background);
+          border-radius: {{ section.settings.faq_border_radius }}px;
+        }
+
+        #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0;
+          overflow: visible;
+          padding: .5rem 1.25rem;
+        }
+
+        {%- comment -%}Doubled class: these must win over the base tab rules (and the "filled" style) above.{%- endcomment -%}
+        #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab,
+        #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled,
+        #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled[aria-selected="true"],
+        #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab.faq__category-tab--filled:hover {
+          position: relative;
+          padding: .75rem 0;
+          text-align: start;
+          white-space: normal;
+          color: rgb(var(--text-color));
+          background: none;
+          border-radius: 0;
+        }
+
+        {%- comment -%}The underline of the active tab is a line that grows in and out (not a text-decoration), so changing tab is gradual.{%- endcomment -%}
+        #shopify-section-{{ section.id }} .faq__category-tab::after {
+          content: "";
+          position: absolute;
+          inset-inline: 0;
+          inset-block-end: .5rem;
+          height: 1px;
+          background: currentColor;
+          transform: scaleX(0);
+          transform-origin: left center;
+          transition: transform .35s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"]::after {
+          transform: scaleX(1);
+        }
+
+        @media screen and (min-width: 700px) {
+          {%- comment -%}
+          overflow: clip instead of hidden (the card's inline style): it clips the rounded corners the same way but does not make the card a
+          scroll container, which is what lets the menu stay stuck to the screen while the page scrolls.
+          {%- endcomment -%}
+          #shopify-section-{{ section.id }} .section-floating {
+            overflow: clip !important;
+          }
+
+          #shopify-section-{{ section.id }} .faq__container {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 4fr);
+            column-gap: 1.8rem;
+            align-items: start;
+          }
+
+          #shopify-section-{{ section.id }} .faq--full-width {
+            margin-block-start: 0;
+          }
+
+          #shopify-section-{{ section.id }} .faq__container > .section-header {
+            position: sticky;
+            inset-block-start: calc(var(--sticky-area-height, 0px) + 1rem);
+          }
+        }
+      {%- endif -%}
     </style>
 
     {%- if has_categories -%}
