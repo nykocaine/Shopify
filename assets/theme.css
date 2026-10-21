@@ -6312,7 +6312,7 @@ product-rerender {
 /* Filters sheet (below 1000px): the overlay's blur and veil start where the sheet starts, under the toolbar, so the header and the
    toolbar (and the gaps around their cards) would show the page behind them unblurred. This layer is the same blur and veil over
    that top strip, from the top of the screen down to the sheet. It sits above the page content and below the header and the toolbar
-   (both stay crisp on top of it), and fades in and out with the sheet (FacetsDrawer sets --facets-drawer-top and
+   (both stay crisp on top of it, see the rules below), and fades in and out with the sheet (FacetsDrawer sets --facets-drawer-top and
    data-facets-veil on <html>). */
 @media screen and (max-width: 999px) {
   :root::before {
@@ -6321,7 +6321,7 @@ product-rerender {
     inset-block-start: 0;
     inset-inline: 0;
     height: var(--facets-drawer-top, 0px);
-    z-index: 1;
+    z-index: 4;
     pointer-events: none;
     background: rgb(var(--page-overlay));
     -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
@@ -6335,6 +6335,22 @@ product-rerender {
     opacity: 1;
     visibility: visible;
     transition: opacity .45s ease, visibility 0s;
+  }
+
+  /* The header's own page-colored bands (behind the floating header and in its gap above it while stuck) are opaque, so they would
+     hide this layer and leave a flat page color behind the header: while the sheet is open they are see-through, and the layer's
+     blur and veil show behind the header's and the toolbar's cards instead. The layer (z-index 4) sits under the header group (5)
+     and the toolbar is lifted above it, so both stay crisp on top. */
+  :root[data-facets-veil] .shopify-section-group-header-group:has(.header--floating) {
+    background: transparent !important;
+  }
+
+  :root[data-facets-veil] .shopify-section--header::before {
+    background: transparent !important;
+  }
+
+  :root[data-facets-veil] .collection__toolbar {
+    z-index: 5;
   }
 }
 
