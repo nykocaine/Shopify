@@ -2878,13 +2878,20 @@ var FacetsDrawer = class extends Drawer {
   }
   async show(options) {
     this._mode = this.#currentMode();
-    // While open, the header and the bar stay in their place in the page instead of following the scroll (theme.css). They
-    // are released from sticky right here, so if they had scrolled out of view the page is brought back to them first.
+    // On desktop, while open, the header and the bar stay in their place in the page instead of following the scroll (theme.css).
+    // They are released from sticky right here, so if they had scrolled out of view the page is brought back to them first
+    // (on mobile they stay stuck, so this only happens there with a toolbar that is not sticky).
     document.documentElement.setAttribute("data-facets-open", "");
     const bar = document.querySelector(".collection__toolbar");
     if (bar && bar.getBoundingClientRect().top < 0) {
       const header = document.querySelector(".shopify-section--header");
-      window.scrollTo({ top: Math.max(0, window.scrollY + bar.getBoundingClientRect().top - (header ? header.offsetHeight : 0)), behavior: "instant" });
+      const group = document.querySelector(".shopify-section-group-header-group");
+      const barTop = window.scrollY + bar.getBoundingClientRect().top;
+      const stackTop = group ? window.scrollY + group.getBoundingClientRect().top : 0;
+      // The page goes back to the very top of the header stack (announcement bar, the gap above the header, the header), so none of that
+      // space is cut off, as long as the toolbar is right below it and still fits on screen; otherwise just under the header, as before
+      const top = barTop - stackTop <= window.innerHeight * 0.6 ? stackTop : barTop - (header ? header.offsetHeight : 0);
+      window.scrollTo({ top: Math.max(0, top), behavior: "instant" });
     }
     if (this.isInline) {
       // The panel is its own card right after the filter toolbar, not a part of it (the toolbar keeps its rounded bottom edge)
