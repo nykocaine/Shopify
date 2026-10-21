@@ -264,6 +264,11 @@
     {%- endcapture -%}
 
     <style>
+      {%- comment -%}The white of the section's boxes (the questions containers and, on the FAQ page, the categories menu), in one place.{%- endcomment -%}
+      #shopify-section-{{ section.id }} {
+        --faq-box-background: #ffffff;
+      }
+
       {%- comment -%}
       ============================================================
       LAYOUT & SPACING (padding, container, first-section treatment)
@@ -391,7 +396,7 @@
           display: flex;
           flex-direction: column;
           padding: 0.5rem 1.25rem;
-          background: #ffffff;
+          background: var(--faq-box-background);
           border-radius: {{ section.settings.faq_border_radius }}px;
         }
 
@@ -421,7 +426,7 @@
           #shopify-section-{{ section.id }} .faq__column {
             display: block;
             padding: 0.5rem 1.5rem;
-            background: #ffffff;
+            background: var(--faq-box-background);
             border-radius: {{ section.settings.faq_border_radius }}px;
           }
 
@@ -454,7 +459,7 @@
           {%- endcomment -%}
           #shopify-section-{{ section.id }} .faq__categories {
             margin-block-end: -1px;
-            background: #ffffff;
+            background: var(--faq-box-background);
             border-start-start-radius: {{ section.settings.faq_border_radius }}px;
             border-start-end-radius: {{ section.settings.faq_border_radius }}px;
           }
@@ -865,9 +870,14 @@
           tablet its text still fits), and the questions fill the rest on its right (their two columns from 1000px on, as always). The menu stays in view while the page scrolls.
         ============================================================
         {%- endcomment -%}
+        #shopify-section-{{ section.id }} {
+          --faq-menu-gap: 1.8rem;
+          --faq-menu-min-width: 12rem;
+          --faq-menu-padding: 1.25rem;
+        }
+
         #shopify-section-{{ section.id }} .faq__categories {
-          --faq-bar-background: #ffffff;
-          background: var(--faq-bar-background);
+          background: var(--faq-box-background);
           border-radius: {{ section.settings.faq_border_radius }}px;
         }
 
@@ -878,7 +888,12 @@
           align-items: flex-start;
           gap: 0;
           overflow: visible;
-          padding: .5rem 1.25rem;
+          padding: .5rem var(--faq-menu-padding);
+        }
+
+        {%- comment -%}Phones: the gap between the menu box and the questions box (from 700px they sit side by side, see below).{%- endcomment -%}
+        #shopify-section-{{ section.id }} .faq--full-width {
+          margin-block-start: var(--faq-menu-gap);
         }
 
         {%- comment -%}Doubled class: these must win over the base tab rules (and the "filled" style) above.{%- endcomment -%}
@@ -932,8 +947,8 @@
 
           #shopify-section-{{ section.id }} .faq__container {
             display: grid;
-            grid-template-columns: minmax(12rem, 1fr) minmax(0, 4fr);
-            column-gap: 1.8rem;
+            grid-template-columns: minmax(var(--faq-menu-min-width), 1fr) minmax(0, 4fr);
+            column-gap: var(--faq-menu-gap);
             align-items: start;
           }
 
@@ -944,6 +959,17 @@
           #shopify-section-{{ section.id }} .faq__container > .section-header {
             position: sticky;
             inset-block-start: calc(var(--sticky-area-height, 0px) + 1rem);
+          }
+        }
+
+        {%- comment -%}
+        A text + image block puts its title, text and media in a row from 700px (snippets/faq-text-image.liquid), counted on the whole
+        screen. Here the menu takes its share first, so up to 1200px that row would be too narrow: the block stacks, as on a phone
+        (!important: its own rule is set per block with an id selector).
+        {%- endcomment -%}
+        @media screen and (min-width: 700px) and (max-width: 1199px) {
+          #shopify-section-{{ section.id }} .faq__text-image--with-image {
+            grid-template-columns: minmax(0, 1fr) !important;
           }
         }
       {%- endif -%}
