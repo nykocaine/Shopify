@@ -823,12 +823,20 @@
 
       {%- if product_page_loose_tabs -%}
         {%- comment -%}
-        Product page, desktop only: the categories sit above the content as plain text (no background, no pill), spread over the
-        whole row from edge to edge instead of glued to the questions. Doubled classes so it wins over the base and "filled" rules above.
+        Product page, desktop only: the categories sit above the content as plain text (no background, no pill), lined up to the left
+        instead of glued to the questions. Doubled classes so it wins over the base and "filled" rules above.
         {%- endcomment -%}
         @media screen and (min-width: 1000px) {
           #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
-            justify-content: space-between;
+            justify-content: flex-start;
+            align-items: stretch;
+            gap: 2rem;
+          }
+
+          {%- comment -%}The label takes the size of a title (the section's own title is an h3), not the body text size; same line height on every tab so they all have the same height.{%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__category-tab .h6 {
+            font-size: var(--text-h3);
+            line-height: var(--heading-line-height);
           }
 
           #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab,
