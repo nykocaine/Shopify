@@ -512,6 +512,24 @@ if (!window.customElements.get('read-more-match-height')) {
               var captionRow = document.getElementById('{{ media_caption_row_id }}');
               if (!carousel || !captionRow) return;
 
+              // The indicator under the carousel only makes sense while there is something to scroll: with all the slides in view (two of them
+              // from 700px) it showed up anyway and did nothing. It is hidden by an attribute of its own (the component sets "hidden" itself).
+              var segments = document.querySelector('carousel-segments[aria-controls="{{ media_carousel_id }}"]');
+
+              function fitSegments() {
+                if (!segments) return;
+                if (!carousel.isConnected) {
+                  window.removeEventListener('resize', fitSegments);
+                  return;
+                }
+
+                segments.toggleAttribute('data-no-scroll', carousel.scrollWidth <= carousel.clientWidth + 1);
+              }
+
+              window.addEventListener('resize', fitSegments);
+              if (window.ResizeObserver) new ResizeObserver(fitSegments).observe(carousel);
+              fitSegments();
+
               function syncCaptions() {
                 // The theme editor replaces this markup on every setting change: drop the window listener then.
                 if (!carousel.isConnected) {
@@ -657,6 +675,10 @@ if (!window.customElements.get('read-more-match-height')) {
 
           #{{ media_carousel_id }} {
             border-radius: {{ media_corner_radius }};
+          }
+
+          carousel-segments[aria-controls="{{ media_carousel_id }}"][data-no-scroll] {
+            display: none;
           }
 
           {%- comment -%}

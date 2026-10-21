@@ -107,7 +107,7 @@
             {%- when 'category' -%}
               {%- if block.settings.title != blank -%}
                 {%- if faq_column_a != blank -%}
-                  <div class="faq__columns"><div class="faq__column">{{ faq_column_a }}</div><div class="faq__column">{{ faq_column_b }}</div></div>
+                  <div class="faq__columns"><div class="faq__column">{{ faq_column_a }}</div>{% if faq_column_b != blank %}<div class="faq__column">{{ faq_column_b }}</div>{% endif %}</div>
                   {%- assign faq_column_a = '' -%}
                   {%- assign faq_column_b = '' -%}
                 {%- endif -%}
@@ -173,7 +173,7 @@
             {%- when 'text_image' -%}
               {%- if panel_open -%}
                 {%- if faq_column_a != blank -%}
-                  <div class="faq__columns"><div class="faq__column">{{ faq_column_a }}</div><div class="faq__column">{{ faq_column_b }}</div></div>
+                  <div class="faq__columns"><div class="faq__column">{{ faq_column_a }}</div>{% if faq_column_b != blank %}<div class="faq__column">{{ faq_column_b }}</div>{% endif %}</div>
                   {%- assign faq_column_a = '' -%}
                   {%- assign faq_column_b = '' -%}
                 {%- endif -%}
@@ -182,7 +182,7 @@
           {%- endcase -%}
         {%- endfor -%}
         {%- if faq_column_a != blank -%}
-                  <div class="faq__columns"><div class="faq__column">{{ faq_column_a }}</div><div class="faq__column">{{ faq_column_b }}</div></div>
+                  <div class="faq__columns"><div class="faq__column">{{ faq_column_a }}</div>{% if faq_column_b != blank %}<div class="faq__column">{{ faq_column_b }}</div>{% endif %}</div>
                   {%- assign faq_column_a = '' -%}
                   {%- assign faq_column_b = '' -%}
                 {%- endif -%}
@@ -1199,7 +1199,10 @@
               }
 
               if (panels) {
-                new MutationObserver(function () { requestAnimationFrame(fitBarToCard); }).observe(panels, { attributes: true, attributeFilter: ['hidden'], subtree: true });
+              {%- comment -%}Only a category panel being shown or hidden matters here, not every other element that toggles its hidden attribute inside them.{%- endcomment -%}
+              new MutationObserver(function (mutations) {
+                if (mutations.some(function (mutation) { return mutation.target.classList.contains('faq__panel'); })) requestAnimationFrame(fitBarToCard);
+              }).observe(panels, { attributes: true, attributeFilter: ['hidden'], subtree: true });
               }
               window.addEventListener('resize', fitBarToCard);
               glue.addEventListener('change', fitBarToCard);
@@ -1988,7 +1991,7 @@
               "value": "picto-chef",
               "label": "t:global.icons.icon_options.chef",
               "group": "t:global.icons.icon_options.food_and_drink_category"
-            },
+            }
           ],
           "default": "none"
         },
@@ -2439,7 +2442,7 @@
               "value": "picto-chef",
               "label": "t:global.icons.icon_options.chef",
               "group": "t:global.icons.icon_options.food_and_drink_category"
-            },
+            }
           ],
           "default": "none"
         },
