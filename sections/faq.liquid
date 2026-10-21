@@ -1153,6 +1153,62 @@
               var tabs = root.querySelector('.faq__categories');
               if (!tabs) return;
 
+              {%- unless faq_page -%}
+              {%- comment -%}
+              Glued bar: it ends exactly where the first container of the open category's content ends - the white text card of a text + image
+              block, or the first of the two columns of questions - and not over the media or the second column next to it, so bar and
+              container read as one piece. Content without such a container keeps the bar at the full width. It follows the tab changes (the panels' hidden attribute) and the
+              screen size, and only works while the bar is glued (glue_query: phones by default, see the top of this file).
+              {%- endcomment -%}
+              var glue = window.matchMedia({{ glue_query | json }});
+              var panels = root.querySelector('.faq__panels');
+
+              function fitBarToCard() {
+                {%- comment -%}The height of the bar (minus the pixel it overlaps the content by), for the gallery next to the first card to rise to the top of the bar.{%- endcomment -%}
+                if (glue.matches) {
+                  root.style.setProperty('--faq-bar-height', (tabs.getBoundingClientRect().height - 1) + 'px');
+                } else {
+                  root.style.removeProperty('--faq-bar-height');
+                }
+                {%- comment -%}The text card of the first block is cut to the gallery's height minus the bar: it measures again (snippets/faq-text-image.liquid).{%- endcomment -%}
+                window.dispatchEvent(new Event('faq-bar-resize'));
+                if (!glue.matches || !panels) { tabs.style.width = ''; return; }
+
+                var panel = panels.querySelector('.faq__panel:not([hidden])');
+                var first = panel && panel.firstElementChild;
+                if (!first) { tabs.style.width = ''; return; }
+
+                {%- comment -%}
+                The first container of the content: the text card of a text + image block, or the first of the two white columns of the
+                questions (from 1000px; on phones the columns dissolve into one container, they have no box of their own and the bar keeps
+                the full width). When there are two containers, only the first one counts.
+                {%- endcomment -%}
+                var card = first.classList.contains('faq__text-image')
+                  ? first.querySelector('.faq__text-image-text--card')
+                  : first.querySelector('.faq__column');
+                if (!card || card.getBoundingClientRect().width === 0) { tabs.style.width = ''; return; }
+
+                var width = card.getBoundingClientRect().right - tabs.getBoundingClientRect().left;
+                tabs.style.width = width > 0 && width < tabs.parentElement.clientWidth - 1 ? width + 'px' : '';
+              }
+
+              if (panels) {
+                new MutationObserver(function () { requestAnimationFrame(fitBarToCard); }).observe(panels, { attributes: true, attributeFilter: ['hidden'], subtree: true });
+              }
+              window.addEventListener('resize', fitBarToCard);
+              glue.addEventListener('change', fitBarToCard);
+              {%- comment -%}
+              Run right now (not after the first paint, which made the gallery and the second column jump up a moment after loading), and
+              again whenever the bar changes size (a webfont swapping in, a screen size change); the first fit has no width transition.
+              {%- endcomment -%}
+              tabs.style.transition = 'none';
+              fitBarToCard();
+              requestAnimationFrame(function () { tabs.style.transition = ''; });
+
+              if (window.ResizeObserver) new ResizeObserver(fitBarToCard).observe(tabs);
+              if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitBarToCard);
+              {%- endunless -%}
+
               requestAnimationFrame(function () {
                 if (!tabs.shadowRoot) return;
 
@@ -1274,52 +1330,6 @@
                 }, { passive: true });
                 window.addEventListener('resize', updateEdgeFade);
 
-                {%- unless faq_page -%}
-                {%- comment -%}
-                Glued bar: it ends exactly where the first container of the open category's content ends - the white text card of a text + image
-                block, or the first of the two columns of questions - and not over the media or the second column next to it, so bar and
-                container read as one piece. Content without such a container keeps the bar at the full width. It follows the tab changes (the panels' hidden attribute) and the
-                screen size, and only works while the bar is glued (glue_query: phones by default, see the top of this file).
-                {%- endcomment -%}
-                var glue = window.matchMedia({{ glue_query | json }});
-                var panels = root.querySelector('.faq__panels');
-
-                function fitBarToCard() {
-                  {%- comment -%}The height of the bar (minus the pixel it overlaps the content by), for the gallery next to the first card to rise to the top of the bar.{%- endcomment -%}
-                  if (glue.matches) {
-                    root.style.setProperty('--faq-bar-height', (tabs.getBoundingClientRect().height - 1) + 'px');
-                  } else {
-                    root.style.removeProperty('--faq-bar-height');
-                  }
-                  {%- comment -%}The text card of the first block is cut to the gallery's height minus the bar: it measures again (snippets/faq-text-image.liquid).{%- endcomment -%}
-                  window.dispatchEvent(new Event('faq-bar-resize'));
-                  if (!glue.matches || !panels) { tabs.style.width = ''; return; }
-
-                  var panel = panels.querySelector('.faq__panel:not([hidden])');
-                  var first = panel && panel.firstElementChild;
-                  if (!first) { tabs.style.width = ''; return; }
-
-                  {%- comment -%}
-                  The first container of the content: the text card of a text + image block, or the first of the two white columns of the
-                  questions (from 1000px; on phones the columns dissolve into one container, they have no box of their own and the bar keeps
-                  the full width). When there are two containers, only the first one counts.
-                  {%- endcomment -%}
-                  var card = first.classList.contains('faq__text-image')
-                    ? first.querySelector('.faq__text-image-text--card')
-                    : first.querySelector('.faq__column');
-                  if (!card || card.getBoundingClientRect().width === 0) { tabs.style.width = ''; return; }
-
-                  var width = card.getBoundingClientRect().right - tabs.getBoundingClientRect().left;
-                  tabs.style.width = width > 0 && width < tabs.parentElement.clientWidth - 1 ? width + 'px' : '';
-                }
-
-                if (panels) {
-                  new MutationObserver(function () { requestAnimationFrame(fitBarToCard); }).observe(panels, { attributes: true, attributeFilter: ['hidden'], subtree: true });
-                }
-                window.addEventListener('resize', fitBarToCard);
-                glue.addEventListener('change', fitBarToCard);
-                fitBarToCard();
-                {%- endunless -%}
               });
             }
 
