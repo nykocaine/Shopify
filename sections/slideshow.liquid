@@ -11,7 +11,7 @@
       {%- endif -%}
     }
 
-    {%- unless section.settings.full_width -%}
+    {%- if section.settings.floating_slideshow -%}
       {%- comment -%}
       The page's side gutter (the .container margin) sits on the section wrapper itself, outside the section, instead of on the
       slideshow inside it: the editor's outline then spans only the slideshow, which still respects the page's side padding.
@@ -23,7 +23,7 @@
       #shopify-section-{{ section.id }} .slideshow-wrapper {
         margin-inline: 0;
       }
-    {%- endunless -%}
+    {%- endif -%}
 
     {%- comment -%}
     The text's distance from the slide's edges is the same inner padding as the floating containers (container gutter + 0.5rem,
@@ -72,7 +72,7 @@
     }
   </style>
 
-  <div class="slideshow-wrapper {% unless section.settings.full_width %}container{% endunless %}">
+  <div class="slideshow-wrapper {% if section.settings.floating_slideshow %}container{% endif %}">
     <slideshow-carousel id="slideshow-{{ section.id }}" allow-swipe cell-selector=".slideshow__slide" {% if section.settings.allow_transparent_header %}allow-transparent-header{% endif %} class="slideshow" transition="{{ section.settings.transition_type }}" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}" {% if section.settings.pause_auto_rotate_on_hover %}pause-on-hover{% endif %}{% endif %} style="border-radius: {{ section.settings.border_radius }}px;" role="region" aria-roledescription="carousel" aria-label="{{ 'general.accessibility.slideshow' | t | escape }}">
       {%- content_for 'blocks' -%}
 
@@ -102,10 +102,10 @@
     },
     {
       "type": "checkbox",
-      "id": "full_width",
-      "label": "t:sections.slideshow.full_width",
-      "info": "t:sections.slideshow.full_width_info",
-      "default": false
+      "id": "floating_slideshow",
+      "label": "Floating",
+      "info": "Activado: el slideshow respeta los márgenes laterales de la página y el marco del editor se ajusta solo a él. Desactivado: va de borde a borde de la pantalla.",
+      "default": true
     },
     {
       "type": "range",
