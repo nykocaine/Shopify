@@ -861,8 +861,8 @@
         pages, which keep their tabs: nothing here applies there. Two forms only:
         - Phones (below 700px): the menu is a white box with all four corners rounded, and under it, separated by a gap, the box of
           questions, also with all four corners rounded.
-        - From 700px (tablet and desktop): the menu is a column on the left, about 20% of the section, and the questions fill the other
-          80% on its right (their two columns from 1000px on, as always). The menu stays in view while the page scrolls.
+        - From 700px (tablet and desktop): the menu is a column on the left, about 20% of the section (never narrower than 12rem, so on a
+          tablet its text still fits), and the questions fill the rest on its right (their two columns from 1000px on, as always). The menu stays in view while the page scrolls.
         ============================================================
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .faq__categories {
@@ -891,6 +891,15 @@
           color: rgb(var(--text-color));
           background: none;
           border-radius: 0;
+          max-width: 100%;
+          min-width: 0;
+        }
+
+        {%- comment -%}A long word (like "contraindicaciones") in a narrow menu breaks instead of running out of its box.{%- endcomment -%}
+        #shopify-section-{{ section.id }} .faq__category-tab,
+        #shopify-section-{{ section.id }} .faq__category-tab .h6 {
+          overflow-wrap: anywhere;
+          hyphens: auto;
         }
 
         {%- comment -%}The underline of the active tab is a line that grows in and out (not a text-decoration), so changing tab is gradual.{%- endcomment -%}
@@ -921,7 +930,7 @@
 
           #shopify-section-{{ section.id }} .faq__container {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 4fr);
+            grid-template-columns: minmax(12rem, 1fr) minmax(0, 4fr);
             column-gap: 1.8rem;
             align-items: start;
           }
