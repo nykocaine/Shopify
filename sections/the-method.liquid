@@ -44,6 +44,31 @@
   de la intro. Los demás controles (opciones, atrás, reiniciar) ya declaran type="button"
   explícito, así que no hay riesgo de que disparen un submit por accidente.
 {%- endcomment -%}
+{%- if section.settings.coming_soon -%}
+  <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_the_method %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_the_method %} style="border-end-start-radius: {{ section.settings.the_method_border_radius }}px; border-end-end-radius: {{ section.settings.the_method_border_radius }}px; overflow: hidden;"{% endif %}>
+    <div class="container section-spacing">
+      <div class="the-method-soon" style="--the-method-glow-1: {{ section.settings.glow_color_1 }}; --the-method-glow-2: {{ section.settings.glow_color_2 }};" role="status">
+        <span class="the-method-soon__wheel" aria-hidden="true">
+          <span class="the-method-soon__ring"></span>
+          <span class="the-method-soon__orbit"><span class="the-method-soon__dot"></span></span>
+          <span class="the-method-soon__orbit the-method-soon__orbit--2"><span class="the-method-soon__dot"></span></span>
+        </span>
+
+        {%- if section.settings.coming_soon_eyebrow != blank -%}
+          <p class="the-method-soon__eyebrow">{{ section.settings.coming_soon_eyebrow }}</p>
+        {%- endif -%}
+
+        {%- if section.settings.coming_soon_title != blank -%}
+          <h2 class="the-method-soon__title">{{ section.settings.coming_soon_title }}<span class="the-method-soon__dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span></h2>
+        {%- endif -%}
+
+        {%- if section.settings.coming_soon_text != blank -%}
+          <p class="the-method-soon__text">{{ section.settings.coming_soon_text }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- else -%}
 {%- form 'customer', id: newsletter_form_id -%}
   {%- comment -%}Always sent: the same form also carries the e-mail asked at the end of the test (see the result panel){%- endcomment -%}
   <input type="hidden" name="contact[tags]" value="newsletter">
@@ -535,6 +560,7 @@
   </div>
   </div>
 {%- endform -%}
+{%- endif -%}
 
 {% stylesheet %}
   /* All the text of the test (intro, questions, options, descriptions, progress, warning, notes, result, buttons) uses the Body Text
@@ -1602,6 +1628,112 @@
       stroke-dashoffset: 0;
     }
   }
+  /* ---- "Próximamente": shown instead of the test while it is not finished (setting coming_soon) ---- */
+
+  .the-method-soon {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    max-width: 34rem;
+    margin-inline: auto;
+    padding-block: calc(var(--container-gutter, 1.5rem) * 2);
+    text-align: center;
+  }
+
+  .the-method-soon * {
+    margin: 0;
+  }
+
+  /* The little wheel: a ring that turns, with two dots orbiting at their own pace */
+  .the-method-soon__wheel {
+    position: relative;
+    display: block;
+    width: 4.5rem;
+    height: 4.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .the-method-soon__ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0 25%, color-mix(in srgb, var(--the-method-glow-2, #df9fc5) 80%, rgb(var(--text-color))) 100%);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+    animation: the-method-soon-spin 1.8s linear infinite;
+  }
+
+  .the-method-soon__orbit {
+    position: absolute;
+    inset: 0.7rem;
+    animation: the-method-soon-spin 3.2s linear infinite reverse;
+  }
+
+  .the-method-soon__orbit--2 {
+    inset: 1.4rem;
+    animation-duration: 2.2s;
+    animation-direction: normal;
+  }
+
+  .the-method-soon__dot {
+    position: absolute;
+    inset-block-start: -0.2rem;
+    inset-inline-start: 50%;
+    width: 0.4rem;
+    height: 0.4rem;
+    margin-inline-start: -0.2rem;
+    border-radius: 50%;
+    background: var(--the-method-glow-1, #f3dee9);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--the-method-glow-2, #df9fc5) 70%, rgb(var(--text-color)));
+  }
+
+  @keyframes the-method-soon-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .the-method-soon__eyebrow {
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: rgb(var(--text-color) / 0.06);
+    color: rgb(var(--text-color) / 0.75);
+  }
+
+  .the-method-soon__title {
+    font-family: var(--heading-font-family);
+    font-weight: var(--heading-font-weight);
+    letter-spacing: var(--heading-letter-spacing);
+    font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  .the-method-soon__text {
+    color: rgb(var(--text-color) / 0.7);
+  }
+
+  /* The three dots after the title take turns */
+  .the-method-soon__dots span {
+    display: inline-block;
+    animation: the-method-soon-dot 1.4s ease-in-out infinite;
+  }
+
+  .the-method-soon__dots span:nth-child(2) { animation-delay: 0.2s; }
+  .the-method-soon__dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes the-method-soon-dot {
+    0%, 60%, 100% { opacity: 0.2; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-0.2em); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .the-method-soon__ring,
+    .the-method-soon__orbit,
+    .the-method-soon__dots span {
+      animation: none;
+    }
+
+    .the-method-soon__dots span { opacity: 1; }
+  }
 {% endstylesheet %}
 
 {% javascript %}
@@ -2495,6 +2627,38 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Próximamente"
+    },
+    {
+      "type": "checkbox",
+      "id": "coming_soon",
+      "label": "Mostrar \"Próximamente\" en lugar del test",
+      "info": "Mientras esté activado, la sección muestra un aviso con una ruedita en vez del test. Desactívalo cuando el método esté listo.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "coming_soon_eyebrow",
+      "label": "Etiqueta",
+      "default": "Próximamente",
+      "visible_if": "{{ section.settings.coming_soon }}"
+    },
+    {
+      "type": "text",
+      "id": "coming_soon_title",
+      "label": "Título",
+      "default": "Estamos preparando algo creativo",
+      "visible_if": "{{ section.settings.coming_soon }}"
+    },
+    {
+      "type": "textarea",
+      "id": "coming_soon_text",
+      "label": "Texto",
+      "default": "Tu método se está mezclando en el laboratorio. Muy pronto lo descubrirás aquí.",
+      "visible_if": "{{ section.settings.coming_soon }}"
     },
     {
       "type": "header",
