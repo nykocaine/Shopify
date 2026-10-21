@@ -48,13 +48,7 @@
   <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_the_method %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_the_method %} style="border-end-start-radius: {{ section.settings.the_method_border_radius }}px; border-end-end-radius: {{ section.settings.the_method_border_radius }}px; overflow: hidden;"{% endif %}>
     <div class="container section-spacing">
       <div class="the-method-soon" style="--the-method-glow-1: {{ section.settings.glow_color_1 }}; --the-method-glow-2: {{ section.settings.glow_color_2 }};" role="status">
-        <svg class="the-method-soon__drop" viewBox="0 0 80 100" aria-hidden="true">
-          <path class="the-method-soon__surface" d="M6 80 H74"/>
-          <ellipse class="the-method-soon__ripple" cx="40" cy="80" rx="34" ry="7"/>
-          <ellipse class="the-method-soon__ripple the-method-soon__ripple--2" cx="40" cy="80" rx="34" ry="7"/>
-          <ellipse class="the-method-soon__ripple the-method-soon__ripple--3" cx="40" cy="80" rx="34" ry="7"/>
-          <path class="the-method-soon__falling" d="M40 6 C46 14 50 19 50 24 a10 10 0 0 1 -20 0 C30 19 34 14 40 6 Z"/>
-        </svg>
+        <span class="the-method-soon__pulse" aria-hidden="true"></span>
 
         {%- if section.settings.coming_soon_eyebrow != blank -%}
           <p class="the-method-soon__eyebrow">{{ section.settings.coming_soon_eyebrow }}</p>
@@ -68,13 +62,6 @@
           <p class="the-method-soon__text">{{ section.settings.coming_soon_text }}</p>
         {%- endif -%}
 
-        {%- if section.settings.coming_soon_step_1 != blank -%}
-          <p class="the-method-soon__steps" aria-hidden="true">
-            <span>{{ section.settings.coming_soon_step_1 }}</span>
-            <span>{{ section.settings.coming_soon_step_2 }}</span>
-            <span>{{ section.settings.coming_soon_step_3 }}</span>
-          </p>
-        {%- endif -%}
       </div>
     </div>
   </div>
@@ -1643,8 +1630,8 @@
   .the-method-soon {
     display: grid;
     justify-items: center;
-    gap: 1rem;
-    max-width: 34rem;
+    gap: 0.5rem;
+    max-width: 28rem;
     margin-inline: auto;
     padding-block: calc(var(--container-gutter, 1.5rem) * 2);
     text-align: center;
@@ -1654,110 +1641,49 @@
     margin: 0;
   }
 
-  /* A drop falls onto a still surface and the ripples spread out */
-  .the-method-soon__drop {
-    width: 5rem;
-    height: auto;
-    margin-bottom: 0.5rem;
-    overflow: visible;
-    color: rgb(var(--text-color));
+  /* One small dot with a single ring that opens and fades, nothing else */
+  .the-method-soon__pulse {
+    position: relative;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-bottom: 0.75rem;
+    border-radius: 50%;
+    background: rgb(var(--text-color));
   }
 
-  .the-method-soon__surface {
-    fill: none;
-    stroke: currentColor;
-    stroke-opacity: 0.25;
-    stroke-width: 1;
-    stroke-linecap: round;
+  .the-method-soon__pulse:after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgb(var(--text-color) / 0.5);
+    animation: the-method-soon-pulse 2.4s ease-out infinite;
   }
 
-  .the-method-soon__falling {
-    fill: color-mix(in srgb, var(--the-method-glow-2, #df9fc5) 80%, rgb(var(--text-color)));
-    transform-box: fill-box;
-    transform-origin: 50% 100%;
-    animation: the-method-soon-fall 3.2s infinite;
-  }
-
-  .the-method-soon__ripple {
-    fill: none;
-    stroke: color-mix(in srgb, var(--the-method-glow-2, #df9fc5) 80%, rgb(var(--text-color)));
-    stroke-width: 1;
-    opacity: 0;
-    transform-box: fill-box;
-    transform-origin: center;
-    animation: the-method-soon-ripple 3.2s ease-out infinite;
-  }
-
-  .the-method-soon__ripple--2 { animation-delay: 0.25s; }
-  .the-method-soon__ripple--3 { animation-delay: 0.5s; }
-
-  @keyframes the-method-soon-fall {
-    0% { transform: translateY(0) scale(0.2); opacity: 0; animation-timing-function: ease-out; }
-    12% { transform: translateY(0) scale(1); opacity: 1; animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6); }
-    38% { transform: translateY(50px) scale(0.85, 1.15); opacity: 1; }
-    40%, 100% { transform: translateY(54px) scale(0.2); opacity: 0; }
-  }
-
-  @keyframes the-method-soon-ripple {
-    0%, 38% { transform: scale(0.05); opacity: 0; }
-    40% { transform: scale(0.05); opacity: 0.9; }
-    85%, 100% { transform: scale(1); opacity: 0; }
-  }
-
-  .the-method-soon__eyebrow {
-    padding: 0.4rem 0.9rem;
-    border-radius: 999px;
-    background: rgb(var(--text-color) / 0.06);
-    color: rgb(var(--text-color) / 0.75);
+  @keyframes the-method-soon-pulse {
+    from { transform: scale(1); opacity: 1; }
+    to { transform: scale(7); opacity: 0; }
   }
 
   .the-method-soon__title {
     font-family: var(--heading-font-family);
     font-weight: var(--heading-font-weight);
     letter-spacing: var(--heading-letter-spacing);
-    font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
-    line-height: 1.1;
-    text-wrap: balance;
+    font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.625rem);
+    line-height: 1.2;
   }
 
+  .the-method-soon__eyebrow,
   .the-method-soon__text {
-    color: rgb(var(--text-color) / 0.7);
-  }
-
-  /* Three little notes that take turns under the text */
-  .the-method-soon__steps {
-    position: relative;
-    display: grid;
-    min-height: 1.5em;
-    color: color-mix(in srgb, var(--the-method-glow-2, #df9fc5) 70%, rgb(var(--text-color)));
-  }
-
-  .the-method-soon__steps span {
-    grid-area: 1 / 1;
-    opacity: 0;
-    animation: the-method-soon-step 9s ease-in-out infinite;
-  }
-
-  .the-method-soon__steps span:nth-child(2) { animation-delay: 3s; }
-  .the-method-soon__steps span:nth-child(3) { animation-delay: 6s; }
-
-  @keyframes the-method-soon-step {
-    0% { opacity: 0; transform: translateY(0.5em); }
-    6%, 28% { opacity: 1; transform: translateY(0); }
-    34%, 100% { opacity: 0; transform: translateY(-0.5em); }
+    color: rgb(var(--text-color) / 0.6);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .the-method-soon__falling,
-    .the-method-soon__ripple,
-    .the-method-soon__steps span {
+    .the-method-soon__pulse:after {
       animation: none;
+      opacity: 0.3;
+      transform: scale(3);
     }
-
-    .the-method-soon__steps span:first-child { opacity: 1; }
-
-    .the-method-soon__ripple--2 { opacity: 0.5; transform: scale(0.6); }
-    .the-method-soon__ripple--3 { opacity: 0.25; }
   }
 {% endstylesheet %}
 
@@ -2667,44 +2593,22 @@
     {
       "type": "text",
       "id": "coming_soon_eyebrow",
-      "label": "Etiqueta",
-      "default": "En el laboratorio",
+      "label": "Etiqueta (opcional)",
+      "default": "",
       "visible_if": "{{ section.settings.coming_soon }}"
     },
     {
       "type": "text",
       "id": "coming_soon_title",
       "label": "Título",
-      "default": "Algo se está formando",
+      "default": "Próximamente",
       "visible_if": "{{ section.settings.coming_soon }}"
     },
     {
       "type": "textarea",
       "id": "coming_soon_text",
       "label": "Texto",
-      "default": "Estamos afinando cada detalle del método para tu piel. Vuelve muy pronto.",
-      "visible_if": "{{ section.settings.coming_soon }}"
-    },
-    {
-      "type": "text",
-      "id": "coming_soon_step_1",
-      "label": "Nota que cambia 1",
-      "info": "Tres frases cortas que se turnan bajo el texto. Deja la primera vacía para ocultarlas.",
-      "default": "Midiendo el pH",
-      "visible_if": "{{ section.settings.coming_soon }}"
-    },
-    {
-      "type": "text",
-      "id": "coming_soon_step_2",
-      "label": "Nota que cambia 2",
-      "default": "Mezclando ácidos con cariño",
-      "visible_if": "{{ section.settings.coming_soon }}"
-    },
-    {
-      "type": "text",
-      "id": "coming_soon_step_3",
-      "label": "Nota que cambia 3",
-      "default": "Casi listo para tu piel",
+      "default": "Estamos preparando el método.",
       "visible_if": "{{ section.settings.coming_soon }}"
     },
     {
