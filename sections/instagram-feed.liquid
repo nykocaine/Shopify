@@ -1385,9 +1385,19 @@ the first available one); the click is handled by the script near the lightbox b
   Desktop (1000px and up): the squares are as wide as the row divided by "Items per row (desktop)" - more items
   per row means smaller squares (height follows, they stay square). Tablets keep 4 per row.
   {%- endcomment -%}
+  {%- comment -%}
+  Desktop only: the gap between photos/videos is double the theme's item gap (--item-gap-inline, read by the flex gap above), and the
+  items are square again (the aspect-ratio rules below, at the same breakpoint). The doubled gap goes in its own variable: a custom
+  property can't be redefined from itself, and the item width has to subtract the same gap the flex row uses.
+  {%- endcomment -%}
   @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} .instagram-feed__carousel {
+      --instagram-feed-gap: calc(var(--item-gap-inline) * 2);
+      gap: var(--instagram-feed-gap);
+    }
+
     #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
-      flex: 0 0 calc((100% - {{ section.settings.items_per_row_desktop | minus: 1 }} * var(--item-gap-inline)) / {{ section.settings.items_per_row_desktop }});
+      flex: 0 0 calc((100% - {{ section.settings.items_per_row_desktop | minus: 1 }} * var(--instagram-feed-gap)) / {{ section.settings.items_per_row_desktop }});
     }
   }
 
@@ -2035,6 +2045,14 @@ the first available one); the click is handled by the script near the lightbox b
     #shopify-section-{{ section.id }} .instagram-feed__image,
     #shopify-section-{{ section.id }} .content-box {
       aspect-ratio: 7 / 10;
+    }
+  }
+
+  {%- comment -%}Desktop (1000px and up): square photos and videos, as wide as the row divided by "Items per row (desktop)". Tablets keep 7:10.{%- endcomment -%}
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} .instagram-feed__image,
+    #shopify-section-{{ section.id }} .content-box {
+      aspect-ratio: 1 / 1;
     }
   }
 
