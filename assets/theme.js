@@ -3815,8 +3815,8 @@ var ProductGallery = class extends HTMLElement {
       return;
     }
     const form = document.forms[this.getAttribute("form")];
-    form.addEventListener("product:rerender", __privateMethod(this, _ProductGallery_instances, onSectionRerender_fn).bind(this), { signal: __privateGet(this, _abortController9).signal });
-    form.addEventListener("variant:change", __privateMethod(this, _ProductGallery_instances, onVariantChange_fn).bind(this), { signal: __privateGet(this, _abortController9).signal });
+    form?.addEventListener("product:rerender", __privateMethod(this, _ProductGallery_instances, onSectionRerender_fn).bind(this), { signal: __privateGet(this, _abortController9).signal });
+    form?.addEventListener("variant:change", __privateMethod(this, _ProductGallery_instances, onVariantChange_fn).bind(this), { signal: __privateGet(this, _abortController9).signal });
     this.carousel.addEventListener("carousel:change", __privateMethod(this, _ProductGallery_instances, onMediaChange_fn).bind(this), { signal: __privateGet(this, _abortController9).signal });
     this.carousel.addEventListener("carousel:settle", __privateMethod(this, _ProductGallery_instances, onMediaSettle_fn).bind(this), { signal: __privateGet(this, _abortController9).signal });
     this.carousel.addEventListener("click", __privateMethod(this, _ProductGallery_instances, onCarouselClick_fn).bind(this), { signal: __privateGet(this, _abortController9).signal });

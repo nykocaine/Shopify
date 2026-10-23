@@ -5,7 +5,7 @@ This component is used to show the product gallery (used in product page and fea
 @param {string} [product_form_id] - the product form id
 @param {string} [desktop_layout] - the layout on desktop (can be "grid", "grid_half", "grid_half_highlight_first" or "carousel")
 @param {string} [desktop_carousel_controls] - when desktop layout is set to "carousel", the controls to show (can be "dots", "lines", "numbers", "thumbnails_under", "thumbnails_over", "thumbnails_left" or "bar")
-@param {string} [mobile_controls] - the controls to show on mobile (can be "lines", "numbers", "dots", "thumbnails" or "none")
+@param {string} [mobile_controls] - the controls to show on mobile (can be "lines", "numbers", "dots", "thumbnails", "bar" or "none")
 @param {boolean} [enable_media_autoplay] - if set to true videos are autoplayed when switched to
 @param {boolean} [enable_video_looping] - if set to true videos automatically loop when finished
 @param {boolean} [enable_image_zoom] - if set to true the gallery allow zoom
@@ -488,7 +488,7 @@ only way to do it on Shopify right now.
             should never show that raw suffix. Leftover "!dark"/"!light" markers (an old manual tag, no longer used) are
             also stripped.
             {%- endcomment -%}
-            <div class="product-gallery__media snap-center {% if media == effective_default_media %}is-initial{% endif %} {% if enable_image_zoom and section.settings.desktop_media_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" data-caption="{{ media.alt | remove: '!dark' | remove: '!light' | split: '#' | first | strip | escape }}" role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: gallery_media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
+            <div class="product-gallery__media snap-center {% if media == effective_default_media %}is-initial{% endif %} {% if enable_image_zoom and desktop_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" data-caption="{{ media.alt | remove: '!dark' | remove: '!light' | split: '#' | first | strip | escape }}" role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: gallery_media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
               {%- if effective_default_media == media -%}
                 {%- assign preload = true -%}
               {%- else -%}
@@ -501,7 +501,7 @@ only way to do it on Shopify right now.
               {%- endcomment -%}
               {%- render 'media', product: product, media: media, sizes: sizes, preload: preload, controls: true, playsinline: true, muted: enable_media_autoplay, loop: enable_video_looping, group: 'product' -%}
 
-              {%- if enable_image_zoom and section.settings.desktop_media_layout contains 'grid' and media.media_type == 'image' -%}
+              {%- if enable_image_zoom and desktop_layout contains 'grid' and media.media_type == 'image' -%}
                 <open-lightbox-button aria-controls="{{ product_gallery_carousel_id}}" class="block sm-max:hidden" image-index="{{ image_index }}">
                   <button class="product-zoom-button">
                     {%- render 'icon' with 'zoom-plus' -%}
@@ -549,7 +549,7 @@ only way to do it on Shopify right now.
       {%- endif -%}
 
       {%- if enable_image_zoom -%}
-        <open-lightbox-button aria-controls="{{ product_gallery_carousel_id}}" {% if section.settings.desktop_media_layout contains 'grid' %}class="sm:hidden"{% endif %}>
+        <open-lightbox-button aria-controls="{{ product_gallery_carousel_id}}" {% if desktop_layout contains 'grid' %}class="sm:hidden"{% endif %}>
           <button class="product-zoom-button">
             {%- render 'icon' with 'zoom-plus' -%}
             <span class="product-zoom-button__label">{{ 'product.gallery.zoom' | t }}</span>

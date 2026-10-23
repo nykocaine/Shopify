@@ -19,8 +19,11 @@
   # use_first_image_column drives the whole "static first image as a 3rd desktop column" layout: only
   # when the merchant opted in (desktop_show_first_image_column) AND there is an image to show. When
   # it's off the layout falls back to the plain 2-column split, so product_media_size is meaningful.
+  #
+  # Needs at least a second media too: the gallery hides that image on desktop (it is shown in the static column), so with a single media the
+  # gallery card beside the static column would be left empty - such a product keeps the plain gallery instead.
   assign use_first_image_column = false
-  if first_product_image != blank and section.settings.desktop_show_first_image_column
+  if first_product_image != blank and section.settings.desktop_show_first_image_column and product.media.size > 1
     assign use_first_image_column = true
   endif
 
@@ -626,10 +629,12 @@
         {%- comment -%}
         Mobile stacks gallery and info as two independent blocks (no shared row to stretch across, unlike the
         two-column desktop layout above) - so this only needs to pin .product-gallery-frame itself to a fixed
-        height and let its content fill it. The fill rules themselves are emitted once, further down.
+        height and let its content fill it. svh (the small viewport, with the browser's address bar showing) after a vh fallback: with plain vh
+        the gallery grew and shrank every time the phone's address bar collapsed or came back while scrolling. The fill rules themselves are emitted once, further down.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-gallery-frame {
           height: max(20rem, {{ section.settings.product_height_mobile }}vh);
+          height: max(20rem, {{ section.settings.product_height_mobile }}svh);
           position: relative;
         }
       {%- endif -%}
