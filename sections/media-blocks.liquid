@@ -37,11 +37,12 @@
     }
 
     {%- comment -%}
-    Horizontal gap between the blocks (in the grid and in the scrolling carousel row): the shared --horizontal-gap (css-variables.liquid), whatever
-    Small / Medium / Large is picked - only "none" (blocks touching) keeps 0. The row gap (blocks stacked) still follows --media-blocks-gap above.
+    Gap between the blocks, horizontal and vertical (stacked rows) alike: the shared --horizontal-gap (css-variables.liquid), whatever
+    Small / Medium / Large is picked - only "none" (blocks touching) keeps 0.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .media-blocks {
       column-gap: {% if section.settings.column_spacing == 'none' %}0px{% else %}var(--horizontal-gap){% endif %};
+      row-gap: {% if section.settings.column_spacing == 'none' %}0px{% else %}var(--horizontal-gap){% endif %};
     }
 
     @media screen and (min-width: 700px) {
