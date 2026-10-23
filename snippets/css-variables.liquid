@@ -409,6 +409,24 @@ note that this may have impact on different places.
     --transform-origin-end: left;
   }
 
+  /* Phones only: the space between one row of product cards and the next is a little smaller (1rem) than the horizontal one. Tablets and
+     desktop keep it as it was. The doubled selectors win over the rules in theme.css that tie a list's row gap to its column gap. */
+  :root {
+    --product-list-mobile-row-gap: 1rem;
+  }
+
+  {%- unless settings.product_listing_spacing == 'none' %}
+  @media screen and (max-width: 699px) {
+    :root:root {
+      --product-list-row-gap: var(--product-list-mobile-row-gap);
+    }
+
+    .product-list.product-list.product-list {
+      --product-list-row-gap: var(--product-list-mobile-row-gap);
+    }
+  }
+  {%- endunless %}
+
   @media screen and (min-width: 700px) {
     :root {
       --text-xs: {{ settings.text_font_size_desktop | minus: 4 | at_least: 11 | divided_by: 16.0 }}rem;
