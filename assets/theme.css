@@ -6386,6 +6386,14 @@ product-rerender {
   }
 }
 
+/* Filters and sort (the toolbar, the sidebar, the filters drawer, the sort menu and the floating filters button): their text comes from the
+   body (font, size, weight, letter-spacing and case), not from the subheading / heading fonts that .subheading and .h7 would give them. */
+:is(.collection__toolbar, .collection__sidebar, .collection__floating-button, .drawer--facets, [id^="collection-sort-by-popover"]) :is(.subheading, .h7, .removable-facet) {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
 .drawer--cart .tab-pills {
   grid-template-rows: auto minmax(0, 1fr);
 }
