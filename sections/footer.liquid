@@ -326,6 +326,28 @@
                   {%- if menu != blank and menu.links.size > 0 -%}
                     {%- assign menu_title = block.settings.menu_title | default: menu.title -%}
 
+                    {%- comment -%}
+                    FAQ categories under this menu (setting "Show the FAQ categories under this menu"): one more link per line of the block's list,
+                    right after the menu's own links and in the same list, each going to the FAQ page with the category's anchor (the FAQ opens that
+                    category, see sections/faq.liquid). The FAQ page is the first page that uses the "faq" template, or the address typed in the block.
+                    Each line is "Label|anchor"; a line without the "|" is skipped.
+                    {%- endcomment -%}
+                    {%- assign faq_links_base = '' -%}
+
+                    {%- if block.settings.show_faq_links -%}
+                      {%- assign faq_links_base = block.settings.faq_page_url -%}
+
+                      {%- if faq_links_base == blank -%}
+                        {%- for faq_candidate in pages -%}
+                          {%- if faq_candidate.template_suffix == 'faq' -%}
+                            {%- assign faq_links_base = faq_candidate.url -%}
+                            {%- break -%}
+                          {%- endif -%}
+                        {%- endfor -%}
+                      {%- endif -%}
+
+                    {%- endif -%}
+
                     {%- capture menu_content -%}
                       <ul class="v-stack gap-2.5 unstyled-list" role="list">
                         {%- for link in menu.links -%}
@@ -333,6 +355,20 @@
                             <a href="{{ link.url }}" class="link-reversed link-tap-area">{{ link.title }}</a>
                           </li>
                         {%- endfor -%}
+
+                        {%- if faq_links_base != blank -%}
+                          {%- assign faq_link_lines = block.settings.faq_links | newline_to_br | split: '<br />' -%}
+
+                          {%- for faq_link_line in faq_link_lines -%}
+                            {%- assign faq_link_parts = faq_link_line | split: '|' -%}
+
+                            {%- if faq_link_parts.size > 1 -%}
+                              <li>
+                                <a href="{{ faq_links_base }}#{{ faq_link_parts.last | strip | handle }}" class="link-reversed link-tap-area">{{ faq_link_parts.first | strip }}</a>
+                              </li>
+                            {%- endif -%}
+                          {%- endfor -%}
+                        {%- endif -%}
                       </ul>
                     {%- endcapture -%}
 
@@ -751,6 +787,28 @@
           "id": "menu_title",
           "label": "t:sections.footer.blocks.links.menu_title",
           "info": "t:sections.footer.blocks.links.menu_title_info"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_faq_links",
+          "label": "Show the FAQ categories under this menu",
+          "info": "Adds one link per line of the list below, after the menu's own links, each opening that category in the FAQ page.",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "faq_page_url",
+          "label": "FAQ page address",
+          "info": "Leave blank to use the first page that uses the FAQ template. Example: /pages/faq",
+          "visible_if": "{{ block.settings.show_faq_links }}"
+        },
+        {
+          "type": "textarea",
+          "id": "faq_links",
+          "label": "FAQ links (one per line)",
+          "info": "Label|anchor. The anchor is the category's title written without accents or spaces, with hyphens (the FAQ's category tabs use it).",
+          "default": "Seguridad y contraindicaciones|seguridad-y-contraindicaciones\nPedidos, envíos y pagos|pedidos-envios-y-pagos\nDespués de tu compra|despues-de-tu-compra\nSobre Soen|sobre-soen",
+          "visible_if": "{{ block.settings.show_faq_links }}"
         }
       ]
     },
