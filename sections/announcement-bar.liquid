@@ -50,12 +50,14 @@
         them, the bar keeps its top corners (its own radius) and squares the bottom ones, the header squares its top ones, and
         the bar sticks at the same distance from the screen edge that it has at the top of the page. The header's
         stuck offset and the gap it paints above itself are driven by the same variables, so the header sits flush under the bar.
-        The corner radii are inline styles, hence !important.
+        The header also tucks 1px under the bar (--header-bar-overlap): the bar's height is measured and sticky offsets round, so a flush
+        join could leave a hairline (worst on phones) through which the page shows while scrolling. The corner radii are inline styles, hence !important.
         {%- endcomment -%}
         :root:has(.announcement-bar-wrapper.is-sticky-bar):not(:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)):has(.header:not(.is-solid))) {
           --header-top-gap: 0px;
           --header-stuck-gap: var(--announcement-bar-gap);
           --header-before-gap: 0px;
+          --header-bar-overlap: 1px;
           --announcement-bar-stuck-top: var(--announcement-bar-gap);
         }
 
