@@ -248,7 +248,7 @@ The control icon set (media/lightbox/bar controls) has no size of its own: .icon
   {%- case settings.cart_icon -%}
     {%- when 'shopping_bag' -%}
       <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" height="{{ mobile_width | default: 16 }}" viewBox="0 0 16 16" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon">
-        <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M2.5 5.5h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z" />
+        <path class="cart-bag__body" stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M2.5 5.5h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z" />
         <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linecap="round" d="M5 5.5V5a3 3 0 0 1 6 0v.5" />
       </svg>
         {%- when 'shopping_cart' -%}
@@ -262,12 +262,12 @@ The control icon set (media/lightbox/bar controls) has no size of its own: .icon
           {%- comment -%}Bag with clearly rounded corners (a rectangle with a 3.5 corner radius and a round handle; the option keeps its old "sharp_bag" value so saved settings still work), redrawn on the theme's 16x16 grid so it takes the same size, stroke width (settings.icon_stroke_width) and color (currentColor) as the other cart icons{%- endcomment -%}
           <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" height="{{ mobile_width | default: 16 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
             <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linecap="round" d="M11.003 3.508C11.003 1.852 9.66 .508 8.003 .508 6.347 .508 5.003 1.852 5.003 3.508"/>
-            <rect stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linejoin="round" x="1.503" y="4.008" width="13" height="11" rx="3.5"/>
+            <rect class="cart-bag__body" stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linejoin="round" x="1.503" y="4.008" width="13" height="11" rx="3.5"/>
           </svg>
 
         {%- when 'tote_bag' -%}
           <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
-            <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" d="m1.5 14.5 1-12h11l1 12h-13Z"/>
+            <path class="cart-bag__body" stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" d="m1.5 14.5 1-12h11l1 12h-13Z"/>
             <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" d="M5.5 5c.238.833 1.071 2.5 2.5 2.5s2.262-1.667 2.5-2.5"/>
           </svg>
       {%- endcase -%}

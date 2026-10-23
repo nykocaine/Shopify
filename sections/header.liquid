@@ -396,6 +396,29 @@
     animation: header-cart-smile-blink .5s ease .9s 1;
   }
 
+  {%- comment -%}
+  While the cart has items the bag is filled solid, in the same color as its stroke (only the bag's body: the handle stays an outline). It replaces the
+  small dot that used to flag a non-empty cart over the icon, so that dot is made invisible wherever the icon shows (it stays in the page for screen
+  readers, which still read the count from it).
+  {%- endcomment -%}
+  .header__cart-icon .cart-bag__body {
+    transition: fill .35s ease;
+  }
+
+  .header__cart-icon.has-items .cart-bag__body {
+    fill: currentColor;
+  }
+
+  .header__cart-link:has(> a > .header__cart-icon) .header__active-dot {
+    opacity: 0;
+  }
+
+  @media screen and (max-width: 999px) {
+    .header__cart-link:has(> a > .md\:hidden > .header__cart-icon) .header__active-dot {
+      opacity: 0;
+    }
+  }
+
   @keyframes header-cart-smile-blink {
     0%, 100% { transform: scaleY(1); }
     50% { transform: scaleY(.1); }
@@ -901,27 +924,46 @@
   })();
 
   {%- comment -%}
-  Cart icon: turns into a happy face for a moment whenever a product is added (variant:add, the same event the cart drawer and the count react to).
-  Listens on the document once for the whole page (the guard keeps the theme editor's re-renders of this section from stacking listeners); the icons
-  are looked up on every add, so it works on whichever copy of the header is on screen.
+  Cart icon: turns into a happy face for a moment whenever a product is added (variant:add, the same event the cart drawer and the count react to),
+  and the bag is filled solid while the cart has items (.has-items, set here on every cart change; the first paint comes from the snippet). After an add
+  the fill waits until the face is gone, so the order is: bag, face, filled bag. Listens on the document once for the whole page (the guard keeps the
+  theme editor's re-renders of this section from stacking listeners); the icons are looked up on every event, so it works on whichever copy of the header
+  is on screen.
   {%- endcomment -%}
   (function() {
     if (window.cartSmileInitialized) return;
     window.cartSmileInitialized = true;
 
     var timer;
+    var pending = false;
+    var latest = null;
+
+    function setFilled(filled) {
+      document.querySelectorAll('.header__cart-icon').forEach(function(icon) { icon.classList.toggle('has-items', filled); });
+    }
 
     document.addEventListener('cart:change', function(event) {
-      if (!event.detail || event.detail.baseEvent !== 'variant:add') return;
+      var detail = event.detail || {};
+
+      if (detail.cart) latest = detail.cart.item_count > 0;
+
+      if (detail.baseEvent !== 'variant:add') {
+        // While the face is showing, the fill waits for it to go; otherwise it follows the cart right away.
+        if (!pending && latest !== null) setFilled(latest);
+        return;
+      }
 
       var icons = document.querySelectorAll('.header__cart-icon');
       if (!icons.length) return;
 
       icons.forEach(function(icon) { icon.classList.add('is-added'); });
 
+      pending = true;
       clearTimeout(timer);
       timer = setTimeout(function() {
+        pending = false;
         document.querySelectorAll('.header__cart-icon').forEach(function(icon) { icon.classList.remove('is-added'); });
+        if (latest !== null) setFilled(latest);
       }, 2200);
     });
   })();
