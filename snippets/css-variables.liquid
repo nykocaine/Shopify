@@ -233,8 +233,8 @@ note that this may have impact on different places.
     /* One place for the horizontal gap between items (product cards and the like) across every section and breakpoint.
        The "Product listing spacing" setting now only decides whether the cards touch ("None") or use this gap. */
     --item-gap-inline: 0.625rem;
-    /* One shared gap for the carousels that show media side by side (Instagram feed, FAQ text + image carousel...). Change it here, once. */
-    --carousel-gap: 1.5rem;
+    /* One shared gap for the carousels that show media side by side (Instagram feed, FAQ, main product, media blocks...): 1.25rem on phones, 1.5rem from 700px (see the desktop block below). Change it here, once. */
+    --carousel-gap: 1.25rem;
     --product-list-column-gap: {% if settings.product_listing_spacing == 'none' %}0px{% else %}var(--item-gap-inline){% endif %};
     --product-list-padding-inline: clamp(0px, var(--product-list-column-gap), min(1.75rem, var(--product-list-column-gap)));
 
@@ -428,6 +428,9 @@ note that this may have impact on different places.
       --text-h5: {{ settings.heading_font_size_desktop | times: 32 | divided_by: 92.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
       --text-h6: {{ settings.heading_font_size_desktop | times: 24 | divided_by: 92.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
       --text-h7: {{ settings.heading_font_size_desktop | times: 19 | divided_by: 92.0 | at_least: 12 | divided_by: 16.0 | round: 4 }}rem;
+
+      /* Shared horizontal gap, desktop and tablet (a bit smaller on phones, see above) */
+      --carousel-gap: 1.5rem;
 
       /* Badges */
       --badge-font-size: {{ settings.badge_font_size_desktop | divided_by: 16.0 }}rem;
