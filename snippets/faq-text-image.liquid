@@ -677,18 +677,18 @@ if (!window.customElements.get('read-more-match-height')) {
           #{{ media_caption_row_id }} {
             display: flex;
             align-items: start;
-            gap: calc(var(--item-gap-inline) * 2);
+            gap: var(--carousel-gap);
           }
 
           {%- comment -%}
-          The gap between the media items is double the theme's usual one (on mobile double --item-gap-inline above; on desktop double the gap every
-          other pair of columns has, --card-gap, theme.css) - the same doubled spacing as the Instagram feed. The caption row shares this rule, so
+          The gap between the media items is the theme's shared carousel gap (--carousel-gap, css-variables.liquid), the same one the Instagram feed
+          uses, on mobile and on desktop. The caption row shares this rule, so
           its columns stay under their images.
           {%- endcomment -%}
           @media screen and (min-width: 700px) {
             #{{ media_carousel_id }},
             #{{ media_caption_row_id }} {
-              column-gap: calc(var(--card-gap) * 2);
+              column-gap: var(--carousel-gap);
             }
           }
 

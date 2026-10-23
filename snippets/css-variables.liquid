@@ -233,6 +233,8 @@ note that this may have impact on different places.
     /* One place for the horizontal gap between items (product cards and the like) across every section and breakpoint.
        The "Product listing spacing" setting now only decides whether the cards touch ("None") or use this gap. */
     --item-gap-inline: 0.625rem;
+    /* One shared gap for the carousels that show media side by side (Instagram feed, FAQ text + image carousel...): double the item gap. Change it here, once. */
+    --carousel-gap: calc(var(--item-gap-inline) * 2);
     --product-list-column-gap: {% if settings.product_listing_spacing == 'none' %}0px{% else %}var(--item-gap-inline){% endif %};
     --product-list-padding-inline: clamp(0px, var(--product-list-column-gap), min(1.75rem, var(--product-list-column-gap)));
 
