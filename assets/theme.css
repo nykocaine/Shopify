@@ -20,6 +20,11 @@ body {
   font: var(--text-font-style) var(--text-font-weight) var(--text-base) / var(--text-line-height) var(--text-font-family);
   text-transform: var(--text-transform);
   letter-spacing: var(--text-letter-spacing);
+  /* Sharper text: lighter smoothing on macOS/iOS, and no faux bold/italic when a font lacks that weight or style. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-synthesis: none;
   margin: 0;
   position: relative;
   overflow-x: hidden;
