@@ -410,12 +410,13 @@ note that this may have impact on different places.
   }
 
   /* Phones only: product cards side by side in a grid (not a carousel) sit a little closer than the shared horizontal gap (1rem instead of
-     1.25rem); the rows below follow it, since a list's row gap is tied to its column gap. Carousels keep the shared gap; tablets and desktop
+     1.25rem), and so do the stacked rows (same 1rem, set explicitly: some rules tie a list's row gap to its column gap, others do not). Carousels keep the shared gap; tablets and desktop
      are untouched. */
   {%- unless settings.product_listing_spacing == 'none' %}
   @media screen and (max-width: 699px) {
     .product-list:not(.product-list--carousel, .sm-max\:product-list--carousel, .md-max\:product-list--carousel) {
       --product-list-column-gap: 1rem;
+      --product-list-row-gap: 1rem;
     }
   }
   {%- endunless %}
