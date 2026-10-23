@@ -7759,7 +7759,7 @@ shopify-account::part(signed-out-avatar) {
   /* Overlay/backdrop starts at the same offset as the panel (not inset: 0's default 0), so it never darkens/blurs
      over the header - only alongside and below the panel. */
   .menu-drawer::part(overlay) {
-    inset-block-start: var(--menu-offset-top, 0px);
+    inset-block-start: calc(var(--menu-offset-top, 0px) - 1px); /* tucks 1px under the header's bottom edge: its measured bottom is rounded, which could leave a hairline showing the page */
   }
 
   .menu-drawer::part(content) {

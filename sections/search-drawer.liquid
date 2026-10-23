@@ -16,7 +16,7 @@
   {%- endcomment -%}
   @media screen and (max-width: 699px) {
     #search-drawer::part(overlay) {
-      inset-block-start: var(--menu-offset-top, 0px);
+      inset-block-start: calc(var(--menu-offset-top, 0px) - 1px); /* tucks 1px under the header's bottom edge: its measured bottom is rounded, which could leave a hairline showing the page */
     }
 
     #search-drawer::part(content) {
