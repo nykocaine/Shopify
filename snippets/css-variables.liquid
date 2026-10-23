@@ -80,6 +80,13 @@ note that this may have impact on different places.
       assign pros_regular_url = 'pros-regular.woff2' | asset_url
     endif
 
+    # Typography (Swiss 721 custom font, used when any font source is set to 'apple': its stack starts with Swiss)
+    if settings.subheading_font_source == 'apple' or settings.heading_font_source == 'apple' or settings.text_font_source == 'apple'
+      assign swiss_light_url = 'swiss-721-light.woff2' | asset_url
+      assign swiss_regular_url = 'swiss-721-regular.woff2' | asset_url
+      assign swiss_medium_url = 'swiss-721-medium.woff2' | asset_url
+    endif
+
     # Typography (Apercu custom font, used when any font source is set to 'apercu')
     if settings.subheading_font_source == 'apercu' or settings.heading_font_source == 'apercu' or settings.text_font_source == 'apercu'
       assign apercu_thin_url = 'apercu-thin.woff2' | asset_url
@@ -92,6 +99,30 @@ note that this may have impact on different places.
       assign apercu_black_url = 'apercu-black.woff2' | asset_url
     endif
   -%}
+
+  {%- if settings.subheading_font_source == 'apple' or settings.heading_font_source == 'apple' or settings.text_font_source == 'apple' -%}
+    @font-face {
+      font-family: 'Swiss';
+      src: url('{{ swiss_light_url }}') format('woff2');
+      font-weight: 300;
+      font-style: normal;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: 'Swiss';
+      src: url('{{ swiss_regular_url }}') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: 'Swiss';
+      src: url('{{ swiss_medium_url }}') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+      font-display: fallback;
+    }
+  {%- endif -%}
 
   {%- if settings.subheading_font_source == 'satoshi' or settings.heading_font_source == 'satoshi' or settings.text_font_source == 'satoshi' -%}
     @font-face {
