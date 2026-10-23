@@ -2892,6 +2892,26 @@ var FacetsDrawer = class extends Drawer {
       // space is cut off, as long as the toolbar is right below it and still fits on screen; otherwise just under the header, as before
       const top = barTop - stackTop <= window.innerHeight * 0.6 ? stackTop : barTop - (header ? header.offsetHeight : 0);
       window.scrollTo({ top: Math.max(0, top), behavior: "instant" });
+    } else if (bar && !this.isInline) {
+      // Below 1000px, a toolbar that sits lower on the page (a section, like a rich text, between it and the header) first
+      // travels up to where it sticks under the header, closing the gap, and only then does the sheet unfold from it.
+      const barStyle = getComputedStyle(bar);
+      const headerEl = document.querySelector(".shopify-section--header .header");
+      const stuckTop = barStyle.position === "sticky" && !Number.isNaN(parseFloat(barStyle.top)) ? parseFloat(barStyle.top) : headerEl ? headerEl.getBoundingClientRect().bottom - 1 : 0;
+      const distance = bar.getBoundingClientRect().top - stuckTop;
+      if (distance > 1) {
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        await new Promise((resolve) => {
+          const finish = () => {
+            window.removeEventListener("scrollend", finish);
+            resolve();
+          };
+          window.addEventListener("scrollend", finish);
+          setTimeout(finish, 700);
+          window.scrollTo({ top: window.scrollY + distance, behavior: reduceMotion ? "instant" : "smooth" });
+          if (reduceMotion) finish();
+        });
+      }
     }
     if (this.isInline) {
       // The panel is its own card right after the filter toolbar, not a part of it (the toolbar keeps its rounded bottom edge)
