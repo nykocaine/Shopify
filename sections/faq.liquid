@@ -451,7 +451,7 @@
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             align-items: start;
-            column-gap: var(--card-gap);
+            column-gap: var(--carousel-gap);
             padding: 0;
             background: none;
             border-radius: 0;
@@ -583,8 +583,8 @@
         }
 
         {%- comment -%}
-        Gap between the tabs of the bar: 3rem on phones, where the bar is a row you scroll sideways (and loops), and the shared gap between
-        side-by-side elements (--card-gap, theme.css) from 700px. The spacer after the last tab cancels exactly this gap.
+        Gap between the tabs of the bar: 3rem on phones, where the bar is a row you scroll sideways (and loops), and the shared horizontal gap
+        (--carousel-gap, css-variables.liquid) from 700px. The spacer after the last tab cancels exactly this gap.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} {
           --faq-bar-gap: 3rem;
@@ -592,7 +592,7 @@
 
         @media screen and (min-width: 700px) {
           #shopify-section-{{ section.id }} {
-            --faq-bar-gap: var(--card-gap);
+            --faq-bar-gap: var(--carousel-gap);
           }
         }
 
@@ -702,7 +702,7 @@
 
       @media screen and (min-width: 700px) {
         #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
-          gap: var(--card-gap);
+          gap: var(--carousel-gap);
         }
       }
 
@@ -835,7 +835,7 @@
           #shopify-section-{{ section.id }} .faq__categories::part(tablist) {
             justify-content: flex-start;
             align-items: stretch;
-            gap: 2rem;
+            gap: var(--carousel-gap);
           }
 
           {%- comment -%}The label takes a heading size ("Categories heading size" setting, h3 by default), not the body text size; same line height on every tab so they all have the same height.{%- endcomment -%}
@@ -910,10 +910,10 @@
         display: grid;
       }
 
-      {%- comment -%}On desktop the title, text and media of a block sit side by side: the same gap as every other pair of columns (--card-gap, theme.css).{%- endcomment -%}
+      {%- comment -%}On desktop the title, text and media of a block sit side by side: the shared horizontal gap of this section (--carousel-gap, css-variables.liquid).{%- endcomment -%}
       @media screen and (min-width: 700px) {
         #shopify-section-{{ section.id }} .faq__text-image {
-          column-gap: var(--card-gap);
+          column-gap: var(--carousel-gap);
         }
       }
 
@@ -1093,7 +1093,7 @@
         }
 
         {%- if faq_page -%}
-          {%- comment -%}Phones, FAQ page: the gap between the menu box and the questions box, one above the other (from 700px they sit side by side, with --card-gap, see below).{%- endcomment -%}
+          {%- comment -%}Phones, FAQ page: the gap between the menu box and the questions box, one above the other (from 700px they sit side by side, with --carousel-gap, see below).{%- endcomment -%}
           @media screen and (max-width: 699px) {
             #shopify-section-{{ section.id }} .faq--full-width {
               margin-block-start: var(--faq-menu-row-gap);
@@ -1113,7 +1113,7 @@
           #shopify-section-{{ section.id }} .faq__container {
             display: grid;
             grid-template-columns: minmax(var(--faq-menu-min-width), 1fr) minmax(0, 4fr);
-            column-gap: var(--card-gap);
+            column-gap: var(--carousel-gap);
             align-items: start;
           }
 
