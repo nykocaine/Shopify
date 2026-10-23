@@ -92,6 +92,7 @@
               class="faq__category-tab {% if block.settings.category_tab_style == 'filled' %}faq__category-tab--filled{% endif %}"
               aria-controls="faq-panel-{{ section.id }}-{{ panel_index }}"
               aria-selected="{% if panel_index == 0 %}true{% else %}false{% endif %}"
+              data-anchor="{{ block.settings.title | handle }}"
               {{ block.shopify_attributes }}
             >
               {%- if block.settings.custom_icon != blank -%}
@@ -1472,6 +1473,41 @@
     }
   </script>
 {%- endif -%}
+
+{%- comment -%}
+Links to a category: the page's address can end in #<category title as a handle> (eg. /pages/faq#pedidos-envios-y-pagos, each tab carries it in
+data-anchor). On load, and whenever the hash changes, the matching tab is selected (the same click a visitor would make) and the page scrolls to the
+category bar, under the sticky header. That is what the footer's Help links use. An unknown hash does nothing.
+{%- endcomment -%}
+<script>
+  (function () {
+    var sectionId = '{{ section.id }}';
+
+    function openCategory() {
+      var hash = decodeURIComponent(window.location.hash.slice(1)).toLowerCase();
+      if (!hash) return;
+
+      var root = document.getElementById('shopify-section-' + sectionId);
+      var tab = root && root.querySelector('button[data-anchor="' + hash.replace(/"/g, '') + '"]');
+      if (!tab) return;
+
+      if (tab.getAttribute('aria-selected') !== 'true') tab.click();
+
+      var bar = tab.closest('x-tabs') || tab;
+      var top = bar.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sticky-area-height')) || 0) - 20;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    }
+
+    window.addEventListener('hashchange', openCategory);
+
+    // The tabs are a custom element: wait for it to be ready (and for the layout to settle) before clicking.
+    if (window.customElements && window.customElements.whenDefined) {
+      window.customElements.whenDefined('x-tabs').then(function () { setTimeout(openCategory, 300); });
+    } else {
+      window.addEventListener('load', openCategory);
+    }
+  })();
+</script>
 
 {% schema %}
 {
