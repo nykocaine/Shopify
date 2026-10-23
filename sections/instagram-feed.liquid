@@ -13,6 +13,24 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 {%- enddoc -%}
 
 {%- liquid
+  case section.settings.aspect_ratio_mobile
+    when 'square'
+      assign instagram_ratio_mobile = '1 / 1'
+    when 'portrait'
+      assign instagram_ratio_mobile = '4 / 5'
+    else
+      assign instagram_ratio_mobile = '3 / 5'
+  endcase
+
+  case section.settings.aspect_ratio_desktop
+    when 'portrait'
+      assign instagram_ratio_desktop = '4 / 5'
+    when 'tall'
+      assign instagram_ratio_desktop = '3 / 5'
+    else
+      assign instagram_ratio_desktop = '1 / 1'
+  endcase
+
   assign instagram_media_blocks = section.blocks | where: 'type', 'item'
   assign instagram_media_count = 0
 
@@ -2052,7 +2070,7 @@ the first available one); the click is handled by the script near the lightbox b
   @media screen and (max-width: 699px) {
     #shopify-section-{{ section.id }} .instagram-feed__image,
     #shopify-section-{{ section.id }} .content-box {
-      aspect-ratio: 3 / 5;
+      aspect-ratio: {{ instagram_ratio_mobile }};
     }
   }
 
@@ -2064,11 +2082,11 @@ the first available one); the click is handled by the script near the lightbox b
     }
   }
 
-  {%- comment -%}Desktop (1000px and up): square photos and videos, as wide as the row divided by "Items per row (desktop)". Tablets keep 7:10.{%- endcomment -%}
+  {%- comment -%}Desktop (1000px and up): the shape picked in "Photo and video shape (desktop)" (square by default), as wide as the row divided by "Items per row (desktop)". Phones (below 700px) use "Photo and video shape (mobile)" (3:5 by default). Tablets keep 7:10.{%- endcomment -%}
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} .instagram-feed__image,
     #shopify-section-{{ section.id }} .content-box {
-      aspect-ratio: 1 / 1;
+      aspect-ratio: {{ instagram_ratio_desktop }};
     }
   }
 
@@ -2335,6 +2353,28 @@ the first available one); the click is handled by the script near the lightbox b
       "label": "Border color",
       "info": "Leave blank for no border.",
       "visible_if": "{{ section.settings.show_icon }}"
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio_mobile",
+      "label": "Photo and video shape (mobile)",
+      "options": [
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "portrait", "label": "Portrait (4:5)" },
+        { "value": "tall", "label": "Tall (3:5)" }
+      ],
+      "default": "tall"
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio_desktop",
+      "label": "Photo and video shape (desktop)",
+      "options": [
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "portrait", "label": "Portrait (4:5)" },
+        { "value": "tall", "label": "Tall (3:5)" }
+      ],
+      "default": "square"
     },
     {
       "type": "range",
