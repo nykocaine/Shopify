@@ -118,9 +118,9 @@
 
   {%- if section.settings.floating_product_list -%}
     {%- comment -%}
-    Floating card: the products go edge to edge on the sides and the card has no padding at the bottom
-    (the top keeps its padding). The container's side margin (and the bleed distance derived from it, so the
-    mobile carousel doesn't overshoot the card) and the bottom padding are removed.
+    Floating card: the products go edge to edge on the sides and the card has no padding at the top or at the bottom.
+    The container's side margin (and the bleed distance derived from it, so the mobile carousel doesn't overshoot
+    the card) and the top and bottom padding are removed.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .container {
       --distance-to-bleed: 0px;
@@ -128,7 +128,7 @@
     }
 
     #shopify-section-{{ section.id }} .section-spacing {
-      padding-block-end: 0;
+      padding-block: 0;
     }
   {%- endif -%}
 
