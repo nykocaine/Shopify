@@ -313,8 +313,15 @@
     (hidden from 1000px up, where the static first image carries it instead). The frame needs to be the
     positioning context; it already clips (overflow: hidden) when floating.
     {%- endcomment -%}
+    {%- comment -%}
+    The gallery's top bar (progress bar, alt-text caption and page counter, product-gallery.liquid) floats over the same top edge of the photo, and
+    its height changes with the caption's lines and the screen width. The script after the icon's markup measures where that bar ends and
+    hands it over as --product-gallery-icon-top, so the badge always sits just under it (on either corner) instead of on top of the bar, its text and
+    its numbers. Without the bar (or without script) it keeps the plain .75rem inset.
+    {%- endcomment -%}
     #shopify-section-{{ section.id }} .product-gallery-icon {
-      top: .75rem;
+      top: var(--product-gallery-icon-top, .75rem);
+      transition: top .2s ease;
       {% if section.settings.icon_corner == 'right' %}right: .75rem;{% else %}left: .75rem;{% endif %}
       z-index: 2;
       position: absolute;
@@ -868,6 +875,47 @@
                   icon_border_color: section.settings.icon_border_color
                 -%}
               </div>
+
+              <script>
+                (function () {
+                  var frame = document.currentScript && document.currentScript.parentElement;
+                  if (!frame) return;
+
+                  var gap = 12;
+
+                  function place() {
+                    // The theme editor replaces this markup on every setting change: drop the window listener then.
+                    if (!frame.isConnected) {
+                      window.removeEventListener('resize', place);
+                      return;
+                    }
+
+                    var bar = frame.querySelector('.product-gallery__top-bar');
+                    var top = '';
+
+                    if (bar && bar.offsetParent !== null) {
+                      var below = bar.getBoundingClientRect().bottom - frame.getBoundingClientRect().top;
+
+                      if (below > 0) top = Math.round(below + gap) + 'px';
+                    }
+
+                    frame.style.setProperty('--product-gallery-icon-top', top);
+                  }
+
+                  window.addEventListener('resize', place);
+                  window.addEventListener('load', place);
+
+                  if (window.ResizeObserver) {
+                    var observer = new ResizeObserver(place);
+                    var bar = frame.querySelector('.product-gallery__top-bar');
+
+                    observer.observe(frame);
+                    if (bar) observer.observe(bar);
+                  }
+
+                  place();
+                })();
+              </script>
             {%- endif -%}
           </div>
         {%- endif -%}
