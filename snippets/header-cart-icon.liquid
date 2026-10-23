@@ -1,0 +1,12 @@
+{%- doc -%}
+The header's cart icon: the theme's bag and, stacked on top of it, a happy face. When a product is added to the cart the bag turns into the face for a
+moment and back (CSS and script in sections/header.liquid, .header__cart-icon). Both icons take the same size and stroke width.
+
+@param {number} [width] - the icon width on desktop
+@param {number} [mobile_width] - the icon width on mobile
+{%- enddoc -%}
+
+<span class="header__cart-icon">
+  {%- render 'icon' with 'cart', mobile_width: mobile_width, width: width, class: 'header__cart-icon-bag' -%}
+  {%- render 'icon' with 'cart-smile', mobile_width: mobile_width, width: width, class: 'header__cart-icon-smile' -%}
+</span>

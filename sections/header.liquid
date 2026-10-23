@@ -342,6 +342,75 @@
     }
   }
 
+  {%- comment -%}
+  Cart icon: the bag and a happy face share one cell. When a product is added (script below sets .is-added for a moment) the bag spins and shrinks
+  away while the face springs in (a little overshoot), draws its smile and blinks once; when .is-added goes away it all plays backwards, the bag
+  coming back with the same spring. Both are the same icon family (same grid, stroke width and color). With reduced motion it is only a quick
+  cross-fade, no spinning or scaling.
+  {%- endcomment -%}
+  .header__cart-icon {
+    display: inline-grid;
+    place-items: center;
+  }
+
+  .header__cart-icon > .icon {
+    grid-area: 1 / 1;
+    transform-origin: center;
+    transition: transform .55s cubic-bezier(.34, 1.56, .64, 1), opacity .25s ease;
+  }
+
+  .header__cart-icon-smile {
+    opacity: 0;
+    transform: scale(.3) rotate(-120deg);
+  }
+
+  .header__cart-icon.is-added .header__cart-icon-bag {
+    opacity: 0;
+    transform: scale(.3) rotate(120deg);
+  }
+
+  .header__cart-icon.is-added .header__cart-icon-smile {
+    opacity: 1;
+    transform: none;
+  }
+
+  .header__cart-icon-smile .cart-smile__mouth {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset .3s ease;
+  }
+
+  .header__cart-icon.is-added .cart-smile__mouth {
+    stroke-dashoffset: 0;
+    transition-delay: .2s;
+  }
+
+  .header__cart-icon.is-added .cart-smile__eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: header-cart-smile-blink .5s ease .9s 1;
+  }
+
+  @keyframes header-cart-smile-blink {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(.1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .header__cart-icon > .icon {
+      transition: opacity .2s ease;
+    }
+
+    .header__cart-icon-smile,
+    .header__cart-icon.is-added .header__cart-icon-bag {
+      transform: none;
+    }
+
+    .header__cart-icon.is-added .cart-smile__eye {
+      animation: none;
+    }
+  }
+
   #shopify-section-{{ section.id }} .header__cart-count-text {
     font-family: var(--text-font-family);
     font-style: var(--text-font-style);
@@ -730,7 +799,7 @@
               {%- if section.settings.show_cart_count_as_dot -%}
                 <span class="subheading md-max:hidden">{{ section.settings.cart_text }}</span>
                 <span class="md:hidden">
-                  {%- render 'icon' with 'cart', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+                  {%- render 'header-cart-icon', mobile_width: 16, width: section.settings.desktop_icon_size -%}
                 </span>
               {%- else -%}
                 <span class="subheading">{{ section.settings.cart_text }} <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count></span>
@@ -738,7 +807,7 @@
               <span class="sr-only">{{ section.settings.cart_text }}</span>
             {%- else -%}
               <span class="sr-only">{{ 'header.general.cart' | t }}</span>
-              {%- render 'icon' with 'cart', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+              {%- render 'header-cart-icon', mobile_width: 16, width: section.settings.desktop_icon_size -%}
               {%- unless section.settings.show_cart_count_as_dot -%}
                 <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count>
               {%- endunless -%}
@@ -824,6 +893,32 @@
     if (header) {
       document.documentElement.style.setProperty('--header-height', Math.round(header.clientHeight) + 'px');
     }
+  })();
+
+  {%- comment -%}
+  Cart icon: turns into a happy face for a moment whenever a product is added (variant:add, the same event the cart drawer and the count react to).
+  Listens on the document once for the whole page (the guard keeps the theme editor's re-renders of this section from stacking listeners); the icons
+  are looked up on every add, so it works on whichever copy of the header is on screen.
+  {%- endcomment -%}
+  (function() {
+    if (window.cartSmileInitialized) return;
+    window.cartSmileInitialized = true;
+
+    var timer;
+
+    document.addEventListener('cart:change', function(event) {
+      if (!event.detail || event.detail.baseEvent !== 'variant:add') return;
+
+      var icons = document.querySelectorAll('.header__cart-icon');
+      if (!icons.length) return;
+
+      icons.forEach(function(icon) { icon.classList.add('is-added'); });
+
+      clearTimeout(timer);
+      timer = setTimeout(function() {
+        document.querySelectorAll('.header__cart-icon').forEach(function(icon) { icon.classList.remove('is-added'); });
+      }, 2200);
+    });
   })();
 </script>
 

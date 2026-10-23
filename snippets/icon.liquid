@@ -232,6 +232,18 @@ The control icon set (media/lightbox/bar controls) has no size of its own: .icon
         <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" d="M1.333 7.333a6 6 0 1 0 12 0 6 6 0 0 0-12 0ZM11.575 11.576l3.09 3.09" />
       </svg>
 
+   {%- when 'cart-smile' -%}
+      {%- comment -%}
+      Happy face the header's cart icon turns into when a product is added (see header.liquid, .header__cart-icon). Same 16x16 grid, footprint, stroke width
+      (settings.icon_stroke_width), round caps and color (currentColor) as the bag, so it reads as the same icon family. The smile has pathLength="1"
+      so the CSS can draw it in with a dash offset; the eyes are short strokes that the CSS blinks.
+      {%- endcomment -%}
+      <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" height="{{ mobile_width | default: 16 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
+        <circle stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" cx="8" cy="8" r="6.75" />
+        <path class="cart-smile__eye" stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linecap="round" d="M5.6 6.1v1.1M10.4 6.1v1.1" />
+        <path class="cart-smile__mouth" pathLength="1" stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M5.2 9.5c.8 1.4 1.8 2.1 2.8 2.1s2-.7 2.8-2.1" />
+      </svg>
+
    {%- when 'cart' -%}
   {%- case settings.cart_icon -%}
     {%- when 'shopping_bag' -%}
