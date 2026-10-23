@@ -5432,12 +5432,11 @@ table caption {
   display: flex;
 }
 
-/* Matches the star icons' size to the rating value/count text beside them (both set in .subheading,
-   font-size: var(--subheading-font-size)) - overrides the icon's own fixed pixel width attribute,
-   which CSS wins over. .8em (not 1em) because the star glyph itself sits inset within its square
-   viewBox - at 1em it visibly reads taller than the text's own cap-height/x-height. */
-.rating-badge__stars .icon {
-  width: .8em;
+/* One size for every rating star in the theme (the rating badge, the reviews summary and cards, the testimonials): the star icons (icon-star-rating,
+   -half, -empty, see snippets/icon.liquid) read --rating-star-size (css-variables.liquid), instead of each place sizing them by its own text. This beats
+   the icon's own fixed pixel width attribute. */
+.icon:is(.icon-star-rating, .icon-star-rating-half, .icon-star-rating-empty) {
+  width: var(--rating-star-size, .8125rem);
 }
 
 .social-media {

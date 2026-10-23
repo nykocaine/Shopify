@@ -323,8 +323,9 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
             <label for="{{ rating_id }}">
               <span class="sr-only">{{ i }} estrella{% if i != 1 %}s{% endif %}</span>
               {%- comment -%}Same rounded star as the rating icons (snippets/icon.liquid, 'star-rating'){%- endcomment -%}
+              {%- capture star_path -%}{%- render 'star-path' -%}{%- endcapture -%}
               <svg viewBox="0.996 0.786 11.008 11.008" overflow="visible" aria-hidden="true" focusable="false" width="26" height="26">
-                <path d="M7.124 1.795 L7.943 4.151 Q8.107 4.623 8.607 4.633 L11.1 4.684 Q13 4.723 11.486 5.871 L9.498 7.377 Q9.1 7.679 9.245 8.158 L9.967 10.545 Q10.517 12.364 8.958 11.279 L6.91 9.854 Q6.5 9.568 6.09 9.854 L4.042 11.279 Q2.483 12.364 3.033 10.545 L3.755 8.158 Q3.9 7.679 3.502 7.377 L1.514 5.871 Q0 4.723 1.9 4.684 L4.393 4.633 Q4.893 4.623 5.057 4.151 L5.876 1.795 Q6.5 0 7.124 1.795Z" stroke-width=".6" stroke-linejoin="round"/>
+                <path d="{{ star_path | strip }}" stroke-width=".6" stroke-linejoin="round"/>
               </svg>
             </label>
           {%- endfor -%}
@@ -886,18 +887,7 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     font-size: 1em;
   }
 
-  {%- comment -%}
-  Matches .review-card__stars' font-size to .review-card__date beside it, then sizes each star icon
-  to 1em (overriding the icon's own fixed pixel width attribute, which CSS wins over) - so the stars
-  render at the same height as the date text next to them instead of each at its own fixed size.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .review-card__stars {
-    font-size: 1em;
-  }
-
-  #shopify-section-{{ section.id }} .review-card__stars .icon {
-    width: 1em;
-  }
+  {%- comment -%}The star icons' size comes from the theme's one --rating-star-size (theme.css), the same in the summary, the cards, the rating badge and the testimonials.{%- endcomment -%}
 
   #shopify-section-{{ section.id }} .review-card__title {
     margin: 0;
