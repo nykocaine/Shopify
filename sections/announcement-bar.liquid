@@ -19,7 +19,7 @@
       {%- if section.settings.enable_sticky -%}
         #shopify-section-{{ section.id }} {
           position: sticky;
-          top: 0;
+          top: var(--announcement-bar-stuck-top, 0px);
         }
 
         .shopify-section--header ~ #shopify-section-{{ section.id }} {
@@ -35,9 +35,51 @@
       The gap above the bar is half of the bar's own height (one text line plus its two vertical paddings, halved). It is a margin
       of the section wrapper, so it sits OUTSIDE the section: the editor's blue outline hugs the bar and no space is left inside it.
       {%- endcomment -%}
-      #shopify-section-{{ section.id }} {
-        margin-block-start: calc((1lh + {{ section.settings.vertical_padding | times: 2 }}px) / 2);
+      :root {
+        --announcement-bar-gap: calc((1lh + {{ section.settings.vertical_padding | times: 2 }}px) / 2);
       }
+
+      #shopify-section-{{ section.id }} {
+        margin-block-start: var(--announcement-bar-gap);
+      }
+
+      {%- if section.settings.enable_sticky -%}
+        {%- comment -%}
+        Sticky bar: the bar and the header are one joined block, except while the header is transparent over the first section
+        (same condition as header.liquid / theme.css), where they keep the spacing they have at rest. Joined: no gap between
+        them, the bar keeps its top corners (its own radius) and squares the bottom ones, the header squares its top ones, and
+        the bar sticks at the same distance from the screen edge that it has at the top of the page. The header's
+        stuck offset and the gap it paints above itself are driven by the same variables, so the header sits flush under the bar.
+        The corner radii are inline styles, hence !important.
+        {%- endcomment -%}
+        :root:has(.announcement-bar-wrapper.is-sticky-bar):not(:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)):has(.header:not(.is-solid))) {
+          --header-top-gap: 0px;
+          --header-stuck-gap: var(--announcement-bar-gap);
+          --header-before-gap: 0px;
+          --announcement-bar-stuck-top: var(--announcement-bar-gap);
+        }
+
+        :root:has(.announcement-bar-wrapper.is-sticky-bar):not(:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)):has(.header:not(.is-solid))) .announcement-bar-wrapper {
+          border-bottom-left-radius: 0 !important;
+          border-bottom-right-radius: 0 !important;
+        }
+
+        :root:has(.announcement-bar-wrapper.is-sticky-bar):not(:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)):has(.header:not(.is-solid))) .header--floating {
+          border-top-left-radius: 0 !important;
+          border-top-right-radius: 0 !important;
+        }
+
+        {%- comment -%}Paints the gap above the stuck bar with the page background, like the header does above itself.{%- endcomment -%}
+        #shopify-section-{{ section.id }}::before {
+          content: "";
+          position: absolute;
+          inset-inline: 0;
+          inset-block-end: 100%;
+          height: var(--announcement-bar-gap);
+          background: rgb(var(--page-background));
+          pointer-events: none;
+        }
+      {%- endif -%}
 
       {%- unless section.settings.full_width -%}
         {%- comment -%}
@@ -122,7 +164,7 @@
     </style>
 
     <height-observer variable="announcement-bar">
-      <div class="announcement-bar-wrapper {% unless section.settings.full_width %}container{% endunless %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" style="border-radius: {{ section.settings.border_radius }}px;">
+      <div class="announcement-bar-wrapper {% if section.settings.enable_sticky %}is-sticky-bar {% endif %}{% unless section.settings.full_width %}container{% endunless %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" style="border-radius: {{ section.settings.border_radius }}px;">
         {%- if section.settings.display_mode == 'marquee' -%}
           <marquee-text speed="{{ section.settings.scrolling_speed }}" direction="{{ section.settings.scroll_direction }}" {% if section.settings.pause_on_hover %}pause-on-hover{% endif %} class="announcement-bar scrolling-content" style="padding-block: {{ section.settings.vertical_padding }}px;">
             <div class="scrolling-content__item">
