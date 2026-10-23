@@ -1381,7 +1381,7 @@ the first available one); the click is handled by the script near the lightbox b
   {%- endcomment -%}
   @media screen and (max-width: 699px) {
     #shopify-section-{{ section.id }} .instagram-feed__carousel {
-      --instagram-feed-gap: var(--carousel-gap);
+      --instagram-feed-gap: var(--horizontal-gap);
       gap: var(--instagram-feed-gap);
     }
 
@@ -1401,14 +1401,14 @@ the first available one); the click is handled by the script near the lightbox b
   per row means smaller squares (height follows, they stay square). Tablets keep 4 per row.
   {%- endcomment -%}
   {%- comment -%}
-  Desktop only: the gap between photos/videos is the theme's shared carousel gap (--carousel-gap, css-variables.liquid), and the
+  Desktop only: the gap between photos/videos is the theme's shared carousel gap (--horizontal-gap, css-variables.liquid), and the
   items are square again (the aspect-ratio rules below, at the same breakpoint). The row shows "Items per row (desktop)" slots, the last of them cut in half at the right edge (so the others are a little wider than a plain
   split): (N - 1) full items + half an item + (N - 1) gaps = 100%. The doubled gap goes in its own variable: a custom
   property can't be redefined from itself, and the item width has to subtract the same gap the flex row uses.
   {%- endcomment -%}
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} .instagram-feed__carousel {
-      --instagram-feed-gap: var(--carousel-gap);
+      --instagram-feed-gap: var(--horizontal-gap);
       gap: var(--instagram-feed-gap);
     }
 
