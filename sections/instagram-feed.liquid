@@ -1375,6 +1375,21 @@ the first available one); the click is handled by the script near the lightbox b
     min-width: 0;
   }
 
+  {%- comment -%}
+  Mobile (below 700px): same idea as desktop below - double gap, and the row shows one full item plus half of the next one at the right edge
+  (1 item + half an item + 1 gap = 100%). Tablets (700-999px) keep the plain 4 per row and the normal gap.
+  {%- endcomment -%}
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .instagram-feed__carousel {
+      --instagram-feed-gap: calc(var(--item-gap-inline) * 2);
+      gap: var(--instagram-feed-gap);
+    }
+
+    #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
+      flex: 0 0 calc((100% - var(--instagram-feed-gap)) / 1.5);
+    }
+  }
+
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
       flex: 0 0 calc((100% - 3 * var(--item-gap-inline)) / 4);
