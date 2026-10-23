@@ -36,6 +36,14 @@
       --media-blocks-gap: {% if section.settings.column_spacing == 'none' %}0px{% elsif section.settings.column_spacing == 'sm' %}calc(var(--container-gutter) / 2){% elsif section.settings.column_spacing == 'md' %}var(--container-gutter){% elsif section.settings.column_spacing == 'lg' %}calc(var(--container-gutter) * 1.5){% endif %};
     }
 
+    {%- comment -%}
+    Horizontal gap between the blocks (in the grid and in the scrolling carousel row): the shared --carousel-gap (css-variables.liquid), whatever
+    Small / Medium / Large is picked - only "none" (blocks touching) keeps 0. The row gap (blocks stacked) still follows --media-blocks-gap above.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .media-blocks {
+      column-gap: {% if section.settings.column_spacing == 'none' %}0px{% else %}var(--carousel-gap){% endif %};
+    }
+
     @media screen and (min-width: 700px) {
       #shopify-section-{{ section.id }} {
         --media-blocks-grid: {% if section.settings.stack_on_mobile or section.blocks.size <= 2 %}auto / repeat(2, minmax(0, 1fr)){% else %}auto / auto-flow 45vw{% endif %};
@@ -262,7 +270,7 @@
     #shopify-section-{{ section.id }} .info-panel__list-item {
       grid-template-columns: auto minmax(0, 1fr);
       align-items: baseline;
-      gap: 1.5rem;
+      gap: var(--carousel-gap);
       padding-block: 1.25rem;
       border-block-end: 1px solid rgb(var(--border-color));
       display: grid;
@@ -692,7 +700,7 @@
                       position: relative;
                       flex-wrap: wrap;
                       align-items: center;
-                      gap: 1.5rem;
+                      gap: var(--carousel-gap);
                       margin-block-end: 2rem;
                       display: flex;
                     }
