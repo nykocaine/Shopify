@@ -238,7 +238,8 @@
         {%- else -%}
           --product-grid: auto / minmax(0, {{ section.settings.product_media_size | divided_by: 100.0 }}fr) minmax(0, {{ 100.0 | minus: section.settings.product_media_size | divided_by: 100.0 }}fr);
         {%- endif -%}
-        --product-column-gap: {% if section.settings.floating_product and section.settings.column_spacing != 'none' %}var(--card-gap){% else %}{% case section.settings.column_spacing %}{%- when 'none' -%}0px{%- when 'sm' -%}calc(var(--container-gutter) / 2){%- when 'md' -%}var(--container-gutter){%- else -%}calc(var(--container-gutter) * 1.5){%- endcase -%}{% endif %};
+        {%- comment -%}Any spacing but "none" (cards touching) is the shared horizontal gap (--carousel-gap, css-variables.liquid); the Small / Medium / Large options no longer change it.{%- endcomment -%}
+        --product-column-gap: {% if section.settings.column_spacing == 'none' %}0px{% else %}var(--carousel-gap){% endif %};
       }
 
       {%- comment -%}
@@ -639,10 +640,10 @@
 
       {%- comment -%}
       Everything that sits side by side inside the cards on desktop (the icons with text and the share buttons of the info card) keeps
-      the same gap as the cards themselves (--card-gap, theme.css), instead of each row having its own.
+      the same gap as the cards themselves (--carousel-gap, css-variables.liquid), instead of each row having its own.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} :is(.product-info__icons, .product-info__share) {
-        column-gap: var(--card-gap);
+        column-gap: var(--carousel-gap);
       }
 
       {%- comment -%}
