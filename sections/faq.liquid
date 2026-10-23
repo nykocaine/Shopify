@@ -786,6 +786,12 @@
       #shopify-section-{{ section.id }} .faq__category-tab .h6 {
         color: inherit;
         -webkit-font-smoothing: auto;
+        font-size: inherit;
+      }
+
+      {%- comment -%}The tab label's size is the body's (inherited), not a heading size: the button has to inherit it too, since form controls get their own size from the browser otherwise.{%- endcomment -%}
+      #shopify-section-{{ section.id }} .faq__category-tab {
+        font-size: inherit;
       }
 
       #shopify-section-{{ section.id }} .faq__category-tab-icon {
@@ -838,9 +844,8 @@
             gap: var(--carousel-gap);
           }
 
-          {%- comment -%}The label takes a heading size ("Categories heading size" setting, h3 by default), not the body text size; same line height on every tab so they all have the same height.{%- endcomment -%}
+          {%- comment -%}The label keeps the body text size (inherited, see the base rule above); same line height on every tab so they all have the same height.{%- endcomment -%}
           #shopify-section-{{ section.id }} .faq__category-tab .h6 {
-            font-size: var(--text-{{ section.settings.category_title_tag }});
             line-height: var(--heading-line-height);
           }
 
