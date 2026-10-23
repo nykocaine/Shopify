@@ -161,8 +161,8 @@
   {%- comment -%}
   Mobile menu drawer open: the header's bottom corners round off (only there) while the drawer unfolds below it, in step
   with it. The drawer is open exactly between show() and hide() (its [open] attribute), the same instants its unfold
-  animation starts, and the radius uses that animation's own timing (theme.js createUnfoldAnimationControls: 1.2s with
-  an ease-out curve opening, 0.8s with an in-out curve closing) so both move together. The radius is the header's own
+  animation starts, and the radius uses that animation's own timing (theme.js createUnfoldAnimationControls, from the shared MOTION values: .7s with
+  the decelerating curve opening, .45s with the exit curve closing) so both move together. The radius is the header's own
   corner radius when it floats, otherwise the drawers' radius; the inline radius on a floating header needs !important
   to be overridden.
   {%- endcomment -%}
@@ -172,13 +172,13 @@
     }
 
     #shopify-section-{{ section.id }} .header {
-      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius var(--header-solid-transition), border-bottom-right-radius var(--header-solid-transition);
+      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius .45s cubic-bezier(.33, 0, .2, 1), border-bottom-right-radius .45s cubic-bezier(.33, 0, .2, 1);
     }
 
     :root:has(header-menu-drawer[open], #search-drawer[open], #cart-drawer[open]) #shopify-section-{{ section.id }} .header {
       border-bottom-left-radius: var(--header-menu-open-radius) !important;
       border-bottom-right-radius: var(--header-menu-open-radius) !important;
-      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius 1.2s cubic-bezier(.22, 1, .36, 1), border-bottom-right-radius 1.2s cubic-bezier(.22, 1, .36, 1);
+      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius .7s cubic-bezier(.22, 1, .36, 1), border-bottom-right-radius .7s cubic-bezier(.22, 1, .36, 1);
     }
   }
 

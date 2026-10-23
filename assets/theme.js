@@ -2628,6 +2628,20 @@ if (!window.customElements.get("dialog-close-button")) {
   window.customElements.define("dialog-close-button", DialogCloseButton);
 }
 
+// Shared motion of every overlay (the menu, search and cart drawers, the filters sheet, the bottom sheets, the popups, the popovers, the tab panels):
+// ONE family of curves and durations, so they all open and close with the same feel instead of each one having its own. Everything arrives on the
+// same decelerating curve (fast start, long soft landing) and leaves on the same gentle one, shorter than the arrival; the veils behind
+// them fade at one speed. Two sizes: "panel" for what unfolds or slides a long way, "small" for what only lifts or fades a little.
+var MOTION = {
+  enterEase: [0.22, 1, 0.36, 1],
+  exitEase: [0.33, 0, 0.2, 1],
+  panelEnter: 0.7,
+  panelExit: 0.45,
+  smallEnter: 0.4,
+  smallExit: 0.25,
+  fade: 0.3
+};
+
 // Shared "unfold" transition (menu, search and cart drawers): the overlay (blur + backdrop color) and the content are
 // revealed together from top to bottom on open, and fold back up on close. The close uses an in-out curve (an ease-in
 // one ends abruptly) and is shorter than the open, and the layers are promoted while it runs to avoid flicker. The clip-path is cleared once the opening finishes, so it
@@ -2638,9 +2652,9 @@ function createUnfoldAnimationControls(animateSequence, overlay, content, openin
   const shown = "inset(0 0 0% 0)";
   const keyframes = reduceMotion ? { opacity: opening ? [0, 1] : [1, 0] } : { clipPath: opening ? [hidden, shown] : [shown, hidden] };
   const options = {
-    duration: reduceMotion ? 0.2 : opening ? 1.2 : 0.8,
+    duration: reduceMotion ? 0.2 : opening ? MOTION.panelEnter : MOTION.panelExit,
     // The close starts moving right away (an in-out curve sits still for the first moments, which reads as a delay)
-    ease: opening ? [0.22, 1, 0.36, 1] : [0.33, 0, 0.2, 1]
+    ease: opening ? MOTION.enterEase : MOTION.exitEase
   };
   overlay.style.willChange = reduceMotion || fadeOverlay ? "opacity" : "clip-path";
   content.style.willChange = reduceMotion ? "opacity" : "clip-path";
@@ -2696,8 +2710,8 @@ var Drawer = class extends DialogElement {
       return createUnfoldAnimationControls(animateSequence2, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), true);
     }
     return animateSequence2([
-      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.35, ease: "easeInOut" }],
-      [this.getShadowPartByName("content"), { opacity: [0, 1], transform: ["translateY(0.75rem) scale(0.98)", "translateY(0) scale(1)"] }, { duration: 0.45, at: "-0.2", ease: [0.22, 1, 0.36, 1] }]
+      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: MOTION.fade, ease: "easeInOut" }],
+      [this.getShadowPartByName("content"), { opacity: [0, 1], transform: ["translateY(0.75rem) scale(0.98)", "translateY(0) scale(1)"] }, { duration: MOTION.smallEnter, at: "-0.2", ease: MOTION.enterEase }]
     ]);
   }
   createLeaveAnimationControls() {
@@ -2705,8 +2719,8 @@ var Drawer = class extends DialogElement {
       return createUnfoldAnimationControls(animateSequence2, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), false);
     }
     return animateSequence2([
-      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.3, ease: "easeInOut" }],
-      [this.getShadowPartByName("content"), { opacity: [1, 0], transform: ["translateY(0) scale(1)", "translateY(0.5rem) scale(0.99)"] }, { duration: 0.3, at: "<", ease: [0.4, 0, 1, 1] }]
+      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: MOTION.smallExit, ease: "easeInOut" }],
+      [this.getShadowPartByName("content"), { opacity: [1, 0], transform: ["translateY(0) scale(1)", "translateY(0.5rem) scale(0.99)"] }, { duration: MOTION.smallExit, at: "<", ease: MOTION.exitEase }]
     ]);
   }
 };
@@ -2722,14 +2736,14 @@ var DrawerPopover = class extends DialogElement {
   }
   createEnterAnimationControls() {
     return animateSequence3([
-      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.25, ease: "easeInOut" }],
-      [this.getShadowPartByName("content"), { opacity: [0, 1], transform: ["translateY(100%)", "translateY(0)"] }, { duration: 0.45, at: "-0.15", ease: [0.86, 0, 0.07, 1] }]
+      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: MOTION.fade, ease: "easeInOut" }],
+      [this.getShadowPartByName("content"), { opacity: [0, 1], transform: ["translateY(100%)", "translateY(0)"] }, { duration: MOTION.panelEnter, at: "-0.15", ease: MOTION.enterEase }]
     ]);
   }
   createLeaveAnimationControls() {
     return animateSequence3([
-      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.45, ease: "easeInOut" }],
-      [this.getShadowPartByName("content"), { opacity: [1, 0], transform: ["translateY(0)", "translateY(100%)"] }, { duration: 0.45, at: "<", ease: [0.86, 0, 0.07, 1] }]
+      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: MOTION.panelExit, ease: "easeInOut" }],
+      [this.getShadowPartByName("content"), { opacity: [1, 0], transform: ["translateY(0)", "translateY(100%)"] }, { duration: MOTION.panelExit, at: "<", ease: MOTION.exitEase }]
     ]);
   }
 };
@@ -2752,14 +2766,14 @@ var Modal = class extends DialogElement {
   }
   createEnterAnimationControls() {
     return animateSequence4([
-      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.25 }],
-      [this.getShadowPartByName("content"), { opacity: [0, 1], transform: ["translateY(40px)", "translateY(0)"] }, { duration: 0.25, at: "-0.15" }]
+      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: MOTION.fade, ease: "easeInOut" }],
+      [this.getShadowPartByName("content"), { opacity: [0, 1], transform: ["translateY(40px)", "translateY(0)"] }, { duration: MOTION.smallEnter, at: "-0.15", ease: MOTION.enterEase }]
     ]);
   }
   createLeaveAnimationControls() {
     return animateSequence4([
-      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.15 }],
-      [this.getShadowPartByName("content"), { opacity: [1, 0], transform: ["translateY(0)", "translateY(40px)"] }, { duration: 0.15, at: "<" }]
+      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: MOTION.smallExit, ease: "easeInOut" }],
+      [this.getShadowPartByName("content"), { opacity: [1, 0], transform: ["translateY(0)", "translateY(40px)"] }, { duration: MOTION.smallExit, at: "<", ease: MOTION.exitEase }]
     ]);
   }
 };
@@ -2797,21 +2811,21 @@ var Popover = class extends DialogElement {
     this.getShadowPartByName("content").style.cssText = "";
     if (matchesMediaQuery("md-max")) {
       return animateSequence5([
-        [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: 0.3, ease: [0.645, 0.045, 0.355, 1] }],
-        [this.getShadowPartByName("content"), { transform: ["translateY(100%)", "translateY(0)"] }, { duration: 0.3, at: "<", ease: [0.645, 0.045, 0.355, 1] }]
+        [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: MOTION.fade, ease: "easeInOut" }],
+        [this.getShadowPartByName("content"), { transform: ["translateY(100%)", "translateY(0)"] }, { duration: MOTION.panelEnter, at: "<", ease: MOTION.enterEase }]
       ]);
     } else {
-      return animate5(this.getShadowPartByName("content"), { opacity: [0, 1] }, { duration: 0.3, ease: "easeInOut" });
+      return animate5(this.getShadowPartByName("content"), { opacity: [0, 1] }, { duration: MOTION.fade, ease: "easeInOut" });
     }
   }
   createLeaveAnimationControls() {
     if (matchesMediaQuery("md-max")) {
       return animateSequence5([
-        [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: 0.3, ease: [0.645, 0.045, 0.355, 1] }],
-        [this.getShadowPartByName("content"), { transform: ["translateY(0%)", "translateY(100%)"] }, { duration: 0.3, at: "<", ease: [0.645, 0.045, 0.355, 1] }]
+        [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: MOTION.panelExit, ease: "easeInOut" }],
+        [this.getShadowPartByName("content"), { transform: ["translateY(0%)", "translateY(100%)"] }, { duration: MOTION.panelExit, at: "<", ease: MOTION.exitEase }]
       ]);
     } else {
-      return animate5(this.getShadowPartByName("content"), { opacity: [1, 0] }, { duration: 0.3, ease: "easeInOut" });
+      return animate5(this.getShadowPartByName("content"), { opacity: [1, 0] }, { duration: MOTION.smallExit, ease: "easeInOut" });
     }
   }
 };
@@ -2954,7 +2968,7 @@ var FacetsDrawer = class extends Drawer {
       // are mirror images, and the panel fades with its height: the content never appears abruptly.
       content.style.opacity = "0";
       const controls = animateSequence2([
-        [content, { height: ["0px", `${height}px`], opacity: [0, 1] }, { duration: 0.4, ease: [0.4, 0, 0.2, 1] }]
+        [content, { height: ["0px", `${height}px`], opacity: [0, 1] }, { duration: MOTION.smallEnter, ease: MOTION.enterEase }]
       ]);
       controls.then(() => {
         content.style.height = "";
@@ -2971,7 +2985,7 @@ var FacetsDrawer = class extends Drawer {
     const content = this.getShadowPartByName("content");
     const overlay = this.getShadowPartByName("overlay");
     content.style.willChange = overlay.style.willChange = "clip-path";
-    const options = { duration: 0.55, ease: [0.22, 1, 0.36, 1] };
+    const options = { duration: MOTION.panelEnter, ease: MOTION.enterEase };
     const unfold = { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] };
     const controls = animateSequence2([
       [overlay, unfold, options],
@@ -3003,7 +3017,7 @@ var FacetsDrawer = class extends Drawer {
       const height = content.getBoundingClientRect().height;
       content.style.overflow = "hidden";
       const controls = animateSequence2([
-        [content, { height: [`${height}px`, "0px"], opacity: [1, 0] }, { duration: 0.4, ease: [0.4, 0, 0.2, 1] }]
+        [content, { height: [`${height}px`, "0px"], opacity: [1, 0] }, { duration: MOTION.smallExit, ease: MOTION.exitEase }]
       ]);
       controls.then(() => {
         content.style.height = "";
@@ -3014,7 +3028,7 @@ var FacetsDrawer = class extends Drawer {
     }
     document.documentElement.removeAttribute("data-facets-veil");
     content.style.willChange = overlay.style.willChange = "clip-path";
-    const options = { duration: 0.4, ease: [0.33, 0, 0.2, 1] };
+    const options = { duration: MOTION.panelExit, ease: MOTION.exitEase };
     const fold = { clipPath: ["inset(0 0 0% 0)", "inset(0 0 100% 0)"] };
     return animateSequence2([
       [overlay, fold, options],
@@ -5005,7 +5019,7 @@ var Tabs = class extends HTMLElement {
       fromPanel.hidden = true;
       toPanel.hidden = false;
       toPanel.style.willChange = "clip-path";
-      await animate8(toPanel, { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] }, { duration: 1.2, ease: [0.22, 1, 0.36, 1] });
+      await animate8(toPanel, { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] }, { duration: MOTION.panelEnter, ease: MOTION.enterEase });
       toPanel.style.willChange = "";
       toPanel.style.clipPath = "";
       return;
@@ -6177,11 +6191,11 @@ var HeaderMenuDrawerPanel = class extends HTMLElement {
       } else {
         if (this.hasAttribute("data-main-panel")) {
           return animateSequence8([
-            [this, { background: ["rgb(0 0 0 / 0.15)", "rgb(0 0 0 / 0)"], transform: [`translateX(${-30 * rtlFlip}%)`, "translateX(0)"] }, { duration: 0.25, ease: "easeInOut" }]
+            [this, { background: ["rgb(0 0 0 / 0.15)", "rgb(0 0 0 / 0)"], transform: [`translateX(${-30 * rtlFlip}%)`, "translateX(0)"] }, { duration: MOTION.smallEnter, ease: MOTION.enterEase }]
           ]);
         } else {
           return animateSequence8([
-            [this, { transform: [`translateX(${rtlFlip * 100}%)`, "translateX(0)"] }, { duration: 0.4, ease: [0.645, 0.045, 0.355, 1] }]
+            [this, { transform: [`translateX(${rtlFlip * 100}%)`, "translateX(0)"] }, { duration: MOTION.smallEnter, ease: MOTION.enterEase }]
           ]);
         }
       }
@@ -6198,11 +6212,11 @@ var HeaderMenuDrawerPanel = class extends HTMLElement {
         const rtlFlip = document.dir === "rtl" ? -1 : 1;
         if (this.hasAttribute("data-main-panel")) {
           promise = animateSequence8([
-            [this, { background: ["rgb(0 0 0 / 0)", "rgb(0 0 0 / 0.15)"], transform: ["translateX(0)", `translateX(${-30 * rtlFlip}%)`] }, { duration: 0.4, ease: [0.645, 0.045, 0.355, 1] }]
+            [this, { background: ["rgb(0 0 0 / 0)", "rgb(0 0 0 / 0.15)"], transform: ["translateX(0)", `translateX(${-30 * rtlFlip}%)`] }, { duration: MOTION.smallEnter, ease: MOTION.enterEase }]
           ]);
         } else {
           promise = animateSequence8([
-            [this, { transform: ["translateX(0%)", `translateX(${100 * rtlFlip}%)`] }, { duration: 0.25, ease: "easeInOut" }]
+            [this, { transform: ["translateX(0%)", `translateX(${100 * rtlFlip}%)`] }, { duration: MOTION.smallEnter, ease: MOTION.enterEase }]
           ]);
         }
       } else {
