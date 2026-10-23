@@ -348,8 +348,13 @@
   coming back with the same spring. Both are the same icon family (same grid, stroke width and color). With reduced motion it is only a quick
   cross-fade, no spinning or scaling.
   {%- endcomment -%}
+  {%- comment -%}
+  A block-level grid, not inline-grid: an inline box sits on the text baseline and its line box adds the text's ascent/descent around the icon
+  (the same thing the "Icons alignment" rule below avoids by making each svg a block), which made the cart icon's link taller than the others.
+  As a block it is exactly as tall as the icon, like the bare svg it replaces.
+  {%- endcomment -%}
   .header__cart-icon {
-    display: inline-grid;
+    display: grid;
     place-items: center;
   }
 
