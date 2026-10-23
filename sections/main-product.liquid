@@ -890,13 +890,17 @@
                       return;
                     }
 
-                    var bar = frame.querySelector('.product-gallery__top-bar');
+                    // There are two bars in the gallery (one for desktop, one for mobile, each hidden at the other's width): use the one on screen.
+                    var bars = frame.querySelectorAll('.product-gallery__top-bar');
                     var top = '';
 
-                    if (bar && bar.offsetParent !== null) {
-                      var below = bar.getBoundingClientRect().bottom - frame.getBoundingClientRect().top;
+                    for (var i = 0; i < bars.length; i++) {
+                      if (bars[i].offsetParent === null) continue;
+
+                      var below = bars[i].getBoundingClientRect().bottom - frame.getBoundingClientRect().top;
 
                       if (below > 0) top = Math.round(below + gap) + 'px';
+                      break;
                     }
 
                     frame.style.setProperty('--product-gallery-icon-top', top);
@@ -907,10 +911,11 @@
 
                   if (window.ResizeObserver) {
                     var observer = new ResizeObserver(place);
-                    var bar = frame.querySelector('.product-gallery__top-bar');
 
                     observer.observe(frame);
-                    if (bar) observer.observe(bar);
+                    frame.querySelectorAll('.product-gallery__top-bar').forEach(function (bar) {
+                      observer.observe(bar);
+                    });
                   }
 
                   place();
