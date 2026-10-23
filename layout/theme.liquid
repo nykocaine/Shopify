@@ -137,10 +137,11 @@
     {%- endif -%}
 
     <main id="main" class="anchor {% if request.page_type == 'policy' or request.page_type == 'captcha' %}color-scheme color-scheme--{{ settings.default_color_scheme.id }}{% endif %}">
+      {{ main_content }}
+      {%- comment -%}Rendered after the content, not before: an element ahead of the sections would stop the first one from being :first-child, which the transparent header (allow-transparent-header) depends on.{%- endcomment -%}
       {%- if needs_fallback_h1 -%}
         <h1 class="sr-only">{% if request.page_type == 'index' %}{{ shop.name }}{% else %}{{ page_title | default: shop.name }}{% endif %}</h1>
       {%- endif -%}
-      {{ main_content }}
     </main>
 
     {%- if request.page_type != 'password' -%}
