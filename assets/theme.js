@@ -2898,7 +2898,8 @@ var FacetsDrawer = class extends Drawer {
       const barStyle = getComputedStyle(bar);
       const headerEl = document.querySelector(".shopify-section--header .header");
       const stuckTop = barStyle.position === "sticky" && !Number.isNaN(parseFloat(barStyle.top)) ? parseFloat(barStyle.top) : headerEl ? headerEl.getBoundingClientRect().bottom - 1 : 0;
-      const distance = bar.getBoundingClientRect().top - stuckTop;
+      // Capped to what the page can still scroll, so a short page does not make the sheet wait for a scroll that never happens
+      const distance = Math.min(bar.getBoundingClientRect().top - stuckTop, document.documentElement.scrollHeight - window.innerHeight - window.scrollY);
       if (distance > 1) {
         const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         await new Promise((resolve) => {

@@ -136,12 +136,16 @@
       {%- endcapture -%}
     {%- endif -%}
 
+    {%- comment -%}
+      Fallback h1 (visually hidden) goes before <main>, not inside it: as a child of <main> it would break the rules that count on the page's sections being the first / last child
+      (the transparent header's [allow-transparent-header] first section, sections/instagram-feed.liquid's last-child).
+    {%- endcomment -%}
+    {%- if needs_fallback_h1 -%}
+      <h1 class="sr-only">{% if request.page_type == 'index' %}{{ shop.name }}{% else %}{{ page_title | default: shop.name }}{% endif %}</h1>
+    {%- endif -%}
+
     <main id="main" class="anchor {% if request.page_type == 'policy' or request.page_type == 'captcha' %}color-scheme color-scheme--{{ settings.default_color_scheme.id }}{% endif %}">
       {{ main_content }}
-      {%- comment -%}Rendered after the content, not before: an element ahead of the sections would stop the first one from being :first-child, which the transparent header (allow-transparent-header) depends on.{%- endcomment -%}
-      {%- if needs_fallback_h1 -%}
-        <h1 class="sr-only">{% if request.page_type == 'index' %}{{ shop.name }}{% else %}{{ page_title | default: shop.name }}{% endif %}</h1>
-      {%- endif -%}
     </main>
 
     {%- if request.page_type != 'password' -%}

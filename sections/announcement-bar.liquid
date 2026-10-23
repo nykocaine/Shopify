@@ -36,12 +36,16 @@
       of the section wrapper, so it sits OUTSIDE the section: the editor's blue outline hugs the bar and no space is left inside it.
       {%- endcomment -%}
       :root {
-        --announcement-bar-gap: calc((1lh + {{ section.settings.vertical_padding | times: 2 }}px) / 2);
+        --announcement-bar-gap: calc((var(--text-base) * var(--text-line-height) + {{ section.settings.vertical_padding | times: 2 }}px) / 2);
       }
 
       #shopify-section-{{ section.id }} {
         margin-block-start: var(--announcement-bar-gap);
       }
+
+      {%- capture joined_root -%}
+        :root:has(.announcement-bar-wrapper.is-sticky-bar):has(.shopify-section--announcement-bar ~ .shopify-section--header .header--floating):not(:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)):has(.header:not(.is-solid)))
+      {%- endcapture -%}
 
       {%- if section.settings.enable_sticky -%}
         {%- comment -%}
@@ -51,9 +55,9 @@
         the bar sticks at the same distance from the screen edge that it has at the top of the page. The header's
         stuck offset and the gap it paints above itself are driven by the same variables, so the header sits flush under the bar.
         The header also tucks 1px under the bar (--header-bar-overlap): the bar's height is measured and sticky offsets round, so a flush
-        join could leave a hairline (worst on phones) through which the page shows while scrolling. The corner radii are inline styles, hence !important.
+        join could leave a hairline (worst on phones) through which the page shows while scrolling. The corner radii are inline styles, hence !important. Only when the header floats and comes after the bar, and the bar squares its bottom corners only while the header is on screen (it can hide on scroll).
         {%- endcomment -%}
-        :root:has(.announcement-bar-wrapper.is-sticky-bar):not(:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)):has(.header:not(.is-solid))) {
+        {{ joined_root | strip }} {
           --header-top-gap: 0px;
           --header-stuck-gap: var(--announcement-bar-gap);
           --header-before-gap: 0px;
@@ -61,12 +65,12 @@
           --announcement-bar-stuck-top: var(--announcement-bar-gap);
         }
 
-        :root:has(.announcement-bar-wrapper.is-sticky-bar):not(:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)):has(.header:not(.is-solid))) .announcement-bar-wrapper {
+        {{ joined_root | strip }}:not(:has(.header.is-hidden)) .announcement-bar-wrapper {
           border-bottom-left-radius: 0 !important;
           border-bottom-right-radius: 0 !important;
         }
 
-        :root:has(.announcement-bar-wrapper.is-sticky-bar):not(:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)):has(.header:not(.is-solid))) .header--floating {
+        {{ joined_root | strip }} .header--floating {
           border-top-left-radius: 0 !important;
           border-top-right-radius: 0 !important;
         }
