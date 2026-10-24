@@ -252,9 +252,25 @@ based on your desired layout (and remove most of the settings associated), and t
           endif
         endif
 
-        assign button_content = button_label | append: ' - ' | append: button_price
+        # The button under the info has the inside of the main product's add to cart button (snippets/buy-buttons.liquid): the label and the price are two separate
+        # children (.buy-buttons__cta pins them to opposite ends), with the crossed-out compare-at price next to the price when the variant is on sale.
+        if quick_buy_single and product.selected_or_first_available_variant.compare_at_price > product.selected_or_first_available_variant.price
+          if settings.currency_code_enabled
+            assign button_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money_with_currency
+          else
+            assign button_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money
+          endif
+
+          assign button_price = button_price | append: ' <s>' | append: button_compare_at_price | append: '</s>'
+        endif
+
+        assign button_content = '<span>' | append: button_label | append: '</span><span>' | append: button_price | append: '</span>'
+
+        assign quick_buy_desktop = section.settings.show_quick_buy_desktop | default: true, allow_false: true
+        assign quick_buy_mobile = section.settings.show_quick_buy_mobile | default: true, allow_false: true
       -%}
 
+      {%- if quick_buy_mobile -%}
       <div class="product-card__quick-buy {% if settings.product_card_info_position == 'inside' and settings.product_card_info_vertical_alignment == 'end' %}product-card__quick-buy--top-mobile{% endif %} no-touch:hidden">
         {%- if quick_buy_single -%}
           <product-form>
@@ -280,6 +296,7 @@ based on your desired layout (and remove most of the settings associated), and t
           </button>
         {%- endif -%}
       </div>
+      {%- endif -%}
 
       {%- comment -%}The modal sits outside the touch-only icon wrapper above: that wrapper is not displayed with a mouse, and the button under the info opens this same modal{%- endcomment -%}
       {%- unless quick_buy_single -%}
@@ -442,18 +459,18 @@ based on your desired layout (and remove most of the settings associated), and t
       Quick buy with a mouse: an outline button under the product info, as wide as the card, in the text color of the card's own color scheme (theme.css,
       .product-card__quick-buy-below). Not shown for a product that picks its size on the image (the floating size selector takes that place).
       {%- endcomment -%}
-      {%- if show_quick_buy and product.available and show_product_size_selector == false -%}
+      {%- if show_quick_buy and product.available and show_product_size_selector == false and quick_buy_desktop -%}
         <div class="product-card__quick-buy-below touch:hidden">
           {%- if quick_buy_single -%}
             <product-form>
               {%- form 'product', product -%}
                 <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
 
-                {%- render 'button', content: button_content, type: 'submit', style: 'outline', stretch: true -%}
+                {%- render 'button', content: button_content, type: 'submit', style: 'outline', stretch: true, class: 'buy-buttons__cta' -%}
               {%- endform -%}
             </product-form>
           {%- else -%}
-            {%- render 'button', content: button_content, aria_controls: quick_buy_id, style: 'outline', stretch: true -%}
+            {%- render 'button', content: button_content, aria_controls: quick_buy_id, style: 'outline', stretch: true, class: 'buy-buttons__cta' -%}
           {%- endif -%}
         </div>
       {%- endif -%}
