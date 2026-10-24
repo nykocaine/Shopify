@@ -11,6 +11,18 @@
       {%- endif -%}
     }
 
+    {%- comment -%}
+    First section on the page, right under the site header: the gap above the slideshow is the page's side margin (--container-gutter), the same as every
+    other first section (theme.css), instead of half of the section spacing. The min-height below subtracts the same value (--slideshow-top-gap), so the slideshow
+    still fills the screen. With the transparent header there is no gap and nothing changes.
+    {%- endcomment -%}
+    {%- unless section.settings.allow_transparent_header -%}
+      main > #shopify-section-{{ section.id }}:first-child {
+        margin-block-start: var(--container-gutter);
+        --slideshow-top-gap: var(--container-gutter);
+      }
+    {%- endunless -%}
+
     {%- if section.settings.floating_slideshow -%}
       {%- comment -%}
       The page's side gutter (the .container margin) sits on the section wrapper itself, outside the section, instead of on the

@@ -226,14 +226,6 @@
     {%- endif -%}
 
     {%- comment -%}
-    First section on the page, right under the site header: the gap above its content is the page's side margin (--container-gutter) instead of the
-    half section spacing theme.css gives the first section. Not with the transparent header, which adds the header's own height there.
-    {%- endcomment -%}
-    main > #shopify-section-{{ section.id }}:first-child:not(:has([allow-transparent-header])) .section-spacing {
-      --section-vertical-spacing-block-start: var(--container-gutter);
-    }
-
-    {%- comment -%}
       Top section spacing as margin instead of padding, so it reads the same way as the other
       converted sections. display: flow-root on the outer wrapper contains that margin (stops it
       collapsing through the wrapper's own top edge), so the color-scheme background still starts

@@ -2333,15 +2333,15 @@ label:focus-within:has(:focus-visible) {
   --section-vertical-spacing-block-start: calc(var(--section-vertical-spacing) + var(--header-height) - 16px);
 }
 
-/* Top rule: whatever sits first in the page content, right under the header group, gets only
-   half of the normal section spacing above it (same as the header and the announcement bar).
-   The transparent-header rule above is more specific and still wins. */
+/* Top rule: whatever sits first in the page content, right under the header group, has the page's side margin (--container-gutter) as the gap above it,
+   the same size as the margins at the sides of the page (it used to be half of the section spacing). A section that has no gap there keeps none: this only
+   changes the gap that the section's own spacing classes already give it. The transparent-header rule above is more specific and still wins. */
 main > .shopify-section:first-child .section-spacing {
-  --section-vertical-spacing-block-start: calc(var(--section-vertical-spacing) / 2);
+  --section-vertical-spacing-block-start: var(--container-gutter);
 }
 
 main > .shopify-section:first-child .section-floating--block {
-  margin-block-start: calc(var(--section-vertical-spacing) / 2);
+  margin-block-start: var(--container-gutter);
 }
 
 /* Rule: whatever section sits directly above the collection (or the search results), between the header and the filter
