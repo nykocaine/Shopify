@@ -2091,6 +2091,19 @@ the first available one); the click is handled by the script near the lightbox b
   }
 
   {%- comment -%}
+  Desktop (1000px and up): the logo drawn on the video thumbnails (snippets/media-zoom-style.liquid, 3.5rem x 2rem there, for every section that
+  uses it) is a bit larger in this feed, and its inset grows with it. Not for the expanded video in the lightbox, which has its own size.
+  {%- endcomment -%}
+  @media screen and (min-width: 1000px) {
+    #{{ instagram_feed_id }} .has-video-logo video-media:not(.is-lightbox-expanded)::after {
+      inset-inline-start: 1rem;
+      inset-block-end: 1rem;
+      width: min(4.75rem, 30%);
+      height: 2.75rem;
+    }
+  }
+
+  {%- comment -%}
   The video case never has this problem: its forced aspect-ratio lives on .content-box, an ANCESTOR
   of the element that actually gets .is-lightbox-expanded (video-media) - once that's position: fixed,
   it's sized purely by its own width/height/max-width/max-height (media-zoom-style.liquid), completely
