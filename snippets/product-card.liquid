@@ -278,12 +278,15 @@ based on your desired layout (and remove most of the settings associated), and t
               {%- render 'icon' with 'cart' -%}
             </button-content>
           </button>
-
-          <quick-buy-modal id="{{ quick_buy_id }}" product-url="{{ product.url }}" class="modal modal--quick-buy color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
-            {%- comment -%}The content will be dynamically filled in JS{%- endcomment -%}
-          </quick-buy-modal>
         {%- endif -%}
       </div>
+
+      {%- comment -%}The modal sits outside the touch-only icon wrapper above: that wrapper is not displayed with a mouse, and the button under the info opens this same modal{%- endcomment -%}
+      {%- unless quick_buy_single -%}
+        <quick-buy-modal id="{{ quick_buy_id }}" product-url="{{ product.url }}" class="modal modal--quick-buy color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
+          {%- comment -%}The content will be dynamically filled in JS{%- endcomment -%}
+        </quick-buy-modal>
+      {%- endunless -%}
     {%- endif -%}
 
     {%- if show_product_size_selector -%}
