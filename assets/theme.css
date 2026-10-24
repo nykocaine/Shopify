@@ -3866,6 +3866,17 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   }
 }
 
+/* Quick buy with a mouse: an outline button under the product info (snippets/product-card.liquid), the width of the card. Its text and border take the text
+   color of the card's own color scheme (the outline button would otherwise use the scheme's primary button color). !important beats the inline custom
+   property the button snippet writes. */
+.product-card__quick-buy-below {
+  margin-block-start: .75rem;
+}
+
+.product-card__quick-buy-below .button--outline {
+  --button-text-color: rgb(var(--text-color)) !important;
+}
+
 .product-card__quick-buy {
   padding: max(1rem, var(--product-card-inner-padding));
   z-index: 2;

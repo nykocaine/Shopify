@@ -18,7 +18,7 @@ based on your desired layout (and remove most of the settings associated), and t
 @param {boolean} [show_badges] - show or not the badges (default to true if nothing is set)
 @param {boolean} [show_rating] - show or not the rating. If nothing is set, the theme uses the default product card setting
 @param {boolean} [show_vendor] - show or not the vendor. If nothing is set, the theme uses the default product card setting
-@param {boolean} [show_quick_buy] - show or not the quick buy (which open a modal if the product contains more than 1 choice)
+@param {boolean} [show_quick_buy] - show or not the quick buy (by default the "show_quick_buy" checkbox of the section the card is in, off unless that section turns it on; it opens a modal if the product contains more than 1 choice): the cart icon over the image on touch screens, a button under the product info with a mouse
 @param {boolean} [show_secondary_image] - show or not the secondary media on hover. If nothing is set, the theme uses the default product card setting
 @param {boolean} [show_swatches] - show or not the swatches. The swatch type is inferred from setting, and will default to true if nothing is set
 @param {boolean} [force_no_border] - if set to true, no border will be added around cards, even if the global setting ask to
@@ -34,7 +34,7 @@ based on your desired layout (and remove most of the settings associated), and t
   assign show_badges = show_badges | default: true, allow_false: true
   assign show_rating = show_rating | default: settings.product_card_show_rating, allow_false: true
   assign show_vendor = show_vendor | default: settings.product_card_show_vendor, allow_false: true
-  assign show_quick_buy = show_quick_buy | default: settings.product_card_show_quick_buy, allow_false: true
+  assign show_quick_buy = show_quick_buy | default: section.settings.show_quick_buy, allow_false: true
   assign show_secondary_image = show_secondary_image | default: settings.product_card_show_secondary_image, allow_false: true
   assign show_swatches = show_swatches | default: settings.product_card_show_color_swatches, allow_false: true
 
@@ -217,27 +217,51 @@ based on your desired layout (and remove most of the settings associated), and t
       {%- endif -%}
     </a>
 
+    {%- comment -%}
+    Quick buy (only when the section that shows the card turns it on: show_quick_buy). On touch screens it is the small cart icon over the corner of the image,
+    as always. With a mouse it is a button under the product info instead (see "product-card__quick-buy-below" further down), never over the image.
+    A product with a single variant is added straight to the cart; one with several variants opens the quick buy modal (the modal lives here, next to the icon).
+    {%- endcomment -%}
     {%- if show_quick_buy and product.available -%}
-      <div class="product-card__quick-buy {% if settings.product_card_info_position == 'inside' and settings.product_card_info_vertical_alignment == 'end' %}product-card__quick-buy--top-mobile{% endif %} {% if show_product_size_selector %}no-touch:hidden{% endif %}">
-        {%- if product.variants.size == 1 and product.selling_plan_groups.size == 0 -%}
+      {%- liquid
+        assign quick_buy_single = false
+
+        if product.variants.size == 1 and product.selling_plan_groups.size == 0
+          assign quick_buy_single = true
+        endif
+
+        capture quick_buy_id
+          echo 'product-quick-buy-' | append: prefix_id | append: '-' | append: block.id | append: '-' | append: section.id | append: '-' | append: product.id
+        endcapture
+
+        if quick_buy_single
+          assign button_label = 'product.general.add_to_cart_button' | t
+
+          if settings.currency_code_enabled
+            assign button_price = product.selected_or_first_available_variant.price | money_with_currency
+          else
+            assign button_price = product.selected_or_first_available_variant.price | money
+          endif
+        else
+          assign button_label = 'product.general.choose_options' | t
+
+          if settings.currency_code_enabled
+            assign button_price = product.price_min | money_with_currency
+          else
+            assign button_price = product.price_min | money
+          endif
+        endif
+
+        assign button_content = button_label | append: ' - ' | append: button_price
+      -%}
+
+      <div class="product-card__quick-buy {% if settings.product_card_info_position == 'inside' and settings.product_card_info_vertical_alignment == 'end' %}product-card__quick-buy--top-mobile{% endif %} no-touch:hidden">
+        {%- if quick_buy_single -%}
           <product-form>
             {%- form 'product', product -%}
               <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
 
-              {%- liquid
-                assign button_label = 'product.general.add_to_cart_button' | t
-
-                if settings.currency_code_enabled
-                  assign button_price = product.selected_or_first_available_variant.price | money_with_currency
-                else
-                  assign button_price = product.selected_or_first_available_variant.price | money
-                endif
-
-                assign button_content = button_label | append: ' - ' | append: button_price
-              -%}
-              {%- render 'button', content: button_content, type: 'submit', stretch: true, background: settings.default_color_scheme.settings.background, text_color: settings.default_color_scheme.settings.text_color, class: 'touch:hidden' -%}
-
-              <button type="submit" class="block tap-area no-touch:hidden">
+              <button type="submit" class="block tap-area">
                 <span class="sr-only">{{ button_label }}</span>
 
                 <button-content>
@@ -247,24 +271,7 @@ based on your desired layout (and remove most of the settings associated), and t
             {%- endform -%}
           </product-form>
         {%- else -%}
-          {%- capture quick_buy_id -%}product-quick-buy-{{ prefix_id }}-{{ block.id }}-{{ section.id }}-{{ product.id }}{%- endcapture -%}
-
-          {%- if show_product_size_selector == false -%}
-            {%- liquid
-              assign button_label = 'product.general.choose_options' | t
-
-              if settings.currency_code_enabled
-                assign button_price = product.price_min | money_with_currency
-              else
-                assign button_price = product.price_min | money
-              endif
-
-              assign button_content = button_label | append: ' - ' | append: button_price
-            -%}
-            {%- render 'button', content: button_content, aria_controls: quick_buy_id, stretch: true, background: settings.default_color_scheme.settings.background, text_color: settings.default_color_scheme.settings.text_color, class: 'touch:hidden' -%}
-          {%- endif -%}
-
-          <button type="button" aria-controls="{{ quick_buy_id }}" class="block tap-area no-touch:hidden">
+          <button type="button" aria-controls="{{ quick_buy_id }}" class="block tap-area">
             <span class="sr-only">{{ button_label }}</span>
 
             <button-content>
@@ -426,6 +433,26 @@ based on your desired layout (and remove most of the settings associated), and t
 
       {%- if swatches != blank and settings.product_card_swatches_position == 'outside' or show_swatches_along_info -%}
         {{- swatches -}}
+      {%- endif -%}
+
+      {%- comment -%}
+      Quick buy with a mouse: an outline button under the product info, as wide as the card, in the text color of the card's own color scheme (theme.css,
+      .product-card__quick-buy-below). Not shown for a product that picks its size on the image (the floating size selector takes that place).
+      {%- endcomment -%}
+      {%- if show_quick_buy and product.available and show_product_size_selector == false -%}
+        <div class="product-card__quick-buy-below touch:hidden">
+          {%- if quick_buy_single -%}
+            <product-form>
+              {%- form 'product', product -%}
+                <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+
+                {%- render 'button', content: button_content, type: 'submit', style: 'outline', stretch: true -%}
+              {%- endform -%}
+            </product-form>
+          {%- else -%}
+            {%- render 'button', content: button_content, aria_controls: quick_buy_id, style: 'outline', stretch: true -%}
+          {%- endif -%}
+        </div>
       {%- endif -%}
     </div>
   </div>
