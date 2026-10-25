@@ -36,6 +36,21 @@
         .shopify-section--header ~ #shopify-section-{{ section.id }} {
           top: calc(var(--header-is-sticky, 0) * var(--header-is-visible, 0) * var(--header-height, 0px));
         }
+
+        {%- comment -%}
+        Header "hide on scroll" + a sticky bar: the bar leaves with the header, as one block. The header slides up by its own height plus
+        its gap plus the bar's height (sections/header.liquid), so the bar slides up by that same distance with the same timing and
+        easing (--header-solid-transition): both move together, no gap opens between them, and both end completely off screen. The
+        header's class is-hidden is what drives it; coming back is the same movement in reverse. Needs no JS.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} {
+          transition: transform var(--header-solid-transition, .45s cubic-bezier(.4, 0, .2, 1)), visibility var(--header-solid-transition, .45s cubic-bezier(.4, 0, .2, 1));
+        }
+
+        :root:has(.shopify-section--header .header.is-hidden) #shopify-section-{{ section.id }} {
+          transform: translateY(calc(-1 * (var(--header-height, 0px) + var(--header-stuck-gap, 0px) + var(--announcement-bar-height, 0px))));
+          visibility: hidden;
+        }
       {%- endif -%}
 
       #shopify-section-{{ section.id }} {
