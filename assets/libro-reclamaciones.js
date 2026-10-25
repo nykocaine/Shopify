@@ -134,7 +134,7 @@
   // Always-visible print button: prints the whole section (it borrows the .rc-print-area rules in libro-reclamaciones.css for the
   // duration of the print dialog, so the header, footer and the rest of the page stay out of the paper).
   function initPagePrint() {
-    var button = document.querySelector('[data-rc-print-page]');
+    var button = document.querySelector('.rc-print-page');
     var section = document.querySelector('[data-rc-section]');
 
     if (!button || !section) return;

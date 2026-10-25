@@ -38,11 +38,6 @@
       {%- render 'subheading', content: section.settings.subheading -%}
       {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.heading_size, html_tag: 'h2' -%}
     </div>
-
-    {%- comment -%} Always visible: prints the whole section (the blank form before sending, the receipt after). See assets/libro-reclamaciones.js. {%- endcomment -%}
-    <div class="print:hidden">
-      <button type="button" class="button button--outline" data-rc-print-page>{{ 'libro_reclamaciones.form.print' | t }}</button>
-    </div>
   </div>
 {%- endcapture -%}
 
@@ -101,6 +96,7 @@
   {%- assign guardian_name_label = 'libro_reclamaciones.form.guardian_name' | t -%}
   {%- assign guardian_document_label = 'libro_reclamaciones.form.guardian_document' | t -%}
   {%- assign submit_label = 'libro_reclamaciones.form.submit' | t -%}
+  {%- assign print_label = 'libro_reclamaciones.form.print' | t -%}
 
   {%- if shop.privacy_policy != blank -%}
     {%- assign consent_label = 'libro_reclamaciones.form.consent_html' | t: link: shop.privacy_policy.url -%}
@@ -173,7 +169,14 @@
       </div>
 
       <div class="v-stack gap-3 print:hidden">
-        {%- render 'button', content: submit_label, type: 'submit', class: 'rc-submit sm:justify-self-start' -%}
+        {%- comment -%}
+        Submit and print side by side on desktop, stacked on mobile, both with the same style and colors (the section's button settings).
+        The print button prints the whole section (the blank or filled-in form); see assets/libro-reclamaciones.js.
+        {%- endcomment -%}
+        <div class="rc-actions">
+          {%- render 'button', content: submit_label, type: 'submit', style: section.settings.button_style, background: section.settings.button_background, text_color: section.settings.button_text_color, border_color: section.settings.button_border_color, class: 'rc-submit' -%}
+          {%- render 'button', content: print_label, type: 'button', style: section.settings.button_style, background: section.settings.button_background, text_color: section.settings.button_text_color, border_color: section.settings.button_border_color, class: 'rc-print-page' -%}
+        </div>
         <p class="rc-submit-hint text-subdued text-sm" hidden>{{ 'libro_reclamaciones.form.incomplete_hint' | t }}</p>
       </div>
     {%- endunless -%}
@@ -261,6 +264,23 @@
     margin-block-end: 1.5rem;
   }
 
+  {%- comment -%}
+  Submit + print buttons: a column on mobile (print below submit), a row on desktop (print beside submit). Both stretch to the same
+  height, and each is as wide as its text on desktop.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .rc-actions {
+    display: grid;
+    gap: .75rem;
+  }
+
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .rc-actions {
+      grid-auto-flow: column;
+      grid-auto-columns: max-content;
+      align-items: stretch;
+    }
+  }
+
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .rc-aviso__notes {
       border-block-start: none;
@@ -321,6 +341,44 @@
       "label": "Corner radius",
       "default": 0,
       "visible_if": "{{ section.settings.floating_libro_reclamaciones }}"
+    },
+    {
+      "type": "header",
+      "content": "Buttons (submit and print)"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "t:global.text.button_style",
+      "options": [
+        {
+          "value": "solid",
+          "label": "t:global.text.button_style_options.solid"
+        },
+        {
+          "value": "outline",
+          "label": "t:global.text.button_style_options.outline"
+        }
+      ],
+      "default": "solid"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button background",
+      "info": "Solid style only. Leave blank to use the color scheme's button color."
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "info": "Leave blank to use the color scheme's default."
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Button border color",
+      "info": "Leave blank for no border. Outline buttons already have one matching their text color - this overrides it too."
     },
     {
       "type": "inline_richtext",
