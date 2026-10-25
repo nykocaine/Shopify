@@ -334,6 +334,22 @@ no need to manually pass the section as it is globally available)
                 render more than once on the same page.
                 {%- endcomment -%}
                 <script>
+                  // Bottom edge (from the top of content) of the first paragraph, so the collapsed box never ends before it: the
+                  // first paragraph is always shown in full, however long it is. Falls back to the first child when there is no <p>.
+                  function firstParagraphBottom(content) {
+                    var first = null;
+                    var paragraphs = content.querySelectorAll('p');
+
+                    for (var i = 0; i < paragraphs.length; i++) {
+                      if (paragraphs[i].textContent.trim()) { first = paragraphs[i]; break; }
+                    }
+
+                    if (!first) first = content.firstElementChild;
+                    if (!first) return 0;
+
+                    return Math.ceil(first.getBoundingClientRect().bottom - content.getBoundingClientRect().top) + 2;
+                  }
+
                   function fitToLine(content, target) {
                     // Largest bottom edge (from the top of content) of any text line / media that still fits inside
                     // target, so the collapsed box ends right under a whole line - never through the middle of one.
@@ -401,7 +417,7 @@ if (!window.customElements.get('read-more-text')) {
 
                         // Paragraph/list spacing makes "N lines" land mid-line, so the cut is moved up to the
                         // bottom of the last whole line that fits.
-                        this.collapsedHeight = fitToLine(this.content, this.baseHeight);
+                        this.collapsedHeight = Math.max(fitToLine(this.content, this.baseHeight), firstParagraphBottom(this.content));
 
                         var overflowing = this.content.scrollHeight - this.collapsedHeight > 1;
                         this.toggleAttribute('data-overflowing', overflowing);
