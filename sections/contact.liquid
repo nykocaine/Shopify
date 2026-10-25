@@ -135,10 +135,11 @@
 
   {%- if section.settings.image != blank or request.design_mode -%}
     {%- comment -%}
-    Desktop (1000px and up, the theme's split breakpoint): two columns inside one card - all the contact content pinned to the left, the
-    photo on the right filling the column's full height and cut by the card's rounded corners. Mobile and tablet: the photo is not shown
-    and the section stays exactly as the stacked layout. Without a photo it is a single column on the live site; the theme editor shows
-    a placeholder in the right column so there is something to click and replace.
+    Desktop (1000px and up, the theme's split breakpoint): two separate cards side by side with the page-edge gap between them
+    (--container-gutter, the same as the sides) - the contact card on the left (title, text, form) and the photo card on the right,
+    each with its own rounded corners, top and bottom. The gap above them (below the header) is the same gutter, on every screen size.
+    Mobile and tablet: the photo is not shown, only the contact card. Without a photo it is just the contact card on the live site;
+    the theme editor shows a placeholder in the right card so there is something to click and replace.
     {%- endcomment -%}
     <style>
       #shopify-section-{{ section.id }} .contact-split__media {
@@ -148,6 +149,7 @@
       @media screen and (min-width: 1000px) {
         #shopify-section-{{ section.id }} .contact-split {
           grid-template-columns: repeat(2, minmax(0, 1fr));
+          column-gap: var(--container-gutter);
           display: grid;
         }
 
@@ -155,26 +157,20 @@
           display: block;
           position: relative;
           min-height: 100%;
-          {%- if section.settings.add_image_spacing %}
-          padding: var(--container-gutter);
-          {%- endif %}
         }
 
         #shopify-section-{{ section.id }} .contact-split__media :is(img, svg) {
           position: absolute;
-          inset: {% if section.settings.add_image_spacing %}var(--container-gutter){% else %}0{% endif %};
-          width: {% if section.settings.add_image_spacing %}calc(100% - 2 * var(--container-gutter)){% else %}100%{% endif %};
-          height: {% if section.settings.add_image_spacing %}calc(100% - 2 * var(--container-gutter)){% else %}100%{% endif %};
+          inset: 0;
+          width: 100%;
+          height: 100%;
           object-fit: cover;
-          {%- if section.settings.add_image_spacing %}
-          border-radius: {{ section.settings.contact_border_radius }}px;
-          {%- endif %}
         }
       }
     </style>
 
-    <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_contact %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_contact %} style="border-end-start-radius: {{ section.settings.contact_border_radius }}px; border-end-end-radius: {{ section.settings.contact_border_radius }}px; overflow: hidden;"{% endif %}>
-      <div class="contact-split">
+    <div class="contact-split section-floating section-floating--block-end" style="margin-block-start: var(--container-gutter);">
+      <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}" style="border-radius: {{ section.settings.contact_border_radius }}px; overflow: hidden;">
         <div class="section-spacing">
           <div class="container">
             <div class="section-stack">
@@ -183,14 +179,14 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="contact-split__media">
-          {%- if section.settings.image != blank -%}
-            {{- section.settings.image | image_url: width: section.settings.image.width | image_tag: sizes: '50vw', widths: '600,800,1000,1200,1400,1600,1800,2000', loading: 'lazy', class: 'size-full' -}}
-          {%- else -%}
-            {{- 'image' | placeholder_svg_tag: 'size-full' -}}
-          {%- endif -%}
-        </div>
+      <div class="contact-split__media" style="border-radius: {{ section.settings.contact_border_radius }}px; overflow: hidden;">
+        {%- if section.settings.image != blank -%}
+          {{- section.settings.image | image_url: width: section.settings.image.width | image_tag: sizes: '50vw', widths: '600,800,1000,1200,1400,1600,1800,2000', loading: 'lazy', class: 'size-full' -}}
+        {%- else -%}
+          {{- 'image' | placeholder_svg_tag: 'size-full' -}}
+        {%- endif -%}
       </div>
     </div>
   {%- else -%}
@@ -205,7 +201,7 @@
         </div>
       </div>
     {%- else -%}
-      <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_contact %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_contact %} style="border-end-start-radius: {{ section.settings.contact_border_radius }}px; border-end-end-radius: {{ section.settings.contact_border_radius }}px; overflow: hidden;"{% endif %}>
+      <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_contact %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_contact %} style="margin-block-start: var(--container-gutter); border-radius: {{ section.settings.contact_border_radius }}px; overflow: hidden;"{% endif %}>
         <div class="section-spacing">
           <div class="container">
             <div class="section-stack">
