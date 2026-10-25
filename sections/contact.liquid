@@ -100,7 +100,7 @@
 
       <div>
         {%- assign button_content = 'contact.form.submit' | t -%}
-        {%- render 'button', content: button_content, type: 'submit', class: 'sm-max:w-full' -%}
+        {%- render 'button', content: button_content, type: 'submit', style: section.settings.button_style, background: section.settings.button_background, text_color: section.settings.button_text_color, border_color: section.settings.button_border_color, class: 'sm-max:w-full' -%}
       </div>
     {%- endform -%}
   {%- endcapture -%}
@@ -350,6 +350,44 @@
       "label": "t:sections.contact.show_social_media",
       "info": "t:sections.contact.show_social_media_info",
       "default": true
+    },
+    {
+      "type": "header",
+      "content": "Submit button"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "t:global.text.button_style",
+      "options": [
+        {
+          "value": "solid",
+          "label": "t:global.text.button_style_options.solid"
+        },
+        {
+          "value": "outline",
+          "label": "t:global.text.button_style_options.outline"
+        }
+      ],
+      "default": "solid"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button background",
+      "info": "Solid style only. Leave blank to use the color scheme's button color."
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "info": "Leave blank to use the color scheme's default."
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Button border color",
+      "info": "Leave blank for no border. Outline buttons already have one matching their text color - this overrides it too."
     },
     {
       "type": "header",
