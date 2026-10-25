@@ -522,6 +522,21 @@
       display: none;
     }
   {%- endif -%}
+  {%- if template.suffix == 'contact' or template.suffix == 'libro-reclamaciones' or request.page_type == 'policy' -%}
+    /* Contact, complaints book and policy pages only: no announcement bar, and the header stays where it is at the top of the page
+       (static) instead of following the scroll. Its top corners keep the header's radius (inline style on .header). */
+    .shopify-section--announcement-bar {
+      display: none !important;
+    }
+
+    #shopify-section-{{ section.id }} {
+      position: static !important;
+    }
+
+    #shopify-section-{{ section.id }}::before {
+      display: none;
+    }
+  {%- endif -%}
 </style>
 
 <height-observer variable="header">
