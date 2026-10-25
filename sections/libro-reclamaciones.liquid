@@ -42,7 +42,7 @@
 {%- endcapture -%}
 
 {%- capture section_main_content -%}
-  <div class="rc-aviso rc-aviso--box v-stack gap-4">
+  <div class="rc-aviso v-stack gap-4">
     <div class="rc-aviso__columns grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
       <div class="rc-aviso__left v-stack gap-4">
         {%- if section.settings.content != blank -%}
@@ -256,16 +256,6 @@
     margin-block-end: 1.5rem;
   }
 
-  {%- comment -%}
-  The intro content and the notes sit together in one white box (same white as the FAQ boxes), with the
-  section's own corner radius and the usual padding: container-gutter + 0.5rem on all four sides.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .rc-aviso--box {
-    background: #ffffff;
-    border-radius: var(--rc-radius, 0);
-    padding: calc(var(--container-gutter) + 0.5rem);
-  }
-
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .rc-aviso__notes {
       border-block-start: none;
@@ -276,7 +266,7 @@
   }
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_libro_reclamaciones %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_libro_reclamaciones %} style="--rc-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; margin-block-start: var(--container-gutter); border-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; overflow: hidden;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_libro_reclamaciones %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_libro_reclamaciones %} style="margin-block-start: var(--container-gutter); border-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div class="container">
       <div class="section-stack">
