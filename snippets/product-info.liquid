@@ -263,6 +263,24 @@ no need to manually pass the section as it is globally available)
                   }
 
                   {%- comment -%}
+                  overflow: hidden clips on BOTH axes, and a list's bullets / numbers (list-style-position: outside, theme.css) are drawn
+                  outside the text box, to the left of it: they were being cut off, most visibly the wider markers ("10.", nested bullets).
+                  overflow: clip on the vertical axis only keeps the collapsed-height cut exactly as it was and leaves the sides alone (plain
+                  hidden can't be mixed with a visible axis; clip can). Browsers without clip keep the old hidden behavior. The lists also get
+                  a little more indent here so a marker never sits against the very edge of the column.
+                  {%- endcomment -%}
+                  @supports (overflow: clip) {
+                    #shopify-section-{{ section.id }} .product-description-collapsible__content {
+                      overflow-x: visible;
+                      overflow-y: clip;
+                    }
+                  }
+
+                  #shopify-section-{{ section.id }} .product-description-collapsible__content :where(ul, ol) {
+                    margin-inline-start: 1.5em;
+                  }
+
+                  {%- comment -%}
                   Plain text link, not a button: reuses .link (theme.css) for the underline - its
                   underline is a currentColor gradient, so it automatically follows the faded color
                   below instead of needing a separate color. font-size isn't set at all: the theme's
