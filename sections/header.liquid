@@ -536,6 +536,27 @@
     #shopify-section-{{ section.id }}::before {
       display: none;
     }
+
+    {%- if section.settings.floating_header -%}
+      {%- comment -%}
+      The announcement bar is hidden, but it is still in the DOM, so the rules that join the header to a sticky bar (zero gap above,
+      square top corners) would still match. Override them: the gap above the header is the page's edge padding (--container-gutter,
+      the same as its sides), nothing tucks under a bar, and the top corners are rounded with the header's radius.
+      {%- endcomment -%}
+      :root {
+        --header-top-gap: var(--container-gutter) !important;
+        --header-bar-overlap: 0px !important;
+      }
+
+      #shopify-section-{{ section.id }} {
+        margin-block-start: var(--container-gutter) !important;
+      }
+
+      #shopify-section-{{ section.id }} .header--floating {
+        border-top-left-radius: {{ section.settings.header_border_radius }}px !important;
+        border-top-right-radius: {{ section.settings.header_border_radius }}px !important;
+      }
+    {%- endif -%}
   {%- endif -%}
 </style>
 
