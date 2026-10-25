@@ -38,6 +38,11 @@
       {%- render 'subheading', content: section.settings.subheading -%}
       {%- render 'heading', content: section.settings.title, balance_text: true, style: section.settings.heading_size, html_tag: 'h2' -%}
     </div>
+
+    {%- comment -%} Always visible: prints the whole section (the blank form before sending, the receipt after). See assets/libro-reclamaciones.js. {%- endcomment -%}
+    <div class="print:hidden">
+      <button type="button" class="button button--outline" data-rc-print-page>{{ 'libro_reclamaciones.form.print' | t }}</button>
+    </div>
   </div>
 {%- endcapture -%}
 
@@ -167,7 +172,7 @@
         {%- render 'checkbox', name: 'contact[Declaración de conformidad y consentimiento]', value: 'Acepto', label: consent_label, required: true, id_prefix: 'consent' -%}
       </div>
 
-      <div class="v-stack gap-3">
+      <div class="v-stack gap-3 print:hidden">
         {%- render 'button', content: submit_label, type: 'submit', class: 'rc-submit sm:justify-self-start' -%}
         <p class="rc-submit-hint text-subdued text-sm" hidden>{{ 'libro_reclamaciones.form.incomplete_hint' | t }}</p>
       </div>
@@ -267,7 +272,7 @@
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_libro_reclamaciones %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_libro_reclamaciones %} style="margin-block-start: var(--container-gutter); border-radius: {{ section.settings.libro_reclamaciones_border_radius }}px; overflow: hidden;"{% endif %}>
-  <div class="section-spacing">
+  <div class="section-spacing" data-rc-section>
     <div class="container">
       <div class="section-stack">
         {{- section_header -}}
