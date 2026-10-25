@@ -818,6 +818,17 @@ if (!window.customElements.get('read-more-match-height')) {
           corner_radius: media_corner_radius,
           has_multiple_slides: is_carousel
         -%}
+
+        {%- comment -%}
+        Desktop (1000px and up): the logo drawn on the video thumbnails (media-zoom-style.liquid, 3.5rem x 2rem) is a bit larger, 4.25rem x 2.45rem, the same as in
+        the Instagram feed; its inset stays at .75rem. Not for the expanded video in the lightbox, which has its own size.
+        {%- endcomment -%}
+        @media screen and (min-width: 1000px) {
+          #{{ media_wrapper_id }} .has-video-logo video-media:not(.is-lightbox-expanded)::after {
+            width: min(4.25rem, 28%);
+            height: 2.45rem;
+          }
+        }
       </style>
 
       {%- render 'media-zoom-script', wrapper_id: media_wrapper_id, lightbox_id: media_lightbox_id, carousel_id: media_carousel_id -%}

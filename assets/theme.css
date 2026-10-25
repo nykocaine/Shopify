@@ -4202,6 +4202,14 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   pointer-events: none;
 }
 
+/* Desktop (1000px and up): a bit larger, 4.25rem x 2.45rem, the same as in the Instagram feed and the FAQ's text + image videos; the inset stays at .75rem. */
+@media screen and (min-width: 1000px) {
+  .product-list__promo video-media::after {
+    width: min(4.25rem, 28%);
+    height: 2.45rem;
+  }
+}
+
 @media screen and (max-width: 699px) {
   .product-list__promo:not(:last-child) {
     margin-block-end: calc(-1 * var(--product-list-row-gap) + var(--product-list-column-gap));
