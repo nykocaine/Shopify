@@ -9555,6 +9555,31 @@ shopify-account::part(signed-out-avatar) {
   text-align: center;
 }
 
+/* Shopify's policy pages (privacy, refund, terms, shipping) can't be edited in the theme editor: Shopify renders them with
+   fixed markup, no template or section. So the floating-card look is done here, only under main.main--policy (layout/theme.liquid),
+   without touching any other page. main keeps the scheme's variables but loses its own background so the page shows around the
+   card; the card (.shopify-policy__container) takes the scheme's background, the usual side gutter and padding, and 12px corners
+   (the same radius as the complaints book). Text stays at a readable width inside the card. */
+.main--policy {
+  background: transparent;
+}
+
+.main--policy .shopify-policy__container {
+  max-width: none;
+  margin-inline: var(--container-gutter);
+  margin-block: var(--container-gutter) var(--section-vertical-spacing);
+  padding: calc(var(--container-gutter) + 0.5rem);
+  background-color: rgb(var(--background));
+  background-image: var(--background-gradient);
+  border-radius: 12px;
+}
+
+.main--policy .shopify-policy__title,
+.main--policy .shopify-policy__body {
+  max-width: 48rem;
+  margin-inline: auto;
+}
+
 .shopify-policy__title {
   margin-block-end: var(--section-stack-row-gap);
 }
