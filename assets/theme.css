@@ -304,6 +304,13 @@ height-observer {
   padding-inline: var(--accordion-inline-padding);
 }
 
+/* The accordion has no side padding by default, and while it opens or closes (theme.js, accordion-disclosure) its <details> clips
+   everything outside its box: with the global 1em list indent, a wide marker ("10.", a nested bullet) sticks out to the left and gets
+   cut for the duration of the animation. A bit more indent keeps every marker inside the box. */
+.accordion__content :where(ul, ol):not(.unstyled-list) {
+  margin-inline-start: 1.5em;
+}
+
 @media screen and (min-width: 700px) {
   .accordion {
     --accordion-block-padding: 1.25rem;
