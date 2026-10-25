@@ -1,6 +1,17 @@
 {%- liquid
   assign has_message = false
 
+  comment
+    FAQ page only: the header is static there (it scrolls away with the page, see sections/header.liquid), so the bar is not sticky
+    either, whatever its "enable sticky" setting says. Every other page keeps the setting.
+  endcomment
+
+  assign bar_is_sticky = section.settings.enable_sticky
+
+  if template.suffix == 'faq'
+    assign bar_is_sticky = false
+  endif
+
   for block in section.blocks
     if block.settings.text != blank
       assign has_message = true
@@ -13,10 +24,10 @@
   {%- unless request.page_type != 'index' and section.settings.show_on_homepage_only -%}
     <style>
       :root {
-        --announcement-bar-is-sticky: {% if section.settings.enable_sticky %}1{% else %}0{% endif %};
+        --announcement-bar-is-sticky: {% if bar_is_sticky %}1{% else %}0{% endif %};
       }
 
-      {%- if section.settings.enable_sticky -%}
+      {%- if bar_is_sticky -%}
         #shopify-section-{{ section.id }} {
           position: sticky;
           top: var(--announcement-bar-stuck-top, 0px);
@@ -47,7 +58,7 @@
         :root:has(.announcement-bar-wrapper.is-sticky-bar):has(.shopify-section--announcement-bar ~ .shopify-section--header .header--floating):not(:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)):has(.header:not(.is-solid)))
       {%- endcapture -%}
 
-      {%- if section.settings.enable_sticky -%}
+      {%- if bar_is_sticky -%}
         {%- comment -%}
         Sticky bar: the bar and the header are one joined block, except while the header is transparent over the first section
         (same condition as header.liquid / theme.css), where they keep the spacing they have at rest. Joined: no gap between
@@ -103,7 +114,7 @@
 
       #shopify-section-{{ section.id }} height-observer {
         display: block;
-        {%- if section.settings.enable_sticky %}
+        {%- if bar_is_sticky %}
         background: rgb(var(--page-background));
         {%- endif %}
       }
@@ -170,7 +181,7 @@
     </style>
 
     <height-observer variable="announcement-bar">
-      <div class="announcement-bar-wrapper {% if section.settings.enable_sticky %}is-sticky-bar {% endif %}{% unless section.settings.full_width %}container{% endunless %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" style="border-radius: {{ section.settings.border_radius }}px;">
+      <div class="announcement-bar-wrapper {% if bar_is_sticky %}is-sticky-bar {% endif %}{% unless section.settings.full_width %}container{% endunless %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" style="border-radius: {{ section.settings.border_radius }}px;">
         {%- if section.settings.display_mode == 'marquee' -%}
           <marquee-text speed="{{ section.settings.scrolling_speed }}" direction="{{ section.settings.scroll_direction }}" {% if section.settings.pause_on_hover %}pause-on-hover{% endif %} class="announcement-bar scrolling-content" style="padding-block: {{ section.settings.vertical_padding }}px;">
             <div class="scrolling-content__item">
