@@ -127,6 +127,20 @@
 
       {%- if section.settings.display_mode == 'marquee' -%}
         {%- comment -%}
+        Keeps the scrolling text on its own GPU layer: it is masked (edge fade below) and moves every frame, and without its own layer
+        the browser repaints the whole masked area each frame, which after a long time on the page shows up as the bar flickering.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} marquee-text.announcement-bar {
+          transform: translateZ(0);
+          backface-visibility: hidden;
+        }
+
+        #shopify-section-{{ section.id }} marquee-text.announcement-bar::part(scroller) {
+          will-change: transform;
+          backface-visibility: hidden;
+        }
+
+        {%- comment -%}
         Edge fade for the endless marquee, the same 2rem gradient mask as the FAQ tabs (sections/faq.liquid), on
         the scrolling text only - not on the bar's wrapper, which carries the background and the radius and would
         fade out too. The text never reaches a start or an end, so both sides always fade. In full width the text

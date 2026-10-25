@@ -95,7 +95,16 @@ var MarqueeText = class extends HTMLElement {
   constructor() {
     super();
     __privateAdd(this, _MarqueeText_instances);
-    __privateAdd(this, _resizeObserver, new ResizeObserver(__privateMethod(this, _MarqueeText_instances, createElements_fn).bind(this)));
+    // Rebuilding the marquee (clones + a restarted animation) is what makes it visibly jump, so it only happens when the size that
+    // matters really changed: the width for a horizontal marquee, the height for a vertical one. Sub-pixel noise and the other axis
+    // changing (a toolbar showing / hiding, the page growing, fonts settling) used to restart it again and again.
+    __privateAdd(this, _resizeObserver, new ResizeObserver(() => {
+      const size = __privateGet(this, _MarqueeText_instances, isVertical_get) ? this.clientHeight : this.clientWidth;
+      if (this._lastMarqueeSize !== undefined && Math.abs(size - this._lastMarqueeSize) < 2) {
+        return;
+      }
+      __privateMethod(this, _MarqueeText_instances, createElements_fn).call(this);
+    }));
     __privateAdd(this, _currentAnimation);
     inView(this, __privateMethod(this, _MarqueeText_instances, initializeShadowDom_fn).bind(this), { margin: "400px" });
     if (this.hasAttribute("pause-on-hover")) {
@@ -149,7 +158,11 @@ createElements_fn = function() {
       fragment.appendChild(node);
     }
   }
+  this._lastMarqueeSize = __privateGet(this, _MarqueeText_instances, isVertical_get) ? this.clientHeight : this.clientWidth;
+  __privateGet(this, _currentAnimation)?.stop?.();
   this.replaceChildren(fragment);
+  // Soft fade-in every time the marquee is (re)built, so a restart never reads as a hard blink.
+  this.animate({ opacity: [0, 1] }, { duration: 500, easing: "ease-out" });
   let transform = __privateGet(this, _MarqueeText_instances, isVertical_get) ? ["translateY(0)", `translateY(${__privateGet(this, _MarqueeText_instances, direction_get) * this.firstElementChild.clientHeight}px)`] : ["translateX(0px)", `translateX(calc(var(--transform-logical-flip) * ${__privateGet(this, _MarqueeText_instances, direction_get) * this.firstElementChild.clientWidth}px))`];
   let speedMultiplier = __privateGet(this, _MarqueeText_instances, isVertical_get) ? __privateGet(this, _MarqueeText_instances, scroller_get).clientHeight / 300 : __privateGet(this, _MarqueeText_instances, scroller_get).clientWidth / 300;
   __privateSet(this, _currentAnimation, animate(__privateGet(this, _MarqueeText_instances, scroller_get), { transform }, {
