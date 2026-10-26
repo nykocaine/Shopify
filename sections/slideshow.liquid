@@ -37,6 +37,49 @@
       }
     {%- endif -%}
 
+    {%- if section.settings.hide_header_logo -%}
+      {%- comment -%}
+      "Hide the header logo": whenever this slideshow is on the page, the logo in the header is not shown, in any header state (transparent over
+      the slideshow, solid, scrolled, floating or not). It is only made invisible and unclickable - not removed - so the header's layout
+      (menu centering, icons) stays exactly where it is and screen readers still get the store name.
+      {%- endcomment -%}
+      .header__logo {
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+    {%- endif -%}
+
+    {%- if section.settings.center_logo != blank -%}
+      {%- comment -%}
+      Centered logo, inside the slideshow (over the image or video of every slide): it sits in the same grid cell as the slides, centered on
+      both axes, above the media but below the slideshow controls, and never blocks clicks or swipes on the slide below it.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .slideshow__center-logo {
+        z-index: 1;
+        grid-area: 1 / -1;
+        place-self: center;
+        pointer-events: none;
+        width: min({{ section.settings.center_logo_mobile_width }}px, 80%);
+        max-height: 80%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #shopify-section-{{ section.id }} .slideshow__center-logo img {
+        width: 100%;
+        height: auto;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      @media screen and (min-width: 700px) {
+        #shopify-section-{{ section.id }} .slideshow__center-logo {
+          width: min({{ section.settings.center_logo_desktop_width }}px, 80%);
+        }
+      }
+    {%- endif -%}
+
     {%- comment -%}
     The text's distance from the slide's edges is the same inner padding as the floating containers (container gutter + 0.5rem,
     see faq.liquid / reviews.liquid), at every width. .content-box
@@ -88,6 +131,12 @@
     <slideshow-carousel id="slideshow-{{ section.id }}" allow-swipe cell-selector=".slideshow__slide" {% if section.settings.allow_transparent_header %}allow-transparent-header{% endif %} class="slideshow" transition="{{ section.settings.transition_type }}" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}" {% if section.settings.pause_auto_rotate_on_hover %}pause-on-hover{% endif %}{% endif %} style="border-radius: {{ section.settings.border_radius }}px;" role="region" aria-roledescription="carousel" aria-label="{{ 'general.accessibility.slideshow' | t | escape }}">
       {%- content_for 'blocks' -%}
 
+      {%- if section.settings.center_logo != blank -%}
+        <div class="slideshow__center-logo">
+          {{- section.settings.center_logo | image_url: width: 1200 | image_tag: sizes: '(max-width: 699px) 80vw, 40vw', widths: '200,300,400,600,800,1200', alt: shop.name -}}
+        </div>
+      {%- endif -%}
+
       {%- if section.blocks.size > 1 -%}
         {%- content_for 'block', type: '_slideshow-controls', id: 'slideshow-controls' -%}
       {%- endif -%}
@@ -128,6 +177,45 @@
       "unit": "px",
       "label": "t:sections.slideshow.border_radius",
       "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_header_logo",
+      "label": "Hide the header logo",
+      "info": "Hides the logo at the top of the header whenever this slideshow is on the page, whether the header is transparent or not.",
+      "default": false
+    },
+    {
+      "type": "image_picker",
+      "id": "center_logo",
+      "label": "Centered logo",
+      "info": "Shown in the middle of the slideshow, over the image or video, centered both ways. Transparent PNG or SVG works best."
+    },
+    {
+      "type": "range",
+      "id": "center_logo_mobile_width",
+      "label": "Centered logo width (mobile)",
+      "min": 60,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "default": 160,
+      "visible_if": "{{ section.settings.center_logo != blank }}"
+    },
+    {
+      "type": "range",
+      "id": "center_logo_desktop_width",
+      "label": "Centered logo width (desktop)",
+      "min": 80,
+      "max": 800,
+      "step": 10,
+      "unit": "px",
+      "default": 280,
+      "visible_if": "{{ section.settings.center_logo != blank }}"
     },
     {
       "type": "range",
