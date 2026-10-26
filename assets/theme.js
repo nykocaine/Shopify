@@ -4680,11 +4680,12 @@ var VideoMedia = class extends BaseMedia {
         }
       }
       inView8(this, () => {
-        if (this._posterUrl) {
-          this.style.backgroundImage = `url("${this._posterUrl.replace(/"/g, "%22")}")`;
+        // A video with the defer-load attribute (the slides of a slideshow that are not on screen yet) stays untouched until
+        // something asks for it with preloadNow(): loading every slide's video at once on page load is what made the first one stutter.
+        if (this.hasAttribute("defer-load")) {
+          return;
         }
-        this.#selectVideoSource();
-        this.querySelector("video")?.setAttribute("preload", "auto");
+        this.preloadNow();
       }, { margin: "800px" });
       // Once the (possibly reloaded) video has data, start it if it should be playing: see _ensurePlaying
       const videoElement = this.querySelector("video");
@@ -4694,6 +4695,21 @@ var VideoMedia = class extends BaseMedia {
         });
       }
     }
+  }
+  /**
+   * Starts loading this video now: paints its poster, picks the right source for the size it is shown at and lets the browser
+   * buffer it. Called when the video comes near the screen, or by the slideshow for the slide that is about to be shown.
+   */
+  preloadNow() {
+    if (this.getAttribute("type") !== "video") {
+      return;
+    }
+    this.removeAttribute("defer-load");
+    if (this._posterUrl) {
+      this.style.backgroundImage = `url("${this._posterUrl.replace(/"/g, "%22")}")`;
+    }
+    this.#selectVideoSource();
+    this.querySelector("video")?.setAttribute("preload", "auto");
   }
   /**
    * Shopify generates several resolutions for an uploaded video, but a plain <video> just plays
@@ -7000,6 +7016,12 @@ var Slideshow = class extends EffectCarousel {
   }
   connectedCallback() {
     super.connectedCallback();
+    // Only the slide on screen loads its video at first; the others wait (see VideoMedia, defer-load) until they are next in line
+    this.allCells.forEach((cell) => {
+      if (cell !== this.selectedCell) {
+        cell.querySelectorAll('video-media[type="video"]').forEach((video) => video.setAttribute("defer-load", ""));
+      }
+    });
     __privateMethod(this, _Slideshow_instances, onSlideChange_fn).call(this, { detail: { cell: this.selectedCell } });
     __privateGet(this, _completedHighlightedHeadings).push(...Array.from(this.selectedCell.querySelectorAll("highlighted-heading")));
   }
@@ -7012,12 +7034,20 @@ var Slideshow = class extends EffectCarousel {
   async getPlayerDurationForSlide(slide) {
     if (slide.getAttribute("data-slide-type") === "video") {
       const video = Array.from(slide.querySelectorAll("video")).filter((video2) => video2.offsetParent !== null).pop();
+      // A video slide without a video (the placeholder) has nothing to measure: use the normal slide duration instead of failing
+      if (!video) {
+        return super.getPlayerDurationForSlide(slide);
+      }
       if (isNaN(video.duration)) {
+        // Waits for the metadata, but not forever: a video that never loads (offline, error) must not freeze the autoplay
         await new Promise((resolve) => {
-          video.onloadedmetadata = () => resolve();
+          const done = () => resolve();
+          video.addEventListener("loadedmetadata", done, { once: true });
+          video.addEventListener("error", done, { once: true });
+          setTimeout(done, 4000);
         });
       }
-      return video.duration;
+      return Number.isFinite(video.duration) && video.duration > 0 ? video.duration : super.getPlayerDurationForSlide(slide);
     }
     return super.getPlayerDurationForSlide(slide);
   }
@@ -7113,7 +7143,16 @@ onSlideChange_fn = function(event) {
     video.pause();
   });
   if (event.detail.cell.getAttribute("data-slide-type") === "video") {
-    event.detail.cell.querySelectorAll("video-media").forEach((video) => video.play({ restart: true }));
+    event.detail.cell.querySelectorAll("video-media").forEach((video) => {
+      video.preloadNow?.();
+      video.play({ restart: true });
+    });
+  }
+  // Warm up the next slide's video while this one plays, so it starts without a hitch when it is its turn
+  const cells = this.cells;
+  const nextCell = cells[(cells.indexOf(event.detail.cell) + 1) % cells.length];
+  if (nextCell && nextCell !== event.detail.cell) {
+    nextCell.querySelectorAll("video-media[defer-load]").forEach((video) => video.preloadNow?.());
   }
   const controls = this.querySelector(".slideshow__controls");
   const slideColorSchemeClass = Array.from(event.detail.cell.classList).find((className) => className.indexOf("color-scheme--") === 0);

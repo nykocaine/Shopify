@@ -37,6 +37,18 @@
       }
     {%- endif -%}
 
+    {%- if section.settings.border_radius == 0 -%}
+      {%- comment -%}
+      theme.css gives .slideshow a mask-image, a trick to make overflow: hidden follow rounded corners in Safari. With square corners it
+      does nothing visible, but a mask forces the browser to composite and repaint the whole slideshow, videos included, on every frame -
+      a known cause of choppy video. Only kept when the corners are rounded.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .slideshow {
+        -webkit-mask-image: none;
+        mask-image: none;
+      }
+    {%- endif -%}
+
     {%- if section.settings.hide_header_logo -%}
       {%- comment -%}
       "Hide the header logo": whenever this slideshow is on the page, the logo in the header is not shown, in any header state (transparent over
@@ -113,7 +125,7 @@
     }
 
     #shopify-section-{{ section.id }}:first-child [allow-transparent-header] .slideshow__slide .content-box {
-      min-height: calc({{ section.settings.mobile_height }}svh - var(--announcement-bar-height, 0px) - var(--header-top-gap, 0px) - var(--countdown-condensed-height, 0px));
+      min-height: calc({{ section.settings.mobile_height }}svh - var(--announcement-bar-height, 0px) - var(--announcement-bar-gap, 0px) - var(--header-top-gap, 0px) - var(--countdown-condensed-height, 0px));
     }
 
     @media screen and (min-width: 700px) {
@@ -122,7 +134,7 @@
       }
 
       #shopify-section-{{ section.id }}:first-child [allow-transparent-header] .slideshow__slide .content-box {
-        min-height: calc({{ section.settings.desktop_height }}svh - var(--announcement-bar-height, 0px) - var(--header-top-gap, 0px) - var(--countdown-condensed-height, 0px));
+        min-height: calc({{ section.settings.desktop_height }}svh - var(--announcement-bar-height, 0px) - var(--announcement-bar-gap, 0px) - var(--header-top-gap, 0px) - var(--countdown-condensed-height, 0px));
       }
     }
   </style>

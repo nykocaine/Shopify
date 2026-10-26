@@ -3,6 +3,7 @@ Renders a single media. This snippet can be used for product media, but also for
 
 @param {object} media - the media to render
 @param {object} [mobile_media] - an optional media to render on mobile
+@param {boolean} [show_poster] - if set to true, a non-autoplaying video also gets its poster (the preview image) while it has not started, instead of a black frame
 @param {boolean} [preload] - if set to true, the image is preloaded and its fetch priority is higher. This will be ignored if the section being rendered is after the third section in the page (in which case lazyloading will be forced). For videos, preload will set the preload attribute to "metadata"
 @param {string} [class] - optional class applied on the item (in case a <picture> tag is generated, the class is still passed to the <img> tag)
 @param {string} [style] - optional inline styles applied on the item (if a mobile_media is passed, it is added on the picture element for images)
@@ -124,7 +125,7 @@ Renders a single media. This snippet can be used for product media, but also for
 
         {%- assign custom_poster = poster | default: media.preview_image -%}
 
-        <video width="{{ media.sources.first.width }}" height="{{ media.sources.first.height }}" {% if playsinline %}playsinline{% endif %} {% if muted %}muted{% endif %} {% if loop %}loop{% endif %} {% if controls %}controls{% endif %} {% if autoplay %}poster="{{ custom_poster | image_url: width: 800 }}"{% endif %} preload="{{ preload_attribute }}">
+        <video width="{{ media.sources.first.width }}" height="{{ media.sources.first.height }}" {% if playsinline %}playsinline{% endif %} {% if muted %}muted{% endif %} {% if loop %}loop{% endif %} {% if controls %}controls{% endif %} {% if autoplay or show_poster %}poster="{{ custom_poster | image_url: width: 800 }}"{% endif %} preload="{{ preload_attribute }}">
           {%- if mobile_media != blank -%}
             {%- for source in mobile_media.sources -%}
               <source media="(max-width: 999px)" src="{{ source.url }}" width="{{ source.width }}" height="{{ source.height }}" type="{{ source.mime_type }}">
