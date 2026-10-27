@@ -63,51 +63,41 @@
 
     {%- if section.settings.center_logo != blank -%}
       {%- comment -%}
-      Centered logo, inside the slideshow (over the image or video of every slide): it sits in the same grid cell as the slides, centered on
-      both axes, above the media but below the slideshow controls, and never blocks clicks or swipes on the slide below it.
+      Centered logo, drawn inside every slide (snippets/slideshow-center-logo.liquid) between the slide's background media and its text, so
+      the heading, text and buttons added to the slide are always in front of it. It covers the whole slide (the content box's full area, so
+      it is centered on the slide itself, not on the space left under a transparent header) with the inner padding on every side - container
+      gutter + 0.5rem, the same as the slide's text - and never blocks clicks or swipes.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .slideshow__center-logo {
-        z-index: 1;
-        grid-area: 1 / -1;
-        place-self: center;
+        grid-area: full-start / full-start / full-end / full-end;
+        place-items: center;
+        padding: calc(var(--container-gutter) + 0.5rem);
         pointer-events: none;
-        width: min({{ section.settings.center_logo_mobile_width }}px, calc(100% - 2 * (var(--container-gutter) + 0.5rem)));
-        max-height: 90%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        display: grid;
       }
 
       #shopify-section-{{ section.id }} .slideshow__center-logo img {
-        width: 100%;
+        width: min({{ section.settings.center_logo_mobile_width }}px, 100%);
         height: auto;
         max-height: 100%;
         object-fit: contain;
       }
 
       @media screen and (min-width: 700px) {
-        #shopify-section-{{ section.id }} .slideshow__center-logo {
-          width: min({{ section.settings.center_logo_desktop_width }}px, calc(100% - 2 * (var(--container-gutter) + 0.5rem)));
+        #shopify-section-{{ section.id }} .slideshow__center-logo img {
+          width: min({{ section.settings.center_logo_desktop_width }}px, 100%);
         }
       }
 
       {%- if section.settings.center_logo_full_width -%}
         {%- comment -%}
-        Full size (after the rules above, so it wins at every width): the logo takes the whole slideshow minus the inner padding on every
-        side - the same padding as the slide's text, container gutter + 0.5rem. It is scaled to fit inside that box without being cut or
-        stretched, so it reaches the padding on its limiting side (the width, unless the logo is taller than the slideshow) and stays
-        centered on the other.
+        Full size (after the rules above, so it wins at every width): the logo fills the box inside the padding, scaled to fit without being
+        cut or stretched, so it reaches the padding on its limiting side and stays centered on the other.
         {%- endcomment -%}
-        #shopify-section-{{ section.id }} .slideshow__center-logo,
-        #shopify-section-{{ section.id }} .slideshow__center-logo img {
-          width: calc(100% - 2 * (var(--container-gutter) + 0.5rem));
-          height: calc(100% - 2 * (var(--container-gutter) + 0.5rem));
-          max-height: none;
-        }
-
         #shopify-section-{{ section.id }} .slideshow__center-logo img {
           width: 100%;
           height: 100%;
+          max-height: none;
         }
       {%- endif -%}
     {%- endif -%}
@@ -162,12 +152,6 @@
   <div class="slideshow-wrapper {% if section.settings.floating_slideshow %}container{% endif %}">
     <slideshow-carousel id="slideshow-{{ section.id }}" allow-swipe cell-selector=".slideshow__slide" {% if section.settings.allow_transparent_header %}allow-transparent-header{% endif %} class="slideshow" transition="{{ section.settings.transition_type }}" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}" {% if section.settings.pause_auto_rotate_on_hover %}pause-on-hover{% endif %}{% endif %} style="border-radius: {{ section.settings.border_radius }}px;" role="region" aria-roledescription="carousel" aria-label="{{ 'general.accessibility.slideshow' | t | escape }}">
       {%- content_for 'blocks' -%}
-
-      {%- if section.settings.center_logo != blank -%}
-        <div class="slideshow__center-logo">
-          {{- section.settings.center_logo | image_url: width: 1200 | image_tag: sizes: '(max-width: 699px) 80vw, 40vw', widths: '200,300,400,600,800,1200', alt: shop.name -}}
-        </div>
-      {%- endif -%}
 
       {%- if section.blocks.size > 1 -%}
         {%- content_for 'block', type: '_slideshow-controls', id: 'slideshow-controls' -%}
