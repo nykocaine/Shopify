@@ -31,7 +31,7 @@
 
     {%- render 'slideshow-blur', intensity: section.settings.blur_intensity -%}
 
-    {%- render 'slideshow-logo', logo: block.settings.logo, full: block.settings.logo_full_size, mobile_width: block.settings.logo_mobile_width, desktop_width: block.settings.logo_desktop_width -%}
+    {%- render 'slideshow-logo', logo: block.settings.logo, position: block.settings.logo_position, full: block.settings.logo_full_size, mobile_width: block.settings.logo_mobile_width, desktop_width: block.settings.logo_desktop_width -%}
 
     <div class="{{ block.settings.mobile_content_position }} {{ block.settings.desktop_content_position }}" style="max-width: {{ block.settings.content_max_width }}px">
       <div class="prose prose-justify-{{ block.settings.mobile_content_position | split: '-' | last }} sm:prose-justify-{{ block.settings.desktop_content_position | split: '-' | last }}">
@@ -88,13 +88,34 @@
       "type": "image_picker",
       "id": "logo",
       "label": "Logo",
-      "info": "Shown in the middle of this slide, over the image, centered both ways, with the text in front of it. Transparent PNG or SVG works best."
+      "info": "Shown over the image with the text in front of it. It goes right to the edge, with no padding. Transparent PNG or SVG works best."
+    },
+    {
+      "type": "select",
+      "id": "logo_position",
+      "label": "Logo position",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        }
+      ],
+      "default": "center",
+      "visible_if": "{{ block.settings.logo != blank }}"
     },
     {
       "type": "checkbox",
       "id": "logo_full_size",
-      "label": "Logo: full size",
-      "info": "The logo fills the whole slide, keeping the inner padding on every side. The width settings below are not used.",
+      "label": "Logo: full width",
+      "info": "The logo spreads from one side of the slide to the other, on mobile and desktop. The width settings below are not used.",
       "default": false,
       "visible_if": "{{ block.settings.logo != blank }}"
     },
@@ -250,12 +271,24 @@
     }
   ],
   "blocks": [
-    { "type": "subheading" },
-    { "type": "heading" },
-    { "type": "icon" },
-    { "type": "rich-text" },
-    { "type": "button-group" },
-    { "type": "button" }
+    {
+      "type": "subheading"
+    },
+    {
+      "type": "heading"
+    },
+    {
+      "type": "icon"
+    },
+    {
+      "type": "rich-text"
+    },
+    {
+      "type": "button-group"
+    },
+    {
+      "type": "button"
+    }
   ],
   "presets": [
     {
