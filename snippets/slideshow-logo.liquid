@@ -10,6 +10,6 @@ are always in front of it. Styles are in sections/slideshow.liquid.
 
 {%- if logo != blank -%}
   <div class="slideshow__logo{% if full %} slideshow__logo--full{% endif %}" style="--slideshow-logo-width: {{ mobile_width | default: 300 }}px; --slideshow-logo-width-desktop: {{ desktop_width | default: 500 }}px;">
-    {{- logo | image_url: width: 1600 | image_tag: sizes: '(max-width: 699px) 90vw, 60vw', widths: '200,300,400,600,800,1200,1600', alt: shop.name -}}
+    {{- logo | image_url: width: 1600 | image_tag: sizes: '(max-width: 699px) 90vw, 60vw', widths: '200,300,400,600,800,1200,1600', alt: shop.name, loading: 'eager', decoding: 'sync', fetchpriority: 'low' -}}
   </div>
 {%- endif -%}
