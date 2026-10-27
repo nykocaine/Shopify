@@ -157,6 +157,19 @@
     }
   {%- endif -%}
 
+  {%- if section.settings.floating_header and section.settings.always_round_bottom_corners -%}
+    {%- comment -%}
+    "Always round the bottom corners": the floating header keeps its bottom corners round at every moment - also once the page is scrolled
+    (.is-scrolled) and when the section below touches it (.is-flush), the two cases that otherwise square them. !important because the
+    corners are also set inline and by those rules. While a menu / search / cart drawer is open, its own rule (more specific, and also
+    !important) still decides the corners, so the drawers keep their animation.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .header--floating {
+      border-bottom-left-radius: {{ section.settings.header_border_radius }}px !important;
+      border-bottom-right-radius: {{ section.settings.header_border_radius }}px !important;
+    }
+  {%- endif -%}
+
   #shopify-section-{{ section.id }} .header__logo-image {
     transition: opacity var(--header-solid-transition) var(--header-content-delay);
   }
@@ -524,14 +537,6 @@
     #shopify-section-{{ section.id }}::before {
       display: none;
     }
-
-    {%- if section.settings.floating_header -%}
-      {%- comment -%}Static header on the FAQ page: all four corners stay rounded at any scroll position (see the note on the pages below).{%- endcomment -%}
-      #shopify-section-{{ section.id }} .header--floating {
-        border-bottom-left-radius: {{ section.settings.header_border_radius }}px !important;
-        border-bottom-right-radius: {{ section.settings.header_border_radius }}px !important;
-      }
-    {%- endif -%}
   {%- endif -%}
 
   {%- if template.suffix == 'contact' or template.suffix == 'libro-reclamaciones' or request.page_type == 'policy' -%}
@@ -564,16 +569,9 @@
         margin-block-start: var(--container-gutter) !important;
       }
 
-      {%- comment -%}
-      The bottom corners too: a floating header squares them once the page is scrolled (.is-scrolled) or when the section below touches it
-      (.is-flush), which only makes sense for a header that sticks to the section under it. This header is static and has a gap below it,
-      so all four corners stay rounded at any scroll position.
-      {%- endcomment -%}
       #shopify-section-{{ section.id }} .header--floating {
         border-top-left-radius: {{ section.settings.header_border_radius }}px !important;
         border-top-right-radius: {{ section.settings.header_border_radius }}px !important;
-        border-bottom-left-radius: {{ section.settings.header_border_radius }}px !important;
-        border-bottom-right-radius: {{ section.settings.header_border_radius }}px !important;
       }
     {%- endif -%}
   {%- endif -%}
@@ -1053,6 +1051,14 @@
       "unit": "px",
       "label": "t:sections.header.header_border_radius",
       "default": 0,
+      "visible_if": "{{ section.settings.floating_header }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "always_round_bottom_corners",
+      "label": "Always round the bottom corners",
+      "info": "The header keeps its bottom corners rounded at every moment, also while the page is scrolled and when the section below touches it.",
+      "default": true,
       "visible_if": "{{ section.settings.floating_header }}"
     },
     {
