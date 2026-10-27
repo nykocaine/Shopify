@@ -41,6 +41,8 @@
        section) so snippets/css-variables.liquid (--sticky-area-height) and theme.css (menu overlay)
        can add it to their offsets and match where the header really sits. */
     --header-top-gap: calc(var(--section-vertical-spacing) / 2);
+    /* The same gap, but a copy that never changes with the header's state (the sticky-bar rules in announcement-bar.liquid set --header-top-gap to 0 once the header turns solid). Used where a section's height is computed from it, so that section does not change size when the header turns solid. */
+    --header-top-gap-rest: calc(var(--section-vertical-spacing) / 2);
     /* Distance from the screen edge once the header is stuck while scrolling: half the section spacing,
        or a quarter when a sticky announcement bar sits above it (same gap as between the two at rest). */
     --header-stuck-gap: calc(var(--section-vertical-spacing) / (2 + 2 * var(--announcement-bar-is-sticky, 0)));
@@ -54,6 +56,7 @@
     {%- endcomment -%}
     :root:has(.shopify-section--announcement-bar .announcement-bar-wrapper) {
       --header-top-gap: calc(var(--section-vertical-spacing) / 4);
+      --header-top-gap-rest: calc(var(--section-vertical-spacing) / 4);
     }
 
     {%- comment -%}

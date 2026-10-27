@@ -158,7 +158,7 @@
     }
 
     #shopify-section-{{ section.id }}:first-child [allow-transparent-header] .slideshow__slide .content-box {
-      min-height: calc({{ section.settings.mobile_height }}svh - var(--announcement-bar-height, 0px) - var(--announcement-bar-gap, 0px) - var(--header-top-gap, 0px) - var(--countdown-condensed-height, 0px));
+      min-height: calc({{ section.settings.mobile_height }}svh - var(--announcement-bar-height, 0px) - var(--announcement-bar-gap, 0px) - var(--header-top-gap-rest, var(--header-top-gap, 0px)) - var(--countdown-condensed-height, 0px));
     }
 
     @media screen and (min-width: 700px) {
@@ -167,7 +167,7 @@
       }
 
       #shopify-section-{{ section.id }}:first-child [allow-transparent-header] .slideshow__slide .content-box {
-        min-height: calc({{ section.settings.desktop_height }}svh - var(--announcement-bar-height, 0px) - var(--announcement-bar-gap, 0px) - var(--header-top-gap, 0px) - var(--countdown-condensed-height, 0px));
+        min-height: calc({{ section.settings.desktop_height }}svh - var(--announcement-bar-height, 0px) - var(--announcement-bar-gap, 0px) - var(--header-top-gap-rest, var(--header-top-gap, 0px)) - var(--countdown-condensed-height, 0px));
       }
     }
   </style>
