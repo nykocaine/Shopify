@@ -77,6 +77,49 @@
     {%- endif -%}
 
     {%- comment -%}
+    Logo on an image slide (snippets/slideshow-logo.liquid), centered over the picture and under the slide's text. Its box is absolutely
+    positioned: it fills the slide (so the logo is centered on the slide itself) but takes no part in the slide's layout, so the image's own
+    size can never widen the slide. grid-area: auto matters: the content box gives every direct child the grid-area of its inner area
+    (theme.css), and an absolute child of a grid is sized against its grid area. It is a flex box with the inner padding (container gutter
+    + 0.5rem, the same as the slide's text) and the image has to fit inside what is left. Never blocks clicks or swipes.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .slideshow__logo {
+      position: absolute;
+      inset: 0;
+      grid-area: auto;
+      box-sizing: border-box;
+      padding: calc(var(--container-gutter) + 0.5rem);
+      pointer-events: none;
+      justify-content: center;
+      align-items: center;
+      display: flex;
+    }
+
+    #shopify-section-{{ section.id }} .slideshow__logo img {
+      flex: 0 1 auto;
+      width: min(var(--slideshow-logo-width), 100%);
+      height: auto;
+      max-height: 100%;
+      min-width: 0;
+      min-height: 0;
+      object-fit: contain;
+    }
+
+    @media screen and (min-width: 700px) {
+      #shopify-section-{{ section.id }} .slideshow__logo img {
+        width: min(var(--slideshow-logo-width-desktop), 100%);
+      }
+    }
+
+    {%- comment -%}Full size (after the rules above, so it wins at every width): fills the box inside the padding, fitted without cutting or stretching.{%- endcomment -%}
+    #shopify-section-{{ section.id }} .slideshow__logo--full img {
+      flex: 1 1 auto;
+      width: 100%;
+      height: 100%;
+      max-height: none;
+    }
+
+    {%- comment -%}
     The text's distance from the slide's edges is the same inner padding as the floating containers (container gutter + 0.5rem,
     see faq.liquid / reviews.liquid), at every width. .content-box
     (theme.css) is shared with many other sections, so its own value (the larger of 1.5rem and the gutter, shrinking

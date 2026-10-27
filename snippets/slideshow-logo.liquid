@@ -1,0 +1,15 @@
+{%- doc -%}
+A logo drawn inside one image slide, centered, between the slide's picture (and its blur) and its text: the slide's heading, text and buttons
+are always in front of it. Styles are in sections/slideshow.liquid.
+
+@param {object} logo - the logo image (the slide's "logo" setting)
+@param {boolean} [full] - true: the logo fills the slide inside the inner padding; false: it uses the widths below
+@param {number} [mobile_width] - width in px on mobile when not full
+@param {number} [desktop_width] - width in px on desktop when not full
+{%- enddoc -%}
+
+{%- if logo != blank -%}
+  <div class="slideshow__logo{% if full %} slideshow__logo--full{% endif %}" style="--slideshow-logo-width: {{ mobile_width | default: 300 }}px; --slideshow-logo-width-desktop: {{ desktop_width | default: 500 }}px;">
+    {{- logo | image_url: width: 1600 | image_tag: sizes: '(max-width: 699px) 90vw, 60vw', widths: '200,300,400,600,800,1200,1600', alt: shop.name -}}
+  </div>
+{%- endif -%}

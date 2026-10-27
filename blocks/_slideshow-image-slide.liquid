@@ -31,6 +31,8 @@
 
     {%- render 'slideshow-blur', intensity: section.settings.blur_intensity -%}
 
+    {%- render 'slideshow-logo', logo: block.settings.logo, full: block.settings.logo_full_size, mobile_width: block.settings.logo_mobile_width, desktop_width: block.settings.logo_desktop_width -%}
+
     <div class="{{ block.settings.mobile_content_position }} {{ block.settings.desktop_content_position }}" style="max-width: {{ block.settings.content_max_width }}px">
       <div class="prose prose-justify-{{ block.settings.mobile_content_position | split: '-' | last }} sm:prose-justify-{{ block.settings.desktop_content_position | split: '-' | last }}">
         {%- content_for 'blocks' -%}
@@ -77,6 +79,46 @@
       "id": "mobile_image",
       "label": "t:global.image.mobile_image",
       "info": "t:sections.slideshow.blocks.image.mobile_image_size_recommendation"
+    },
+    {
+      "type": "header",
+      "content": "Logo on the image"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo",
+      "info": "Shown in the middle of this slide, over the image, centered both ways, with the text in front of it. Transparent PNG or SVG works best."
+    },
+    {
+      "type": "checkbox",
+      "id": "logo_full_size",
+      "label": "Logo: full size",
+      "info": "The logo fills the whole slide, keeping the inner padding on every side. The width settings below are not used.",
+      "default": false,
+      "visible_if": "{{ block.settings.logo != blank }}"
+    },
+    {
+      "type": "range",
+      "id": "logo_mobile_width",
+      "label": "Logo width (mobile)",
+      "min": 60,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "default": 200,
+      "visible_if": "{{ block.settings.logo != blank and block.settings.logo_full_size == false }}"
+    },
+    {
+      "type": "range",
+      "id": "logo_desktop_width",
+      "label": "Logo width (desktop)",
+      "min": 80,
+      "max": 1200,
+      "step": 10,
+      "unit": "px",
+      "default": 400,
+      "visible_if": "{{ block.settings.logo != blank and block.settings.logo_full_size == false }}"
     },
     {
       "type": "url",
