@@ -71,8 +71,8 @@
         grid-area: 1 / -1;
         place-self: center;
         pointer-events: none;
-        width: min({{ section.settings.center_logo_mobile_width }}px, 80%);
-        max-height: 80%;
+        width: min({{ section.settings.center_logo_mobile_width }}px, calc(100% - 2 * (var(--container-gutter) + 0.5rem)));
+        max-height: 90%;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -87,7 +87,7 @@
 
       @media screen and (min-width: 700px) {
         #shopify-section-{{ section.id }} .slideshow__center-logo {
-          width: min({{ section.settings.center_logo_desktop_width }}px, 80%);
+          width: min({{ section.settings.center_logo_desktop_width }}px, calc(100% - 2 * (var(--container-gutter) + 0.5rem)));
         }
       }
     {%- endif -%}
@@ -212,7 +212,7 @@
       "id": "center_logo_mobile_width",
       "label": "Centered logo width (mobile)",
       "min": 60,
-      "max": 400,
+      "max": 600,
       "step": 10,
       "unit": "px",
       "default": 160,
@@ -223,7 +223,7 @@
       "id": "center_logo_desktop_width",
       "label": "Centered logo width (desktop)",
       "min": 80,
-      "max": 800,
+      "max": 1200,
       "step": 10,
       "unit": "px",
       "default": 280,
