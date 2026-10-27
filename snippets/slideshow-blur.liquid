@@ -1,0 +1,10 @@
+{%- doc -%}
+The slideshow's blur layer, drawn inside one slide right above the slide's background media (and under the logo and the text): it blurs
+only what is behind it and adds no color. Intensity and styles are in sections/slideshow.liquid.
+
+@param {number} intensity - the blur in px (section setting "blur_intensity"); nothing is drawn at 0
+{%- enddoc -%}
+
+{%- if intensity > 0 -%}
+  <div class="slideshow__blur" aria-hidden="true"></div>
+{%- endif -%}

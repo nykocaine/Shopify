@@ -61,6 +61,19 @@
       }
     {%- endif -%}
 
+    {%- if section.settings.blur_intensity > 0 -%}
+      {%- comment -%}
+      Blur only (the same backdrop blur the pop-ups and the newsletter use), with no color: a layer over each slide's image or video, under the logo
+      and the text, so those stay sharp. It covers the whole slide and never blocks clicks or swipes.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .slideshow__blur {
+        grid-area: full-start / full-start / full-end / full-end;
+        -webkit-backdrop-filter: blur({{ section.settings.blur_intensity }}px);
+        backdrop-filter: blur({{ section.settings.blur_intensity }}px);
+        pointer-events: none;
+      }
+    {%- endif -%}
+
     {%- if section.settings.center_logo != blank -%}
       {%- comment -%}
       Centered logo, drawn inside every slide (snippets/slideshow-center-logo.liquid) between the slide's background media and its text, so
@@ -193,6 +206,17 @@
       "unit": "px",
       "label": "t:sections.slideshow.border_radius",
       "default": 0
+    },
+    {
+      "type": "range",
+      "id": "blur_intensity",
+      "label": "Blur",
+      "info": "Blurs the image or video of every slide, without adding any color. The text and the logo stay sharp. 0 turns it off. On slideshows with video, a high blur can make playback heavier.",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 10
     },
     {
       "type": "header",
