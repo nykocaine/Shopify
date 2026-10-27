@@ -63,8 +63,8 @@
 
     {%- if section.settings.blur_intensity > 0 -%}
       {%- comment -%}
-      Blur only (the same backdrop blur the pop-ups and the newsletter use), with no color: a layer over each slide's image or video, under the logo
-      and the text, so those stay sharp. It covers the whole slide and never blocks clicks or swipes.
+      Blur only (the same backdrop blur the pop-ups and the newsletter use), with no color: a layer over each IMAGE slide's picture (video slides are left alone),
+      under the text, so the text stays sharp. It covers the whole slide and never blocks clicks or swipes.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .slideshow__blur {
         position: absolute;
@@ -74,62 +74,6 @@
         backdrop-filter: blur({{ section.settings.blur_intensity }}px);
         pointer-events: none;
       }
-    {%- endif -%}
-
-    {%- if section.settings.center_logo != blank -%}
-      {%- comment -%}
-      Centered logo, drawn inside every slide (snippets/slideshow-center-logo.liquid) between the slide's background media and its text, so
-      the heading, text and buttons added to the slide are always in front of it. It covers the whole slide (the content box's full area, so
-      it is centered on the slide itself, not on the space left under a transparent header) with the inner padding on every side - container
-      gutter + 0.5rem, the same as the slide's text - and never blocks clicks or swipes.
-      {%- endcomment -%}
-      {%- comment -%}
-      The logo box is absolutely positioned: it fills the slide (so the logo is centered on the slide itself) but takes no part in the slide's
-      layout. grid-area: auto matters: the content box gives every direct child the grid-area of its inner area (theme.css), and an absolute
-      child of a grid is sized against its grid area, so without it the box would be smaller than the slide. It is a flex box with the inner
-      padding (container gutter + 0.5rem, same as the slide's text) and the image has to fit inside what is left: not the image's own size
-      (an SVG can be 1000px wide or more), which is what made it overflow, cut the image and show twice.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .slideshow__center-logo {
-        position: absolute;
-        inset: 0;
-        grid-area: auto;
-        box-sizing: border-box;
-        padding: calc(var(--container-gutter) + 0.5rem);
-        pointer-events: none;
-        justify-content: center;
-        align-items: center;
-        display: flex;
-      }
-
-      #shopify-section-{{ section.id }} .slideshow__center-logo img {
-        flex: 0 1 auto;
-        width: min({{ section.settings.center_logo_mobile_width }}px, 100%);
-        height: auto;
-        max-height: 100%;
-        min-width: 0;
-        min-height: 0;
-        object-fit: contain;
-      }
-
-      @media screen and (min-width: 700px) {
-        #shopify-section-{{ section.id }} .slideshow__center-logo img {
-          width: min({{ section.settings.center_logo_desktop_width }}px, 100%);
-        }
-      }
-
-      {%- if section.settings.center_logo_full_width -%}
-        {%- comment -%}
-        Full size (after the rules above, so it wins at every width): the logo fills the box inside the padding, scaled to fit without being
-        cut or stretched, so it reaches the padding on its limiting side and stays centered on the other.
-        {%- endcomment -%}
-        #shopify-section-{{ section.id }} .slideshow__center-logo img {
-          flex: 1 1 auto;
-          width: 100%;
-          height: 100%;
-          max-height: none;
-        }
-      {%- endif -%}
     {%- endif -%}
 
     {%- comment -%}
@@ -197,7 +141,10 @@
   "tag": "section",
   "max_blocks": 5,
   "disabled_on": {
-    "groups": ["header", "custom.overlay"]
+    "groups": [
+      "header",
+      "custom.overlay"
+    ]
   },
   "settings": [
     {
@@ -227,8 +174,8 @@
     {
       "type": "range",
       "id": "blur_intensity",
-      "label": "Blur",
-      "info": "Blurs the image or video of every slide, without adding any color. The text and the logo stay sharp. 0 turns it off. On slideshows with video, a high blur can make playback heavier.",
+      "label": "Blur (image slides)",
+      "info": "Blurs the picture of every image slide, without adding any color. The text stays sharp. Video slides are not blurred. 0 turns it off.",
       "min": 0,
       "max": 40,
       "step": 1,
@@ -237,7 +184,7 @@
     },
     {
       "type": "header",
-      "content": "Logo"
+      "content": "Header logo"
     },
     {
       "type": "checkbox",
@@ -245,42 +192,6 @@
       "label": "Hide the header logo",
       "info": "Hides the logo at the top of the header whenever this slideshow is on the page, whether the header is transparent or not.",
       "default": false
-    },
-    {
-      "type": "image_picker",
-      "id": "center_logo",
-      "label": "Centered logo",
-      "info": "Shown in the middle of the slideshow, over the image or video, centered both ways. Transparent PNG or SVG works best."
-    },
-    {
-      "type": "checkbox",
-      "id": "center_logo_full_width",
-      "label": "Centered logo: full size",
-      "info": "The logo fills the whole slideshow, keeping the inner padding on every side. The width settings below are not used.",
-      "default": true,
-      "visible_if": "{{ section.settings.center_logo != blank }}"
-    },
-    {
-      "type": "range",
-      "id": "center_logo_mobile_width",
-      "label": "Centered logo width (mobile)",
-      "min": 60,
-      "max": 600,
-      "step": 10,
-      "unit": "px",
-      "default": 160,
-      "visible_if": "{{ section.settings.center_logo != blank and section.settings.center_logo_full_width == false }}"
-    },
-    {
-      "type": "range",
-      "id": "center_logo_desktop_width",
-      "label": "Centered logo width (desktop)",
-      "min": 80,
-      "max": 1200,
-      "step": 10,
-      "unit": "px",
-      "default": 280,
-      "visible_if": "{{ section.settings.center_logo != blank and section.settings.center_logo_full_width == false }}"
     },
     {
       "type": "range",
@@ -367,8 +278,12 @@
     }
   ],
   "blocks": [
-    { "type": "_slideshow-image-slide" },
-    { "type": "_slideshow-video-slide" }
+    {
+      "type": "_slideshow-image-slide"
+    },
+    {
+      "type": "_slideshow-video-slide"
+    }
   ],
   "presets": [
     {
