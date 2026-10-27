@@ -112,12 +112,17 @@
       }
     }
 
-    {%- comment -%}Full size (after the rules above, so it wins at every width): fills the box inside the padding, fitted without cutting or stretching.{%- endcomment -%}
+    {%- comment -%}
+    Full size (after the rules above, so it wins at every width): fills the width inside the padding, and its height follows from its own
+    proportions, never taller than the box (max-height). It is sized by the width on purpose: the slide's height moves by a few pixels
+    while the page is scrolled (the sticky header and the announcement bar change the space the slideshow is measured against), and a logo
+    sized by that height grew and shrank with it - the "jump" seen when starting to scroll. Sized by the width it stays the same.
+    {%- endcomment -%}
     #shopify-section-{{ section.id }} .slideshow__logo--full img {
       flex: 1 1 auto;
       width: 100%;
-      height: 100%;
-      max-height: none;
+      height: auto;
+      max-height: 100%;
     }
 
     {%- comment -%}
