@@ -524,7 +524,16 @@
     #shopify-section-{{ section.id }}::before {
       display: none;
     }
+
+    {%- if section.settings.floating_header -%}
+      {%- comment -%}Static header on the FAQ page: all four corners stay rounded at any scroll position (see the note on the pages below).{%- endcomment -%}
+      #shopify-section-{{ section.id }} .header--floating {
+        border-bottom-left-radius: {{ section.settings.header_border_radius }}px !important;
+        border-bottom-right-radius: {{ section.settings.header_border_radius }}px !important;
+      }
+    {%- endif -%}
   {%- endif -%}
+
   {%- if template.suffix == 'contact' or template.suffix == 'libro-reclamaciones' or request.page_type == 'policy' -%}
     /* Contact, complaints book and policy pages only: no announcement bar, and the header stays where it is at the top of the page
        (static) instead of following the scroll. Its top corners keep the header's radius (inline style on .header). */
@@ -555,9 +564,16 @@
         margin-block-start: var(--container-gutter) !important;
       }
 
+      {%- comment -%}
+      The bottom corners too: a floating header squares them once the page is scrolled (.is-scrolled) or when the section below touches it
+      (.is-flush), which only makes sense for a header that sticks to the section under it. This header is static and has a gap below it,
+      so all four corners stay rounded at any scroll position.
+      {%- endcomment -%}
       #shopify-section-{{ section.id }} .header--floating {
         border-top-left-radius: {{ section.settings.header_border_radius }}px !important;
         border-top-right-radius: {{ section.settings.header_border_radius }}px !important;
+        border-bottom-left-radius: {{ section.settings.header_border_radius }}px !important;
+        border-bottom-right-radius: {{ section.settings.header_border_radius }}px !important;
       }
     {%- endif -%}
   {%- endif -%}
