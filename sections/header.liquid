@@ -168,6 +168,16 @@
       border-bottom-left-radius: {{ section.settings.header_border_radius }}px !important;
       border-bottom-right-radius: {{ section.settings.header_border_radius }}px !important;
     }
+
+    {%- comment -%}
+    The header's own section element has the page's background painted behind the header (theme.css, .shopify-section-group-header-group),
+    a square box. With square bottom corners nobody saw it, but with them round it fills the tiny triangles outside each corner with a
+    flat color - the little white "spikes" at the bottom corners. Without it the corners are clean and show what is behind the header. The
+    gap above the header keeps its own page-colored strip (::before), and the sides are not touched.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} {
+      background: transparent;
+    }
   {%- endif -%}
 
   #shopify-section-{{ section.id }} .header__logo-image {
