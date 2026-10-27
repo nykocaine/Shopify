@@ -69,6 +69,7 @@
       #shopify-section-{{ section.id }} .slideshow__blur {
         position: absolute;
         inset: 0;
+        grid-area: auto;
         -webkit-backdrop-filter: blur({{ section.settings.blur_intensity }}px);
         backdrop-filter: blur({{ section.settings.blur_intensity }}px);
         pointer-events: none;
@@ -82,32 +83,38 @@
       it is centered on the slide itself, not on the space left under a transparent header) with the inner padding on every side - container
       gutter + 0.5rem, the same as the slide's text - and never blocks clicks or swipes.
       {%- endcomment -%}
+      {%- comment -%}
+      The logo box is absolutely positioned: it fills the slide (so the logo is centered on the slide itself) but takes no part in the slide's
+      layout. grid-area: auto matters: the content box gives every direct child the grid-area of its inner area (theme.css), and an absolute
+      child of a grid is sized against its grid area, so without it the box would be smaller than the slide. It is a flex box with the inner
+      padding (container gutter + 0.5rem, same as the slide's text) and the image has to fit inside what is left: not the image's own size
+      (an SVG can be 1000px wide or more), which is what made it overflow, cut the image and show twice.
+      {%- endcomment -%}
       #shopify-section-{{ section.id }} .slideshow__center-logo {
         position: absolute;
         inset: 0;
-        place-items: center;
+        grid-area: auto;
+        box-sizing: border-box;
         padding: calc(var(--container-gutter) + 0.5rem);
         pointer-events: none;
-        display: grid;
+        justify-content: center;
+        align-items: center;
+        display: flex;
       }
 
-      {%- comment -%}
-      The logo box is absolutely positioned: it fills the slide (so it is centered on the slide itself) but takes no part in the slide's layout.
-      Drawn in the grid like the other slide parts, the image's own size (an SVG can be 1000px wide or more) pushed the slide's column wider
-      than the screen: the slide grew past the viewport, cutting the image and drawing the logo at that oversized width. With the box
-      absolute, the image only has to fit inside it.
-      {%- endcomment -%}
       #shopify-section-{{ section.id }} .slideshow__center-logo img {
-        width: auto;
+        flex: 0 1 auto;
+        width: min({{ section.settings.center_logo_mobile_width }}px, 100%);
         height: auto;
-        max-width: min({{ section.settings.center_logo_mobile_width }}px, 100%);
         max-height: 100%;
+        min-width: 0;
+        min-height: 0;
         object-fit: contain;
       }
 
       @media screen and (min-width: 700px) {
         #shopify-section-{{ section.id }} .slideshow__center-logo img {
-          max-width: min({{ section.settings.center_logo_desktop_width }}px, 100%);
+          width: min({{ section.settings.center_logo_desktop_width }}px, 100%);
         }
       }
 
@@ -117,9 +124,9 @@
         cut or stretched, so it reaches the padding on its limiting side and stays centered on the other.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .slideshow__center-logo img {
+          flex: 1 1 auto;
           width: 100%;
           height: 100%;
-          max-width: none;
           max-height: none;
         }
       {%- endif -%}
