@@ -1,0 +1,64 @@
+{%- doc -%}
+Outer corner radius for the "no spacing" layout of sections/media-blocks.liquid: the cards touch each other and read as one piece, so only the
+corners on the outside of that piece are rounded, never the touching inner edges. It works for any grid (several rows included), not just a single
+row or column: the position of each card (row and column) is computed from how many cards fit on a row at the current breakpoint.
+
+@param {string} selector - the section selector, for example "#shopify-section-abc"
+@param {number} count - how many cards the section has
+@param {number} cols - how many cards fit on one row at this breakpoint (a horizontal scroller counts as one row: cols = count)
+{%- enddoc -%}
+
+{%- liquid
+  assign last_index = count | minus: 1
+  assign cols_minus_1 = cols | minus: 1
+  assign last_row = last_index | divided_by: cols | floor
+  assign prev_row = last_row | minus: 1
+  assign last_row_start = last_row | times: cols
+  assign last_row_size = count | minus: last_row_start
+-%}
+
+{%- for i in (0..last_index) -%}
+  {%- liquid
+    assign row = i | divided_by: cols | floor
+    assign col = i | modulo: cols
+    assign tl = false
+    assign tr = false
+    assign bl = false
+    assign br = false
+
+    if row == 0 and col == 0
+      assign tl = true
+    endif
+
+    if row == 0 and col == cols_minus_1
+      assign tr = true
+    endif
+
+    if row == 0 and i == last_index
+      assign tr = true
+    endif
+
+    if row == last_row and col == 0
+      assign bl = true
+    endif
+
+    if i == last_index
+      assign br = true
+    endif
+
+    # Last row shorter than the others: the card right above its empty space closes the shape on the bottom right
+    if last_row > 0 and last_row_size < cols and row == prev_row and col == cols_minus_1
+      assign br = true
+    endif
+  -%}
+
+  {%- if tl or tr or bl or br -%}
+    {{ selector }} .media-blocks > :nth-child({{ i | plus: 1 }}) .media-blocks__item,
+    {{ selector }} .media-blocks > :nth-child({{ i | plus: 1 }}).media-blocks__item {
+      {%- if tl %} border-top-left-radius: var(--media-blocks-corner-radius);{% endif -%}
+      {%- if tr %} border-top-right-radius: var(--media-blocks-corner-radius);{% endif -%}
+      {%- if bl %} border-bottom-left-radius: var(--media-blocks-corner-radius);{% endif -%}
+      {%- if br %} border-bottom-right-radius: var(--media-blocks-corner-radius);{% endif -%}
+    }
+  {%- endif -%}
+{%- endfor -%}
