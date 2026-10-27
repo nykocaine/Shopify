@@ -260,7 +260,12 @@
     {%- assign allow_transparent_header = true -%}
   {%- endif -%}
 
-  <div {% if allow_transparent_header %}allow-transparent-header{% endif %} class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_media_blocks %} section-floating section-floating--block-end{% endif %}">
+  {%- comment -%}
+  Carousel (cards do not stack): the section's container rounds its four corners and clips what scrolls inside it, like the container of the
+  featured product list does. The cards keep their own corner radius, so neither loses its rounded corners while scrolling. Side margins and
+  spacing are not touched here.
+  {%- endcomment -%}
+  <div {% if allow_transparent_header %}allow-transparent-header{% endif %} class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_media_blocks %} section-floating section-floating--block-end{% endif %}"{% unless section.settings.stack_on_mobile %} style="border-radius: {{ section.settings.container_corner_radius }}px; overflow: hidden;"{% endunless %}>
     <div class="{% unless allow_transparent_header %}section-spacing{% endunless %}">
       <div class="section-stack">
         {%- if section.settings.subheading != blank or section.settings.title != blank or section.settings.content != blank -%}
@@ -803,6 +808,18 @@
       "label": "Corner radius",
       "info": "Applied only to the outer corners of the first and last card.",
       "default": 12
+    },
+    {
+      "type": "range",
+      "id": "container_corner_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Container corner radius (carousel)",
+      "info": "Rounds the four corners of the whole section and clips the cards that scroll inside it. The cards keep their own radius above. Only applies when \"Stack on mobile\" is off.",
+      "default": 12,
+      "visible_if": "{{ section.settings.stack_on_mobile == false }}"
     },
     {
       "type": "range",
