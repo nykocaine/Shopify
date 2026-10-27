@@ -150,6 +150,25 @@
           backface-visibility: hidden;
         }
 
+        {%- comment -%}
+        The scrolling text is built by theme.js after the page loads (the text is cloned and the animation starts), so before that the bar showed
+        the raw text, then blinked as it was rebuilt - on every page load and every time the bar restarted. Now it stays invisible until
+        theme.js marks it ready and then fades in once. Opacity does not move anything, so the page never shifts. If the script never runs,
+        a CSS-only fallback shows it anyway after 2 seconds.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} marquee-text.announcement-bar {
+          transition: opacity .3s ease;
+        }
+
+        #shopify-section-{{ section.id }} marquee-text.announcement-bar:not([ready]) {
+          opacity: 0;
+          animation: announcement-marquee-failsafe .01s 2s forwards;
+        }
+
+        @keyframes announcement-marquee-failsafe {
+          to { opacity: 1; }
+        }
+
         #shopify-section-{{ section.id }} marquee-text.announcement-bar::part(scroller) {
           will-change: transform;
           backface-visibility: hidden;

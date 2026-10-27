@@ -143,6 +143,14 @@ initializeShadowDom_fn = function() {
         <slot part="scroller"></slot>
       `));
     __privateGet(this, _resizeObserver).observe(this);
+    // The loop is measured from the width of the text, which changes when the real font replaces the fallback one. Measured again once
+    // the fonts are in - only if the width really changed - so the loop never restarts with a jump at a wrong length.
+    document.fonts?.ready.then(() => {
+      const width = this.firstElementChild?.clientWidth;
+      if (this._lastItemWidth !== void 0 && width !== void 0 && Math.abs(width - this._lastItemWidth) >= 1) {
+        __privateMethod(this, _MarqueeText_instances, createElements_fn).call(this);
+      }
+    });
   }
 };
 createElements_fn = function() {
@@ -161,8 +169,6 @@ createElements_fn = function() {
   this._lastMarqueeSize = __privateGet(this, _MarqueeText_instances, isVertical_get) ? this.clientHeight : this.clientWidth;
   __privateGet(this, _currentAnimation)?.stop?.();
   this.replaceChildren(fragment);
-  // Soft fade-in every time the marquee is (re)built, so a restart never reads as a hard blink.
-  this.animate({ opacity: [0, 1] }, { duration: 500, easing: "ease-out" });
   let transform = __privateGet(this, _MarqueeText_instances, isVertical_get) ? ["translateY(0)", `translateY(${__privateGet(this, _MarqueeText_instances, direction_get) * this.firstElementChild.clientHeight}px)`] : ["translateX(0px)", `translateX(calc(var(--transform-logical-flip) * ${__privateGet(this, _MarqueeText_instances, direction_get) * this.firstElementChild.clientWidth}px))`];
   let speedMultiplier = __privateGet(this, _MarqueeText_instances, isVertical_get) ? __privateGet(this, _MarqueeText_instances, scroller_get).clientHeight / 300 : __privateGet(this, _MarqueeText_instances, scroller_get).clientWidth / 300;
   __privateSet(this, _currentAnimation, animate(__privateGet(this, _MarqueeText_instances, scroller_get), { transform }, {
@@ -170,6 +176,10 @@ createElements_fn = function() {
     ease: "linear",
     repeat: Infinity
   }));
+  // The width the loop was measured with: if the font loads later and changes it, the loop is measured again (see initializeShadowDom_fn)
+  this._lastItemWidth = this.firstElementChild?.clientWidth;
+  // Built and moving: sections/announcement-bar.liquid keeps the bar hidden until this point, so it never shows the unbuilt text first
+  this.setAttribute("ready", "");
 };
 if (!window.customElements.get("marquee-text")) {
   window.customElements.define("marquee-text", MarqueeText);
