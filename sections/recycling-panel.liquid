@@ -1,6 +1,8 @@
 {%- liquid
   assign text_alignment_class = section.settings.text_alignment | replace: 'left', 'start' | replace: 'right', 'end'
   assign image = section.settings.image
+  assign room_right_mobile = 100 | minus: section.settings.mobile_image_offset | minus: section.settings.mobile_image_width
+  assign room_right_desktop = 100 | minus: section.settings.image_offset | minus: section.settings.image_width
 -%}
 
 <style>
@@ -20,8 +22,10 @@
     --recycling-tab-bg: {{ section.settings.tab_background.rgb }};
     --recycling-tab-text: {{ section.settings.tab_text_color.rgb }};
     --recycling-tab-weight: {{ section.settings.tab_font_weight }};
-    --recycling-image-width: {{ section.settings.image_width }}%;
+    --recycling-image-width: {{ section.settings.mobile_image_width }}%;
     --recycling-image-offset: {{ section.settings.mobile_image_offset }}%;
+    --recycling-room-right: {{ room_right_mobile }}cqw;
+    --recycling-room-left: 0cqw;
   }
 
   #shopify-section-{{ section.id }} .recycling-panel {
@@ -46,11 +50,20 @@
     margin-block-start: 1rem;
   }
 
+  {%- comment -%}
+  The stage is a size container (no padding of its own), so the image width / offset (% of the stage) and the room left for the
+  label texts (cqw = 1% of the stage width) are all measured against the same box and the labels can never run past the card.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .recycling-panel__stage {
+    container-type: inline-size;
+    align-self: center;
+    min-width: 0;
+  }
+
+  #shopify-section-{{ section.id }} .recycling-panel__figure {
     position: relative;
     width: var(--recycling-image-width);
     margin-inline-start: var(--recycling-image-offset);
-    align-self: center;
   }
 
   #shopify-section-{{ section.id }} .recycling-panel__image {
@@ -84,7 +97,7 @@
     position: absolute;
     top: 0;
     left: var(--dot-x);
-    width: calc(100% - var(--dot-x) + 2.5rem);
+    width: calc(100% - var(--dot-x) + 2.25rem);
     height: 1px;
     background: rgb(var(--recycling-line));
   }
@@ -92,10 +105,10 @@
   #shopify-section-{{ section.id }} .recycling-label__text {
     position: absolute;
     top: 0;
-    left: calc(100% + 3.25rem);
+    left: calc(100% + 2.5rem);
     transform: translateY(0.75rem);
     width: max-content;
-    max-width: 11rem;
+    max-width: calc(var(--recycling-room-right) - 2.75rem);
     font-size: var(--text-sm, 0.875rem);
   }
 
@@ -117,19 +130,21 @@
   }
 
   @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} {
+      --recycling-image-width: {{ section.settings.image_width }}%;
+      --recycling-image-offset: {{ section.settings.image_offset }}%;
+      --recycling-room-right: {{ room_right_desktop }}cqw;
+      --recycling-room-left: {{ section.settings.image_offset }}cqw;
+    }
+
     #shopify-section-{{ section.id }} .recycling-panel {
       grid-template-columns: minmax(0, 1fr) auto;
     }
 
     #shopify-section-{{ section.id }} .recycling-panel__main {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
       gap: 3rem;
       align-items: stretch;
-    }
-
-    #shopify-section-{{ section.id }} .recycling-panel__stage {
-      width: var(--recycling-image-width);
-      margin-inline: auto;
     }
 
     #shopify-section-{{ section.id }} .recycling-panel__tab {
@@ -140,20 +155,17 @@
       font-size: 2.5rem;
     }
 
-    #shopify-section-{{ section.id }} .recycling-label__text {
-      max-width: 14rem;
-    }
-
     {%- comment -%}Left-side labels only exist on desktop; on phones they fall back to the right column above.{%- endcomment -%}
     #shopify-section-{{ section.id }} .recycling-label--left .recycling-label__line {
       left: auto;
       right: calc(100% - var(--dot-x));
-      width: calc(var(--dot-x) + 2.5rem);
+      width: calc(var(--dot-x) + 2.25rem);
     }
 
     #shopify-section-{{ section.id }} .recycling-label--left .recycling-label__text {
       left: auto;
-      right: calc(100% + 3.25rem);
+      right: calc(100% + 2.5rem);
+      max-width: calc(var(--recycling-room-left) - 2.75rem);
       text-align: end;
     }
   }
@@ -161,7 +173,7 @@
 
 <div class="container section-spacing">
   <div class="recycling-panel color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
-    <div class="recycling-panel__main content-box min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
+    <div class="recycling-panel__main min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
       <div class="recycling-panel__text prose text-{{ text_alignment_class }}">
         {%- if section.settings.title != blank -%}
           <{{ section.settings.heading_tag }} class="h2">{{ section.settings.title }}</{{ section.settings.heading_tag }}>
@@ -172,6 +184,7 @@
       </div>
 
       <div class="recycling-panel__stage">
+       <div class="recycling-panel__figure">
         {%- if image != blank -%}
           {{ image | image_url: width: 1200 | image_tag: class: 'recycling-panel__image', widths: '300, 500, 800, 1200', sizes: '(min-width: 700px) 30vw, 60vw', loading: 'lazy' }}
         {%- else -%}
@@ -194,6 +207,7 @@
             </div>
           </div>
         {%- endfor -%}
+       </div>
       </div>
     </div>
 
@@ -302,12 +316,33 @@
       "type": "range",
       "id": "image_width",
       "min": 10,
-      "max": 100,
-      "step": 2,
+      "max": 80,
+      "step": 1,
       "unit": "%",
-      "label": "Illustration width",
-      "info": "Percentage of its column. On phones this is the share of the card width.",
-      "default": 30
+      "label": "Illustration width (desktop)",
+      "info": "Share of the illustration area. What is left on each side is the room for the labels.",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "image_offset",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "%",
+      "label": "Space to the left (desktop)",
+      "info": "Room for left-side labels. The remainder on the right is for right-side labels.",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "mobile_image_width",
+      "min": 10,
+      "max": 80,
+      "step": 1,
+      "unit": "%",
+      "label": "Illustration width (mobile)",
+      "default": 18
     },
     {
       "type": "range",
@@ -316,9 +351,9 @@
       "max": 40,
       "step": 1,
       "unit": "%",
-      "label": "Mobile left offset",
-      "info": "Space to the left of the illustration on phones, leaving room for the labels on the right.",
-      "default": 14
+      "label": "Space to the left (mobile)",
+      "info": "On phones every label goes to the right of the illustration, in the room left after width and left space.",
+      "default": 8
     },
     {
       "type": "color",
