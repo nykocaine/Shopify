@@ -1,9 +1,21 @@
 {%- liquid
   assign text_alignment_class = section.settings.text_alignment | replace: 'left', 'start' | replace: 'right', 'end'
   assign image = section.settings.image
-  assign image_ratio = 1
-  if image != blank
-    assign image_ratio = image.aspect_ratio
+  assign built_in = false
+  if section.settings.illustration == 'built_in'
+    assign built_in = true
+  endif
+
+  # Built-in drawing: the bottle and the box are drawn twice - side by side (desktop viewBox 270x200) and stacked (mobile
+  # viewBox 130x380) - so the figure's ratio is different at each breakpoint.
+  assign ratio_mobile = 1
+  assign ratio_desktop = 1
+  if built_in
+    assign ratio_mobile = 0.3421
+    assign ratio_desktop = 1.35
+  elsif image != blank
+    assign ratio_mobile = image.aspect_ratio
+    assign ratio_desktop = image.aspect_ratio
   endif
 -%}
 
@@ -24,7 +36,12 @@
     --recycling-tab-bg: {{ section.settings.tab_background.rgb }};
     --recycling-tab-text: {{ section.settings.tab_text_color.rgb }};
     --recycling-tab-weight: {{ section.settings.tab_font_weight }};
-    --recycling-ratio: {{ image_ratio }};
+    --recycling-ratio: {{ ratio_mobile }};
+    --recycling-bottle: {{ section.settings.bottle_color.rgb }};
+    --recycling-cap: {{ section.settings.cap_color.rgb }};
+    --recycling-box: {{ section.settings.box_color.rgb }};
+    --recycling-outline: {{ section.settings.outline_color.rgb }};
+    --recycling-outline-width: {{ section.settings.outline_width }}px;
     --recycling-image-width: {{ section.settings.mobile_image_width }}cqw;
     --recycling-image-offset: {{ section.settings.mobile_image_offset }}cqw;
     --recycling-max-height: {{ section.settings.mobile_image_max_height }}px;
@@ -99,6 +116,30 @@
     object-fit: contain;
   }
 
+  {%- comment -%}Built-in drawing: one SVG per layout, only the one for the current breakpoint is shown. Colors come from the settings.{%- endcomment -%}
+  #shopify-section-{{ section.id }} .recycling-panel__image--desktop {
+    display: none;
+  }
+
+  #shopify-section-{{ section.id }} .recycling-art__bottle { fill: rgb(var(--recycling-bottle)); }
+  #shopify-section-{{ section.id }} .recycling-art__cap { fill: rgb(var(--recycling-cap)); }
+  #shopify-section-{{ section.id }} .recycling-art__box { fill: rgb(var(--recycling-box)); }
+  #shopify-section-{{ section.id }} .recycling-art__bottle,
+  #shopify-section-{{ section.id }} .recycling-art__cap,
+  #shopify-section-{{ section.id }} .recycling-art__box {
+    stroke: rgb(var(--recycling-outline));
+    stroke-width: var(--recycling-outline-width);
+    vector-effect: non-scaling-stroke;
+  }
+
+  {%- comment -%}Dot position / text height are set per layout (--*-m phones, --*-d desktop): a built-in part sits in a different place in each drawing.{%- endcomment -%}
+  #shopify-section-{{ section.id }} .recycling-label,
+  #shopify-section-{{ section.id }} .recycling-label__text {
+    --y: var(--y-m);
+    --dot-x: var(--dot-x-m);
+    --y-pct: calc(var(--y) * 100%);
+  }
+
   #shopify-section-{{ section.id }} .recycling-label__dot {
     position: absolute;
     top: var(--y-pct);
@@ -165,10 +206,25 @@
       --recycling-image-offset: {{ section.settings.image_offset }}cqw;
       --recycling-max-height: {{ section.settings.image_max_height }}px;
       --recycling-room: 12rem;
+      --recycling-ratio: {{ ratio_desktop }};
     }
 
     #shopify-section-{{ section.id }} .recycling-panel {
       grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    #shopify-section-{{ section.id }} .recycling-panel__image--mobile {
+      display: none;
+    }
+
+    #shopify-section-{{ section.id }} .recycling-panel__image--desktop {
+      display: block;
+    }
+
+    #shopify-section-{{ section.id }} .recycling-label,
+    #shopify-section-{{ section.id }} .recycling-label__text {
+      --y: var(--y-d);
+      --dot-x: var(--dot-x-d);
     }
 
     #shopify-section-{{ section.id }} .recycling-panel__content {
@@ -219,17 +275,28 @@
       <div class="recycling-panel__stage">
         <div class="recycling-panel__grid">
           <div class="recycling-panel__figure">
-            {%- if image != blank -%}
+            {%- if built_in -%}
+              <svg class="recycling-panel__image recycling-panel__image--mobile" viewBox="0 0 130 380" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <path class="recycling-art__bottle" d="M35 48H95V60C95 76 120 76 120 100V186Q120 200 106 200H24Q10 200 10 186V100C10 76 35 76 35 60Z"/>
+                <rect class="recycling-art__cap" x="29" y="0" width="72" height="44" rx="8"/>
+                <rect class="recycling-art__box" x="0" y="230" width="130" height="150" rx="10"/>
+              </svg>
+              <svg class="recycling-panel__image recycling-panel__image--desktop" viewBox="0 0 270 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <path class="recycling-art__bottle" d="M25 48H85V60C85 76 110 76 110 100V186Q110 200 96 200H14Q0 200 0 186V100C0 76 25 76 25 60Z"/>
+                <rect class="recycling-art__cap" x="19" y="0" width="72" height="44" rx="8"/>
+                <rect class="recycling-art__box" x="140" y="50" width="130" height="150" rx="10"/>
+              </svg>
+            {%- elsif image != blank -%}
               {{ image | image_url: width: 1200 | image_tag: class: 'recycling-panel__image', widths: '300, 500, 800, 1200', sizes: '(min-width: 700px) 30vw, 60vw', loading: 'lazy' }}
             {%- else -%}
               {{ 'image' | placeholder_svg_tag: 'recycling-panel__image' }}
             {%- endif -%}
 
             {%- for block in section.blocks -%}
-              {%- assign y = block.settings.position_y | divided_by: 100.0 -%}
+              {%- capture anchor_style -%}{%- render 'recycling-anchor', block: block, built_in: built_in -%}{%- endcapture -%}
               <div
                 class="recycling-label recycling-label--{{ block.settings.side }}"
-                style="--y-pct: {{ block.settings.position_y }}%; --dot-x: {{ block.settings.dot_x }}%;"
+                style="{{ anchor_style }}"
                 {{ block.shopify_attributes }}
               >
                 <span class="recycling-label__dot"></span>
@@ -239,7 +306,7 @@
           </div>
 
           {%- for block in section.blocks -%}
-            {%- assign y = block.settings.position_y | divided_by: 100.0 -%}
+            {%- capture anchor_style -%}{%- render 'recycling-anchor', block: block, built_in: built_in -%}{%- endcapture -%}
             {%- capture label_text -%}
               {%- if block.settings.title != blank -%}
                 <strong class="recycling-label__title">{{ block.settings.title }}</strong>
@@ -248,12 +315,12 @@
             {%- endcapture -%}
             <div
               class="recycling-label__text recycling-label__text--right{% if block.settings.side == 'left' %} recycling-label__text--of-left{% endif %}"
-              style="--y: {{ y }};"
+              style="{{ anchor_style }}"
             >
               {{ label_text }}
             </div>
             {%- if block.settings.side == 'left' -%}
-              <div class="recycling-label__text recycling-label__text--left" style="--y: {{ y }};">
+              <div class="recycling-label__text recycling-label__text--left" style="{{ anchor_style }}">
                 {{ label_text }}
               </div>
             {%- endif -%}
@@ -359,9 +426,61 @@
       "content": "Illustration"
     },
     {
+      "type": "select",
+      "id": "illustration",
+      "label": "Illustration type",
+      "options": [
+        { "value": "built_in", "label": "Built-in (bottle and box)" },
+        { "value": "image", "label": "Uploaded SVG / image" }
+      ],
+      "info": "The built-in drawing has editable colors. On desktop the bottle and the box sit side by side, on phones the bottle is on top and the box below.",
+      "default": "built_in"
+    },
+    {
+      "type": "color",
+      "id": "bottle_color",
+      "label": "Bottle color",
+      "default": "#b07076",
+      "visible_if": "{{ section.settings.illustration == 'built_in' }}"
+    },
+    {
+      "type": "color",
+      "id": "cap_color",
+      "label": "Cap color",
+      "default": "#b07076",
+      "visible_if": "{{ section.settings.illustration == 'built_in' }}"
+    },
+    {
+      "type": "color",
+      "id": "box_color",
+      "label": "Box color",
+      "default": "#b07076",
+      "visible_if": "{{ section.settings.illustration == 'built_in' }}"
+    },
+    {
+      "type": "color",
+      "id": "outline_color",
+      "label": "Outline color",
+      "default": "#8f5459",
+      "visible_if": "{{ section.settings.illustration == 'built_in' }}"
+    },
+    {
+      "type": "range",
+      "id": "outline_width",
+      "min": 0,
+      "max": 4,
+      "step": 0.5,
+      "unit": "px",
+      "label": "Outline width",
+      "info": "0 removes the outline.",
+      "default": 1,
+      "visible_if": "{{ section.settings.illustration == 'built_in' }}"
+    },
+    {
       "type": "image_picker",
       "id": "image",
-      "label": "Illustration (SVG or image)"
+      "label": "Illustration (SVG or image)",
+      "visible_if": "{{ section.settings.illustration == 'image' }}"
     },
     {
       "type": "range",
@@ -505,6 +624,19 @@
           "default": "right"
         },
         {
+          "type": "select",
+          "id": "part",
+          "label": "Points at",
+          "info": "With the built-in drawing the dot goes to the center of that part, on desktop and on phones.",
+          "options": [
+            { "value": "cap", "label": "Cap" },
+            { "value": "bottle", "label": "Bottle" },
+            { "value": "box", "label": "Box" },
+            { "value": "manual", "label": "Manual position" }
+          ],
+          "default": "cap"
+        },
+        {
           "type": "range",
           "id": "position_y",
           "min": 0,
@@ -513,7 +645,8 @@
           "unit": "%",
           "label": "Vertical position",
           "info": "Height of the dot over the illustration, from top (0) to bottom (100).",
-          "default": 20
+          "default": 20,
+          "visible_if": "{{ block.settings.part == 'manual' or section.settings.illustration == 'image' }}"
         },
         {
           "type": "range",
@@ -524,7 +657,8 @@
           "unit": "%",
           "label": "Dot horizontal position",
           "info": "Position of the dot across the illustration, from left (0) to right (100).",
-          "default": 50
+          "default": 50,
+          "visible_if": "{{ block.settings.part == 'manual' or section.settings.illustration == 'image' }}"
         }
       ]
     }
@@ -533,13 +667,23 @@
     {
       "name": "Recycling panel",
       "blocks": [
-        { "type": "label" },
+        { "type": "label", "settings": { "side": "left" } },
         {
           "type": "label",
           "settings": {
-            "title": "Tube",
+            "title": "Bottle",
             "text": "<p>30% PCR HDPE #2 and 70% LDPE #4</p>",
-            "position_y": 70
+            "part": "bottle",
+            "side": "left"
+          }
+        },
+        {
+          "type": "label",
+          "settings": {
+            "title": "Box",
+            "text": "<p>100% recyclable and made from FSC-certified paper</p>",
+            "part": "box",
+            "side": "right"
           }
         }
       ]

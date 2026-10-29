@@ -1,0 +1,36 @@
+{%- comment -%}
+  Outputs the CSS custom properties that place one label of sections/recycling-panel.liquid: the dot's horizontal position and
+  the vertical position (as a fraction of the illustration height), for phones (-m) and desktop (-d).
+  With the built-in drawing a block can point at one of its parts (cap / bottle / box), whose centers are known for each of the two
+  layouts (percentages of the drawing's viewBox); otherwise the manual position of the block is used for both layouts.
+{%- endcomment -%}
+{%- liquid
+  assign part = block.settings.part
+  assign manual_y = block.settings.position_y | divided_by: 100.0
+  assign manual_x = block.settings.dot_x | append: '%'
+
+  assign y_m = manual_y
+  assign y_d = manual_y
+  assign x_m = manual_x
+  assign x_d = manual_x
+
+  if built_in
+    if part == 'cap'
+      assign y_m = 0.058
+      assign y_d = 0.11
+      assign x_m = '50%'
+      assign x_d = '20.4%'
+    elsif part == 'bottle'
+      assign y_m = 0.34
+      assign y_d = 0.65
+      assign x_m = '50%'
+      assign x_d = '20.4%'
+    elsif part == 'box'
+      assign y_m = 0.803
+      assign y_d = 0.625
+      assign x_m = '50%'
+      assign x_d = '75.9%'
+    endif
+  endif
+-%}
+--y-m: {{ y_m }}; --y-d: {{ y_d }}; --dot-x-m: {{ x_m }}; --dot-x-d: {{ x_d }};
