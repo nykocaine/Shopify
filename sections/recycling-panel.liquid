@@ -1,6 +1,10 @@
 {%- liquid
   assign text_alignment_class = section.settings.text_alignment | replace: 'left', 'start' | replace: 'right', 'end'
   assign image = section.settings.image
+  assign image_ratio = 1
+  if image != blank
+    assign image_ratio = image.aspect_ratio
+  endif
   assign room_right_mobile = 100 | minus: section.settings.mobile_image_offset | minus: section.settings.mobile_image_width
   assign room_right_desktop = 100 | minus: section.settings.image_offset | minus: section.settings.image_width
 -%}
@@ -24,6 +28,8 @@
     --recycling-tab-weight: {{ section.settings.tab_font_weight }};
     --recycling-image-width: {{ section.settings.mobile_image_width }}%;
     --recycling-image-offset: {{ section.settings.mobile_image_offset }}%;
+    --recycling-max-height: {{ section.settings.mobile_image_max_height }}px;
+    --recycling-ratio: {{ image_ratio }};
     --recycling-room-right: {{ room_right_mobile }}cqw;
     --recycling-room-left: 0cqw;
   }
@@ -70,14 +76,20 @@
 
   #shopify-section-{{ section.id }} .recycling-panel__figure {
     position: relative;
-    width: var(--recycling-image-width);
+    {%- comment -%}
+    Width is the chosen % of the stage, but never so wide that the image would be taller than the max height: the figure keeps the
+    image's own ratio, so whatever is uploaded (tall, wide, square) fits, and the labels keep lining up with it.
+    {%- endcomment -%}
+    aspect-ratio: var(--recycling-ratio);
+    width: min(var(--recycling-image-width), calc(var(--recycling-max-height) * var(--recycling-ratio)));
     margin-inline-start: var(--recycling-image-offset);
   }
 
   #shopify-section-{{ section.id }} .recycling-panel__image {
     display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: contain;
   }
 
   {%- comment -%}
@@ -142,6 +154,7 @@
     #shopify-section-{{ section.id }} {
       --recycling-image-width: {{ section.settings.image_width }}%;
       --recycling-image-offset: {{ section.settings.image_offset }}%;
+      --recycling-max-height: {{ section.settings.image_max_height }}px;
       --recycling-room-right: {{ room_right_desktop }}cqw;
       --recycling-room-left: {{ section.settings.image_offset }}cqw;
     }
@@ -345,6 +358,17 @@
     },
     {
       "type": "range",
+      "id": "image_max_height",
+      "min": 150,
+      "max": 1000,
+      "step": 10,
+      "unit": "px",
+      "label": "Maximum illustration height (desktop)",
+      "info": "The illustration never gets taller than this, whatever image is uploaded.",
+      "default": 480
+    },
+    {
+      "type": "range",
       "id": "mobile_image_width",
       "min": 10,
       "max": 80,
@@ -363,6 +387,16 @@
       "label": "Space to the left (mobile)",
       "info": "On phones every label goes to the right of the illustration, in the room left after width and left space.",
       "default": 8
+    },
+    {
+      "type": "range",
+      "id": "mobile_image_max_height",
+      "min": 150,
+      "max": 800,
+      "step": 10,
+      "unit": "px",
+      "label": "Maximum illustration height (mobile)",
+      "default": 400
     },
     {
       "type": "color",
