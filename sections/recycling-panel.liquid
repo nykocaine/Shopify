@@ -5,8 +5,6 @@
   if image != blank
     assign image_ratio = image.aspect_ratio
   endif
-  assign room_right_mobile = 100 | minus: section.settings.mobile_image_offset | minus: section.settings.mobile_image_width
-  assign room_right_desktop = 100 | minus: section.settings.image_offset | minus: section.settings.image_width
 -%}
 
 <style>
@@ -26,14 +24,16 @@
     --recycling-tab-bg: {{ section.settings.tab_background.rgb }};
     --recycling-tab-text: {{ section.settings.tab_text_color.rgb }};
     --recycling-tab-weight: {{ section.settings.tab_font_weight }};
-    --recycling-image-width: {{ section.settings.mobile_image_width }}%;
-    --recycling-image-offset: {{ section.settings.mobile_image_offset }}%;
-    --recycling-max-height: {{ section.settings.mobile_image_max_height }}px;
     --recycling-ratio: {{ image_ratio }};
-    --recycling-room-right: {{ room_right_mobile }}cqw;
-    --recycling-room-left: 0cqw;
+    --recycling-image-width: {{ section.settings.mobile_image_width }}cqw;
+    --recycling-image-offset: {{ section.settings.mobile_image_offset }}cqw;
+    --recycling-max-height: {{ section.settings.mobile_image_max_height }}px;
   }
 
+  {%- comment -%}
+  Two independent boxes: __content (left / top, holds all the information) and __tab (right / bottom). __content carries the
+  theme's normal inner padding (same value .content-box uses) on all four sides and clips whatever is inside it.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .recycling-panel {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -41,11 +41,6 @@
     overflow: hidden;
   }
 
-  {%- comment -%}
-  Two independent boxes: __content (left / top, holds all the information) and __tab (right / bottom). __content carries the
-  theme's normal inner padding (same value .content-box uses) on all four sides and clips whatever is inside it, so nothing
-  (label texts included) can ever cross its padding into the tab.
-  {%- endcomment -%}
   #shopify-section-{{ section.id }} .recycling-panel__content {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -64,25 +59,31 @@
   }
 
   {%- comment -%}
-  The stage is a size container (no padding of its own), so the image width / offset (% of the stage) and the room left for the
-  label texts (cqw = 1% of the stage width) are all measured against the same box and the labels can never run past the card.
+  The stage is a size container: image width / offset are in cqw (1% of the stage width), so they are measured against the same
+  box wherever they are used. Inside it, a 3-column grid [left room | illustration | right room]. The label texts are normal
+  grid items of the side columns (not absolutely positioned), so they wrap inside their column and the stage grows to fit them:
+  they can never cross the content box's padding. Each text is dropped down by the same fraction of the illustration height
+  the dot sits at (--y), minus half a line so the line meets the middle of the title.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .recycling-panel__stage {
     container-type: inline-size;
     align-self: center;
     min-width: 0;
-    padding-block: 1.25rem 4.5rem;
+    padding-block-start: 1.25rem;
+  }
+
+  #shopify-section-{{ section.id }} .recycling-panel__grid {
+    --recycling-fw: min(var(--recycling-image-width), calc(var(--recycling-max-height) * var(--recycling-ratio)));
+    --recycling-fh: calc(var(--recycling-fw) / var(--recycling-ratio));
+    display: grid;
+    grid-template-columns: var(--recycling-image-offset) var(--recycling-fw) minmax(0, 1fr);
+    align-items: start;
   }
 
   #shopify-section-{{ section.id }} .recycling-panel__figure {
+    grid-area: 1 / 2;
     position: relative;
-    {%- comment -%}
-    Width is the chosen % of the stage, but never so wide that the image would be taller than the max height: the figure keeps the
-    image's own ratio, so whatever is uploaded (tall, wide, square) fits, and the labels keep lining up with it.
-    {%- endcomment -%}
     aspect-ratio: var(--recycling-ratio);
-    width: min(var(--recycling-image-width), calc(var(--recycling-max-height) * var(--recycling-ratio)));
-    margin-inline-start: var(--recycling-image-offset);
   }
 
   #shopify-section-{{ section.id }} .recycling-panel__image {
@@ -92,19 +93,9 @@
     object-fit: contain;
   }
 
-  {%- comment -%}
-  Each label is positioned over the image: top is a % of the image height, the dot is a % of the image width. The line runs
-  from the dot to the label column, which sits just outside the image on its side (on phones every label goes to the right).
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .recycling-label {
-    position: absolute;
-    inset-inline: 0;
-    height: 0;
-  }
-
   #shopify-section-{{ section.id }} .recycling-label__dot {
     position: absolute;
-    top: 0;
+    top: var(--y-pct);
     left: var(--dot-x);
     width: 0.75rem;
     height: 0.75rem;
@@ -115,7 +106,7 @@
 
   #shopify-section-{{ section.id }} .recycling-label__line {
     position: absolute;
-    top: 0;
+    top: var(--y-pct);
     left: var(--dot-x);
     width: calc(100% - var(--dot-x) + 2.25rem);
     height: 1px;
@@ -123,14 +114,25 @@
   }
 
   #shopify-section-{{ section.id }} .recycling-label__text {
-    position: absolute;
-    top: 0;
-    left: calc(100% + 2.5rem);
-    width: max-content;
-    max-width: calc(var(--recycling-room-right) - 2.75rem);
+    grid-row: 1;
+    min-width: 0;
     {%- comment -%}Inherits the body font size; the first line (the title) is centered on the line, the rest hangs below it.{%- endcomment -%}
     line-height: var(--text-line-height, 1.5);
-    transform: translateY(-0.5lh);
+    margin-block-start: calc(var(--recycling-fh) * var(--y) - 0.5lh);
+  }
+
+  #shopify-section-{{ section.id }} .recycling-label__text--right {
+    grid-column: 3;
+    margin-inline-start: 2.5rem;
+  }
+
+  {%- comment -%}Left-side texts exist only on desktop; on phones every label is shown in the right column.{%- endcomment -%}
+  #shopify-section-{{ section.id }} .recycling-label__text--left {
+    display: none;
+  }
+
+  #shopify-section-{{ section.id }} .recycling-label__text p {
+    margin: 0;
   }
 
   #shopify-section-{{ section.id }} .recycling-label__title {
@@ -141,7 +143,7 @@
   #shopify-section-{{ section.id }} .recycling-panel__tab {
     display: flex;
     align-items: center;
-    padding: 1.25rem calc(var(--container-gutter) + 0.5rem);
+    padding: 1.25rem max(1.5rem, var(--container-gutter));
     background: rgb(var(--recycling-tab-bg));
     color: rgb(var(--recycling-tab-text));
     font-family: var(--heading-font-family);
@@ -152,11 +154,9 @@
 
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} {
-      --recycling-image-width: {{ section.settings.image_width }}%;
-      --recycling-image-offset: {{ section.settings.image_offset }}%;
+      --recycling-image-width: {{ section.settings.image_width }}cqw;
+      --recycling-image-offset: {{ section.settings.image_offset }}cqw;
       --recycling-max-height: {{ section.settings.image_max_height }}px;
-      --recycling-room-right: {{ room_right_desktop }}cqw;
-      --recycling-room-left: {{ section.settings.image_offset }}cqw;
     }
 
     #shopify-section-{{ section.id }} .recycling-panel {
@@ -173,22 +173,25 @@
       writing-mode: vertical-rl;
       transform: rotate(180deg);
       justify-content: flex-start;
-      padding: calc(var(--container-gutter) + 0.5rem) 1.25rem;
+      padding: max(1.5rem, var(--container-gutter)) 1.25rem;
       font-size: 2.5rem;
     }
 
-    {%- comment -%}Left-side labels only exist on desktop; on phones they fall back to the right column above.{%- endcomment -%}
+    #shopify-section-{{ section.id }} .recycling-label__text--right.recycling-label__text--of-left {
+      display: none;
+    }
+
+    #shopify-section-{{ section.id }} .recycling-label__text--left {
+      display: block;
+      grid-column: 1;
+      margin-inline-end: 2.5rem;
+      text-align: end;
+    }
+
     #shopify-section-{{ section.id }} .recycling-label--left .recycling-label__line {
       left: auto;
       right: calc(100% - var(--dot-x));
       width: calc(var(--dot-x) + 2.25rem);
-    }
-
-    #shopify-section-{{ section.id }} .recycling-label--left .recycling-label__text {
-      left: auto;
-      right: calc(100% + 2.5rem);
-      max-width: calc(var(--recycling-room-left) - 2.75rem);
-      text-align: end;
     }
   }
 </style>
@@ -206,30 +209,48 @@
       </div>
 
       <div class="recycling-panel__stage">
-       <div class="recycling-panel__figure">
-        {%- if image != blank -%}
-          {{ image | image_url: width: 1200 | image_tag: class: 'recycling-panel__image', widths: '300, 500, 800, 1200', sizes: '(min-width: 700px) 30vw, 60vw', loading: 'lazy' }}
-        {%- else -%}
-          {{ 'image' | placeholder_svg_tag: 'recycling-panel__image' }}
-        {%- endif -%}
+        <div class="recycling-panel__grid">
+          <div class="recycling-panel__figure">
+            {%- if image != blank -%}
+              {{ image | image_url: width: 1200 | image_tag: class: 'recycling-panel__image', widths: '300, 500, 800, 1200', sizes: '(min-width: 700px) 30vw, 60vw', loading: 'lazy' }}
+            {%- else -%}
+              {{ 'image' | placeholder_svg_tag: 'recycling-panel__image' }}
+            {%- endif -%}
 
-        {%- for block in section.blocks -%}
-          <div
-            class="recycling-label recycling-label--{{ block.settings.side }}"
-            style="top: {{ block.settings.position_y }}%; --dot-x: {{ block.settings.dot_x }}%;"
-            {{ block.shopify_attributes }}
-          >
-            <span class="recycling-label__dot"></span>
-            <span class="recycling-label__line"></span>
-            <div class="recycling-label__text">
+            {%- for block in section.blocks -%}
+              {%- assign y = block.settings.position_y | divided_by: 100.0 -%}
+              <div
+                class="recycling-label recycling-label--{{ block.settings.side }}"
+                style="--y-pct: {{ block.settings.position_y }}%; --dot-x: {{ block.settings.dot_x }}%;"
+                {{ block.shopify_attributes }}
+              >
+                <span class="recycling-label__dot"></span>
+                <span class="recycling-label__line"></span>
+              </div>
+            {%- endfor -%}
+          </div>
+
+          {%- for block in section.blocks -%}
+            {%- assign y = block.settings.position_y | divided_by: 100.0 -%}
+            {%- capture label_text -%}
               {%- if block.settings.title != blank -%}
                 <strong class="recycling-label__title">{{ block.settings.title }}</strong>
               {%- endif -%}
               {{ block.settings.text }}
+            {%- endcapture -%}
+            <div
+              class="recycling-label__text recycling-label__text--right{% if block.settings.side == 'left' %} recycling-label__text--of-left{% endif %}"
+              style="--y: {{ y }};"
+            >
+              {{ label_text }}
             </div>
-          </div>
-        {%- endfor -%}
-       </div>
+            {%- if block.settings.side == 'left' -%}
+              <div class="recycling-label__text recycling-label__text--left" style="--y: {{ y }};">
+                {{ label_text }}
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
       </div>
     </div>
 
