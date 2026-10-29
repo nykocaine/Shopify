@@ -1,0 +1,442 @@
+{%- liquid
+  assign text_alignment_class = section.settings.text_alignment | replace: 'left', 'start' | replace: 'right', 'end'
+  assign image = section.settings.image
+-%}
+
+<style>
+  {%- comment -%}
+  Scoped with #shopify-section-{{ section.id }} (plain <style>, not {% stylesheet %}, which is deduplicated per section TYPE
+  and would leak the shared .container/.section-spacing selectors into every other section). The card gets the store's
+  side gutter as padding on the outer wrapper, so the rounded card never touches the screen edge.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .container.section-spacing {
+    margin-inline: 0;
+    padding-inline: var(--container-gutter);
+  }
+
+  #shopify-section-{{ section.id }} {
+    --recycling-dot: {{ section.settings.dot_color.rgb }};
+    --recycling-line: {{ section.settings.line_color.rgb }};
+    --recycling-tab-bg: {{ section.settings.tab_background.rgb }};
+    --recycling-tab-text: {{ section.settings.tab_text_color.rgb }};
+    --recycling-tab-weight: {{ section.settings.tab_font_weight }};
+    --recycling-image-width: {{ section.settings.image_width }}%;
+    --recycling-image-offset: {{ section.settings.mobile_image_offset }}%;
+  }
+
+  #shopify-section-{{ section.id }} .recycling-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    border-radius: {{ section.settings.corner_radius }}px;
+    overflow: hidden;
+  }
+
+  #shopify-section-{{ section.id }} .recycling-panel__main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+    padding: calc(var(--container-gutter) + 0.5rem);
+  }
+
+  #shopify-section-{{ section.id }} .recycling-panel__text {
+    align-self: end;
+  }
+
+  #shopify-section-{{ section.id }} .recycling-panel__text > * + * {
+    margin-block-start: 1rem;
+  }
+
+  #shopify-section-{{ section.id }} .recycling-panel__stage {
+    position: relative;
+    width: var(--recycling-image-width);
+    margin-inline-start: var(--recycling-image-offset);
+    align-self: center;
+  }
+
+  #shopify-section-{{ section.id }} .recycling-panel__image {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  {%- comment -%}
+  Each label is positioned over the image: top is a % of the image height, the dot is a % of the image width. The line runs
+  from the dot to the label column, which sits just outside the image on its side (on phones every label goes to the right).
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .recycling-label {
+    position: absolute;
+    inset-inline: 0;
+    height: 0;
+  }
+
+  #shopify-section-{{ section.id }} .recycling-label__dot {
+    position: absolute;
+    top: 0;
+    left: var(--dot-x);
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: rgb(var(--recycling-dot));
+    transform: translate(-50%, -50%);
+  }
+
+  #shopify-section-{{ section.id }} .recycling-label__line {
+    position: absolute;
+    top: 0;
+    left: var(--dot-x);
+    width: calc(100% - var(--dot-x) + 2.5rem);
+    height: 1px;
+    background: rgb(var(--recycling-line));
+  }
+
+  #shopify-section-{{ section.id }} .recycling-label__text {
+    position: absolute;
+    top: 0;
+    left: calc(100% + 3.25rem);
+    transform: translateY(0.75rem);
+    width: max-content;
+    max-width: 11rem;
+    font-size: var(--text-sm, 0.875rem);
+  }
+
+  #shopify-section-{{ section.id }} .recycling-label__title {
+    display: block;
+    font-weight: 700;
+  }
+
+  #shopify-section-{{ section.id }} .recycling-panel__tab {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem calc(var(--container-gutter) + 0.5rem);
+    background: rgb(var(--recycling-tab-bg));
+    color: rgb(var(--recycling-tab-text));
+    font-family: var(--heading-font-family);
+    font-weight: var(--recycling-tab-weight);
+    font-size: 1.75rem;
+    line-height: 1;
+  }
+
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .recycling-panel {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    #shopify-section-{{ section.id }} .recycling-panel__main {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 3rem;
+      align-items: stretch;
+    }
+
+    #shopify-section-{{ section.id }} .recycling-panel__stage {
+      width: var(--recycling-image-width);
+      margin-inline: auto;
+    }
+
+    #shopify-section-{{ section.id }} .recycling-panel__tab {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      justify-content: flex-start;
+      padding: calc(var(--container-gutter) + 0.5rem) 1.25rem;
+      font-size: 2.5rem;
+    }
+
+    #shopify-section-{{ section.id }} .recycling-label__text {
+      max-width: 14rem;
+    }
+
+    {%- comment -%}Left-side labels only exist on desktop; on phones they fall back to the right column above.{%- endcomment -%}
+    #shopify-section-{{ section.id }} .recycling-label--left .recycling-label__line {
+      left: auto;
+      right: calc(100% - var(--dot-x));
+      width: calc(var(--dot-x) + 2.5rem);
+    }
+
+    #shopify-section-{{ section.id }} .recycling-label--left .recycling-label__text {
+      left: auto;
+      right: calc(100% + 3.25rem);
+      text-align: end;
+    }
+  }
+</style>
+
+<div class="container section-spacing">
+  <div class="recycling-panel color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+    <div class="recycling-panel__main content-box min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
+      <div class="recycling-panel__text prose text-{{ text_alignment_class }}">
+        {%- if section.settings.title != blank -%}
+          <{{ section.settings.heading_tag }} class="h2">{{ section.settings.title }}</{{ section.settings.heading_tag }}>
+        {%- endif -%}
+        {%- if section.settings.content != blank -%}
+          <div class="rte">{{ section.settings.content }}</div>
+        {%- endif -%}
+      </div>
+
+      <div class="recycling-panel__stage">
+        {%- if image != blank -%}
+          {{ image | image_url: width: 1200 | image_tag: class: 'recycling-panel__image', widths: '300, 500, 800, 1200', sizes: '(min-width: 700px) 30vw, 60vw', loading: 'lazy' }}
+        {%- else -%}
+          {{ 'image' | placeholder_svg_tag: 'recycling-panel__image' }}
+        {%- endif -%}
+
+        {%- for block in section.blocks -%}
+          <div
+            class="recycling-label recycling-label--{{ block.settings.side }}"
+            style="top: {{ block.settings.position_y }}%; --dot-x: {{ block.settings.dot_x }}%;"
+            {{ block.shopify_attributes }}
+          >
+            <span class="recycling-label__dot"></span>
+            <span class="recycling-label__line"></span>
+            <div class="recycling-label__text">
+              {%- if block.settings.title != blank -%}
+                <strong class="recycling-label__title">{{ block.settings.title }}</strong>
+              {%- endif -%}
+              {{ block.settings.text }}
+            </div>
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    {%- if section.settings.tab_text != blank -%}
+      <div class="recycling-panel__tab">{{ section.settings.tab_text }}</div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Recycling panel",
+  "class": "shopify-section--recycling-panel",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "custom.overlay"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:global.colors.scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "corner_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "block_size",
+      "label": "t:sections.media_blocks.block_size",
+      "options": [
+        { "value": "auto", "label": "t:global.sizes.original_image_ratio" },
+        { "value": "sm", "label": "t:global.sizes.small" },
+        { "value": "md", "label": "t:global.sizes.medium" },
+        { "value": "lg", "label": "t:global.sizes.large" },
+        { "value": "fill", "label": "t:global.sizes.fit_screen" }
+      ],
+      "default": "md"
+    },
+    {
+      "type": "select",
+      "id": "mobile_block_size",
+      "label": "Mobile block size",
+      "options": [
+        { "value": "auto", "label": "t:global.sizes.original_image_ratio" },
+        { "value": "sm", "label": "t:global.sizes.small" },
+        { "value": "md", "label": "t:global.sizes.medium" },
+        { "value": "lg", "label": "t:global.sizes.large" },
+        { "value": "fill", "label": "t:global.sizes.fit_screen" }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "title",
+      "label": "Title",
+      "default": "less harm, more tint."
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Heading tag",
+      "options": [
+        { "value": "h1", "label": "H1" },
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "h4", "label": "H4" },
+        { "value": "p", "label": "Paragraph" }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": "Text",
+      "default": "<p>Peptide Lip Tint packaging is made with post-consumer recycled (PCR) materials.</p>"
+    },
+    {
+      "type": "text_alignment",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Illustration"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Illustration (SVG or image)"
+    },
+    {
+      "type": "range",
+      "id": "image_width",
+      "min": 10,
+      "max": 100,
+      "step": 2,
+      "unit": "%",
+      "label": "Illustration width",
+      "info": "Percentage of its column. On phones this is the share of the card width.",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "mobile_image_offset",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "%",
+      "label": "Mobile left offset",
+      "info": "Space to the left of the illustration on phones, leaving room for the labels on the right.",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "dot_color",
+      "label": "Dot color",
+      "default": "#7d7c78"
+    },
+    {
+      "type": "color",
+      "id": "line_color",
+      "label": "Line color",
+      "default": "#7d7c78"
+    },
+    {
+      "type": "header",
+      "content": "Vertical tab"
+    },
+    {
+      "type": "text",
+      "id": "tab_text",
+      "label": "Text",
+      "default": "how to recycle"
+    },
+    {
+      "type": "color",
+      "id": "tab_background",
+      "label": "Background color",
+      "default": "#7d7c78"
+    },
+    {
+      "type": "color",
+      "id": "tab_text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "select",
+      "id": "tab_font_weight",
+      "label": "Font weight",
+      "options": [
+        { "value": "300", "label": "Light (300)" },
+        { "value": "400", "label": "Regular (400)" },
+        { "value": "500", "label": "Medium (500)" },
+        { "value": "600", "label": "Semibold (600)" },
+        { "value": "700", "label": "Bold (700)" },
+        { "value": "800", "label": "Extra bold (800)" },
+        { "value": "900", "label": "Black (900)" }
+      ],
+      "default": "700"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "label",
+      "name": "Label",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Cap"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>30% PCR PP #5</p>"
+        },
+        {
+          "type": "select",
+          "id": "side",
+          "label": "Side (desktop)",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "right", "label": "Right" }
+          ],
+          "default": "right"
+        },
+        {
+          "type": "range",
+          "id": "position_y",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Vertical position",
+          "info": "Height of the dot over the illustration, from top (0) to bottom (100).",
+          "default": 20
+        },
+        {
+          "type": "range",
+          "id": "dot_x",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Dot horizontal position",
+          "info": "Position of the dot across the illustration, from left (0) to right (100).",
+          "default": 50
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Recycling panel",
+      "blocks": [
+        { "type": "label" },
+        {
+          "type": "label",
+          "settings": {
+            "title": "Tube",
+            "text": "<p>30% PCR HDPE #2 and 70% LDPE #4</p>",
+            "position_y": 70
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
