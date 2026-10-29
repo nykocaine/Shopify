@@ -6,18 +6,49 @@
     assign built_in = true
   endif
 
-  # Built-in drawing: the bottle and the box are drawn twice - side by side (desktop viewBox 270x200) and stacked (mobile
-  # viewBox 130x380) - so the figure's ratio is different at each breakpoint.
+  # Built-in drawing: the bottle (144 x 347 units) and the box are drawn twice - side by side (desktop) and stacked (phones) -
+  # so the figure's ratio and the center of every part (as % of the drawing) are different at each breakpoint.
+  assign box_scale = section.settings.box_scale | divided_by: 100.0
+  assign bw = 200 | times: box_scale | round: 1
+  assign bh = 240 | times: box_scale | round: 1
+  assign gap = 40
+
+  assign vbw_d = 184 | plus: bw
+  assign vbh_d = 347.0
+  assign box_y_d = vbh_d | minus: bh
+
+  assign vbw_m = bw
+  if bw < 144
+    assign vbw_m = 144
+  endif
+  assign vbw_m = vbw_m | times: 1.0
+  assign bx_m = vbw_m | minus: 144 | divided_by: 2.0
+  assign box_x_m = vbw_m | minus: bw | divided_by: 2.0
+  assign box_y_m = 347 | plus: gap
+  assign vbh_m = box_y_m | plus: bh
+
   assign ratio_mobile = 1
   assign ratio_desktop = 1
   if built_in
-    assign ratio_mobile = 0.3421
-    assign ratio_desktop = 1.35
+    assign ratio_mobile = vbw_m | divided_by: vbh_m
+    assign ratio_desktop = vbw_d | divided_by: vbh_d
   elsif image != blank
     assign ratio_mobile = image.aspect_ratio
     assign ratio_desktop = image.aspect_ratio
   endif
+
+  # Centers of cap / bottle body / box as % of the drawing: phones (am_) and desktop (ad_).
+  assign am_cap_x = bx_m | plus: 72 | divided_by: vbw_m | times: 100 | round: 2
+  assign am_cap_y = 37.5 | divided_by: vbh_m | times: 100 | round: 2
+  assign am_body_y = 215 | divided_by: vbh_m | times: 100 | round: 2
+  assign am_box_y = bh | divided_by: 2.0 | plus: box_y_m | divided_by: vbh_m | times: 100 | round: 2
+  assign ad_cap_x = 72 | divided_by: vbw_d | times: 100 | round: 2
+  assign ad_cap_y = 37.5 | divided_by: vbh_d | times: 100 | round: 2
+  assign ad_body_y = 215 | divided_by: vbh_d | times: 100 | round: 2
+  assign ad_box_x = bw | divided_by: 2.0 | plus: 184 | divided_by: vbw_d | times: 100 | round: 2
+  assign ad_box_y = bh | divided_by: 2.0 | plus: box_y_d | divided_by: vbh_d | times: 100 | round: 2
 -%}
+{%- capture anchors -%}{{ am_cap_x }},{{ am_cap_y }},{{ am_body_y }},{{ am_box_y }},{{ ad_cap_x }},{{ ad_cap_y }},{{ ad_body_y }},{{ ad_box_x }},{{ ad_box_y }}{%- endcapture -%}
 
 <style>
   {%- comment -%}
@@ -41,6 +72,8 @@
     --recycling-cap: {{ section.settings.cap_color.rgb }};
     --recycling-box: {{ section.settings.box_color.rgb }};
     --recycling-outline: {{ section.settings.outline_color.rgb }};
+    --recycling-ridge: {{ section.settings.ridge_color.rgb }};
+    --recycling-logo: {{ section.settings.logo_color.rgb }};
     --recycling-outline-width: {{ section.settings.outline_width }}px;
     --recycling-image-width: {{ section.settings.mobile_image_width }}cqw;
     --recycling-image-offset: {{ section.settings.mobile_image_offset }}cqw;
@@ -124,6 +157,19 @@
   #shopify-section-{{ section.id }} .recycling-art__bottle { fill: rgb(var(--recycling-bottle)); }
   #shopify-section-{{ section.id }} .recycling-art__cap { fill: rgb(var(--recycling-cap)); }
   #shopify-section-{{ section.id }} .recycling-art__box { fill: rgb(var(--recycling-box)); }
+  #shopify-section-{{ section.id }} .recycling-art__ridges path {
+    fill: none;
+    stroke: rgb(var(--recycling-ridge));
+    stroke-width: 1.2px;
+    vector-effect: non-scaling-stroke;
+  }
+
+  #shopify-section-{{ section.id }} .recycling-art__logo {
+    fill: rgb(var(--recycling-logo));
+    font-family: var(--heading-font-family);
+    font-weight: 700;
+  }
+
   #shopify-section-{{ section.id }} .recycling-art__bottle,
   #shopify-section-{{ section.id }} .recycling-art__cap,
   #shopify-section-{{ section.id }} .recycling-art__box {
@@ -276,15 +322,13 @@
         <div class="recycling-panel__grid">
           <div class="recycling-panel__figure">
             {%- if built_in -%}
-              <svg class="recycling-panel__image recycling-panel__image--mobile" viewBox="0 0 130 380" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-                <path class="recycling-art__bottle" d="M35 48H95V60C95 76 120 76 120 100V186Q120 200 106 200H24Q10 200 10 186V100C10 76 35 76 35 60Z"/>
-                <rect class="recycling-art__cap" x="29" y="0" width="72" height="44" rx="8"/>
-                <rect class="recycling-art__box" x="0" y="230" width="130" height="150" rx="10"/>
+              <svg class="recycling-panel__image recycling-panel__image--mobile" viewBox="0 0 {{ vbw_m }} {{ vbh_m }}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <g transform="translate({{ bx_m }} 0)">{% render 'recycling-bottle', logo: section.settings.logo_text %}</g>
+                <rect class="recycling-art__box" x="{{ box_x_m }}" y="{{ box_y_m }}" width="{{ bw }}" height="{{ bh }}" rx="12"/>
               </svg>
-              <svg class="recycling-panel__image recycling-panel__image--desktop" viewBox="0 0 270 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-                <path class="recycling-art__bottle" d="M25 48H85V60C85 76 110 76 110 100V186Q110 200 96 200H14Q0 200 0 186V100C0 76 25 76 25 60Z"/>
-                <rect class="recycling-art__cap" x="19" y="0" width="72" height="44" rx="8"/>
-                <rect class="recycling-art__box" x="140" y="50" width="130" height="150" rx="10"/>
+              <svg class="recycling-panel__image recycling-panel__image--desktop" viewBox="0 0 {{ vbw_d }} {{ vbh_d }}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <g>{% render 'recycling-bottle', logo: section.settings.logo_text %}</g>
+                <rect class="recycling-art__box" x="184" y="{{ box_y_d }}" width="{{ bw }}" height="{{ bh }}" rx="12"/>
               </svg>
             {%- elsif image != blank -%}
               {{ image | image_url: width: 1200 | image_tag: class: 'recycling-panel__image', widths: '300, 500, 800, 1200', sizes: '(min-width: 700px) 30vw, 60vw', loading: 'lazy' }}
@@ -293,7 +337,7 @@
             {%- endif -%}
 
             {%- for block in section.blocks -%}
-              {%- capture anchor_style -%}{%- render 'recycling-anchor', block: block, built_in: built_in -%}{%- endcapture -%}
+              {%- capture anchor_style -%}{%- render 'recycling-anchor', block: block, built_in: built_in, anchors: anchors -%}{%- endcapture -%}
               <div
                 class="recycling-label recycling-label--{{ block.settings.side }}"
                 style="{{ anchor_style }}"
@@ -306,7 +350,7 @@
           </div>
 
           {%- for block in section.blocks -%}
-            {%- capture anchor_style -%}{%- render 'recycling-anchor', block: block, built_in: built_in -%}{%- endcapture -%}
+            {%- capture anchor_style -%}{%- render 'recycling-anchor', block: block, built_in: built_in, anchors: anchors -%}{%- endcapture -%}
             {%- capture label_text -%}
               {%- if block.settings.title != blank -%}
                 <strong class="recycling-label__title">{{ block.settings.title }}</strong>
@@ -440,21 +484,55 @@
       "type": "color",
       "id": "bottle_color",
       "label": "Bottle color",
-      "default": "#b07076",
+      "default": "#e5be6c",
       "visible_if": "{{ section.settings.illustration == 'built_in' }}"
     },
     {
       "type": "color",
       "id": "cap_color",
       "label": "Cap color",
-      "default": "#b07076",
+      "default": "#ffffff",
       "visible_if": "{{ section.settings.illustration == 'built_in' }}"
     },
     {
       "type": "color",
       "id": "box_color",
       "label": "Box color",
-      "default": "#b07076",
+      "default": "#e5be6c",
+      "visible_if": "{{ section.settings.illustration == 'built_in' }}"
+    },
+    {
+      "type": "color",
+      "id": "ridge_color",
+      "label": "Cap lines color",
+      "default": "#e9b7c6",
+      "visible_if": "{{ section.settings.illustration == 'built_in' }}"
+    },
+    {
+      "type": "text",
+      "id": "logo_text",
+      "label": "Bottle text",
+      "info": "Written on the bottle, turned upwards. Leave empty for none.",
+      "default": "soen.",
+      "visible_if": "{{ section.settings.illustration == 'built_in' }}"
+    },
+    {
+      "type": "color",
+      "id": "logo_color",
+      "label": "Bottle text color",
+      "default": "#ffffff",
+      "visible_if": "{{ section.settings.illustration == 'built_in' }}"
+    },
+    {
+      "type": "range",
+      "id": "box_scale",
+      "min": 60,
+      "max": 130,
+      "step": 5,
+      "unit": "%",
+      "label": "Box size",
+      "info": "Scales the box next to the bottle.",
+      "default": 100,
       "visible_if": "{{ section.settings.illustration == 'built_in' }}"
     },
     {
@@ -473,7 +551,7 @@
       "unit": "px",
       "label": "Outline width",
       "info": "0 removes the outline.",
-      "default": 1,
+      "default": 0,
       "visible_if": "{{ section.settings.illustration == 'built_in' }}"
     },
     {

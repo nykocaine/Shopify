@@ -15,21 +15,23 @@
   assign x_d = manual_x
 
   if built_in
+    # anchors: phones (cap x,y / body y / box y), then desktop (cap x,y / body y / box x,y), all in % of the drawing
+    assign pts = anchors | split: ','
     if part == 'cap'
-      assign y_m = 0.058
-      assign y_d = 0.11
-      assign x_m = '50%'
-      assign x_d = '20.4%'
+      assign y_m = pts[1] | divided_by: 100.0
+      assign y_d = pts[5] | divided_by: 100.0
+      assign x_m = pts[0] | append: '%'
+      assign x_d = pts[4] | append: '%'
     elsif part == 'bottle'
-      assign y_m = 0.34
-      assign y_d = 0.65
-      assign x_m = '50%'
-      assign x_d = '20.4%'
+      assign y_m = pts[2] | divided_by: 100.0
+      assign y_d = pts[6] | divided_by: 100.0
+      assign x_m = pts[0] | append: '%'
+      assign x_d = pts[4] | append: '%'
     elsif part == 'box'
-      assign y_m = 0.803
-      assign y_d = 0.625
+      assign y_m = pts[3] | divided_by: 100.0
+      assign y_d = pts[8] | divided_by: 100.0
       assign x_m = '50%'
-      assign x_d = '75.9%'
+      assign x_d = pts[7] | append: '%'
     endif
   endif
 -%}
