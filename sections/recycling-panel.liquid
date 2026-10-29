@@ -35,11 +35,18 @@
     overflow: hidden;
   }
 
-  #shopify-section-{{ section.id }} .recycling-panel__main {
+  {%- comment -%}
+  Two independent boxes: __content (left / top, holds all the information) and __tab (right / bottom). __content carries the
+  theme's normal inner padding (same value .content-box uses) on all four sides and clips whatever is inside it, so nothing
+  (label texts included) can ever cross its padding into the tab.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .recycling-panel__content {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 2rem;
-    padding: calc(var(--container-gutter) + 0.5rem);
+    padding: max(1.5rem, var(--container-gutter));
+    min-width: 0;
+    overflow: clip;
   }
 
   #shopify-section-{{ section.id }} .recycling-panel__text {
@@ -58,6 +65,7 @@
     container-type: inline-size;
     align-self: center;
     min-width: 0;
+    padding-block: 1.25rem 4.5rem;
   }
 
   #shopify-section-{{ section.id }} .recycling-panel__figure {
@@ -106,10 +114,11 @@
     position: absolute;
     top: 0;
     left: calc(100% + 2.5rem);
-    transform: translateY(0.75rem);
     width: max-content;
     max-width: calc(var(--recycling-room-right) - 2.75rem);
-    font-size: var(--text-sm, 0.875rem);
+    {%- comment -%}Inherits the body font size; the first line (the title) is centered on the line, the rest hangs below it.{%- endcomment -%}
+    line-height: var(--text-line-height, 1.5);
+    transform: translateY(-0.5lh);
   }
 
   #shopify-section-{{ section.id }} .recycling-label__title {
@@ -141,7 +150,7 @@
       grid-template-columns: minmax(0, 1fr) auto;
     }
 
-    #shopify-section-{{ section.id }} .recycling-panel__main {
+    #shopify-section-{{ section.id }} .recycling-panel__content {
       grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
       gap: 3rem;
       align-items: stretch;
@@ -173,7 +182,7 @@
 
 <div class="container section-spacing">
   <div class="recycling-panel color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
-    <div class="recycling-panel__main min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
+    <div class="recycling-panel__content min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
       <div class="recycling-panel__text prose text-{{ text_alignment_class }}">
         {%- if section.settings.title != blank -%}
           <{{ section.settings.heading_tag }} class="h2">{{ section.settings.title }}</{{ section.settings.heading_tag }}>
