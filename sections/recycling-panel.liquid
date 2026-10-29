@@ -28,6 +28,7 @@
     --recycling-image-width: {{ section.settings.mobile_image_width }}cqw;
     --recycling-image-offset: {{ section.settings.mobile_image_offset }}cqw;
     --recycling-max-height: {{ section.settings.mobile_image_max_height }}px;
+    --recycling-room: 10rem;
   }
 
   {%- comment -%}
@@ -73,10 +74,15 @@
   }
 
   #shopify-section-{{ section.id }} .recycling-panel__grid {
-    --recycling-fw: min(var(--recycling-image-width), calc(var(--recycling-max-height) * var(--recycling-ratio)));
+    {%- comment -%}
+    Whatever width / offset are set, the right column keeps at least --recycling-room for the label texts: the offset and the
+    illustration width are clamped to what is left, so the texts always have room to wrap inside the card instead of being squeezed.
+    {%- endcomment -%}
+    --recycling-io: min(var(--recycling-image-offset), calc(100cqw - var(--recycling-room) - 3rem));
+    --recycling-fw: max(3rem, min(var(--recycling-image-width), calc(var(--recycling-max-height) * var(--recycling-ratio)), calc(100cqw - var(--recycling-io) - var(--recycling-room))));
     --recycling-fh: calc(var(--recycling-fw) / var(--recycling-ratio));
     display: grid;
-    grid-template-columns: var(--recycling-image-offset) var(--recycling-fw) minmax(0, 1fr);
+    grid-template-columns: var(--recycling-io) var(--recycling-fw) minmax(0, 1fr);
     align-items: start;
   }
 
@@ -116,6 +122,7 @@
   #shopify-section-{{ section.id }} .recycling-label__text {
     grid-row: 1;
     min-width: 0;
+    overflow-wrap: anywhere;
     {%- comment -%}Inherits the body font size; the first line (the title) is centered on the line, the rest hangs below it.{%- endcomment -%}
     line-height: var(--text-line-height, 1.5);
     margin-block-start: calc(var(--recycling-fh) * var(--y) - 0.5lh);
@@ -157,6 +164,7 @@
       --recycling-image-width: {{ section.settings.image_width }}cqw;
       --recycling-image-offset: {{ section.settings.image_offset }}cqw;
       --recycling-max-height: {{ section.settings.image_max_height }}px;
+      --recycling-room: 12rem;
     }
 
     #shopify-section-{{ section.id }} .recycling-panel {
