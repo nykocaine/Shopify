@@ -10,7 +10,11 @@ access to filters.
 {%- enddoc -%}
 
 {%- liquid
-  assign mobile_items_per_row = cart.attributes.product_card_mobile_items_per_row | default: section.settings.products_per_row_mobile
+  # Phones: 1 or 2 cards per row (a saved 3, from when that layout existed, counts as 2).
+  assign mobile_items_per_row = cart.attributes.product_card_mobile_items_per_row | default: section.settings.products_per_row_mobile | plus: 0
+  if mobile_items_per_row != 1
+    assign mobile_items_per_row = 2
+  endif
   assign desktop_layout_mode = cart.attributes.product_card_desktop_layout | default: 'grid'
   assign toolbar_source = data_source | default: collection
   assign toolbar_filter_layout = filter_layout | default: section.settings.filter_layout
@@ -74,40 +78,26 @@ access to filters.
     {%- endif -%}
 
     {%- if section.settings.show_product_card_size_selector -%}
+      {%- comment -%}
+      Phones: two layouts only - two cards per row, or one card per row (one below the other). The three-per-row layout is not offered; a visitor who
+      had saved it (cart attribute) is shown two per row.
+      {%- endcomment -%}
       <div class="h-stack gap-3.5 sm:hidden">
-        {%- if section.settings.products_per_row_mobile == 1 -%}
-          <collection-layout-selector-button class="collection__layout-selector">
-            <input type="radio" value="1" class="sr-only" name="mobile-items-per-row" id="mobile-items-per-row-1" {% if mobile_items_per_row == 1 %}checked{% endif %}>
-            <label for="mobile-items-per-row-1">
-              <span class="sr-only">Show one card per row</span>
-              {%- render 'icon' with 'product-card-1x1' -%}
-            </label>
-          </collection-layout-selector-button>
+        <collection-layout-selector-button class="collection__layout-selector">
+          <input type="radio" value="2" class="sr-only" name="mobile-items-per-row" id="mobile-items-per-row-2" {% if mobile_items_per_row != 1 %}checked{% endif %}>
+          <label for="mobile-items-per-row-2">
+            <span class="sr-only">Show two cards per row</span>
+            {%- render 'icon' with 'product-card-2x2' -%}
+          </label>
+        </collection-layout-selector-button>
 
-          <collection-layout-selector-button class="collection__layout-selector">
-            <input type="radio" value="2" class="sr-only" name="mobile-items-per-row" id="mobile-items-per-row-2" {% if mobile_items_per_row == 2 %}checked{% endif %}>
-            <label for="mobile-items-per-row-2">
-              <span class="sr-only">Show two cards per row</span>
-              {%- render 'icon' with 'product-card-2x2' -%}
-            </label>
-          </collection-layout-selector-button>
-        {%- else -%}
-          <collection-layout-selector-button class="collection__layout-selector">
-            <input type="radio" value="2" class="sr-only" name="mobile-items-per-row" id="mobile-items-per-row-2" {% if mobile_items_per_row == 2 %}checked{% endif %}>
-            <label for="mobile-items-per-row-2">
-              <span class="sr-only">Show two cards per row</span>
-              {%- render 'icon' with 'product-card-2x2' -%}
-            </label>
-          </collection-layout-selector-button>
-
-          <collection-layout-selector-button class="collection__layout-selector">
-            <input type="radio" value="3" class="sr-only" name="mobile-items-per-row" id="mobile-items-per-row-3" {% if mobile_items_per_row == 3 %}checked{% endif %}>
-            <label for="mobile-items-per-row-3">
-              <span class="sr-only">Show three cards per row</span>
-              {%- render 'icon' with 'product-card-3x3' -%}
-            </label>
-          </collection-layout-selector-button>
-        {%- endif -%}
+        <collection-layout-selector-button class="collection__layout-selector">
+          <input type="radio" value="1" class="sr-only" name="mobile-items-per-row" id="mobile-items-per-row-1" {% if mobile_items_per_row == 1 %}checked{% endif %}>
+          <label for="mobile-items-per-row-1">
+            <span class="sr-only">Show one card per row</span>
+            {%- render 'icon' with 'product-card-1x1' -%}
+          </label>
+        </collection-layout-selector-button>
       </div>
 
       <div class="h-stack gap-3.5 sm-max:hidden">

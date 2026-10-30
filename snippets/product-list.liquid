@@ -16,7 +16,14 @@ This component display a list of product that can be used in collection, search.
 @param {object} [section]
 {%- enddoc -%}
 
-<product-list {% if id %}id="{{ id }}"{% endif %} class="product-list {% if stack == false or spotlight == false %}product-list--carousel scroll-area bleed{% endif %} {% if spotlight %}product-list--spotlight scroll-area bleed{% if settings.product_listing_spacing == 'none' %}border{% endif %}{% endif %}" {% if output_override_attributes %}mobile-items-per-row="{{ cart.attributes.product_card_mobile_items_per_row | default: section.settings.products_per_row_mobile }}" desktop-layout="{{ cart.attributes.product_card_desktop_layout | default: 'grid' }}"{% endif %}>
+{%- liquid
+  # Collection page: 1 or 2 cards per row on phones (a saved 3 counts as 2), same rule as snippets/collection-toolbar.liquid.
+  assign list_mobile_items_per_row = cart.attributes.product_card_mobile_items_per_row | default: section.settings.products_per_row_mobile | plus: 0
+  if list_mobile_items_per_row != 1
+    assign list_mobile_items_per_row = 2
+  endif
+-%}
+<product-list {% if id %}id="{{ id }}"{% endif %} class="product-list {% if stack == false or spotlight == false %}product-list--carousel scroll-area bleed{% endif %} {% if spotlight %}product-list--spotlight scroll-area bleed{% if settings.product_listing_spacing == 'none' %}border{% endif %}{% endif %}" {% if output_override_attributes %}mobile-items-per-row="{{ list_mobile_items_per_row }}" desktop-layout="{{ cart.attributes.product_card_desktop_layout | default: 'grid' }}"{% endif %}>
   {%- liquid
     assign has_active_filters = false
     assign filters_source = source | default: collection
