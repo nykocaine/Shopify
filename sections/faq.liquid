@@ -336,6 +336,15 @@
         --faq-motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
       }
 
+      {%- comment -%}
+      The browser's own scroll anchoring is off inside the section (on every element: an ancestor alone is not enough in some browsers): the script at
+      the end of the file keeps the tapped row in place itself, and the two corrections would add up.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }},
+      #shopify-section-{{ section.id }} * {
+        overflow-anchor: none;
+      }
+
       @media (prefers-reduced-motion: reduce) {
         #shopify-section-{{ section.id }} {
           --faq-motion-duration: 0.01s;
@@ -746,6 +755,14 @@
 
           #shopify-section-{{ section.id }} .faq__cat-item.is-open > .faq__cat-head {
             margin-block-end: var(--faq-cat-gap);
+          }
+
+          {%- comment -%}Rows closed without animation (the ones above the tapped row, see the script at the end of the file).{%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__cat-item.is-instant > .faq__cat-head,
+          #shopify-section-{{ section.id }} .faq__cat-item.is-instant > .faq__cat-body,
+          #shopify-section-{{ section.id }} .faq__cat-item.is-instant .icon-accordion-plus,
+          #shopify-section-{{ section.id }} .faq__cat-item.is-instant .accordion-plus-bar {
+            transition: none;
           }
 
           #shopify-section-{{ section.id }} .faq__cat-summary {
@@ -1685,10 +1702,12 @@
 {%- endif -%}
 
 {%- comment -%}
-Keeps what the visitor taps where it is. Opening a question or a category closes the ones that were open above it (and tabs swap panels of
-different heights), so everything below slides up and the tapped row jumped away from under the finger. For a moment after the tap, the page is
-scrolled by exactly the distance the tapped row moved, so it stays at the same place on the screen (browsers that anchor the scroll themselves
-leave nothing to correct). It lets go as soon as the visitor scrolls, and does nothing when the row is not visible.
+Keeps what the visitor taps where it is. Opening a question or a category closes the ones open above it, and everything below used to slide up under
+the finger. Nothing is chased frame by frame: the instant the tap lands (capture phase, before any handler), the rows open above the tapped one
+are closed without animation, the page is scrolled once by exactly the distance the tapped row moved, and all of it happens before the browser paints,
+so the tapped row never leaves its place. What opens (the tapped row) and what closes below it still animate normally.
+Rows next to it in another column, and rows below it, are left alone: they do not move it. The browser's own scroll anchoring is switched off inside the
+section (see the style block) so it does not add a second correction.
 {%- endcomment -%}
 <script>
   (function () {
@@ -1697,37 +1716,82 @@ leave nothing to correct). It lets go as soon as the visitor scrolls, and does n
     if (window.__faqAnchorLock[key]) return;
     window.__faqAnchorLock[key] = true;
 
-    {%- comment -%}Longer than the slowest transition involved (accordion rows, tab panels): the page keeps settling a bit after the tap.{%- endcomment -%}
-    var HOLD_MS = 700;
-    var lock = null;
+    {%- comment -%}True when "other" is a row stacked above "tapped" in the same column, i.e. one whose closing moves the tapped row.{%- endcomment -%}
+    function isAbove(other, tapped) {
+      var o = other.getBoundingClientRect();
+      var t = tapped.getBoundingClientRect();
+      return o.top < t.top && Math.abs(o.left - t.left) < 24;
+    }
 
-    function release() { lock = null; }
+    function closeQuestion(disclosure) {
+      var details = disclosure.querySelector('details');
+      disclosure.classList.remove('is-open');
+      if (details) {
+        details.open = false;
+        details.style.height = null;
+        details.style.overflow = null;
+      }
+    }
 
-    function follow(now) {
-      if (!lock) return;
+    function closeCategory(item) {
+      item.classList.add('is-instant');
+      item.classList.remove('is-open');
 
-      if (lock.element.isConnected && lock.element.getClientRects().length) {
-        var delta = lock.element.getBoundingClientRect().top - lock.top;
+      var head = item.querySelector('.faq__cat-head');
+      var button = item.querySelector('.faq__cat-summary');
+      if (head) head.classList.remove('is-open');
+      if (button) button.setAttribute('aria-expanded', 'false');
+    }
+
+    {%- comment -%}Capture phase: runs before the tapped row's own handlers change anything.{%- endcomment -%}
+    document.addEventListener('click', function (event) {
+      var root = document.getElementById('shopify-section-' + key);
+      var target = event.target;
+      if (!root || !target.closest) return;
+
+      var summary = target.closest('.faq__cat-summary, .accordion__summary');
+      if (!summary || !root.contains(summary)) return;
+
+      var tapped, candidates, close;
+
+      if (summary.classList.contains('faq__cat-summary')) {
+        tapped = summary.closest('.faq__cat-item');
+        if (!tapped || tapped.classList.contains('is-open')) return;
+        candidates = tapped.parentElement ? tapped.parentElement.querySelectorAll(':scope > .faq__cat-item.is-open') : [];
+        close = closeCategory;
+      } else {
+        tapped = summary.closest('accordion-disclosure');
+        var list = summary.closest('.faq-block__list');
+        if (!tapped || !list || tapped.classList.contains('is-open')) return;
+        candidates = list.querySelectorAll('accordion-disclosure.is-open');
+        close = closeQuestion;
+      }
+
+      var above = Array.prototype.filter.call(candidates, function (other) {
+        return other !== tapped && !other.contains(tapped) && !tapped.contains(other) && isAbove(other, summary);
+      });
+      if (!above.length) return;
+
+      var top = summary.getBoundingClientRect().top;
+
+      {%- comment -%}
+      The rows above are closed without animation, then the page is scrolled so the tapped row is back at "top". Done right away and once more at the next
+      animation frame (still before anything is painted): the browser may apply the closing of a <details> (or its own scroll anchoring) a moment later,
+      so the second pass measures again against the same target and only moves what is still off.
+      {%- endcomment -%}
+      function putBack() {
+        var delta = summary.getBoundingClientRect().top - top;
         if (Math.abs(delta) > 0.5) window.scrollBy({ top: delta, left: 0, behavior: 'instant' });
       }
 
-      if (now - lock.start < HOLD_MS) requestAnimationFrame(follow);
-      else release();
-    }
+      above.forEach(close);
+      putBack();
 
-    {%- comment -%}Capture phase: the position is read before any handler of the tapped element changes the layout.{%- endcomment -%}
-    document.addEventListener('click', function (event) {
-      var root = document.getElementById('shopify-section-' + key);
-      var element = root && event.target.closest && event.target.closest('.accordion__summary, .faq__cat-summary, [slot="tab"]');
-      if (!element || !root.contains(element) || element.getClientRects().length === 0) return;
-
-      lock = { element: element, top: element.getBoundingClientRect().top, start: performance.now() };
-      requestAnimationFrame(follow);
+      requestAnimationFrame(function () {
+        putBack();
+        root.querySelectorAll('.faq__cat-item.is-instant').forEach(function (item) { item.classList.remove('is-instant'); });
+      });
     }, true);
-
-    ['wheel', 'touchstart', 'keydown'].forEach(function (type) {
-      window.addEventListener(type, release, { passive: true });
-    });
   })();
 </script>
 
