@@ -96,6 +96,8 @@
   #shopify-section-{{ section.id }} .recycling-panel__content {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    {%- comment -%}Phones: the text takes its own height and the illustration row takes all the rest, so it is centered vertically in it.{%- endcomment -%}
+    grid-template-rows: auto 1fr;
     gap: 2rem;
     padding: max(1.5rem, var(--container-gutter));
     min-width: 0;
@@ -260,6 +262,10 @@
       grid-template-columns: minmax(0, 1fr) auto;
     }
 
+    #shopify-section-{{ section.id }} .recycling-panel__stage {
+      align-self: end;
+    }
+
     #shopify-section-{{ section.id }} .recycling-panel__image--mobile {
       display: none;
     }
@@ -275,6 +281,7 @@
     }
 
     #shopify-section-{{ section.id }} .recycling-panel__content {
+      grid-template-rows: auto;
       grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
       gap: 3rem;
       align-items: stretch;
