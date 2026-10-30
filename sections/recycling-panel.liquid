@@ -9,12 +9,17 @@
   # Built-in drawing: the bottle (144 x 347 units) and the box are drawn twice - side by side (desktop) and stacked (phones) -
   # so the figure's ratio and the center of every part (as % of the drawing) are different at each breakpoint.
   assign box_scale = section.settings.box_scale | divided_by: 100.0
-  assign bw = 200 | times: box_scale | round: 1
-  assign bh = 240 | times: box_scale | round: 1
+  assign bw = 150 | times: box_scale | round: 1
+  assign bh = 390 | times: box_scale | round: 1
   assign gap = 40
 
   assign vbw_d = 184 | plus: bw
+  # The box is taller than the bottle with its cap (347): when it is, the drawing grows to the box and the bottle sits on the same baseline.
   assign vbh_d = 347.0
+  if bh > 347
+    assign vbh_d = bh | times: 1.0
+  endif
+  assign bottle_dy = vbh_d | minus: 347
   assign box_y_d = vbh_d | minus: bh
 
   assign vbw_m = bw
@@ -43,8 +48,8 @@
   assign am_body_y = 215 | divided_by: vbh_m | times: 100 | round: 2
   assign am_box_y = bh | divided_by: 2.0 | plus: box_y_m | divided_by: vbh_m | times: 100 | round: 2
   assign ad_cap_x = 72 | divided_by: vbw_d | times: 100 | round: 2
-  assign ad_cap_y = 37.5 | divided_by: vbh_d | times: 100 | round: 2
-  assign ad_body_y = 215 | divided_by: vbh_d | times: 100 | round: 2
+  assign ad_cap_y = 37.5 | plus: bottle_dy | divided_by: vbh_d | times: 100 | round: 2
+  assign ad_body_y = 215 | plus: bottle_dy | divided_by: vbh_d | times: 100 | round: 2
   assign ad_box_x = bw | divided_by: 2.0 | plus: 184 | divided_by: vbw_d | times: 100 | round: 2
   assign ad_box_y = bh | divided_by: 2.0 | plus: box_y_d | divided_by: vbh_d | times: 100 | round: 2
 -%}
@@ -335,7 +340,7 @@
                 <rect class="recycling-art__box" x="{{ box_x_m }}" y="{{ box_y_m }}" width="{{ bw }}" height="{{ bh }}" rx="12"/>
               </svg>
               <svg class="recycling-panel__image recycling-panel__image--desktop" viewBox="0 0 {{ vbw_d }} {{ vbh_d }}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-                <g>{% render 'recycling-bottle', logo: section.settings.logo_text %}</g>
+                <g transform="translate(0 {{ bottle_dy }})">{% render 'recycling-bottle', logo: section.settings.logo_text %}</g>
                 <rect class="recycling-art__box" x="184" y="{{ box_y_d }}" width="{{ bw }}" height="{{ bh }}" rx="12"/>
               </svg>
             {%- elsif image != blank -%}
@@ -539,7 +544,7 @@
       "step": 5,
       "unit": "%",
       "label": "Box size",
-      "info": "Scales the box next to the bottle.",
+      "info": "Scales the box next to the bottle. At 100% the box is taller than the bottle with its cap, and narrower.",
       "default": 100,
       "visible_if": "{{ section.settings.illustration == 'built_in' }}"
     },
