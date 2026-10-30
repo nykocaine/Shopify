@@ -1685,6 +1685,53 @@
 {%- endif -%}
 
 {%- comment -%}
+Keeps what the visitor taps where it is. Opening a question or a category closes the ones that were open above it (and tabs swap panels of
+different heights), so everything below slides up and the tapped row jumped away from under the finger. For a moment after the tap, the page is
+scrolled by exactly the distance the tapped row moved, so it stays at the same place on the screen (browsers that anchor the scroll themselves
+leave nothing to correct). It lets go as soon as the visitor scrolls, and does nothing when the row is not visible.
+{%- endcomment -%}
+<script>
+  (function () {
+    var key = '{{ section.id }}';
+    window.__faqAnchorLock = window.__faqAnchorLock || {};
+    if (window.__faqAnchorLock[key]) return;
+    window.__faqAnchorLock[key] = true;
+
+    {%- comment -%}Longer than the slowest transition involved (accordion rows, tab panels): the page keeps settling a bit after the tap.{%- endcomment -%}
+    var HOLD_MS = 700;
+    var lock = null;
+
+    function release() { lock = null; }
+
+    function follow(now) {
+      if (!lock) return;
+
+      if (lock.element.isConnected && lock.element.getClientRects().length) {
+        var delta = lock.element.getBoundingClientRect().top - lock.top;
+        if (Math.abs(delta) > 0.5) window.scrollBy({ top: delta, left: 0, behavior: 'instant' });
+      }
+
+      if (now - lock.start < HOLD_MS) requestAnimationFrame(follow);
+      else release();
+    }
+
+    {%- comment -%}Capture phase: the position is read before any handler of the tapped element changes the layout.{%- endcomment -%}
+    document.addEventListener('click', function (event) {
+      var root = document.getElementById('shopify-section-' + key);
+      var element = root && event.target.closest && event.target.closest('.accordion__summary, .faq__cat-summary, [slot="tab"]');
+      if (!element || !root.contains(element) || element.getClientRects().length === 0) return;
+
+      lock = { element: element, top: element.getBoundingClientRect().top, start: performance.now() };
+      requestAnimationFrame(follow);
+    }, true);
+
+    ['wheel', 'touchstart', 'keydown'].forEach(function (type) {
+      window.addEventListener(type, release, { passive: true });
+    });
+  })();
+</script>
+
+{%- comment -%}
 Links to a category: the page's address can end in #<category title as a handle> (eg. /pages/faq#pedidos-envios-y-pagos, each tab carries it in
 data-anchor). On load, and whenever the hash changes, the matching tab is selected (the same click a visitor would make) and the page scrolls to the
 category bar, under the sticky header. That is what the footer's Help links use. An unknown hash does nothing.
