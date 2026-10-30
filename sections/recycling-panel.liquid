@@ -1,6 +1,12 @@
 {%- liquid
   assign text_alignment_class = section.settings.text_alignment | replace: 'left', 'start' | replace: 'right', 'end'
   assign image = section.settings.image
+  assign has_left = false
+  for block in section.blocks
+    if block.settings.side == 'left'
+      assign has_left = true
+    endif
+  endfor
   assign built_in = false
   if section.settings.illustration == 'built_in'
     assign built_in = true
@@ -80,9 +86,9 @@
     --recycling-outline: {{ section.settings.outline_color.rgb }};
     --recycling-outline-width: {{ section.settings.outline_width }}px;
     --recycling-image-width: {{ section.settings.mobile_image_width }}cqw;
-    --recycling-image-offset: {{ section.settings.mobile_image_offset }}cqw;
     --recycling-max-height: {{ section.settings.mobile_image_max_height }}px;
-    --recycling-room: 10rem;
+    --recycling-room-l: 0px;
+    --recycling-room-r: min(10rem, 48cqw);
   }
 
   {%- comment -%}
@@ -131,11 +137,12 @@
 
   #shopify-section-{{ section.id }} .recycling-panel__grid {
     {%- comment -%}
-    Whatever width / offset are set, the right column keeps at least --recycling-room for the label texts: the offset and the
-    illustration width are clamped to what is left, so the texts always have room to wrap inside the card instead of being squeezed.
+    Automatic fit: the label texts get a fixed room on their side (left only when some label sits on the left; phones never),
+    the illustration is as wide as the width setting allows within what is left, and it is centered in that remaining space.
     {%- endcomment -%}
-    --recycling-io: min(var(--recycling-image-offset), calc(100cqw - var(--recycling-room) - 3rem));
-    --recycling-fw: max(3rem, min(var(--recycling-image-width), calc(var(--recycling-max-height) * var(--recycling-ratio)), calc(100cqw - var(--recycling-io) - var(--recycling-room))));
+    --recycling-avail: calc(100cqw - var(--recycling-room-l) - var(--recycling-room-r));
+    --recycling-fw: max(3rem, min(var(--recycling-image-width), calc(var(--recycling-max-height) * var(--recycling-ratio)), var(--recycling-avail)));
+    --recycling-io: max(var(--recycling-room-l), calc(var(--recycling-room-l) + (var(--recycling-avail) - var(--recycling-fw)) / 2));
     --recycling-fh: calc(var(--recycling-fw) / var(--recycling-ratio));
     display: grid;
     grid-template-columns: var(--recycling-io) var(--recycling-fw) minmax(0, 1fr);
@@ -250,9 +257,9 @@
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} {
       --recycling-image-width: {{ section.settings.image_width }}cqw;
-      --recycling-image-offset: {{ section.settings.image_offset }}cqw;
       --recycling-max-height: {{ section.settings.image_max_height }}px;
-      --recycling-room: 12rem;
+      --recycling-room-l: {% if has_left %}min(12rem, 30cqw){% else %}0px{% endif %};
+      --recycling-room-r: min(12rem, 30cqw);
       --recycling-ratio: {{ ratio_desktop }};
     }
 
@@ -552,19 +559,8 @@
       "step": 1,
       "unit": "%",
       "label": "Illustration width (desktop)",
-      "info": "Share of the illustration area. What is left on each side is the room for the labels.",
+      "info": "Share of the width of the illustration area. It is centered automatically and always leaves room for the labels.",
       "default": 12
-    },
-    {
-      "type": "range",
-      "id": "image_offset",
-      "min": 0,
-      "max": 60,
-      "step": 1,
-      "unit": "%",
-      "label": "Space to the left (desktop)",
-      "info": "Room for left-side labels. The remainder on the right is for right-side labels.",
-      "default": 40
     },
     {
       "type": "range",
@@ -586,17 +582,6 @@
       "unit": "%",
       "label": "Illustration width (mobile)",
       "default": 18
-    },
-    {
-      "type": "range",
-      "id": "mobile_image_offset",
-      "min": 0,
-      "max": 40,
-      "step": 1,
-      "unit": "%",
-      "label": "Space to the left (mobile)",
-      "info": "On phones every label goes to the right of the illustration, in the room left after width and left space.",
-      "default": 8
     },
     {
       "type": "range",
