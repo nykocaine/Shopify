@@ -162,6 +162,11 @@
     display: none;
   }
 
+  {%- comment -%}The outline is centered on the edge of each shape, so half of it falls outside the drawing's box: let it show instead of being clipped.{%- endcomment -%}
+  #shopify-section-{{ section.id }} svg.recycling-panel__image {
+    overflow: visible;
+  }
+
   #shopify-section-{{ section.id }} .recycling-art__bottle { fill: rgb(var(--recycling-bottle)); }
   #shopify-section-{{ section.id }} .recycling-art__cap { fill: rgb(var(--recycling-cap)); }
   #shopify-section-{{ section.id }} .recycling-art__box { fill: rgb(var(--recycling-box)); }
@@ -169,6 +174,7 @@
     fill: none;
     stroke: rgb(var(--recycling-ridge));
     stroke-width: 1.2px;
+    stroke-linecap: round;
     vector-effect: non-scaling-stroke;
   }
 
@@ -183,6 +189,8 @@
   #shopify-section-{{ section.id }} .recycling-art__box {
     stroke: rgb(var(--recycling-outline));
     stroke-width: var(--recycling-outline-width);
+    stroke-linejoin: round;
+    stroke-linecap: round;
     vector-effect: non-scaling-stroke;
   }
 
