@@ -78,8 +78,6 @@
     --recycling-cap: {{ section.settings.cap_color.rgb }};
     --recycling-box: {{ section.settings.box_color.rgb }};
     --recycling-outline: {{ section.settings.outline_color.rgb }};
-    --recycling-ridge: {{ section.settings.ridge_color.rgb }};
-    --recycling-logo: {{ section.settings.logo_color.rgb }};
     --recycling-outline-width: {{ section.settings.outline_width }}px;
     --recycling-image-width: {{ section.settings.mobile_image_width }}cqw;
     --recycling-image-offset: {{ section.settings.mobile_image_offset }}cqw;
@@ -170,19 +168,6 @@
   #shopify-section-{{ section.id }} .recycling-art__bottle { fill: rgb(var(--recycling-bottle)); }
   #shopify-section-{{ section.id }} .recycling-art__cap { fill: rgb(var(--recycling-cap)); }
   #shopify-section-{{ section.id }} .recycling-art__box { fill: rgb(var(--recycling-box)); }
-  #shopify-section-{{ section.id }} .recycling-art__ridges path {
-    fill: none;
-    stroke: rgb(var(--recycling-ridge));
-    stroke-width: 1.2px;
-    stroke-linecap: round;
-    vector-effect: non-scaling-stroke;
-  }
-
-  #shopify-section-{{ section.id }} .recycling-art__logo {
-    fill: rgb(var(--recycling-logo));
-    font-family: var(--heading-font-family);
-    font-weight: 700;
-  }
 
   #shopify-section-{{ section.id }} .recycling-art__bottle,
   #shopify-section-{{ section.id }} .recycling-art__cap,
@@ -344,11 +329,11 @@
           <div class="recycling-panel__figure">
             {%- if built_in -%}
               <svg class="recycling-panel__image recycling-panel__image--mobile" viewBox="0 0 {{ vbw_m }} {{ vbh_m }}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-                <g transform="translate({{ bx_m }} 0)">{% render 'recycling-bottle', logo: section.settings.logo_text %}</g>
+                <g transform="translate({{ bx_m }} 0)">{% render 'recycling-bottle' %}</g>
                 <rect class="recycling-art__box" x="{{ box_x_m }}" y="{{ box_y_m }}" width="{{ bw }}" height="{{ bh }}" rx="12"/>
               </svg>
               <svg class="recycling-panel__image recycling-panel__image--desktop" viewBox="0 0 {{ vbw_d }} {{ vbh_d }}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-                <g transform="translate(0 {{ bottle_dy }})">{% render 'recycling-bottle', logo: section.settings.logo_text %}</g>
+                <g transform="translate(0 {{ bottle_dy }})">{% render 'recycling-bottle' %}</g>
                 <rect class="recycling-art__box" x="184" y="{{ box_y_d }}" width="{{ bw }}" height="{{ bh }}" rx="12"/>
               </svg>
             {%- elsif image != blank -%}
@@ -520,28 +505,6 @@
       "id": "box_color",
       "label": "Box color",
       "default": "#e5be6c",
-      "visible_if": "{{ section.settings.illustration == 'built_in' }}"
-    },
-    {
-      "type": "color",
-      "id": "ridge_color",
-      "label": "Cap lines color",
-      "default": "#e9b7c6",
-      "visible_if": "{{ section.settings.illustration == 'built_in' }}"
-    },
-    {
-      "type": "text",
-      "id": "logo_text",
-      "label": "Bottle text",
-      "info": "Written on the bottle, turned upwards. Leave empty for none.",
-      "default": "soen.",
-      "visible_if": "{{ section.settings.illustration == 'built_in' }}"
-    },
-    {
-      "type": "color",
-      "id": "logo_color",
-      "label": "Bottle text color",
-      "default": "#ffffff",
       "visible_if": "{{ section.settings.illustration == 'built_in' }}"
     },
     {
