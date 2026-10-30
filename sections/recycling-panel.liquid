@@ -79,6 +79,7 @@
     --recycling-tab-bg: {{ section.settings.tab_background.rgb }};
     --recycling-tab-text: {{ section.settings.tab_text_color.rgb }};
     --recycling-tab-weight: {{ section.settings.tab_font_weight }};
+    --recycling-radius: {{ section.settings.corner_radius }}px;
     --recycling-ratio: {{ ratio_mobile }};
     --recycling-bottle: {{ section.settings.bottle_color.rgb }};
     --recycling-cap: {{ section.settings.cap_color.rgb }};
@@ -95,11 +96,19 @@
   Two independent boxes: __content (left / top, holds all the information) and __tab (right / bottom). __content carries the
   theme's normal inner padding (same value .content-box uses) on all four sides and clips whatever is inside it.
   {%- endcomment -%}
+  {%- comment -%}
+  The panel is the dark box (the tab's color) and the content card sits on top of it with its own rounded corners, so the tab
+  shows through behind them: the tab slides under the card by one corner radius (negative margin + extra padding).
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .recycling-panel {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    border-radius: {{ section.settings.corner_radius }}px;
+    border-radius: var(--recycling-radius);
     overflow: hidden;
+  }
+
+  #shopify-section-{{ section.id }} .recycling-panel--has-tab {
+    background: rgb(var(--recycling-tab-bg));
   }
 
   #shopify-section-{{ section.id }} .recycling-panel__content {
@@ -111,6 +120,9 @@
     padding: max(1.5rem, var(--container-gutter));
     min-width: 0;
     overflow: clip;
+    position: relative;
+    z-index: 1;
+    border-radius: var(--recycling-radius);
   }
 
   #shopify-section-{{ section.id }} .recycling-panel__text {
@@ -245,8 +257,8 @@
   #shopify-section-{{ section.id }} .recycling-panel__tab {
     display: flex;
     align-items: center;
-    padding: 1.25rem max(1.5rem, var(--container-gutter));
-    background: rgb(var(--recycling-tab-bg));
+    margin-block-start: calc(-1 * var(--recycling-radius));
+    padding: calc(1.25rem + var(--recycling-radius)) max(1.5rem, var(--container-gutter)) 1.25rem;
     color: rgb(var(--recycling-tab-text));
     font-family: var(--heading-font-family);
     font-weight: var(--recycling-tab-weight);
@@ -293,11 +305,16 @@
     }
 
     #shopify-section-{{ section.id }} .recycling-panel__tab {
+      align-items: flex-end;
+      margin-block-start: 0;
+      margin-inline-start: calc(-1 * var(--recycling-radius));
+      padding: max(1.5rem, var(--container-gutter)) 1.25rem max(1.5rem, var(--container-gutter)) calc(1.25rem + var(--recycling-radius));
+      font-size: 2.5rem;
+    }
+
+    #shopify-section-{{ section.id }} .recycling-panel__tab-text {
       writing-mode: vertical-rl;
       transform: rotate(180deg);
-      justify-content: flex-start;
-      padding: max(1.5rem, var(--container-gutter)) 1.25rem;
-      font-size: 2.5rem;
     }
 
     #shopify-section-{{ section.id }} .recycling-label__text--right.recycling-label__text--of-left {
@@ -320,8 +337,8 @@
 </style>
 
 <div class="container section-spacing">
-  <div class="recycling-panel color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
-    <div class="recycling-panel__content min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
+  <div class="recycling-panel{% if section.settings.tab_text != blank %} recycling-panel--has-tab{% endif %}">
+    <div class="recycling-panel__content color-scheme color-scheme--{{ section.settings.color_scheme.id }} min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
       <div class="recycling-panel__text prose text-{{ text_alignment_class }}">
         {%- if section.settings.title != blank -%}
           <{{ section.settings.heading_tag }} class="h2">{{ section.settings.title }}</{{ section.settings.heading_tag }}>
@@ -387,7 +404,7 @@
     </div>
 
     {%- if section.settings.tab_text != blank -%}
-      <div class="recycling-panel__tab">{{ section.settings.tab_text }}</div>
+      <div class="recycling-panel__tab"><span class="recycling-panel__tab-text">{{ section.settings.tab_text }}</span></div>
     {%- endif -%}
   </div>
 </div>
