@@ -97,6 +97,70 @@
     {%- endif -%}
   {%- endif -%}
 
+  {%- comment -%}
+  Quick links: outline buttons on one row below the toolbar (markup in snippets/collection-toolbar.liquid). Same side margin as the product grid. Phones: the row
+  scrolls sideways, bleeding to the screen edges; from 700px it wraps. The current page is filled with the scheme's primary button colors; every color comes from
+  the section's color scheme.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .collection__quick-links {
+    padding-inline: var(--container-gutter);
+    padding-block-end: var(--container-gutter);
+  }
+
+  #shopify-section-{{ section.id }} .collection__toolbar:not(.section-floating) + .collection__quick-links {
+    padding-block-start: var(--container-gutter);
+  }
+
+  #shopify-section-{{ section.id }} .collection__quick-links-list {
+    display: flex;
+    gap: 0.75rem;
+    margin-inline: calc(-1 * var(--container-gutter));
+    padding: 2px var(--container-gutter);
+    overflow-x: auto;
+    scroll-padding-inline: var(--container-gutter);
+    scrollbar-width: none;
+  }
+
+  #shopify-section-{{ section.id }} .collection__quick-links-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  #shopify-section-{{ section.id }} .collection__quick-link {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    color: rgb(var(--text-color));
+    background: none;
+    border: 1px solid rgb(var(--text-color));
+    border-radius: 999px;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  #shopify-section-{{ section.id }} .collection__quick-link.is-current {
+    color: rgb(var(--button-text-primary));
+    background-color: rgb(var(--button-background-primary));
+    border-color: rgb(var(--button-background-primary));
+  }
+
+  @media screen and (pointer: fine) {
+    #shopify-section-{{ section.id }} .collection__quick-link:not(.is-current):hover {
+      background-color: rgb(var(--text-color) / 0.08);
+    }
+  }
+
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .collection__quick-links-list {
+      flex-wrap: wrap;
+      margin-inline: 0;
+      padding-inline: 0;
+      overflow: visible;
+    }
+  }
+
   #shopify-section-{{ section.id }} .product-list .product-list__promo {
     display: flex;
     flex-direction: column;

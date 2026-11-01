@@ -37,46 +37,7 @@ access to filters.
     {%- render 'collection-faceting-button', data_source: toolbar_source, filter_layout: toolbar_filter_layout, show_count: true, class: 'sm:hidden', context: 'mobile' -%}
   {%- endif -%}
 
-  {%- if section.settings.quick_links_menu.links.size > 0 -%}
-    {%- assign menu = section.settings.quick_links_menu -%}
-    
-    <div class="collection__toolbar-linklist md-max:hidden">
-      {%- for link in menu.links -%}
-        <a href="{{ link.url }}" class="subheading {% if link.current %}link{% else %}link-reversed{% endif %}">{{ link.title }}</a>
-      {%- endfor -%}
-    </div>
-  {%- endif -%}
-
   <div class="vertically-separated-list">
-    {%- if section.settings.quick_links_menu.links.size > 0 -%}
-      {%- assign menu = section.settings.quick_links_menu -%}
-  
-      <div class="md:hidden">
-        {%- assign selected_link = menu.links | where: 'current' | first -%}
-  
-        <button type="button" class="h-stack gap-2" aria-controls="collection-toolbar-quick-links" aria-expanded="false">
-          <span class="subheading">{{ selected_link.title | default: menu.links.first.title }}</span>
-          {%- render 'icon' with 'chevron-down' -%}
-        </button>
-  
-        <x-popover id="collection-toolbar-quick-links" class="popover color-scheme color-scheme--{{ settings.default_color_scheme.id }}" role="dialog">
-          <p slot="header" class="subheading">{{ 'collection.quick_links.navigate_to' | t }}</p>
-  
-          <div class="popover__value-list">
-            {%- for link in menu.links -%}
-              <a href="{{ link.url }}" class="popover__value-option subheading">
-                {{- link.title -}}
-  
-                {%- if link.current -%}
-                  {%- render 'icon' with 'success-checkmark', width: 10 -%}
-                {%- endif -%}
-              </a>
-            {%- endfor -%}
-          </div>
-        </x-popover>
-      </div>
-    {%- endif -%}
-
     {%- if section.settings.show_product_card_size_selector -%}
       {%- comment -%}
       Phones: two layouts only - two cards per row, or one card per row (one below the other). The three-per-row layout is not offered; a visitor who
@@ -128,3 +89,31 @@ access to filters.
     {%- endif -%}
   </div>
 </div>
+
+{%- comment -%}
+Quick links: a row of outline buttons right below the toolbar, on every screen size (it scrolls sideways when it does not fit). The current page is the filled one.
+Styles live in sections/main-collection.liquid. The menu is the section's "Quick links" setting.
+{%- endcomment -%}
+{%- if section.settings.quick_links_menu.links.size > 0 -%}
+  {%- assign menu = section.settings.quick_links_menu -%}
+
+  <nav class="collection__quick-links color-scheme color-scheme--{{ section.settings.color_scheme.id }}" aria-label="{{ menu.title | escape }}">
+    <div class="collection__quick-links-list">
+      {%- for link in menu.links -%}
+        <a href="{{ link.url }}" class="collection__quick-link subheading{% if link.current %} is-current{% endif %}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
+      {%- endfor -%}
+    </div>
+  </nav>
+
+  <script>
+    (function () {
+      var script = document.currentScript;
+      var list = script && script.previousElementSibling && script.previousElementSibling.querySelector('.collection__quick-links-list');
+      var current = list && list.querySelector('.is-current');
+      if (!current || list.scrollWidth <= list.clientWidth) return;
+
+      {%- comment -%}Sideways row (phones): the current button starts in the middle of the row, not hidden past the edge.{%- endcomment -%}
+      list.scrollLeft = current.offsetLeft - (list.clientWidth - current.offsetWidth) / 2;
+    })();
+  </script>
+{%- endif -%}
