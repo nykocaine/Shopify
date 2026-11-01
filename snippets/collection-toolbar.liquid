@@ -91,7 +91,7 @@ access to filters.
 </div>
 
 {%- comment -%}
-Quick links: a row of outline buttons right below the toolbar, on every screen size (it scrolls sideways when it does not fit). The current page is the filled one.
+Quick links: a row of the theme's buttons right below the toolbar, on every screen size (it scrolls sideways when it does not fit). The current page is the solid one, the others are outline.
 Styles live in sections/main-collection.liquid. The menu is the section's "Quick links" setting.
 {%- endcomment -%}
 {%- if section.settings.quick_links_menu.links.size > 0 -%}
@@ -100,7 +100,15 @@ Styles live in sections/main-collection.liquid. The menu is the section's "Quick
   <nav class="collection__quick-links color-scheme color-scheme--{{ section.settings.color_scheme.id }}" aria-label="{{ menu.title | escape }}">
     <div class="collection__quick-links-list">
       {%- for link in menu.links -%}
-        <a href="{{ link.url }}" class="collection__quick-link subheading{% if link.current %} is-current{% endif %}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
+        {%- comment -%}The theme's own buttons (snippets/button.liquid): outline for the other pages, solid for the current one. Height, typography and radius are theirs.{%- endcomment -%}
+        {%- if link.current -%}
+          {%- capture quick_link -%}
+            {%- render 'button', content: link.title, href: link.url, class: 'collection__quick-link is-current' -%}
+          {%- endcapture -%}
+          {{- quick_link | replace_first: '<a ', '<a aria-current="page" ' -}}
+        {%- else -%}
+          {%- render 'button', content: link.title, href: link.url, style: 'outline', class: 'collection__quick-link' -%}
+        {%- endif -%}
       {%- endfor -%}
     </div>
   </nav>

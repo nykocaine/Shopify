@@ -99,8 +99,8 @@
 
   {%- comment -%}
   Quick links: outline buttons on one row below the toolbar (markup in snippets/collection-toolbar.liquid). Same side margin as the product grid. Phones: the row
-  scrolls sideways, bleeding to the screen edges; from 700px it wraps. The current page is filled with the scheme's primary button colors; every color comes from
-  the section's color scheme.
+  scrolls sideways, bleeding to the screen edges; from 700px it wraps. The buttons are the theme's own (snippets/button.liquid): outline, and solid for the
+  current page, so height, typography, radius and colors are the ones of every other button.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .collection__quick-links {
     padding-inline: var(--container-gutter);
@@ -125,31 +125,10 @@
     display: none;
   }
 
+  {%- comment -%}The buttons are the theme's own (outline / solid): only the row's behavior is set here.{%- endcomment -%}
   #shopify-section-{{ section.id }} .collection__quick-link {
     flex: none;
-    display: inline-flex;
-    align-items: center;
-    padding: 0.75rem 1.5rem;
-    color: rgb(var(--text-color));
-    background: none;
-    border: 1px solid rgb(var(--text-color));
-    border-radius: 999px;
-    line-height: 1.2;
     white-space: nowrap;
-    text-decoration: none;
-    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
-  }
-
-  #shopify-section-{{ section.id }} .collection__quick-link.is-current {
-    color: rgb(var(--button-text-primary));
-    background-color: rgb(var(--button-background-primary));
-    border-color: rgb(var(--button-background-primary));
-  }
-
-  @media screen and (pointer: fine) {
-    #shopify-section-{{ section.id }} .collection__quick-link:not(.is-current):hover {
-      background-color: rgb(var(--text-color) / 0.08);
-    }
   }
 
   @media screen and (min-width: 700px) {
