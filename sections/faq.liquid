@@ -332,6 +332,7 @@
         --faq-box-background: #ffffff;
         --faq-box-padding-inline: 1.25rem;
         --faq-cat-gap: 0.75rem;
+        --faq-block-gap: 1.5rem;
         --faq-motion-duration: 0.3s;
         --faq-motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
       }
@@ -795,6 +796,17 @@
             overflow: hidden;
           }
 
+          {%- comment -%}
+          Below an open category the next row sits at the same distance as the parts of a block sit from each other (text card, gallery, bar: --faq-block-gap),
+          not just the distance between closed rows. The rest of that distance (the row gap already adds --faq-cat-gap) is content of the panel, not padding or a
+          margin, so it folds away with the panel when the category closes and the page does not jump.
+          {%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__cat-body > .faq__panel::after {
+            content: "";
+            display: block;
+            height: calc(var(--faq-block-gap) - var(--faq-cat-gap));
+          }
+
           #shopify-section-{{ section.id }} .faq__panel > .faq__columns:first-child,
           #shopify-section-{{ section.id }} .faq__panel > .faq__text-image:first-child .faq__text-image-text {
             border-start-start-radius: {{ section.settings.faq_border_radius }}px !important;
@@ -1054,7 +1066,7 @@
       nothing here needs to size or round it.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__text-image {
-        gap: 1.5rem;
+        gap: var(--faq-block-gap);
         display: grid;
       }
 
