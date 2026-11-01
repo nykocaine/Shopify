@@ -253,28 +253,18 @@ the first available one); the click is handled by the script near the lightbox b
                   }
 
                   {%- comment -%}
-                  Confirmation: the bag pops (same bounce as the heart) and its plus turns into a check that draws itself. The lightbox
-                  stays open for a beat so it is seen, then it closes and the cart opens on a clear page instead of behind it.
+                  The video popup (lightbox) is closed immediately after the item is added, so the cart opens on a clear page
+                  instead of behind it.
                   {%- endcomment -%}
-                  button.classList.add('is-added');
-
                   if (window.themeVariables && themeVariables.strings.addedToCart) {
                     button.querySelector('.sr-only').textContent = themeVariables.strings.addedToCart.replace('{' + '{product_title}}', ((added.items || [added])[0] || {}).title || '');
                   }
-
-                  await new Promise(function (resolve) {
-                    setTimeout(resolve, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 250 : 800);
-                  });
 
                   var closeButton = lightbox.querySelector('.media-lightbox__close');
 
                   if (closeButton) {
                     closeButton.click();
                   }
-
-                  setTimeout(function () {
-                    button.classList.remove('is-added');
-                  }, 700);
 
                   if (window.themeVariables && themeVariables.settings.cartType === 'page') {
                     window.location.href = root + 'cart';
