@@ -6015,7 +6015,9 @@ var Header = class extends HTMLElement {
       if (isScrolled !== this.classList.contains("is-scrolled")) {
         this.classList.toggle("is-scrolled", isScrolled);
         if (!isScrolled) {
+          this.updateFlushState();
           requestAnimationFrame(() => this.updateFlushState());
+          this.scheduleFlushRecheck();
         }
       }
     };
@@ -6035,10 +6037,25 @@ var Header = class extends HTMLElement {
     }
     document.addEventListener("shopify:section:load", () => this.updateFlushState(), flushSignal);
     document.addEventListener("shopify:section:unload", () => this.updateFlushState(), flushSignal);
+    this.closest(".shopify-section")?.addEventListener("transitionend", (event) => {
+      if (event.propertyName === "transform") this.updateFlushState();
+    }, flushSignal);
   }
   disconnectedCallback() {
     __privateGet(this, _abortController11).abort();
     this._flushObserver?.disconnect();
+    clearTimeout(this._flushRecheckTimer);
+  }
+  /**
+   * Back at the top of the page the header may still be sliding in (hide on scroll) and the layout may still be settling, so one measure can read a
+   * position that is a moment old. Measure again a little later, and once more after the slide, so the state always ends up right.
+   */
+  scheduleFlushRecheck() {
+    clearTimeout(this._flushRecheckTimer);
+    this._flushRecheckTimer = setTimeout(() => {
+      this.updateFlushState();
+      this._flushRecheckTimer = setTimeout(() => this.updateFlushState(), 800);
+    }, 120);
   }
   /**
    * Marks the header as "flush" (.is-flush) when what sits under it starts exactly where the header ends: no gap, no margin
@@ -6047,11 +6064,12 @@ var Header = class extends HTMLElement {
    * each breakpoint by itself: the same page can be flush on a phone and spaced on a desktop. What is measured is the first
    * visible block of the first section (its floating card / color-scheme wrapper, or a transparent-header block), skipping sections that take no space, since the
    * section wrapper itself can include the outer margin or not depending on the section. Re-measured when the viewport or
-   * the header / first section change size, when fonts load and when the page comes back to the top. Only measured near
-   * the top of the page, where the header is not stuck or slid away.
+   * the header / first section change size, when fonts load, when the header finishes sliding and when the page comes back to the top. Only measured at
+   * the top of the page, where the header is not stuck. The hide-on-scroll slide is taken out of the measure (the header may be mid-slide, or fully hidden,
+   * while the page is at the top), so what is measured is where it sits in the layout.
    */
   updateFlushState() {
-    if (window.scrollY > 2 || this.classList.contains("is-hidden")) {
+    if (window.scrollY > 2) {
       return;
     }
     const firstSection = Array.from(document.querySelectorAll("main > .shopify-section")).find((section) => section.getBoundingClientRect().height > 0);
@@ -6059,8 +6077,16 @@ var Header = class extends HTMLElement {
       return;
     }
     const target = firstSection.querySelector(".section-floating, .color-scheme, [allow-transparent-header]") ?? firstSection;
-    const gap = target.getBoundingClientRect().top - this.getBoundingClientRect().bottom;
-    this.classList.toggle("is-flush", gap <= 1);
+    let slide = 0;
+    const headerSection = this.closest(".shopify-section");
+    if (headerSection) {
+      const transform = getComputedStyle(headerSection).transform;
+      if (transform && transform !== "none") {
+        slide = new DOMMatrixReadOnly(transform).m42;
+      }
+    }
+    const gap = target.getBoundingClientRect().top - (this.getBoundingClientRect().bottom - slide);
+    this.classList.toggle("is-flush", gap <= 2);
   }
 };
 _headerTrackerIntersectionObserver = new WeakMap();
