@@ -720,6 +720,23 @@ if (!window.customElements.get('read-more-match-height')) {
 
         {%- endif -%}
 
+        {%- comment -%}
+        The "Small" size of this block is taller than the theme's own min-h-sm (assets/theme.css, shared with other sections - which keep theirs): about
+        halfway between the theme's Small and Medium. Phones (up to 999px) read the Mobile block size, from 1000px the Block size; scoped to this block
+        (the id) and to its own breakpoints so the other sizes keep winning where they apply.
+        {%- endcomment -%}
+        @media screen and (max-width: 999px) {
+          #{{ media_wrapper_id }} .content-box.min-h-sm {
+            min-height: clamp(17.5rem, 40vmax, 30rem);
+          }
+        }
+
+        @media screen and (min-width: 1000px) {
+          #{{ media_wrapper_id }} .content-box.md\:min-h-sm {
+            min-height: clamp(17.5rem, 45vmax, 30rem);
+          }
+        }
+
         {%- if block.settings.block_size == 'auto' -%}
           {%- comment -%}
           theme.css's own desktop (1000px+) rule that makes a sized media item's background fill its
