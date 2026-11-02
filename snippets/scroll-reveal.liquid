@@ -42,11 +42,16 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-      var sections = Array.prototype.slice.call(document.querySelectorAll('main > .shopify-section')).slice(1);
+      var all = Array.prototype.slice.call(document.querySelectorAll('main > .shopify-section'));
+      var sections = all.slice(1);
 
       if (!sections.length) {
         return;
       }
+
+      // The first section is never hidden nor animated.
+      all[0].classList.add('sr-in');
+      all[0].style.animation = 'none';
 
       var observer = new IntersectionObserver(
         function (entries) {
