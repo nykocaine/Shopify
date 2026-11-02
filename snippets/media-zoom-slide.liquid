@@ -112,12 +112,26 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
     -%}
 
     {%- if show_lightbox_button -%}
-      <open-lightbox-button class="block{% if reveal_controls_on_tap %} carousel-video-controls--tap-to-reveal{% endif %}" aria-controls="{{ resolved_aria_controls_id }}" image-index="{{ lightbox_index | default: 0 }}">
-        <button type="button" class="product-zoom-button">
-          {%- render 'icon' with 'zoom-plus' -%}
-          <span class="product-zoom-button__label">{{ 'product.gallery.zoom' | t }}</span>
-        </button>
-      </open-lightbox-button>
+      {%- if video != blank -%}
+        {%- comment -%}
+        Videos: a round play button in the middle of the video (centered both ways) opens the zoom view. It takes the look of the global
+        round controls (Theme settings > Controls: size, shape, blur; color scheme: Controls), see .overlay-control in theme.css and
+        .video-open-button in snippets/media-zoom-style.liquid.
+        {%- endcomment -%}
+        <open-lightbox-button class="video-open-button" aria-controls="{{ resolved_aria_controls_id }}" image-index="{{ lightbox_index | default: 0 }}">
+          <button type="button" class="overlay-control">
+            <span class="sr-only">{{ 'product.gallery.zoom' | t }}</span>
+            {%- render 'icon' with 'slideshow-play' -%}
+          </button>
+        </open-lightbox-button>
+      {%- else -%}
+        <open-lightbox-button class="block{% if reveal_controls_on_tap %} carousel-video-controls--tap-to-reveal{% endif %}" aria-controls="{{ resolved_aria_controls_id }}" image-index="{{ lightbox_index | default: 0 }}">
+          <button type="button" class="product-zoom-button">
+            {%- render 'icon' with 'zoom-plus' -%}
+            <span class="product-zoom-button__label">{{ 'product.gallery.zoom' | t }}</span>
+          </button>
+        </open-lightbox-button>
+      {%- endif -%}
     {%- endif -%}
   </div>
 

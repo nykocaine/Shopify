@@ -648,6 +648,28 @@ media, and the media is never draggable as a native image.
 }
 
 {%- comment -%}
+The play button that opens the zoom view of a video (media-zoom-slide.liquid): covers the video's box and centers the round button on it,
+both ways. The wrapper lets clicks through (pointer-events: none) so only the button itself is a target, and it is hidden while the video
+is expanded in the zoom view.
+{%- endcomment -%}
+#{{ wrapper_id }} .video-open-button {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+#{{ wrapper_id }} .video-open-button .overlay-control {
+  pointer-events: auto;
+}
+
+#{{ wrapper_id }} .content-box:has(.is-lightbox-expanded) .video-open-button {
+  display: none;
+}
+
+{%- comment -%}
 product-zoom-button (theme.css) inherits currentColor and has a negative inset-inline-end meant to
 slightly overhang a card's edge - here it sits inside .content-box's own overflow: hidden, so that
 negative offset clips it off-center instead. Pinning both fixes it without touching the shared rule

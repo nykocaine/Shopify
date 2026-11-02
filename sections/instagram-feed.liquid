@@ -320,8 +320,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             pause or sound buttons (CSS below hides them). Pausing a video when it leaves the screen and starting it again every
             time it comes back is a rule for every autoplaying video of the theme (BaseMedia in assets/theme.js); a video only
             fetches data once the visitor is near it (preload none, see above), so only what is on screen costs anything.
-            On mobile the zoom button is always visible instead of revealed on tap: the tap-to-reveal class is dropped from
-            it here, while this script still runs before media-zoom-script.liquid reads that class.
             {%- endcomment -%}
             {%- comment -%}
             Loading cue: while a video has been asked to play but has no frames yet, its cell gets .is-video-loading, which shows a
@@ -426,12 +424,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
               render();
             });
-
-            if (window.matchMedia('(max-width: 699px)').matches) {
-              Array.prototype.forEach.call(carousel.querySelectorAll('open-lightbox-button.carousel-video-controls--tap-to-reveal'), function (element) {
-                element.classList.remove('carousel-video-controls--tap-to-reveal');
-              });
-            }
 
             {%- comment -%}
             <video-media autoplay> (assets/theme.js, BaseMedia#connectedCallback) only calls
@@ -1128,35 +1120,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       padding: 0;
     }
 
-    #shopify-section-{{ section.id }} .content-box:not(:has(.is-lightbox-expanded)) .product-zoom-button {
-      inset-block-end: 0.75rem;
-      inset-inline-end: 0.75rem;
-    }
-
-    #shopify-section-{{ section.id }} .content-box:not(:has(.is-lightbox-expanded)) .product-zoom-button .icon {
-      padding: 0;
-    }
   {%- endif -%}
-
-  {%- comment -%}
-  Desktop (mouse): the zoom button on the video thumbnails shows only while the cursor is over the video. The
-  hidden-until-tapped state lives on its wrapper (<open-lightbox-button class="carousel-video-controls--tap-to-reveal">,
-  visibility + opacity, toggled by a click in media-zoom-script.liquid), not on the button itself - so hover has to
-  reveal that wrapper, and the tap toggle is overridden here so it can't leave it stuck open or closed. Touch
-  devices keep the tap-to-reveal behavior. The expanded lightbox state is excluded.
-  {%- endcomment -%}
-  @media (hover: hover) and (pointer: fine) {
-    #shopify-section-{{ section.id }} .instagram-feed__video-cell .content-box:not(:has(.is-lightbox-expanded)) open-lightbox-button.carousel-video-controls--tap-to-reveal {
-      visibility: hidden;
-      opacity: 0;
-      transition: opacity .2s ease, visibility .2s ease;
-    }
-
-    #shopify-section-{{ section.id }} .instagram-feed__video-cell .content-box:not(:has(.is-lightbox-expanded)):hover open-lightbox-button.carousel-video-controls--tap-to-reveal {
-      visibility: visible;
-      opacity: 1;
-    }
-  }
 
   {%- comment -%}
   object-fit: cover/display: block for the image case come from the theme's global img rule, and
