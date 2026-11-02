@@ -539,7 +539,7 @@ if (!window.customElements.get('read-more-match-height')) {
                     {%- endif -%}
 
                     {%- if block.settings[ring_key] -%}
-                      <div class="faq__text-image-ring" style="--ring-x: {{ block.settings[ring_x_key] }}%; --ring-y: {{ block.settings[ring_y_key] }}%; --ring-size: {{ block.settings[ring_size_key] }}%;" aria-hidden="true"></div>
+                      <div class="faq__text-image-ring" style="--ring-x: {{ block.settings[ring_x_key] }}%; --ring-y: {{ block.settings[ring_y_key] }}%; --ring-size: {{ block.settings[ring_size_key] }}%;" aria-hidden="true"><svg viewBox="0 0 100 100" focusable="false"><circle cx="50" cy="50" r="50" pathLength="96" /></svg></div>
                     {%- endif -%}
 
                     {%- if slide_caption != blank -%}
@@ -587,7 +587,7 @@ if (!window.customElements.get('read-more-match-height')) {
               {%- endif -%}
 
               {%- if single_ring_style != blank -%}
-                <div class="faq__text-image-ring" style="{{ single_ring_style }}" aria-hidden="true"></div>
+                <div class="faq__text-image-ring" style="{{ single_ring_style }}" aria-hidden="true"><svg viewBox="0 0 100 100" focusable="false"><circle cx="50" cy="50" r="50" pathLength="96" /></svg></div>
               {%- endif -%}
 
               {%- if single_slide_caption != blank -%}
@@ -654,13 +654,25 @@ if (!window.customElements.get('read-more-match-height')) {
           pointer-events: none;
         }
 
-        #{{ media_wrapper_id }} .faq__text-image-ring::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          border: 1px dashed #fff;
-          border-radius: 50%;
+        {%- comment -%}
+        The circle is an SVG (not a CSS dashed border, whose dashes are as short as the line is thin: 1px of line gave tiny dots). Its stroke stays
+        1px (vector-effect: non-scaling-stroke) however big the circle is, while the dashes are set along the circle itself (pathLength 96: 16 dashes of 4
+        units with a gap of 2), so they are long and clear and always join up exactly at any size. Only the svg turns.
+        {%- endcomment -%}
+        #{{ media_wrapper_id }} .faq__text-image-ring svg {
+          display: block;
+          width: 100%;
+          height: 100%;
+          overflow: visible;
           animation: faq-ring-spin 24s linear infinite;
+        }
+
+        #{{ media_wrapper_id }} .faq__text-image-ring circle {
+          fill: none;
+          stroke: #fff;
+          stroke-width: 1px;
+          vector-effect: non-scaling-stroke;
+          stroke-dasharray: 4 2;
         }
 
         @keyframes faq-ring-spin {
@@ -668,7 +680,7 @@ if (!window.customElements.get('read-more-match-height')) {
         }
 
         @media (prefers-reduced-motion: reduce) {
-          #{{ media_wrapper_id }} .faq__text-image-ring::before {
+          #{{ media_wrapper_id }} .faq__text-image-ring svg {
             animation: none;
           }
         }
