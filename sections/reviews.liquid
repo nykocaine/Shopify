@@ -751,6 +751,29 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     border-block-end: none;
   }
 
+  {%- comment -%}
+  Desktop (750px and up): the review cards sit two per row, one beside the other (everything else in the section stays as it is). The card keeps its own
+  layout (person on the start side, the review next to it) with a narrower side so the text has room in the half-width column. Each row ends in its
+  hairline; the last row (one or two cards) has none. "Ver más" / "Ver menos" move two cards at a time here (script below), so the grid never has a hole.
+  {%- endcomment -%}
+  @media screen and (min-width: 750px) {
+    #shopify-section-{{ section.id }} .reviews__list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 3rem;
+      align-items: start;
+    }
+
+    #shopify-section-{{ section.id }} .review-card {
+      grid-template-columns: 10.5rem minmax(0, 1fr);
+      gap: 1.25rem;
+    }
+
+    #shopify-section-{{ section.id }} .review-card:nth-last-child(2):nth-child(odd) {
+      border-block-end: none;
+    }
+  }
+
   #shopify-section-{{ section.id }} .review-card__side {
     min-width: 0;
   }
@@ -1283,8 +1306,10 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     var sortSelect = root.querySelector('[data-reviews-sort]');
     var loadMoreButton = root.querySelector('.reviews__load-more-button');
     var loadLessButton = root.querySelector('.reviews__load-less-button');
-    var initialCount = 1;
-    var pageSize = 1;
+    {%- comment -%}Desktop shows the cards two per row (style above), so it starts with, and reveals, two at a time: no half-empty row{%- endcomment -%}
+    var columns = window.matchMedia('(min-width: 750px)').matches ? 2 : 1;
+    var initialCount = columns;
+    var pageSize = columns;
     var visibleCount = initialCount;
     var previousVisibleCount = initialCount;
 
