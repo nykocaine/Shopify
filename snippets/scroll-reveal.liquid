@@ -1,91 +1,150 @@
 {%- comment -%}
-  Scroll reveal: each section of <main> fades in while sliding up slightly the first time it enters the viewport.
+  Scroll reveal, element by element: headings, text, images and buttons inside every section of <main> fade in while
+  sliding up, the first time they enter the viewport. Elements that are on screen when the page loads come in one after
+  another (staggered); the rest do as they are scrolled into view.
 
-  - Sections are only hidden once the script has run (class "sr-ready" on <html>), so without JS everything stays visible.
-  - Disabled in the theme editor and for visitors who prefer reduced motion.
-  - The transform exists only while the animation runs (keyframes, no fill-mode "forwards"), so afterwards the section
-    has no transform and position: fixed / sticky descendants (lightboxes, sticky headers) keep working.
-  - Sections on screen at load animate in one after another; the rest animate as they are scrolled into view.
+  - Uses the Web Animations API: nothing is left behind once an animation ends (no transform, so position: fixed / sticky
+    descendants keep working).
+  - Skips what already has its own animation or must not move: [reveal-on-scroll] items (product cards, etc.), carousels,
+    sliders, marquees, modals, accordions, the header and footer (they are outside <main>).
+  - A section with nothing to animate inside is animated as a whole instead.
+  - Off in the theme editor and for visitors who prefer reduced motion. If anything goes wrong, content is shown.
 {%- endcomment -%}
-<style>
-  @media (prefers-reduced-motion: no-preference) {
-    html.sr-ready main > .shopify-section:not(.sr-in) {
-      opacity: 0;
-      transform: translateY(48px);
-    }
-
-    html.sr-ready main > .shopify-section.sr-in {
-      animation: sr-rise 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-    }
-
-    @keyframes sr-rise {
-      from {
-        opacity: 0;
-        transform: translateY(48px);
-      }
-
-      to {
-        opacity: 1;
-        transform: none;
-      }
-    }
-  }
-</style>
 <script>
   (function () {
     if (
       !('IntersectionObserver' in window) ||
+      !Element.prototype.animate ||
       (window.Shopify && Shopify.designMode) ||
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
     ) {
       return;
     }
 
-    var sections = Array.prototype.slice.call(document.querySelectorAll('main > .shopify-section'));
+    var DISTANCE = 40; // px of upward travel
+    var DURATION = 900; // ms
+    var STEP = 90; // ms between elements revealed together
+    var EASING = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+
+    var CANDIDATES = 'h1, h2, h3, h4, p, blockquote, img, picture, video, .button, button.button, a.button, li';
+    var EXCLUDED =
+      '[reveal-on-scroll], product-card, x-carousel, x-slideshow, x-marquee, x-modal, x-drawer, dialog, details, ' +
+      '[class*="carousel"], [class*="slideshow"], [class*="marquee"], [class*="flickity"], [class*="lightbox"], ' +
+      '[class*="modal"], [class*="drawer"], [class*="popup"], [aria-hidden="true"], [hidden], nav, svg';
+
+    var main = document.getElementById('main');
+    var sections = main ? Array.prototype.slice.call(main.querySelectorAll(':scope > .shopify-section')) : [];
 
     if (!sections.length) {
       return;
     }
 
-    // This script sits right after <main>, so the sections already exist: hide them at once (no flash of visible content).
-    document.documentElement.classList.add('sr-ready');
+    var pending = [];
+    var revealedCount = 0;
+
+    function eligible(element) {
+      if (element.closest(EXCLUDED)) {
+        return false;
+      }
+
+      // Keep only the outermost candidate (a <p> inside an <li> that is already animated is not animated twice).
+      var parent = element.parentElement;
+
+      while (parent && parent !== main) {
+        if (parent.matches(CANDIDATES) && parent.matches('li, blockquote, picture')) {
+          return false;
+        }
+
+        parent = parent.parentElement;
+      }
+
+      return element.getClientRects().length > 0;
+    }
+
+    sections.forEach(function (section) {
+      var targets = Array.prototype.filter.call(section.querySelectorAll(CANDIDATES), eligible);
+
+      if (!targets.length && !section.closest(EXCLUDED)) {
+        targets = [section];
+      }
+
+      targets.forEach(function (element) {
+        element.style.opacity = '0';
+        pending.push(element);
+      });
+    });
+
+    function reveal(element, index) {
+      element.style.opacity = '';
+      revealedCount += 1;
+
+      element.animate(
+        [
+          { opacity: 0, transform: 'translateY(' + DISTANCE + 'px)' },
+          { opacity: 1, transform: 'translateY(0)' }
+        ],
+        { duration: DURATION, delay: Math.min(index, 8) * STEP, easing: EASING, fill: 'backwards' }
+      );
+    }
 
     var observer = new IntersectionObserver(
       function (entries) {
-        var visible = entries
+        entries
           .filter(function (entry) {
             return entry.isIntersecting;
           })
           .sort(function (a, b) {
-            return a.boundingClientRect.top - b.boundingClientRect.top;
+            return a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left;
+          })
+          .forEach(function (entry, index) {
+            observer.unobserve(entry.target);
+            reveal(entry.target, index);
           });
-
-        // Sections that appear together (page load) come in one after another.
-        visible.forEach(function (entry, index) {
-          entry.target.style.animationDelay = index * 0.12 + 's';
-          entry.target.classList.add('sr-in');
-          observer.unobserve(entry.target);
-        });
       },
-      { threshold: 0.05, rootMargin: '0px 0px -5% 0px' }
+      { threshold: 0.1, rootMargin: '0px 0px -6% 0px' }
     );
 
-    sections.forEach(function (section) {
-      // Sections already above the viewport (e.g. restored scroll position) are shown without animating.
-      if (section.getBoundingClientRect().bottom < 0) {
-        section.classList.add('sr-in');
-        section.style.animation = 'none';
+    pending.forEach(function (element) {
+      // Already scrolled past (restored scroll position): show it without animating.
+      if (element.getBoundingClientRect().bottom < 0) {
+        element.style.opacity = '';
         return;
       }
 
-      observer.observe(section);
+      observer.observe(element);
     });
 
-    // Safety net: if the observer never fired at all, show everything rather than leave the page blank.
+    // A fast jump (anchor link, scrollbar drag) can skip elements entirely: whatever is left above the viewport is shown as is.
+    var scrollQueued = false;
+
+    window.addEventListener(
+      'scroll',
+      function () {
+        if (scrollQueued) {
+          return;
+        }
+
+        scrollQueued = true;
+
+        requestAnimationFrame(function () {
+          scrollQueued = false;
+
+          pending.forEach(function (element) {
+            if (element.style.opacity === '0' && element.getBoundingClientRect().bottom < 0) {
+              observer.unobserve(element);
+              element.style.opacity = '';
+            }
+          });
+        });
+      },
+      { passive: true }
+    );
+
+    // Safety net: if nothing was ever revealed, show everything instead of leaving the page blank.
     setTimeout(function () {
-      if (!document.querySelector('main > .shopify-section.sr-in')) {
-        sections.forEach(function (section) {
-          section.classList.add('sr-in');
+      if (!revealedCount) {
+        pending.forEach(function (element) {
+          element.style.opacity = '';
         });
       }
     }, 3000);
