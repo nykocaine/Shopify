@@ -679,9 +679,11 @@ to say "tap to open". Only transform and box-shadow are animated (nothing moves 
   }
 }
 
-@media not ((hover: hover) and (pointer: fine)) and (prefers-reduced-motion: no-preference) {
-  #{{ wrapper_id }} .content-box:has(video-media[playing]:not(.is-lightbox-expanded)) .video-open-button .overlay-control {
-    animation: video-play-pulse 2.4s cubic-bezier(.2, .6, .3, 1) infinite;
+@media not ((hover: hover) and (pointer: fine)) {
+  @media (prefers-reduced-motion: no-preference) {
+    #{{ wrapper_id }} .content-box:has(video-media[playing]:not(.is-lightbox-expanded)) .video-open-button .overlay-control {
+      animation: video-play-pulse 2.4s cubic-bezier(.2, .6, .3, 1) infinite;
+    }
   }
 }
 
