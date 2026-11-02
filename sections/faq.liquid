@@ -266,8 +266,9 @@
             rises above that box (the gallery and the second column of the glued bar), so they appeared cut and jumped into place afterwards. With the
             glued bar the panels change with a soft cross-fade that flows from the top down instead (the tabs component's "fade-down": the old panel
             sinks a little while it fades out, the new one comes in from slightly above), a bit slower than the component's default.
+            Desktop (1000px and up): desktop-transition="slide-left" (theme.js) replaces either of them: the new content enters from the right, travelling to the left.
             {%- endcomment -%}
-            <x-tabs class="section-header__controls faq__categories" {% if section.settings.categories_glued_bar %}transition="fade-down" animation-duration="0.3"{% else %}transition="unfold"{% endif %}{% if section.settings.two_columns and faq_page == false %} data-tabs-loop{% endif %}>
+            <x-tabs class="section-header__controls faq__categories" desktop-transition="slide-left" {% if section.settings.categories_glued_bar %}transition="fade-down" animation-duration="0.3"{% else %}transition="unfold"{% endif %}{% if section.settings.two_columns and faq_page == false %} data-tabs-loop{% endif %}>
               <template shadowrootmode="open">
                 <slot part="tablist" role="tablist" name="tab"></slot>
               </template>

@@ -5053,6 +5053,22 @@ var Tabs = class extends HTMLElement {
    * Perform a custom transition (can be overridden in subclasses). To "from" and "to" are hash representing the panel
    */
   async transition(fromPanel, toPanel) {
+    if (this.getAttribute("desktop-transition") === "slide-left" && window.matchMedia("(min-width: 1000px) and (prefers-reduced-motion: no-preference)").matches) {
+      // Desktop only (the FAQ categories): the panel that leaves slips a little to the left while it fades out, then the new one enters from the
+      // right, travelling to the left until it settles. The sideways travel is clipped to the container (overflow-x: clip, which unlike
+      // "hidden" leaves the vertical axis alone, so what rises above a panel's box stays visible) so it never makes the page scroll sideways.
+      const clipper = toPanel.closest(".faq") || toPanel.parentElement;
+      const previousOverflow = clipper.style.overflowX;
+      clipper.style.overflowX = "clip";
+      await animate8(fromPanel, { opacity: [1, 0], transform: ["translateX(0)", "translateX(-24px)"] }, { duration: 0.2 });
+      fromPanel.hidden = true;
+      toPanel.hidden = false;
+      await animate8(toPanel, { opacity: [0, 1], transform: ["translateX(64px)", "translateX(0)"] }, { duration: 0.6, ease: MOTION.enterEase });
+      toPanel.style.transform = "";
+      toPanel.style.opacity = "";
+      clipper.style.overflowX = previousOverflow;
+      return;
+    }
     if (this.getAttribute("transition") === "unfold") {
       // Same top-to-bottom unfold the drawers use (clip-path revealed from the top edge down, same 1.2s and curve as createUnfoldAnimationControls)
       fromPanel.hidden = true;
