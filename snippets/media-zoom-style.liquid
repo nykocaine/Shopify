@@ -763,6 +763,7 @@ lightbox without framed_icons keeps the rules above.
   --lb-h: var(--lightbox-frame-h, var(--lightbox-media-h));
   --lb-pad: 0.75rem;
   --lb-gap: 1rem;
+  --lb-line: 3px;
   --lb-step: calc(var(--control-button-size, 1.75rem) + var(--lb-gap));
   --lb-right: calc(var(--lb-w) / 2 - 100% - var(--lb-pad));
   --lb-left: calc(var(--lb-w) / -2 + var(--lb-pad));
@@ -867,6 +868,16 @@ dark gradient behind both keeps them readable over any video. The logo moves to 
 #{{ wrapper_id }}[data-lightbox-layout] video-media.is-lightbox-expanded .lightbox-scrubber {
   inset-inline: var(--lb-pad);
   inset-block-end: calc(var(--lb-pad) + var(--control-button-size, 1.75rem) + 0.25rem);
+}
+
+{%- comment -%}A thicker playback line in the bar (the base rule is as thin as the control icons' strokes), with a dot that goes with it{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber__rest,
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber__played {
+  stroke-width: var(--lb-line);
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber__dot {
+  r: calc(var(--lb-line) * 1.75);
 }
 
 #{{ wrapper_id }}[data-lightbox-layout] video-media.is-lightbox-expanded::before {
