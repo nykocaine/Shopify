@@ -117,32 +117,12 @@ so it stays on the video wherever it goes (thumbnail, zoom animation, lightbox, 
   z-index: 1;
 }
 
-/* Always visible, no hover/tap-to-reveal, no auto-hide: nothing autoplays, so there's no playing
-   video to hide these behind - the visitor needs to see the play button right away to know how to
-   start it. */
+/* Always visible, no hover/tap-to-reveal, no auto-hide: the visitor needs to see these buttons right away. */
 #{{ wrapper_id }} .carousel-video-sound-toggle,
 #{{ wrapper_id }} .carousel-video-pause-toggle,
 #{{ wrapper_id }} .carousel-video-product-link {
   opacity: 1;
   pointer-events: auto;
-}
-
-/* Opt-in via media-zoom-slide.liquid's reveal_controls_on_tap: true (toggled in
-   media-zoom-script.liquid) - the opposite of the always-visible rule above, for an autoplaying
-   video where the controls would otherwise permanently sit on top of it. visibility (not just
-   opacity) is what actually disables the buttons while hidden: it's inherited by the buttons
-   underneath regardless of their own opacity: 1/pointer-events: auto set above, which a plain
-   pointer-events: none on this wrapper alone would NOT override (each descendant's own
-   pointer-events is evaluated independently of an ancestor's). */
-#{{ wrapper_id }} .carousel-video-controls--tap-to-reveal {
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity .2s ease, visibility .2s ease;
-}
-
-#{{ wrapper_id }} .carousel-video-controls--tap-to-reveal.is-controls-revealed {
-  visibility: visible;
-  opacity: 1;
 }
 
 {%- if resolved_controls_position == 'progress_bar' -%}

@@ -1,15 +1,16 @@
 {%- doc -%}
-A square-media carousel in an Instagram-feed style: each "Media" block is either an image or a
-video (the merchant swaps the type per block from the editor, no code change needed). Extracted
-from sections/reviews.liquid, where this started as a block - the design/behavior (square grid,
-tap-to-open lightbox, random shuffle per page load) is unchanged, just moved into its own section
-so it isn't tied to Reviews.
+A carousel of square (or portrait) photos and videos in an Instagram-feed style: each "Media" block is either an image or a video (the merchant
+swaps the type per block from the editor). Extracted from sections/reviews.liquid, where this started as a block, so it isn't tied to Reviews.
 
-Image blocks open the lightbox by tapping the photo itself (no visible zoom button - see the
-"no separate zoom button" comment below). Video blocks use snippets/media-zoom-slide.liquid as-is,
-same as FAQ's "Text + image/video" block and Media Blocks' Carousel: tap the video to play it
-inline, or its own small zoom button to open the lightbox - video needs that shared play/pause/
-sound control logic, so it isn't worth re-implementing just to also hide that one button.
+- The row is reshuffled on every page load; the videos are spread evenly among the photos.
+- Photos open the zoom view by tapping the photo itself (no visible button). Videos use snippets/media-zoom-slide.liquid, the same as FAQ's
+  "Text + image/video" block and Media Blocks' Carousel: a round play button in the middle of the video opens the zoom view.
+- Nothing autoplays by itself: on mobile only the first video at the left edge plays (a muted preview), on desktop a video plays while the
+  cursor is over it (script "Video previews" below).
+- Navigation: round arrows over the row on desktop, dots under it on mobile (snippets/carousel-side-arrows.liquid, carousel-dots.liquid).
+- The zoom view (snippets/media-zoom-script.liquid) keeps its icons inside the open photo or video (framed_icons).
+
+Colors and the shape of the round controls come from Theme settings > Controls; the color of a liked heart from this section's settings.
 {%- enddoc -%}
 
 {%- liquid
@@ -35,13 +36,9 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   assign instagram_media_count = 0
 
   for block in instagram_media_blocks
-    assign instagram_block_has_video = false
-
     if block.settings.media_type == 'video' and block.settings.video != blank
-      assign instagram_block_has_video = true
-    endif
-
-    if instagram_block_has_video or block.settings.image != blank
+      assign instagram_media_count = instagram_media_count | plus: 1
+    elsif block.settings.image != blank
       assign instagram_media_count = instagram_media_count | plus: 1
     endif
   endfor
@@ -60,6 +57,9 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   # of repeating "section.settings.instagram_feed_border_radius | append: 'px'" inline at each call
   # site - every image, video and the carousel frame itself then shares this exact same string.
   assign instagram_corner_radius_px = section.settings.instagram_feed_border_radius | append: 'px'
+
+  # Every photo and video is shown at about 90% of the screen width in the zoom view (the thumbnails are smaller, but it is the same element)
+  assign instagram_media_sizes = '90vw'
 
   # Auto-scroll needs more than one card; the speed setting maps to pixels per second
   assign instagram_autoscroll = false
@@ -80,7 +80,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {{ instagram_corner_radius_px }}; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
-    <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack{% if section.settings.bw_intro %} is-bw{% endif %}"{% if section.settings.bw_intro %} data-bw-seconds="{{ section.settings.bw_intro_seconds }}" data-bw-fade="{{ section.settings.bw_intro_fade }}"{% endif %}>
+    <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack{% if section.settings.bw_intro %} is-bw{% endif %}">
       {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank or section.settings.show_icon -%}
         <div class="instagram-feed__header">
           <div class="instagram-feed__content">
@@ -123,15 +123,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
           {%- assign instagram_slide_index = 0 -%}
 
           {%- for block in instagram_media_blocks -%}
-            {%- liquid
-              assign instagram_block_has_video = false
-
-              if block.settings.media_type == 'video' and block.settings.video != blank
-                assign instagram_block_has_video = true
-              endif
-            -%}
-
-            {%- if instagram_block_has_video -%}
+            {%- if block.settings.media_type == 'video' and block.settings.video != blank -%}
               {%- comment -%}
               The videos are a muted, looped preview that THIS section starts and stops (script "Video previews" below), not
               autoplay: on mobile only the first video at the left edge plays, and it changes as the row is scrolled; on desktop
@@ -141,14 +133,13 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                 {%- render 'media-zoom-slide',
                   video: block.settings.video,
                   loop_video: true,
-                  reveal_controls_on_tap: true,
                   show_like: section.settings.show_likes,
                   like_id: block.id,
                   like_count: block.settings.likes_count,
                   corner_radius: instagram_corner_radius_px,
                   lightbox_id: instagram_lightbox_id,
                   lightbox_index: instagram_slide_index,
-                  sizes: '90vw'
+                  sizes: instagram_media_sizes
                 -%}
               </div>
 
@@ -178,7 +169,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                       browser fetch a small srcset candidate that then looks soft/blurry once expanded
                       full-screen.
                       {%- endcomment -%}
-                      {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: '90vw', widths: '150,300,450,600,900,1200,1500', class: 'instagram-feed__image aspect-square image-cover' -}}
+                      {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: instagram_media_sizes, widths: '150,300,450,600,900,1200,1500', class: 'instagram-feed__image aspect-square image-cover' -}}
                       <span class="sr-only">{{ 'product.gallery.zoom' | t }}</span>
                     </button>
                   </div>
@@ -247,182 +238,136 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         </style>
 
         {%- comment -%}
-        Reshuffles the media into a random order on every page load (not persisted - a fresh
-        shuffle each visit). Runs as a plain synchronous script, BEFORE media-zoom-script below: that
-        one captures its own "cells" snapshot inside an async customElements.whenDefined() callback,
-        so this reorder - and the image-index rewrite that keeps each slide's lightbox index
-        matching its new position - has to land first, or the lightbox would open the wrong item for
-        whatever position was clicked. Every cell is a plain div (see above) with its
-        open-lightbox-button nested one level inside.
+        Feed behavior, in order: the random order of the row, lazy loading and loading cue of the videos, the "#video-<block id>" deep link and
+        the like buttons.
+
+        The row is reshuffled into a random order on every page load (not persisted: a fresh shuffle each visit). This runs as a plain
+        synchronous script, BEFORE media-zoom-script below: that one captures its own "cells" snapshot inside an async
+        customElements.whenDefined() callback, so this reorder - and the image-index rewrite that keeps each slide's lightbox index matching
+        its new position - has to land first, or the lightbox would open the wrong item for whatever position was clicked. Every cell is a
+        plain div (see above) with its open-lightbox-button nested one level inside.
         {%- endcomment -%}
         <script>
-          (function () {
-            var carousel = document.getElementById('{{ instagram_carousel_id }}');
-            if (!carousel) return;
+          (() => {
+            const feed = document.getElementById('{{ instagram_feed_id }}');
+            const carousel = document.getElementById('{{ instagram_carousel_id }}');
 
-            function shuffle(array) {
-              for (var i = array.length - 1; i > 0; i--) {
-                var j = Math.floor(Math.random() * (i + 1));
-                var swap = array[i];
-                array[i] = array[j];
-                array[j] = swap;
-              }
+            if (!feed || !carousel) {
+              return;
             }
 
+            const DEEP_LINK_PREFIX = '#video-';
+            const DEEP_LINK_DELAY = 600;
+            const LIKE_KEY_PREFIX = 'instagram-feed-like-';
+            const VIDEO_STATE_EVENTS = ['play', 'playing', 'waiting', 'stalled', 'seeking', 'seeked', 'loadeddata', 'canplay', 'canplaythrough', 'timeupdate', 'pause', 'ended', 'emptied', 'abort', 'error'];
+            const HAVE_FUTURE_DATA = 3;
+
             {%- comment -%}
-            Videos and images are shuffled independently within each group (still a fresh order every page
-            load) and then interleaved: the videos are spread evenly through the row, starting with one
-            (video, image, video, image... when there are as many of each; with fewer videos they are evenly
-            spaced between the images), instead of one shuffle across everything, which could clump them.
+            Videos and images are shuffled independently within each group (still a fresh order every page load) and then interleaved: the
+            videos are spread evenly through the row, starting with one (video, image, video, image... when there are as many of each; with
+            fewer videos they are evenly spaced between the images), instead of one shuffle across everything, which could clump them.
             {%- endcomment -%}
-            var videoCells = [];
-            var otherCells = [];
+            const shuffle = (items) => {
+              for (let i = items.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
 
-            Array.prototype.forEach.call(carousel.children, function (cell) {
-              if (cell.querySelector('video-media')) {
-                videoCells.push(cell);
-              } else {
-                otherCells.push(cell);
+                [items[i], items[j]] = [items[j], items[i]];
               }
+
+              return items;
+            };
+
+            const cells = [...carousel.children];
+            const videoCells = shuffle(cells.filter((cell) => cell.querySelector('video-media')));
+            const otherCells = shuffle(cells.filter((cell) => !cell.querySelector('video-media')));
+            const ordered = new Array(cells.length);
+
+            videoCells.forEach((cell, index) => {
+              ordered[Math.floor((index * ordered.length) / videoCells.length)] = cell;
             });
 
-            shuffle(videoCells);
-            shuffle(otherCells);
+            let nextOther = 0;
 
-            var cells = new Array(videoCells.length + otherCells.length);
-            var nextImage = 0;
-
-            videoCells.forEach(function (cell, index) {
-              cells[Math.floor(index * cells.length / videoCells.length)] = cell;
-            });
-
-            for (var slot = 0; slot < cells.length; slot++) {
-              if (!cells[slot]) cells[slot] = otherCells[nextImage++];
+            for (let slot = 0; slot < ordered.length; slot++) {
+              ordered[slot] ??= otherCells[nextOther++];
             }
 
-            cells.forEach(function (cell, index) {
-              var openButton = cell.querySelector('open-lightbox-button');
-
-              if (openButton) {
-                openButton.setAttribute('image-index', index);
-              }
-
-              carousel.appendChild(cell);
+            ordered.forEach((cell, index) => {
+              cell.querySelector('open-lightbox-button')?.setAttribute('image-index', index);
+              carousel.append(cell);
             });
 
             {%- comment -%}
-            Lazy video loading: nothing is fetched for a video until the visitor gets near the section. Every <video> starts
-            with preload="none" (instead of the "metadata" the media snippet sets), and <video-media> (theme.js, VideoMedia)
-            switches it to "auto" and picks the right source once the video is within 800px of the screen, so it is ready
-            when it comes into view.
+            Lazy video loading: nothing is fetched for a video until the visitor gets near the section. Every <video> starts with preload="none"
+            (instead of the "metadata" the media snippet sets), and <video-media> (theme.js, VideoMedia) switches it to "auto" and picks the
+            right source once the video is within 800px of the screen, so it is ready when it comes into view.
             {%- endcomment -%}
-            Array.prototype.forEach.call(carousel.querySelectorAll('video'), function (video) {
-              video.setAttribute('preload', 'none');
+            carousel.querySelectorAll('video').forEach((video) => video.setAttribute('preload', 'none'));
+
+            {%- comment -%}
+            Loading cue: while a video has been asked to play but has no frames yet, its cell gets .is-video-loading, which shows a small
+            spinner (after a short delay, so a fast start never flashes it). It follows the video's real state instead of a pair of "start" and
+            "end" events (which could leave it stuck: "stalled" and "waiting" also fire while the video is already playing or only preloading):
+            on only while the video is trying to play (not paused, not ended) without enough data to keep going, re-evaluated on every event
+            that can change that, including timeupdate while it plays.
+            {%- endcomment -%}
+            carousel.querySelectorAll('.instagram-feed__video-cell video').forEach((video) => {
+              const cell = video.closest('.instagram-feed__video-cell');
+              const update = () => cell.classList.toggle('is-video-loading', !video.paused && !video.ended && video.readyState < HAVE_FUTURE_DATA);
+
+              VIDEO_STATE_EVENTS.forEach((type) => video.addEventListener(type, update));
             });
 
-            {%- comment -%}
-            The videos of the feed are a muted, looped preview started and stopped by the "Video previews" script below (mobile: the
-            first one at the left edge; desktop: the one under the cursor), and none shows play / pause or sound buttons on its
-            thumbnail (CSS below hides them); a video only fetches data once the visitor is near it (preload none, see above), so
-            only what is on screen costs anything.
-            {%- endcomment -%}
-            {%- comment -%}
-            Loading cue: while a video has been asked to play but has no frames yet, its cell gets .is-video-loading, which shows a
-            small spinner (after a short delay, so a fast start never flashes it). The poster behind the video and the fade-in
-            when it starts are the theme's rule for every autoplaying video (theme.css, theme.js).
-            {%- endcomment -%}
-            Array.prototype.forEach.call(carousel.querySelectorAll('.instagram-feed__video-cell video'), function (video) {
-              var videoCell = video.closest('.instagram-feed__video-cell');
-
-              if (!videoCell) {
-                return;
-              }
-
-              {%- comment -%}
-              The spinner follows the video's real state instead of a pair of "start" and "end" events (which could leave it
-              stuck: "stalled" and "waiting" also fire while the video is already playing or only preloading, and nothing
-              fired afterwards to turn it off). It is on only while the video is trying to play (not paused, not ended) and does
-              not have enough data to keep going (readyState below HAVE_FUTURE_DATA); it is re-evaluated on every event that can
-              change that, including timeupdate while it plays.
-              {%- endcomment -%}
-              function updateState() {
-                var isPlaying = !video.paused && !video.ended;
-                var hasData = video.readyState >= 3;
-
-                videoCell.classList.toggle('is-video-loading', isPlaying && !hasData);
-              }
-
-              ['play', 'playing', 'waiting', 'stalled', 'seeking', 'seeked', 'loadeddata', 'canplay', 'canplaythrough', 'timeupdate', 'pause', 'ended', 'emptied', 'abort', 'error'].forEach(function (type) {
-                video.addEventListener(type, updateState);
-              });
-            });
-
-            {%- comment -%}
-            The sound / pause buttons are only seen inside the lightbox (the thumbnails hide them by CSS) and there they are always
-            visible, never hidden until a tap: the tap-to-reveal class is dropped from them here, for every screen size.
-            {%- endcomment -%}
-            Array.prototype.forEach.call(carousel.querySelectorAll('.carousel-video-controls.carousel-video-controls--tap-to-reveal'), function (element) {
-              element.classList.remove('carousel-video-controls--tap-to-reveal');
-            });
-
-            {%- comment -%}
-            A page opened with a "#video-<block id>" mark opens that video's zoom view by itself.
-            {%- endcomment -%}
-            var feedElement = document.getElementById('{{ instagram_feed_id }}');
-
-            if (window.location.hash.indexOf('#video-') === 0) {
-              var sharedCell = carousel.querySelector('.instagram-feed__video-cell[data-block-id="' + window.location.hash.slice(7) + '"]');
+            {%- comment -%}A page opened with a "#video-<block id>" mark opens that video's zoom view by itself{%- endcomment -%}
+            if (window.location.hash.startsWith(DEEP_LINK_PREFIX)) {
+              const blockId = window.location.hash.slice(DEEP_LINK_PREFIX.length);
+              const sharedCell = carousel.querySelector(`.instagram-feed__video-cell[data-block-id="${CSS.escape(blockId)}"]`);
 
               if (sharedCell) {
-                customElements.whenDefined('video-media').then(function () {
-                  setTimeout(function () {
-                    var openButton = sharedCell.querySelector('open-lightbox-button');
-                    var openIndex = openButton ? parseInt(openButton.getAttribute('image-index'), 10) : NaN;
+                customElements.whenDefined('video-media').then(() => {
+                  setTimeout(() => {
+                    const index = parseInt(sharedCell.querySelector('open-lightbox-button')?.getAttribute('image-index'), 10);
 
-                    if (!isNaN(openIndex)) {
-                      feedElement.dispatchEvent(new CustomEvent('lightbox:open', { bubbles: true, detail: { index: openIndex } }));
+                    if (!Number.isNaN(index)) {
+                      feed.dispatchEvent(new CustomEvent('lightbox:open', { bubbles: true, detail: { index } }));
                     }
-                  }, 600);
+                  }, DEEP_LINK_DELAY);
                 });
               }
             }
 
             {%- comment -%}
-            Like button (the heart at the top of a video's controls in the lightbox). The number is the one entered in the Media block (the
-            post's real likes) plus the visitor's own like, which is remembered in this browser. There is no server behind it: nothing here
-            invents or sums likes from other visitors.
+            Like button (the heart at the top of a video's controls in the lightbox). The number is the one entered in the Media block (the post's
+            real likes) plus the visitor's own like, which is remembered in this browser. There is no server behind it: nothing here invents or
+            sums likes from other visitors.
             {%- endcomment -%}
-            Array.prototype.forEach.call(carousel.querySelectorAll('.carousel-video-like'), function (likeBox) {
-              var likeId = 'instagram-feed-like-' + likeBox.getAttribute('data-like-id');
-              var baseAttribute = likeBox.getAttribute('data-like-base');
-              var base = baseAttribute === null || baseAttribute === '' ? null : parseInt(baseAttribute, 10);
-              var toggle = likeBox.querySelector('.carousel-video-like-toggle');
-              var countElement = likeBox.querySelector('.carousel-video-like__count');
-              var liked = false;
+            carousel.querySelectorAll('.carousel-video-like').forEach((likeBox) => {
+              const storageKey = LIKE_KEY_PREFIX + likeBox.dataset.likeId;
+              const baseLikes = parseInt(likeBox.dataset.likeBase, 10);
+              const toggle = likeBox.querySelector('.carousel-video-like-toggle');
+              const countElement = likeBox.querySelector('.carousel-video-like__count');
+              let liked = false;
 
               try {
-                liked = window.localStorage.getItem(likeId) === '1';
-              } catch (error) {
+                liked = window.localStorage.getItem(storageKey) === '1';
+              } catch {
                 liked = false;
               }
 
-              function render() {
-                toggle.setAttribute('aria-pressed', liked ? 'true' : 'false');
+              const render = () => {
+                toggle.setAttribute('aria-pressed', String(liked));
+                countElement.textContent = Number.isNaN(baseLikes) ? '' : (baseLikes + Number(liked)).toLocaleString();
+              };
 
-                if (base === null || isNaN(base)) {
-                  countElement.textContent = '';
-                } else {
-                  countElement.textContent = (base + (liked ? 1 : 0)).toLocaleString();
-                }
-              }
-
-              toggle.addEventListener('click', function (event) {
+              toggle.addEventListener('click', (event) => {
                 event.stopPropagation();
                 liked = !liked;
 
                 try {
-                  window.localStorage.setItem(likeId, liked ? '1' : '0');
-                } catch (error) {}
+                  window.localStorage.setItem(storageKey, liked ? '1' : '0');
+                } catch {
+                  {%- comment -%}Storage can be blocked (private mode): the like then only lasts for this page view{%- endcomment -%}
+                }
 
                 render();
               });
@@ -434,73 +379,82 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
         {%- if instagram_autoscroll -%}
           {%- comment -%}
-          Auto-scroll as a conveyor belt: the row moves left at a constant, slow speed, forever, with no
-          stops between cards. Each frame advances a float position by speed * elapsed time (so the speed
-          is the same on any refresh rate); when the first card has completely left the visible area it is
-          moved to the end of the row and the position is shifted back by exactly its width, which the eye
-          can't notice, so the row never ends. Cards are moved, not cloned, so there are no duplicated
-          videos or lightbox items. It needs enough cards to be wider than the viewport plus one card;
-          otherwise it does nothing.
+          Auto-scroll as a conveyor belt: the row moves left at a constant, slow speed, forever, with no stops between cards. Each frame advances
+          a float position by speed * elapsed time (so the speed is the same on any refresh rate); when the first card has completely left the
+          visible area it is moved to the end of the row and the position is shifted back by exactly its width, which the eye can't notice, so
+          the row never ends. Cards are moved, not cloned, so there are no duplicated videos or lightbox items. It needs enough cards to be
+          wider than the viewport plus one card; otherwise it does nothing.
 
-          It stops only when the visitor takes over: while a pointer or finger is pressed on the row (which
-          includes tapping a photo or a video), while they scroll it themselves (plus a short moment
-          after), while something inside has focus, while the lightbox is open, and on mobile while a
-          video they started is playing. It also rests while the section is off-screen or the tab is hidden,
-          and is disabled for prefers-reduced-motion and right-to-left pages. Snapping is off (see the
-          style above) so it can move continuously.
+          It stops only when the visitor takes over: while a pointer or finger is pressed on the row (which includes tapping a photo or a
+          video), while they scroll it themselves (plus a short moment after), while something inside has focus and while the lightbox is
+          open. It also rests while the section is off-screen or the tab is hidden, and is disabled for prefers-reduced-motion and
+          right-to-left pages. Snapping is off (see the style below) so it can move continuously. The videos' preview does not stop it.
           {%- endcomment -%}
           <script>
-            (function () {
-              var carousel = document.getElementById('{{ instagram_carousel_id }}');
-              var lightbox = document.getElementById('{{ instagram_lightbox_id }}');
+            (() => {
+              const carousel = document.getElementById('{{ instagram_carousel_id }}');
+              const lightbox = document.getElementById('{{ instagram_lightbox_id }}');
 
-              if (!carousel || !lightbox) return;
-              if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-              if (window.getComputedStyle(carousel).direction === 'rtl') return;
+              if (!carousel || !lightbox) {
+                return;
+              }
 
-              var speed = {{ instagram_autoscroll_speed }};
-              var mobileQuery = window.matchMedia('(max-width: 699px)');
-              var position = carousel.scrollLeft;
-              var assigned = position;
-              var shifted = false;
-              var previousTimestamp = null;
-              var pressing = false;
-              var focused = false;
-              var visible = true;
-              var lastInteraction = 0;
+              if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.getComputedStyle(carousel).direction === 'rtl') {
+                return;
+              }
 
-              function shift(fraction) {
-                Array.prototype.forEach.call(carousel.children, function (cell) {
-                  cell.style.transform = fraction ? 'translate3d(' + (-fraction) + 'px, 0, 0)' : '';
+              const SPEED = {{ instagram_autoscroll_speed }};
+              const RESUME_DELAY = 1200;
+              const MAX_FRAME = 64;
+              const STEP_MARGIN = 4;
+
+              let position = carousel.scrollLeft;
+              let assigned = position;
+              let shifted = false;
+              let previousTimestamp = null;
+              let pressing = false;
+              let focused = false;
+              let visible = true;
+              let lastInteraction = 0;
+
+              const shift = (fraction) => {
+                [...carousel.children].forEach((cell) => {
+                  cell.style.transform = fraction ? `translate3d(${-fraction}px, 0, 0)` : '';
                 });
 
                 shifted = fraction !== 0;
-              }
+              };
 
-              function release() {
-                if (shifted) shift(0);
+              const release = () => {
+                if (shifted) {
+                  shift(0);
+                }
 
                 position = carousel.scrollLeft;
                 assigned = position;
-              }
+              };
 
-              function canRun() {
-                var now = Date.now();
+              const markInteraction = () => {
+                lastInteraction = Date.now();
+              };
 
-                if (!visible || document.hidden || pressing || focused) return false;
-
-                if (lightbox.classList.contains('is-lightbox-visible') || (mobileQuery.matches && carousel.querySelector('video-media[playing]'))) {
-                  lastInteraction = now;
+              const canRun = () => {
+                if (!visible || document.hidden || pressing || focused) {
                   return false;
                 }
 
-                return now - lastInteraction > 1200;
-              }
+                if (lightbox.classList.contains('is-lightbox-visible')) {
+                  markInteraction();
+                  return false;
+                }
 
-              function frame(timestamp) {
+                return Date.now() - lastInteraction > RESUME_DELAY;
+              };
+
+              const frame = (timestamp) => {
                 requestAnimationFrame(frame);
 
-                var elapsed = previousTimestamp === null ? 0 : Math.min(timestamp - previousTimestamp, 64);
+                const elapsed = previousTimestamp === null ? 0 : Math.min(timestamp - previousTimestamp, MAX_FRAME);
 
                 previousTimestamp = timestamp;
 
@@ -509,64 +463,65 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
                   return;
                 }
 
-                var first = carousel.firstElementChild;
-                var step = first.getBoundingClientRect().width + (parseFloat(window.getComputedStyle(carousel).columnGap) || 0);
+                const first = carousel.firstElementChild;
+                const step = first.getBoundingClientRect().width + (parseFloat(window.getComputedStyle(carousel).columnGap) || 0);
 
-                if (carousel.scrollWidth - carousel.clientWidth <= step + 4) return;
+                if (carousel.scrollWidth - carousel.clientWidth <= step + STEP_MARGIN) {
+                  return;
+                }
 
-                position += speed * elapsed / 1000;
+                position += (SPEED * elapsed) / 1000;
 
                 if (position >= step) {
-                  carousel.appendChild(first);
+                  carousel.append(first);
                   position -= step;
                 }
 
                 {%- comment -%}
-                scrollLeft only takes whole pixels on standard-density screens, which made the row advance in
-                visible 1px hops; the whole part goes to scrollLeft and the remainder is applied as a
-                translate on the cells (composited, so sub-pixel smooth). The translate is removed whenever
-                the row stops, because a transformed ancestor would break the lightbox's fixed positioning.
+                scrollLeft only takes whole pixels on standard-density screens, which made the row advance in visible 1px hops; the whole part
+                goes to scrollLeft and the remainder is applied as a translate on the cells (composited, so sub-pixel smooth). The translate is
+                removed whenever the row stops, because a transformed ancestor would break the lightbox's fixed positioning.
                 {%- endcomment -%}
-                var whole = Math.floor(position);
+                const whole = Math.floor(position);
 
                 carousel.scrollLeft = whole;
                 assigned = whole;
                 shift(position - whole);
-              }
+              };
 
-              carousel.addEventListener('pointerdown', function () {
+              carousel.addEventListener('pointerdown', () => {
                 pressing = true;
                 release();
               });
 
-              ['pointerup', 'pointercancel'].forEach(function (name) {
-                window.addEventListener(name, function () {
-                  if (!pressing) return;
-
-                  pressing = false;
-                  lastInteraction = Date.now();
+              ['pointerup', 'pointercancel'].forEach((name) => {
+                window.addEventListener(name, () => {
+                  if (pressing) {
+                    pressing = false;
+                    markInteraction();
+                  }
                 });
               });
 
-              carousel.addEventListener('scroll', function () {
-                if (Math.abs(carousel.scrollLeft - assigned) > 1.5) lastInteraction = Date.now();
+              carousel.addEventListener('scroll', () => {
+                if (Math.abs(carousel.scrollLeft - assigned) > 1.5) {
+                  markInteraction();
+                }
               }, { passive: true });
 
-              carousel.addEventListener('focusin', function () {
+              carousel.addEventListener('focusin', () => {
                 focused = true;
                 release();
               });
 
-              carousel.addEventListener('focusout', function () {
+              carousel.addEventListener('focusout', () => {
                 focused = false;
-                lastInteraction = Date.now();
+                markInteraction();
               });
 
-              if ('IntersectionObserver' in window) {
-                new IntersectionObserver(function (entries) {
-                  visible = entries[0].isIntersecting;
-                }, { threshold: 0.1 }).observe(carousel);
-              }
+              new IntersectionObserver((entries) => {
+                visible = entries[0].isIntersecting;
+              }, { threshold: 0.1 }).observe(carousel);
 
               requestAnimationFrame(frame);
             })();
@@ -583,40 +538,33 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             </style>
           </noscript>
 
+          {%- comment -%}
+          Black and white intro: the countdown starts when the visitor actually reaches the section (a quarter of it on screen), not at page load,
+          so the seconds are spent looking at it. It runs once per page view.
+          {%- endcomment -%}
           <script>
-            (function () {
-              var feed = document.getElementById('{{ instagram_feed_id }}');
+            (() => {
+              const feed = document.getElementById('{{ instagram_feed_id }}');
 
-              if (!feed || !feed.classList.contains('is-bw')) {
+              if (!feed?.classList.contains('is-bw')) {
                 return;
               }
 
-              {%- comment -%}
-              The countdown starts when the visitor actually reaches the section (a quarter of it on screen), not at page load, so the
-              seconds are spent looking at it. It runs once per page view.
-              {%- endcomment -%}
-              var seconds = parseFloat(feed.getAttribute('data-bw-seconds')) || 15;
+              const SECONDS_IN_BLACK_AND_WHITE = {{ section.settings.bw_intro_seconds | default: 0 }};
+              const FADE_SECONDS = {{ section.settings.bw_intro_fade | default: 0 }};
+              const FADE_CLEANUP_MARGIN = 100;
 
-              var fadeSeconds = parseFloat(feed.getAttribute('data-bw-fade')) || 1.5;
-
-              function startCountdown() {
-                setTimeout(function () {
+              const startCountdown = () => {
+                setTimeout(() => {
                   feed.classList.remove('is-bw');
                   feed.classList.add('is-bw-fading');
 
-                  setTimeout(function () {
-                    feed.classList.remove('is-bw-fading');
-                  }, fadeSeconds * 1000 + 100);
-                }, seconds * 1000);
-              }
+                  setTimeout(() => feed.classList.remove('is-bw-fading'), FADE_SECONDS * 1000 + FADE_CLEANUP_MARGIN);
+                }, SECONDS_IN_BLACK_AND_WHITE * 1000);
+              };
 
-              if (!('IntersectionObserver' in window)) {
-                startCountdown();
-                return;
-              }
-
-              var observer = new IntersectionObserver(function (entries) {
-                if (entries.some(function (entry) { return entry.isIntersecting; })) {
+              const observer = new IntersectionObserver((entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) {
                   observer.disconnect();
                   startCountdown();
                 }
@@ -641,106 +589,101 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
         A video opened in the zoom view is never touched here. When it is closed (event "thumbnail:collapsed") the right state is recomputed.
         {%- endcomment -%}
         <script>
-          (function () {
-            var carousel = document.getElementById('{{ instagram_carousel_id }}');
+          (() => {
+            const carousel = document.getElementById('{{ instagram_carousel_id }}');
 
             if (!carousel) {
               return;
             }
 
-            var desktopQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
-            var sectionVisible = false;
-            var queued = false;
+            const MIN_VISIBLE_SHARE = 0.5;
+            const SECTION_VISIBLE_RATIO = 0.4;
+            const COLLAPSE_DELAY = 80;
+            const VIDEO_CELL = '.instagram-feed__video-cell';
 
-            function cells() {
-              return Array.prototype.slice.call(carousel.querySelectorAll(':scope > .instagram-feed__video-cell'));
-            }
+            const hoverQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+            let sectionVisible = false;
+            let queued = false;
 
-            function mediaOf(cell) {
-              return cell.querySelector('video-media');
-            }
+            const videoCells = () => [...carousel.querySelectorAll(`:scope > ${VIDEO_CELL}`)];
+            const mediaOf = (cell) => cell.querySelector('video-media');
+            const isExpanded = (media) => media.classList.contains('is-lightbox-expanded');
 
-            function isExpanded(media) {
-              return media.classList.contains('is-lightbox-expanded');
-            }
-
-            function start(media) {
+            const start = (media) => {
               if (media && !isExpanded(media) && typeof media.play === 'function' && !media.playing) {
                 media.play();
               }
-            }
+            };
 
-            function stop(media) {
+            const stop = (media) => {
               if (media && !isExpanded(media) && typeof media.pause === 'function' && media.playing) {
                 media.pause({ manual: false });
               }
-            }
+            };
 
             {%- comment -%}The leftmost video that is at least half visible inside the row{%- endcomment -%}
-            function firstVideoAtTheLeft() {
-              var rowRect = carousel.getBoundingClientRect();
-              var best = null;
-              var bestLeft = Infinity;
+            const firstVideoAtTheLeft = () => {
+              const row = carousel.getBoundingClientRect();
+              let best = null;
+              let bestLeft = Infinity;
 
-              cells().forEach(function (cell) {
-                var media = mediaOf(cell);
-                var rect = cell.getBoundingClientRect();
+              videoCells().forEach((cell) => {
+                const media = mediaOf(cell);
+                const rect = cell.getBoundingClientRect();
 
                 if (!media || !rect.width) {
                   return;
                 }
 
-                var visible = Math.min(rect.right, rowRect.right) - Math.max(rect.left, rowRect.left);
+                const visibleWidth = Math.min(rect.right, row.right) - Math.max(rect.left, row.left);
 
-                if (visible / rect.width >= 0.5 && rect.left < bestLeft) {
+                if (visibleWidth / rect.width >= MIN_VISIBLE_SHARE && rect.left < bestLeft) {
                   best = media;
                   bestLeft = rect.left;
                 }
               });
 
               return best;
-            }
+            };
 
-            function apply() {
+            const apply = () => {
               queued = false;
 
-              var chosen = null;
+              const chosen = !hoverQuery.matches && sectionVisible && !document.hidden ? firstVideoAtTheLeft() : null;
 
-              if (!desktopQuery.matches && sectionVisible && !document.hidden) {
-                chosen = firstVideoAtTheLeft();
-              }
+              videoCells().forEach((cell) => {
+                const media = mediaOf(cell);
 
-              cells().forEach(function (cell) {
-                var media = mediaOf(cell);
-
-                if (media === chosen && chosen) {
+                if (chosen && media === chosen) {
                   start(media);
                 } else {
                   stop(media);
                 }
               });
-            }
+            };
 
-            function queueApply() {
+            const queueApply = () => {
               if (!queued) {
                 queued = true;
                 requestAnimationFrame(apply);
               }
-            }
+            };
 
             {%- comment -%}Desktop: hover plays, leaving pauses (mouse only, never touch){%- endcomment -%}
-            carousel.addEventListener('pointerover', function (event) {
-              var cell = event.target.closest ? event.target.closest('.instagram-feed__video-cell') : null;
+            const hoveredCell = (event) => (hoverQuery.matches && event.pointerType === 'mouse' ? event.target.closest?.(VIDEO_CELL) : null);
 
-              if (cell && desktopQuery.matches && event.pointerType === 'mouse') {
+            carousel.addEventListener('pointerover', (event) => {
+              const cell = hoveredCell(event);
+
+              if (cell) {
                 start(mediaOf(cell));
               }
             });
 
-            carousel.addEventListener('pointerout', function (event) {
-              var cell = event.target.closest ? event.target.closest('.instagram-feed__video-cell') : null;
+            carousel.addEventListener('pointerout', (event) => {
+              const cell = hoveredCell(event);
 
-              if (cell && !cell.contains(event.relatedTarget) && desktopQuery.matches && event.pointerType === 'mouse') {
+              if (cell && !cell.contains(event.relatedTarget)) {
                 stop(mediaOf(cell));
               }
             });
@@ -748,87 +691,70 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             carousel.addEventListener('scroll', queueApply, { passive: true });
             window.addEventListener('resize', queueApply);
             document.addEventListener('visibilitychange', queueApply);
-
-            if (desktopQuery.addEventListener) {
-              desktopQuery.addEventListener('change', queueApply);
-            }
+            hoverQuery.addEventListener('change', queueApply);
 
             {%- comment -%}The zoom view was closed: its video goes back to its thumbnail paused, then the right state is recomputed{%- endcomment -%}
-            carousel.addEventListener('thumbnail:collapsed', function () {
-              setTimeout(queueApply, 80);
-            });
+            carousel.addEventListener('thumbnail:collapsed', () => setTimeout(queueApply, COLLAPSE_DELAY));
 
-            if ('IntersectionObserver' in window) {
-              new IntersectionObserver(function (entries) {
-                sectionVisible = entries[entries.length - 1].intersectionRatio >= 0.4;
-                queueApply();
-              }, { threshold: [0, 0.4, 1] }).observe(carousel);
-            } else {
-              sectionVisible = true;
-            }
+            new IntersectionObserver((entries) => {
+              sectionVisible = entries[entries.length - 1].intersectionRatio >= SECTION_VISIBLE_RATIO;
+              queueApply();
+            }, { threshold: [0, SECTION_VISIBLE_RATIO, 1] }).observe(carousel);
 
             customElements.whenDefined('video-media').then(queueApply);
           })();
         </script>
 
         {%- comment -%}
-        Keeps the lightbox caption's TEXT and POSITION in sync with whichever item is currently
-        expanded - open, close, and next/prev inside the lightbox (snippets/media-zoom-script.liquid)
-        all end up toggling the "is-lightbox-expanded" class onto that item's own <img>/<video-media>,
-        so watching for that one class, scoped to this carousel, covers every way the active item can
-        change without needing its own copy of (or any changes to) that shared open/close/navigate
-        logic. The caption's own fade in/out is handled in CSS alone (see the sibling selector above).
-
-        Position: the expanded media has no fixed box of its own in CSS (sized by its own content, up
-        to 96vw/96vh - see media-zoom-style.liquid), so there's no pure-CSS anchor to left-align a
-        caption under it. getBoundingClientRect() reads wherever it actually ended up rendering (left
-        edge, width, bottom edge) and places the caption flush with its left edge, the same width as
-        it, a small fixed gap below - re-measured on resize too (the media's own rendered size/
-        position changes then, eg. rotating a phone), not just when the active item changes.
+        Caption of the open photo or video, shown only in the zoom view (the text of the block's caption setting, read from its cell's data-caption
+        attribute): under the media, or inside its top-left corner when the media fills the whole height of the screen.
         {%- endcomment -%}
         <script>
-          (function () {
-            var carousel = document.getElementById('{{ instagram_carousel_id }}');
-            var caption = document.getElementById('{{ instagram_lightbox_id }}-caption');
+          (() => {
+            const carousel = document.getElementById('{{ instagram_carousel_id }}');
+            const lightbox = document.getElementById('{{ instagram_lightbox_id }}');
+            const caption = document.getElementById('{{ instagram_lightbox_id }}-caption');
 
-            if (!carousel || !caption) return;
-
-            var captionGap = 12;
-
-            function syncCaption() {
-              var expanded = carousel.querySelector('.is-lightbox-expanded');
-              var cell = expanded ? expanded.closest('.snap-start') : null;
-
-              caption.textContent = cell ? cell.dataset.caption || '' : '';
-
-              if (expanded) {
-                var rect = expanded.getBoundingClientRect();
-
-                caption.style.left = rect.left + 'px';
-                caption.style.width = rect.width + 'px';
-                caption.style.top = (rect.bottom + captionGap) + 'px';
-
-                {%- comment -%}
-                The media can fill the whole height of the screen (mobile, tall videos), leaving no room under it: the caption then sits
-                inside the video, at its top-left corner, with room left for the close button.
-                {%- endcomment -%}
-                if (rect.bottom + captionGap + caption.offsetHeight > window.innerHeight - captionGap) {
-                  caption.style.left = (rect.left + captionGap) + 'px';
-                  caption.style.width = Math.max(0, rect.width - captionGap * 2 - 48) + 'px';
-                  caption.style.top = (rect.top + captionGap) + 'px';
-                }
-              }
+            if (!carousel || !lightbox || !caption) {
+              return;
             }
 
+            const GAP = 12;
+            const SETTLE_DELAY = 460;
+
+            const syncCaption = () => {
+              const expanded = carousel.querySelector('.is-lightbox-expanded');
+
+              caption.textContent = expanded?.closest('.snap-start')?.dataset.caption ?? '';
+
+              if (!expanded) {
+                return;
+              }
+
+              const rect = expanded.getBoundingClientRect();
+
+              caption.style.left = `${rect.left}px`;
+              caption.style.width = `${rect.width}px`;
+              caption.style.top = `${rect.bottom + GAP}px`;
+
+              {%- comment -%}
+              The media can fill the whole height of the screen (mobile, tall videos), leaving no room under it: the caption then sits inside
+              the video, at its top-left corner, with room left for the close button.
+              {%- endcomment -%}
+              if (rect.bottom + GAP + caption.offsetHeight > window.innerHeight - GAP) {
+                const closeButtonWidth = lightbox.querySelector('.media-lightbox__close')?.offsetWidth ?? 0;
+
+                caption.style.left = `${rect.left + GAP}px`;
+                caption.style.width = `${Math.max(0, rect.width - GAP * 3 - closeButtonWidth)}px`;
+                caption.style.top = `${rect.top + GAP}px`;
+              }
+            };
+
             {%- comment -%}Measured again once the open animation has settled: during it the media is still slightly scaled down{%- endcomment -%}
-            new MutationObserver(function () {
+            new MutationObserver(() => {
               syncCaption();
-              setTimeout(syncCaption, 460);
-            }).observe(carousel, {
-              attributes: true,
-              attributeFilter: ['class'],
-              subtree: true
-            });
+              setTimeout(syncCaption, SETTLE_DELAY);
+            }).observe(carousel, { attributes: true, attributeFilter: ['class'], subtree: true });
 
             window.addEventListener('resize', syncCaption);
           })();
@@ -866,15 +792,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   #shopify-section-{{ section.id }} .instagram-feed__header {
     align-items: start;
     gap: 1rem;
-    display: flex;
-  }
-
-  {%- comment -%}
-  Space between the header (title, subtitle, button) and the carousel: doubled. .section-stack already puts
-  --section-stack-row-gap between its children; this adds the same amount again below the header.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__header {
     margin-block-end: var(--section-stack-row-gap);
+    display: flex;
   }
 
   #shopify-section-{{ section.id }} .instagram-feed__content {
@@ -1048,18 +967,11 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   {%- comment -%}
-  Every video plays by itself, so there are no play/pause or sound buttons on the thumbnails at any screen size, only the zoom
-  button (always visible on mobile, revealed on hover/tap on desktop). They appear in the lightbox.
+  The play / pause / sound buttons exist only inside the zoom view: on the thumbnails the round play button (media-zoom-slide.liquid) is the
+  only control, so the video's own controls group stays hidden there.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .carousel-video-controls:not(.is-lightbox-expanded) {
     display: none;
-  }
-
-  {%- comment -%}
-  Inside the lightbox the sound and pause buttons are always there: visible, enabled, never faded out or hidden.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .carousel-video-controls.is-lightbox-expanded {
-    visibility: visible;
   }
 
   {%- if section.settings.bw_intro -%}
@@ -1105,6 +1017,8 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   under the heart. The heart fills when liked.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .carousel-video-like {
+    --like-icon-color: var(--control-button-icon-color, #fff);
+    --like-active-color: {{ section.settings.like_color }};
     display: grid;
     justify-items: center;
     row-gap: 0.125rem;
@@ -1113,7 +1027,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   #shopify-section-{{ section.id }} .carousel-video-like__count {
     font: var(--text-font-style) var(--text-font-weight) var(--text-base) / var(--text-line-height) var(--text-font-family);
     letter-spacing: var(--text-letter-spacing);
-    color: var(--control-button-icon-color, #ffffff);
+    color: var(--like-icon-color);
   }
 
   #shopify-section-{{ section.id }} .carousel-video-like__count:empty {
@@ -1132,7 +1046,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     padding: 0;
     background: none;
     border: 0;
-    color: var(--control-button-icon-color, #ffffff);
+    color: var(--like-icon-color);
     cursor: pointer;
     transition: color 0.3s ease, scale 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -1143,7 +1057,7 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   #shopify-section-{{ section.id }} .carousel-video-like-toggle[aria-pressed="true"] {
-    color: #e5243b;
+    color: var(--like-active-color);
     animation: instagram-feed-heart-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
@@ -1185,8 +1099,9 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     width: 1.75rem;
     height: 1.75rem;
     margin: auto;
-    border: 2px solid rgb(255 255 255 / 0.4);
-    border-block-start-color: #fff;
+    color: var(--control-button-icon-color, #fff);
+    border: 2px solid color-mix(in srgb, currentColor 40%, transparent);
+    border-block-start-color: currentColor;
     border-radius: 50%;
     opacity: 0;
     pointer-events: none;
@@ -1205,31 +1120,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     }
   }
 
-  {%- comment -%}
-  Flush controls: when the merchant's control button background (Color scheme > Controls) is fully
-  transparent, the play/pause, sound and zoom icons have nothing to sit on, so the button's own square and
-  the zoom icon's .75rem padding are just invisible dead space. In the thumbnail only, drop them and
-  offset the icons .75rem from the video's edges - the same inset the header logo overlay uses
-  (media-zoom-style.liquid), so icons and logo share one margin. The expanded lightbox state (.is-lightbox-expanded) is left untouched.
-  {%- endcomment -%}
-  {%- assign instagram_control_bg = section.settings.color_scheme.settings.control_button_background_color -%}
-  {%- if instagram_control_bg == blank -%}
-    {%- assign instagram_control_bg = settings.control_button_background_color -%}
-  {%- endif -%}
-  {%- if instagram_control_bg != blank and instagram_control_bg.alpha == 0 -%}
-    #shopify-section-{{ section.id }} .carousel-video-controls:not(.is-lightbox-expanded) {
-      inset-block-start: 0.75rem;
-      inset-inline-end: 0.75rem;
-      gap: 0.5rem;
-    }
-
-    #shopify-section-{{ section.id }} .carousel-video-controls:not(.is-lightbox-expanded) > * {
-      width: auto !important;
-      height: auto !important;
-      padding: 0;
-    }
-
-  {%- endif -%}
 
   {%- comment -%}
   object-fit: cover/display: block for the image case come from the theme's global img rule, and
@@ -1252,38 +1142,30 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   }
 
   {%- comment -%}
-  Taller than square on every breakpoint now (overrides .aspect-square's aspect-ratio: 1,
-  assets/theme.css, and the aspect-ratio: 1 rule right above for video) - width keeps coming from
-  .instagram-feed__carousel > .snap-start above (unchanged on both mobile and desktop), only the
-  height grows. Mobile is taller still (3:5) than desktop (4:5, a more modest bump) - two separate
-  values instead of one shared ratio since they were asked for separately.
+  Shape of every photo and video: one custom property that changes with the screen size - phones: the "Photo and video shape (mobile)" setting
+  (3:5 by default); tablets, from 700px: a fixed 7:10; from 1000px: the "Photo and video shape (desktop)" setting (square by default). Only the
+  height follows it, the width comes from .instagram-feed__carousel > .snap-start above. It overrides .aspect-square's aspect-ratio: 1
+  (assets/theme.css) and the ratio the video's .content-box gets from media-zoom-slide.liquid.
   {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed {
+    --instagram-feed-ratio: {{ instagram_ratio_mobile }};
+  }
+
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .instagram-feed {
+      --instagram-feed-ratio: 7 / 10;
+    }
+  }
+
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} .instagram-feed {
+      --instagram-feed-ratio: {{ instagram_ratio_desktop }};
+    }
+  }
+
   #shopify-section-{{ section.id }} .instagram-feed__image,
   #shopify-section-{{ section.id }} .content-box {
-    aspect-ratio: 4 / 5;
-  }
-
-  @media screen and (max-width: 699px) {
-    #shopify-section-{{ section.id }} .instagram-feed__image,
-    #shopify-section-{{ section.id }} .content-box {
-      aspect-ratio: {{ instagram_ratio_mobile }};
-    }
-  }
-
-  {%- comment -%}Desktop only: a little taller than before (4:5 -> 7:10). Same width per item, so no extra items fit in the first view.{%- endcomment -%}
-  @media screen and (min-width: 700px) {
-    #shopify-section-{{ section.id }} .instagram-feed__image,
-    #shopify-section-{{ section.id }} .content-box {
-      aspect-ratio: 7 / 10;
-    }
-  }
-
-  {%- comment -%}Desktop (1000px and up): the shape picked in "Photo and video shape (desktop)" (square by default), as wide as the row divided by "Items per row (desktop)". Phones (below 700px) use "Photo and video shape (mobile)" (3:5 by default). Tablets keep 7:10.{%- endcomment -%}
-  @media screen and (min-width: 1000px) {
-    #shopify-section-{{ section.id }} .instagram-feed__image,
-    #shopify-section-{{ section.id }} .content-box {
-      aspect-ratio: {{ instagram_ratio_desktop }};
-    }
+    aspect-ratio: var(--instagram-feed-ratio);
   }
 
   {%- comment -%}
@@ -1638,6 +1520,13 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
       "label": "Show a like button on videos",
       "info": "A heart at the top of the video's controls in the zoom view. Visitors can like a video; their like is remembered in their own browser.",
       "default": true
+    },
+    {
+      "type": "color",
+      "id": "like_color",
+      "label": "Liked heart color",
+      "default": "#e5243b",
+      "visible_if": "{{ section.settings.show_likes }}"
     },
     {
       "type": "header",

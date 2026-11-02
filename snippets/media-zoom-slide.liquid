@@ -12,7 +12,6 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
 @param {object} [image] - the image to render when no video is set.
 @param {boolean} [autoplay] - whether the video autoplays, muted and looped, instead of the default tap-to-play (default false - unchanged existing behavior)
 @param {boolean} [show_pause_button] - whether to show the play/pause toggle control (default true)
-@param {boolean} [reveal_controls_on_tap] - whether the sound/pause/product controls start hidden and only reveal when the media itself is tapped, instead of always visible (default false)
 @param {string} [block_size] - desktop block size keyword (auto/sm/md/lg/fill), used as the md:min-h-* class
 @param {string} [mobile_block_size] - mobile block size keyword (auto/sm/md/lg/fill), used as the min-h-* class
 @param {string} [corner_radius] - CSS value for the item's border-radius (eg. "var(--media-blocks-corner-radius)" or "12px")
@@ -65,11 +64,11 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
         {%- endcapture -%}
       {%- endif -%}
 
-      <div class="h-stack gap-2 carousel-video-controls{% if reveal_controls_on_tap %} carousel-video-controls--tap-to-reveal{% endif %}">
+      <div class="h-stack gap-2 carousel-video-controls">
         {%- if show_like -%}
           <div class="carousel-video-like" data-like-id="{{ like_id }}" data-like-base="{{ like_count }}">
             <button type="button" class="carousel-video-like-toggle" aria-pressed="false">
-              <span class="sr-only">{{ 'Me gusta' }}</span>
+              <span class="sr-only">{{ 'general.accessibility.like' | t }}</span>
               {%- render 'icon' with 'heart' -%}
             </button>
             <span class="carousel-video-like__count" aria-live="polite"></span>
@@ -131,7 +130,7 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
           </button>
         </open-lightbox-button>
       {%- else -%}
-        <open-lightbox-button class="block{% if reveal_controls_on_tap %} carousel-video-controls--tap-to-reveal{% endif %}" aria-controls="{{ resolved_aria_controls_id }}" image-index="{{ lightbox_index | default: 0 }}">
+        <open-lightbox-button class="block" aria-controls="{{ resolved_aria_controls_id }}" image-index="{{ lightbox_index | default: 0 }}">
           <button type="button" class="product-zoom-button">
             {%- render 'icon' with 'zoom-plus' -%}
             <span class="product-zoom-button__label">{{ 'product.gallery.zoom' | t }}</span>
