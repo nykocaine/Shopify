@@ -1032,7 +1032,7 @@ progress bar) are simply skipped when no carousel_id is given.
       // Finger/mouse drag: the current item follows the pointer, the one it is heading to comes in right
       // behind it, and releasing either completes the slide or springs back.
       function pointerIsOnControl(event) {
-        return event.target.closest && event.target.closest('button, a, .carousel-video-controls, .lightbox-scrubber, .lightbox-comments, .media-lightbox__close');
+        return event.target.closest && event.target.closest('button, a, .carousel-video-controls, .lightbox-scrubber, .media-lightbox__close');
       }
 
       document.addEventListener('pointerdown', function(event) {
@@ -1162,11 +1162,6 @@ progress bar) are simply skipped when no carousel_id is given.
           return;
         }
 
-        // The comments panel (Instagram feed) scrolls on its own: the wheel there is not a slide
-        if (event.target.closest && event.target.closest('.lightbox-comments')) {
-          return;
-        }
-
         event.preventDefault();
 
         if (isSliding || isClosing || event.timeStamp < wheelLockedUntil || Math.abs(event.deltaY) < 24) {
@@ -1194,11 +1189,6 @@ progress bar) are simply skipped when no carousel_id is given.
 
       document.addEventListener('keydown', function(event) {
         if (lightbox.hidden) {
-          return;
-        }
-
-        // Typing in a field inside the lightbox (the comment box of the Instagram Feed) must not slide, seek or scroll anything.
-        if (event.key !== 'Escape' && event.target && /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)) {
           return;
         }
 
