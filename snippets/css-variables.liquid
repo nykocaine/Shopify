@@ -269,6 +269,8 @@ note that this may have impact on different places.
     --control-button-border-radius: {{ settings.control_button_border_radius }}px;
     --control-button-size: {{ settings.control_button_size_mobile }}px;
     --control-icon-size: {{ settings.control_icon_size_mobile }}px;
+    --control-button-blur: {{ settings.control_button_blur }}px;
+    --overlay-control-background: rgb(0 0 0 / {{ settings.control_button_background_opacity | divided_by: 100.0 | times: 0.65 }});
 
     /* Badges */
     --badge-font-size: {{ settings.badge_font_size_mobile | divided_by: 16.0 }}rem;
@@ -637,6 +639,9 @@ note that this may have impact on different places.
       /* Media Controls (video sound/pause/product-link, slideshow autoplay, hotspots) */
       {%- if color_scheme.settings.control_button_background_color != blank -%}
         --control-button-background-color: rgb({{ color_scheme.settings.control_button_background_color.rgb }} / {{ color_scheme.settings.control_button_background_color.alpha }});
+      {%- endif -%}
+      {%- if color_scheme.settings.control_button_background_color != blank -%}
+        --overlay-control-background: rgb({{ color_scheme.settings.control_button_background_color.rgb }} / {{ color_scheme.settings.control_button_background_color.alpha | times: settings.control_button_background_opacity | divided_by: 100.0 }});
       {%- endif -%}
       {%- if color_scheme.settings.control_button_icon_color != blank -%}
         --control-button-icon-color: rgb({{ color_scheme.settings.control_button_icon_color.rgb }} / {{ color_scheme.settings.control_button_icon_color.alpha }});

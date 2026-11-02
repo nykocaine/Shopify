@@ -132,7 +132,8 @@ the first available one); the click is handled by the script near the lightbox b
       {%- endif -%}
 
       {%- if instagram_media_count > 0 -%}
-        <scroll-carousel id="{{ instagram_carousel_id }}" class="instagram-feed__carousel snap-x scroll-area">
+        <div class="carousel-frame">
+          <scroll-carousel id="{{ instagram_carousel_id }}" class="instagram-feed__carousel snap-x scroll-area">
           {%- assign instagram_slide_index = 0 -%}
 
           {%- for block in instagram_media_blocks -%}
@@ -204,12 +205,13 @@ the first available one); the click is handled by the script near the lightbox b
               {%- assign instagram_slide_index = instagram_slide_index | plus: 1 -%}
             {%- endif -%}
           {%- endfor -%}
-        </scroll-carousel>
+          </scroll-carousel>
 
-        {%- comment -%}The progress bar and arrows make no sense on an endless, self-moving row, so they only show when auto-scroll is off{%- endcomment -%}
-        {%- unless instagram_autoscroll -%}
-  {%- render 'scroll-controls', target_id: instagram_carousel_id, show_mobile: section.settings.show_progress_bar_mobile, show_desktop: section.settings.show_progress_bar_desktop, class: 'instagram-feed__scroll-controls' -%}
-        {%- endunless -%}
+          {%- comment -%}Round arrows over the photos and videos, one at each side. They make no sense on an endless, self-moving row, so they only show when auto-scroll is off{%- endcomment -%}
+          {%- unless instagram_autoscroll -%}
+            {%- render 'carousel-side-arrows', target_id: instagram_carousel_id, show_mobile: section.settings.show_progress_bar_mobile, show_desktop: section.settings.show_progress_bar_desktop -%}
+          {%- endunless -%}
+        </div>
 
         {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple -%}
 
@@ -2385,13 +2387,13 @@ the first available one); the click is handled by the script near the lightbox b
     {
       "type": "checkbox",
       "id": "show_progress_bar_mobile",
-      "label": "Show scroll controls on mobile",
+      "label": "Show arrows on mobile",
       "default": true
     },
     {
       "type": "checkbox",
       "id": "show_progress_bar_desktop",
-      "label": "Show scroll controls on desktop",
+      "label": "Show arrows on desktop",
       "default": false
     },
     {

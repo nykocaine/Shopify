@@ -400,6 +400,34 @@ so the box stays centered.
 }
 
 {%- comment -%}
+Every button inside the video pop up (close, previous / next, sound, play / pause, quick buy, like, comments, cart) shares one look: a
+round button with a translucent, blurred background. Size, shape and blur come from Theme settings > Controls (same as the arrows over
+the carousels, .overlay-control in theme.css); the background and icon colors from the color scheme (Controls). The doubled class
+only raises the specificity above each button's own rule (some live in the section that renders the pop up).
+{%- endcomment -%}
+#{{ lightbox_id }} .media-lightbox__close.media-lightbox__close,
+#{{ lightbox_id }} .media-lightbox__prev.media-lightbox__prev,
+#{{ lightbox_id }} .media-lightbox__next.media-lightbox__next,
+#{{ wrapper_id }} .carousel-video-sound-toggle.carousel-video-sound-toggle,
+#{{ wrapper_id }} .carousel-video-pause-toggle.carousel-video-pause-toggle,
+#{{ wrapper_id }} .carousel-video-product-link.carousel-video-product-link,
+#{{ wrapper_id }} .carousel-video-like-toggle.carousel-video-like-toggle,
+#{{ wrapper_id }} .carousel-video-comments-toggle.carousel-video-comments-toggle,
+#{{ wrapper_id }} .carousel-video-cart-toggle.carousel-video-cart-toggle {
+  border: 0;
+  border-radius: var(--control-button-border-radius, 100px);
+  background: var(--overlay-control-background, rgb(0 0 0 / .35));
+  -webkit-backdrop-filter: blur(var(--control-button-blur, 12px));
+  backdrop-filter: blur(var(--control-button-blur, 12px));
+  color: var(--control-button-icon-color, #fff);
+}
+
+#{{ lightbox_id }} .media-lightbox__prev:before,
+#{{ lightbox_id }} .media-lightbox__next:before {
+  content: none;
+}
+
+{%- comment -%}
 Overrides circle-button--xl's own --button-size (2.5rem/3rem) so close/prev/next all match the same
 --control-button-size (Theme settings > Global > Controls) the play/pause/sound buttons already use.
 
