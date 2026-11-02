@@ -2,7 +2,7 @@
 A carousel of square (or portrait) photos and videos in an Instagram-feed style: each "Media" block is either an image or a video (the merchant
 swaps the type per block from the editor). Extracted from sections/reviews.liquid, where this started as a block, so it isn't tied to Reviews.
 
-- The row is reshuffled on every page load; the videos are spread evenly among the photos.
+- The row starts with all the videos, then the photos; each group is reshuffled on every page load.
 - Photos open the zoom view by tapping the photo itself (no visible button). Videos use snippets/media-zoom-slide.liquid, the same as FAQ's
   "Text + image/video" block and Media Blocks' Carousel: a round play button in the middle of the video opens the zoom view.
 - Nothing autoplays by itself: on mobile only the first video at the left edge plays (a muted preview), on desktop a video plays while the
@@ -234,7 +234,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
         Feed behavior, in order: the random order of the row, lazy loading and loading cue of the videos, the "#video-<block id>" deep link and
         the like buttons.
 
-        The row is reshuffled into a random order on every page load (not persisted: a fresh shuffle each visit). This runs as a plain
+        The row starts with the videos, then the photos, each group in a random order on every page load (not persisted: a fresh shuffle each visit). This runs as a plain
         synchronous script, BEFORE media-zoom-script below: that one captures its own "cells" snapshot inside an async
         customElements.whenDefined() callback, so this reorder - and the image-index rewrite that keeps each slide's lightbox index matching
         its new position - has to land first, or the lightbox would open the wrong item for whatever position was clicked. Every cell is a
@@ -258,9 +258,8 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
             const HAVE_FUTURE_DATA = 3;
 
             {%- comment -%}
-            Videos and images are shuffled independently within each group (still a fresh order every page load) and then interleaved: the
-            videos are spread evenly through the row, starting with one (video, image, video, image... when there are as many of each; with
-            fewer videos they are evenly spaced between the images), instead of one shuffle across everything, which could clump them.
+            Videos and images are shuffled independently within each group (still a fresh order every page load) and then put one group after
+            the other: ALL the videos first, then the photos.
             {%- endcomment -%}
             const shuffle = (items) => {
               for (let i = items.length - 1; i > 0; i--) {
@@ -275,17 +274,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
             const cells = [...carousel.children];
             const videoCells = shuffle(cells.filter((cell) => cell.querySelector('video-media')));
             const otherCells = shuffle(cells.filter((cell) => !cell.querySelector('video-media')));
-            const ordered = new Array(cells.length);
-
-            videoCells.forEach((cell, index) => {
-              ordered[Math.floor((index * ordered.length) / videoCells.length)] = cell;
-            });
-
-            let nextOther = 0;
-
-            for (let slot = 0; slot < ordered.length; slot++) {
-              ordered[slot] ??= otherCells[nextOther++];
-            }
+            const ordered = [...videoCells, ...otherCells];
 
             ordered.forEach((cell, index) => {
               cell.querySelector('open-lightbox-button')?.setAttribute('image-index', index);
