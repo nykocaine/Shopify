@@ -590,11 +590,22 @@ if (!window.customElements.get('read-more-match-height')) {
           position: relative;
           overflow: hidden;
           border-radius: {{ media_corner_radius }};
+          --faq-media-inset: var(--container-gutter);
+        }
+
+        {%- comment -%}
+        Inner padding of EACH photo/video (inside the image itself, not around the carousel): what the caption and the decorative icon keep from the
+        edges of their own image. Phones: the theme's container gutter, the same inner padding used everywhere else; desktop (1000px and up): half of it.
+        {%- endcomment -%}
+        @media screen and (min-width: 1000px) {
+          #{{ media_wrapper_id }} .faq__text-image-media-frame {
+            --faq-media-inset: calc(var(--container-gutter) / 2);
+          }
         }
 
         {%- comment -%}
         Caption inside the photo/video, like the gallery of the main product page: white text aligned to the left at the
-        bottom edge with no background or shadow, at the bottom edge of the photo, inset by the theme's --container-gutter on the left, right and bottom (the same inner padding used everywhere else). pointer-events: none so
+        bottom edge with no background or shadow, at the bottom edge of the photo, inset by --faq-media-inset (the container gutter on phones, half of it on desktop, set on the frame above) on the left, right and bottom. pointer-events: none so
         the caption never blocks the zoom / play buttons under it. Overrides theme.css's global
         figcaption { margin-block-start: .625rem !important; } for this caption only.
         {%- endcomment -%}
@@ -639,7 +650,7 @@ if (!window.customElements.get('read-more-match-height')) {
           inset-block-end: 0;
           z-index: 1;
           margin: 0 !important;
-          padding: 0 var(--container-gutter) var(--container-gutter);
+          padding: 0 var(--faq-media-inset) var(--faq-media-inset);
           line-height: 1.25;
           color: #fff;
           text-align: start;
@@ -647,8 +658,8 @@ if (!window.customElements.get('read-more-match-height')) {
         }
 
         #{{ media_wrapper_id }} .faq__text-image-slide-icon {
-          top: .75rem;
-          left: .75rem;
+          top: var(--faq-media-inset);
+          left: var(--faq-media-inset);
           z-index: 2;
           position: absolute;
           pointer-events: none;
