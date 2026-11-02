@@ -1,0 +1,77 @@
+{%- comment -%}
+  Scroll reveal: each section of <main> fades in while sliding up slightly the first time it enters the viewport.
+
+  - Sections are only hidden once the script has run (class "sr-ready" on <html>), so without JS everything stays visible.
+  - Disabled in the theme editor and for visitors who prefer reduced motion.
+  - The transform exists only while the animation runs (keyframes, no fill-mode "forwards"), so afterwards the section
+    has no transform and position: fixed / sticky descendants (lightboxes, sticky headers) keep working.
+  - The first section of the page is skipped: it is already on screen at load and should not flash.
+{%- endcomment -%}
+<style>
+  @media (prefers-reduced-motion: no-preference) {
+    html.sr-ready main > .shopify-section:not(.sr-in) {
+      opacity: 0;
+      transform: translateY(48px);
+    }
+
+    html.sr-ready main > .shopify-section.sr-in {
+      animation: sr-rise 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    }
+
+    @keyframes sr-rise {
+      from {
+        opacity: 0;
+        transform: translateY(48px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  }
+</style>
+<script>
+  (function () {
+    if (
+      !('IntersectionObserver' in window) ||
+      (window.Shopify && Shopify.designMode) ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var sections = Array.prototype.slice.call(document.querySelectorAll('main > .shopify-section')).slice(1);
+
+      if (!sections.length) {
+        return;
+      }
+
+      var observer = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('sr-in');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.08, rootMargin: '0px 0px -8% 0px' }
+      );
+
+      sections.forEach(function (section) {
+        // Sections already above the viewport (e.g. restored scroll position) are shown without animating.
+        if (section.getBoundingClientRect().bottom < 0) {
+          section.classList.add('sr-in');
+          section.style.animation = 'none';
+          return;
+        }
+
+        observer.observe(section);
+      });
+
+      document.documentElement.classList.add('sr-ready');
+    });
+  })();
+</script>
