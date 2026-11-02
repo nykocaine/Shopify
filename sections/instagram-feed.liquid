@@ -78,20 +78,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
   endcase
 -%}
 
-{%- comment -%}
-On a product page every video's buttons also get an "add to cart" button for that page's product (the variant selected in the page's URL, else
-the first available one); the click is handled by the script near the lightbox below.
-{%- endcomment -%}
-{%- liquid
-  assign instagram_cart_variant_id = ''
-
-  if request.page_type == 'product' and product.available
-    assign instagram_cart_variant_id = product.selected_or_first_available_variant.id
-  endif
-
-  assign instagram_cart_label = 'product.general.add_to_cart_button' | t
--%}
-
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {{ instagram_corner_radius_px }}; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack{% if section.settings.bw_intro %} is-bw{% endif %}"{% if section.settings.show_lightbox_reviews %} data-lightbox-reviews{% endif %}{% if section.settings.bw_intro %} data-bw-seconds="{{ section.settings.bw_intro_seconds }}" data-bw-fade="{{ section.settings.bw_intro_fade }}"{% endif %}>
@@ -158,8 +144,6 @@ the first available one); the click is handled by the script near the lightbox b
                   reveal_controls_on_tap: true,
                   show_comments: section.settings.show_lightbox_reviews,
                   show_like: section.settings.show_likes,
-                  cart_variant_id: instagram_cart_variant_id,
-                  cart_label: instagram_cart_label,
                   like_id: block.id,
                   like_count: block.settings.likes_count,
                   corner_radius: instagram_corner_radius_px,
@@ -214,85 +198,6 @@ the first available one); the click is handled by the script near the lightbox b
         </div>
 
         {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple -%}
-
-        {%- if instagram_cart_variant_id != blank -%}
-          <script>
-            (function () {
-              var lightbox = document.getElementById('{{ instagram_lightbox_id }}');
-              var buttons = document.querySelectorAll('#{{ instagram_feed_id }} .carousel-video-cart-toggle');
-
-              if (!lightbox || !buttons.length) {
-                return;
-              }
-
-              Array.prototype.forEach.call(buttons, function (button) {
-              button.addEventListener('click', async function (event) {
-                event.stopPropagation();
-
-                if (button.getAttribute('aria-busy') === 'true') {
-                  return;
-                }
-
-                var variantId = new URLSearchParams(window.location.search).get('variant') || button.getAttribute('data-variant-id');
-                var root = window.Shopify && Shopify.routes ? Shopify.routes.root : '/';
-                var sections = new Set();
-
-                button.setAttribute('aria-busy', 'true');
-
-                document.documentElement.dispatchEvent(new CustomEvent('cart:prepare-bundled-sections', { bubbles: true, detail: { sections: sections } }));
-
-                try {
-                  var response = await fetch(root + 'cart/add.js', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                    body: JSON.stringify({ items: [{ id: Number(variantId), quantity: 1 }], sections: Array.from(sections).join(',') })
-                  });
-                  var added = await response.json();
-
-                  if (!response.ok) {
-                    document.dispatchEvent(new CustomEvent('toast:show', { detail: { message: added.description || added.message, tone: 'error' } }));
-                    return;
-                  }
-
-                  {%- comment -%}
-                  The video popup (lightbox) is closed immediately after the item is added, so the cart opens on a clear page
-                  instead of behind it.
-                  {%- endcomment -%}
-                  if (window.themeVariables && themeVariables.strings.addedToCart) {
-                    button.querySelector('.sr-only').textContent = themeVariables.strings.addedToCart.replace('{' + '{product_title}}', ((added.items || [added])[0] || {}).title || '');
-                  }
-
-                  var closeButton = lightbox.querySelector('.media-lightbox__close');
-
-                  if (closeButton) {
-                    closeButton.click();
-                  }
-
-                  if (window.themeVariables && themeVariables.settings.cartType === 'page') {
-                    window.location.href = root + 'cart';
-                    return;
-                  }
-
-                  var cart = await (await fetch(root + 'cart.js')).json();
-                  var items = added.items || [added];
-
-                  cart.sections = added.sections;
-
-                  document.documentElement.dispatchEvent(new CustomEvent('cart:change', { bubbles: true, detail: { baseEvent: 'variant:add', cart: cart } }));
-
-                  if (window.themeVariables && themeVariables.settings.cartType === 'message') {
-                    document.dispatchEvent(new CustomEvent('toast:show', { detail: { message: themeVariables.strings.addedToCart.replace('{' + '{product_title}}', (items[0] && items[0].title) || '') } }));
-                  }
-                } catch (error) {
-                  document.documentElement.dispatchEvent(new CustomEvent('cart:refresh', { bubbles: true }));
-                } finally {
-                  button.removeAttribute('aria-busy');
-                }
-              });
-              });
-            })();
-          </script>
-        {%- endif -%}
 
         {%- comment -%}
         Caption shown only in the zoomed-in lightbox, never in the feed grid itself - each "Media"
@@ -1530,8 +1435,7 @@ the first available one); the click is handled by the script near the lightbox b
     color: var(--control-button-icon-color, #ffffff);
   }
 
-  #shopify-section-{{ section.id }} .carousel-video-comments-toggle,
-  #shopify-section-{{ section.id }} .carousel-video-cart-toggle {
+  #shopify-section-{{ section.id }} .carousel-video-comments-toggle {
     display: grid;
     place-content: center;
     width: var(--control-button-size, 1.75rem);
@@ -1870,43 +1774,8 @@ the first available one); the click is handled by the script near the lightbox b
     animation: instagram-feed-heart-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  {%- comment -%}
-  Add to cart confirmation: the bag pops with the heart's own bounce, the plus shrinks away and a check is drawn in its place.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .carousel-video-cart-toggle[aria-busy="true"] {
-    pointer-events: none;
-  }
-
-  #shopify-section-{{ section.id }} .carousel-video-cart-toggle .cart-add__plus {
-    transform-box: fill-box;
-    transform-origin: center;
-    transition: opacity 0.2s ease, scale 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  #shopify-section-{{ section.id }} .carousel-video-cart-toggle .cart-add__check {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    opacity: 0;
-    transition: stroke-dashoffset 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.12s, opacity 0s linear 0.12s;
-  }
-
-  #shopify-section-{{ section.id }} .carousel-video-cart-toggle.is-added {
-    animation: instagram-feed-heart-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  #shopify-section-{{ section.id }} .carousel-video-cart-toggle.is-added .cart-add__plus {
-    opacity: 0;
-    scale: 0.4;
-  }
-
-  #shopify-section-{{ section.id }} .carousel-video-cart-toggle.is-added .cart-add__check {
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-
   #shopify-section-{{ section.id }} .carousel-video-like-toggle:active,
-  #shopify-section-{{ section.id }} .carousel-video-comments-toggle:active,
-  #shopify-section-{{ section.id }} .carousel-video-cart-toggle:active {
+  #shopify-section-{{ section.id }} .carousel-video-comments-toggle:active {
     scale: 0.92;
   }
 
