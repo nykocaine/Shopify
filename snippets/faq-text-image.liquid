@@ -515,8 +515,8 @@ if (!window.customElements.get('read-more-match-height')) {
               {%- endfor -%}
             </product-list>
 
-            {%- comment -%}Round arrows over the photos and videos, one at each side (they hide by themselves when there is nothing to scroll){%- endcomment -%}
-            {%- render 'carousel-side-arrows', target_id: media_carousel_id, show_mobile: true, show_desktop: true -%}
+            {%- comment -%}Round arrows over the photos and videos, one at each side (desktop only: on mobile the dots below the captions take their place; they hide by themselves when there is nothing to scroll){%- endcomment -%}
+            {%- render 'carousel-side-arrows', target_id: media_carousel_id, show_mobile: false, show_desktop: true -%}
           </div>
 
             <div id="{{ media_caption_row_id }}" class="faq__text-image-caption-row">
@@ -538,6 +538,9 @@ if (!window.customElements.get('read-more-match-height')) {
                 {%- endif -%}
               {%- endfor -%}
             </div>
+
+          {%- comment -%}Mobile only: dots under the captions instead of the arrows (snippets/carousel-dots.liquid){%- endcomment -%}
+          {%- render 'carousel-dots', target_id: media_carousel_id -%}
 
           {%- render 'media-lightbox', id: media_lightbox_id, show_nav: true -%}
 
@@ -791,7 +794,8 @@ if (!window.customElements.get('read-more-match-height')) {
                 height: 100%;
               }
 
-              #{{ text_image_id }}:not([data-natural]) #{{ media_caption_row_id }} {
+              #{{ text_image_id }}:not([data-natural]) #{{ media_caption_row_id }},
+              #{{ text_image_id }}:not([data-natural]) #{{ media_carousel_id }}-dots {
                 flex: none;
               }
             {%- else -%}

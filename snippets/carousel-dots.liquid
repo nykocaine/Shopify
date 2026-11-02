@@ -1,0 +1,92 @@
+{%- doc -%}
+Mobile dots under a carousel: one per item, centered, the current one bigger. They take the place of the side arrows
+(snippets/carousel-side-arrows.liquid) below 1000px (the theme's "md" breakpoint, phones and tablets); from 1000px up they hide, and the arrows are the ones that show.
+
+The dots are built by the script below from the carousel's own items (the direct children with the .snap-start class), follow how far
+the row has been scrolled (so the last dot is reached even though the last items share the screen), jump to an item when tapped, and
+hide by themselves when there is nothing to scroll. Look: assets/theme.css (.carousel-dots).
+
+@param {string} target_id - id of the scrollable carousel the dots follow
+{%- enddoc -%}
+
+<div id="{{ target_id }}-dots" class="carousel-dots scroll-marker-group scroll-marker-group--dots md:hidden" hidden></div>
+
+<script>
+  (function () {
+    var carousel = document.getElementById('{{ target_id }}');
+    var dots = document.getElementById('{{ target_id }}-dots');
+
+    if (!carousel || !dots) {
+      return;
+    }
+
+    var labelTemplate = {{ 'general.accessibility.go_to_item' | t: index: '__INDEX__' | json }};
+    var itemCount = carousel.querySelectorAll(':scope > .snap-start').length;
+    var buttons = [];
+
+    function maxScroll() {
+      return carousel.scrollWidth - carousel.clientWidth;
+    }
+
+    for (var i = 0; i < itemCount; i++) {
+      (function (index) {
+        var button = document.createElement('button');
+        var label = document.createElement('span');
+
+        button.type = 'button';
+        button.className = 'scroll-marker tap-area tap-area--sm';
+        button.setAttribute('aria-current', 'false');
+        label.className = 'sr-only';
+        label.textContent = labelTemplate.replace('__INDEX__', index + 1);
+        button.appendChild(label);
+
+        button.addEventListener('click', function () {
+          if (typeof carousel.select === 'function') {
+            carousel.select(index);
+          } else {
+            carousel.scrollTo({ left: (index / Math.max(itemCount - 1, 1)) * maxScroll(), behavior: 'smooth' });
+          }
+        });
+
+        dots.appendChild(button);
+        buttons.push(button);
+      })(i);
+    }
+
+    var queued = false;
+
+    function update() {
+      queued = false;
+
+      var max = maxScroll();
+
+      dots.hidden = itemCount < 2 || max <= 1;
+
+      if (dots.hidden) {
+        return;
+      }
+
+      var current = Math.round((Math.abs(carousel.scrollLeft) / max) * (itemCount - 1));
+
+      buttons.forEach(function (button, index) {
+        button.setAttribute('aria-current', index === current ? 'true' : 'false');
+      });
+    }
+
+    function queueUpdate() {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(update);
+      }
+    }
+
+    carousel.addEventListener('scroll', queueUpdate, { passive: true });
+    window.addEventListener('resize', queueUpdate);
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(queueUpdate).observe(carousel);
+    }
+
+    update();
+  })();
+</script>

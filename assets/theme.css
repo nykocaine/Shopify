@@ -5134,6 +5134,26 @@ table caption {
   inset-inline-end: .75rem;
 }
 
+/* snippets/carousel-dots.liquid: mobile dots under a carousel, centered, small and gray, the current one bigger and solid
+   (the theme's own round dots, resized). */
+.carousel-dots {
+  --scroll-marker-group-gap: .5rem;
+  justify-self: center;
+  align-self: center;
+  color: rgb(var(--text-color));
+}
+
+.carousel-dots .scroll-marker {
+  --scroll-marker-size: .5rem;
+  border-radius: 50%;
+  opacity: .45;
+}
+
+.carousel-dots .scroll-marker[aria-current="true"] {
+  --scroll-marker-size: .75rem;
+  opacity: 1;
+}
+
 [data-tooltip] {
   --tooltip-text-color: var(--text-color);
   --tooltip-background: var(--background);

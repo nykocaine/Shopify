@@ -196,97 +196,9 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
           {%- endunless -%}
         </div>
 
-        {%- comment -%}
-        Mobile only: dots centered under the row instead of arrows, one per photo / video, the current one bigger. Built by the script below
-        from the row's own items; they hide by themselves when there is nothing to scroll. Same condition as the arrows: not with auto-scroll.
-        {%- endcomment -%}
+        {%- comment -%}Mobile only: dots centered under the row instead of arrows (snippets/carousel-dots.liquid). Not with auto-scroll, like the arrows{%- endcomment -%}
         {%- if section.settings.show_progress_bar_mobile and instagram_autoscroll == false -%}
-          <div id="{{ instagram_carousel_id }}-dots" class="instagram-feed__dots scroll-marker-group scroll-marker-group--dots md:hidden" hidden></div>
-
-          <script>
-            (function () {
-              var carousel = document.getElementById('{{ instagram_carousel_id }}');
-              var dots = document.getElementById('{{ instagram_carousel_id }}-dots');
-
-              if (!carousel || !dots) {
-                return;
-              }
-
-              var labelTemplate = {{ 'general.accessibility.go_to_item' | t: index: '__INDEX__' | json }};
-              var itemCount = carousel.querySelectorAll(':scope > .snap-start').length;
-              var buttons = [];
-
-              function maxScroll() {
-                return carousel.scrollWidth - carousel.clientWidth;
-              }
-
-              for (var i = 0; i < itemCount; i++) {
-                (function (index) {
-                  var button = document.createElement('button');
-                  var label = document.createElement('span');
-
-                  button.type = 'button';
-                  button.className = 'scroll-marker tap-area tap-area--sm';
-                  button.setAttribute('aria-current', 'false');
-                  label.className = 'sr-only';
-                  label.textContent = labelTemplate.replace('__INDEX__', index + 1);
-                  button.appendChild(label);
-
-                  button.addEventListener('click', function () {
-                    if (typeof carousel.select === 'function') {
-                      carousel.select(index);
-                    } else {
-                      carousel.scrollTo({ left: (index / Math.max(itemCount - 1, 1)) * maxScroll(), behavior: 'smooth' });
-                    }
-                  });
-
-                  dots.appendChild(button);
-                  buttons.push(button);
-                })(i);
-              }
-
-              {%- comment -%}
-              The current dot follows how far the row has been scrolled (0 = first item, the very end = last item), so the last dot is reached
-              even though the last items share the screen: with the row showing one and a half items, the position of the first visible one
-              never gets to the last item.
-              {%- endcomment -%}
-              var queued = false;
-
-              function update() {
-                queued = false;
-
-                var max = maxScroll();
-
-                dots.hidden = itemCount < 2 || max <= 1;
-
-                if (dots.hidden) {
-                  return;
-                }
-
-                var current = Math.round((Math.abs(carousel.scrollLeft) / max) * (itemCount - 1));
-
-                buttons.forEach(function (button, index) {
-                  button.setAttribute('aria-current', index === current ? 'true' : 'false');
-                });
-              }
-
-              function queueUpdate() {
-                if (!queued) {
-                  queued = true;
-                  requestAnimationFrame(update);
-                }
-              }
-
-              carousel.addEventListener('scroll', queueUpdate, { passive: true });
-              window.addEventListener('resize', queueUpdate);
-
-              if (window.ResizeObserver) {
-                new ResizeObserver(queueUpdate).observe(carousel);
-              }
-
-              update();
-            })();
-          </script>
+          {%- render 'carousel-dots', target_id: instagram_carousel_id -%}
         {%- endif -%}
 
         {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple -%}
@@ -1214,26 +1126,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
     }
 
   {%- endif -%}
-
-  {%- comment -%}
-  Mobile dots under the row: centered, small and gray, the current one bigger and solid (the theme's own round dots, resized).
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__dots {
-    --scroll-marker-group-gap: 0.5rem;
-    justify-self: center;
-    color: rgb(var(--text-color));
-  }
-
-  #shopify-section-{{ section.id }} .instagram-feed__dots .scroll-marker {
-    --scroll-marker-size: 0.5rem;
-    border-radius: 50%;
-    opacity: 0.45;
-  }
-
-  #shopify-section-{{ section.id }} .instagram-feed__dots .scroll-marker[aria-current="true"] {
-    --scroll-marker-size: 0.75rem;
-    opacity: 1;
-  }
 
   {%- comment -%}
   object-fit: cover/display: block for the image case come from the theme's global img rule, and
