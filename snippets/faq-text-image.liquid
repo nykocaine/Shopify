@@ -40,6 +40,7 @@ bottom bar of the video pop up (snippets/media-zoom-style.liquid). There's no se
   assign single_slide_icon_primary_color = nil
   assign single_slide_icon_secondary_color = nil
   assign single_slide_icon_border_color = nil
+  assign single_ring_style = nil
 
   for i in (1..3)
     assign image_key = 'image_' | append: i
@@ -52,6 +53,15 @@ bottom bar of the video pop up (snippets/media-zoom-style.liquid). There's no se
     assign slide_icon_primary_color_key = 'icon_primary_color_' | append: i
     assign slide_icon_secondary_color_key = 'icon_secondary_color_' | append: i
     assign slide_icon_border_color_key = 'icon_border_color_' | append: i
+    assign slide_ring_key = 'show_ring_' | append: i
+    assign ring_x_key = 'ring_x_' | append: i
+    assign ring_y_key = 'ring_y_' | append: i
+    assign ring_size_key = 'ring_size_' | append: i
+    assign slide_ring_style = nil
+
+    if block.settings[slide_ring_key]
+      assign slide_ring_style = '--ring-x: ' | append: block.settings[ring_x_key] | append: '%; --ring-y: ' | append: block.settings[ring_y_key] | append: '%; --ring-size: ' | append: block.settings[ring_size_key] | append: '%;'
+    endif
 
     if block.settings[image_key] != blank or block.settings[video_key] != blank
       assign slide_count = slide_count | plus: 1
@@ -70,6 +80,7 @@ bottom bar of the video pop up (snippets/media-zoom-style.liquid). There's no se
         assign single_slide_icon_primary_color = block.settings[slide_icon_primary_color_key]
         assign single_slide_icon_secondary_color = block.settings[slide_icon_secondary_color_key]
         assign single_slide_icon_border_color = block.settings[slide_icon_border_color_key]
+        assign single_ring_style = slide_ring_style
       endif
     endif
   endfor
@@ -451,6 +462,10 @@ if (!window.customElements.get('read-more-match-height')) {
                 {%- capture image_key -%}image_{{ i }}{%- endcapture -%}
                 {%- capture video_key -%}video_{{ i }}{%- endcapture -%}
                 {%- capture caption_key -%}caption_{{ i }}{%- endcapture -%}
+                {%- capture ring_key -%}show_ring_{{ i }}{%- endcapture -%}
+                {%- capture ring_x_key -%}ring_x_{{ i }}{%- endcapture -%}
+                {%- capture ring_y_key -%}ring_y_{{ i }}{%- endcapture -%}
+                {%- capture ring_size_key -%}ring_size_{{ i }}{%- endcapture -%}
                 {%- capture show_icon_key -%}show_icon_{{ i }}{%- endcapture -%}
                 {%- capture icon_type_key -%}icon_type_{{ i }}{%- endcapture -%}
                 {%- capture icon_size_key -%}icon_size_{{ i }}{%- endcapture -%}
@@ -492,6 +507,10 @@ if (!window.customElements.get('read-more-match-height')) {
                           icon_border_color: block.settings[icon_border_color_key]
                         -%}
                       </div>
+                    {%- endif -%}
+
+                    {%- if block.settings[ring_key] -%}
+                      <div class="faq__text-image-ring" style="--ring-x: {{ block.settings[ring_x_key] }}%; --ring-y: {{ block.settings[ring_y_key] }}%; --ring-size: {{ block.settings[ring_size_key] }}%;" aria-hidden="true"></div>
                     {%- endif -%}
 
                     {%- if slide_caption != blank -%}
@@ -538,6 +557,10 @@ if (!window.customElements.get('read-more-match-height')) {
                 </div>
               {%- endif -%}
 
+              {%- if single_ring_style != blank -%}
+                <div class="faq__text-image-ring" style="{{ single_ring_style }}" aria-hidden="true"></div>
+              {%- endif -%}
+
               {%- if single_slide_caption != blank -%}
                 <figcaption class="faq__text-image-caption">{{ single_slide_caption }}</figcaption>
               {%- endif -%}
@@ -579,6 +602,41 @@ if (!window.customElements.get('read-more-match-height')) {
         the caption never blocks the zoom / play buttons under it. Overrides theme.css's global
         figcaption { margin-block-start: .625rem !important; } for this caption only.
         {%- endcomment -%}
+        {%- comment -%}
+        Spinning circle (show_ring_N): a white dashed circle centered on a point of the photo (--ring-x / --ring-y, in % of the
+        photo) with a width of --ring-size % of the photo, to point out an area (eg. a wrinkle). Only the dashed line turns (the
+        ::before), the box itself stays put so the position never drifts. Under the caption, over the photo; it never blocks clicks.
+        {%- endcomment -%}
+        #{{ media_wrapper_id }} .faq__text-image-ring {
+          position: absolute;
+          left: var(--ring-x);
+          top: var(--ring-y);
+          width: var(--ring-size);
+          aspect-ratio: 1;
+          translate: -50% -50%;
+          z-index: 1;
+          pointer-events: none;
+        }
+
+        #{{ media_wrapper_id }} .faq__text-image-ring::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border: 2px dashed #fff;
+          border-radius: 50%;
+          animation: faq-ring-spin 24s linear infinite;
+        }
+
+        @keyframes faq-ring-spin {
+          to { rotate: 360deg; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          #{{ media_wrapper_id }} .faq__text-image-ring::before {
+            animation: none;
+          }
+        }
+
         #{{ media_wrapper_id }} .faq__text-image-caption {
           position: absolute;
           inset-inline: 0;
