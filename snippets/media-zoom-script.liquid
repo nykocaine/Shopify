@@ -14,6 +14,7 @@ progress bar) are simply skipped when no carousel_id is given.
 @param {boolean} [relocate_controls] - whether to relocate controls next to the progress bar on touch devices (carousel-only, see section.settings.controls_position)
 @param {boolean} [sound_on_open] - whether a video opened in the lightbox with the zoom button starts with sound on (default false). An autoplaying video is muted again when the lightbox closes.
 @param {boolean} [preview_playback] - the section plays the thumbnails' videos as a muted preview on its own (the Instagram feed: hover on desktop, the first one on mobile). They are treated like autoplaying videos here: not paused when the carousel moves, muted again when the lightbox closes, and left to the section afterwards (it is told with a 'thumbnail:collapsed' event).
+@param {boolean} [framed_icons] - keeps every icon of the zoom view (close, previous / next and the video's buttons) inside the photo or video that is open, whatever its shape (a wide photo is narrower than the screen), with more room between them. The icons follow the real box of the open media and move to a more compact arrangement when it is short.
 {%- enddoc -%}
 
 <script>
@@ -30,6 +31,7 @@ progress bar) are simply skipped when no carousel_id is given.
       var relocateControls = {% if relocate_controls %}true{% else %}false{% endif %};
       var soundOnOpen = {% if sound_on_open %}true{% else %}false{% endif %};
       var previewPlayback = {% if preview_playback %}true{% else %}false{% endif %};
+      var framedIcons = {% if framed_icons %}true{% else %}false{% endif %};
 
       // A video whose thumbnail plays by itself (autoplay attribute) or is played by its section as a preview.
       function playsOnItsOwn(videoMedia) {
@@ -903,6 +905,79 @@ progress bar) are simply skipped when no carousel_id is given.
         setSlideOffset(cell, direction * viewportHeight());
       }
 
+      // Icons inside the media (framed_icons). The open photo / video is a box centered on the screen whose size depends on its
+      // shape; its real size is read here and handed to the CSS (--lightbox-frame-w / -h on the wrapper), which pins close, previous / next
+      // and the video's buttons to that box instead of to the screen. The arrangement also depends on how tall the box is:
+      //   "center": close at the top right, previous / next in the middle of the right edge, the video's buttons at the bottom right;
+      //   "top":    close, previous and next stacked from the top right (a short box: the middle is taken by the video's buttons);
+      //   "side":   previous / next move to the left edge (a very short box, like a phone held sideways).
+      // Spacing numbers match --lb-pad / --lb-gap in media-zoom-style.liquid.
+      function layoutFramedIcons() {
+        if (!framedIcons || !activeCell || lightbox.hidden) {
+          return;
+        }
+
+        var media = getCellMedia(activeCell);
+        var element = media.videoMedia || media.image;
+
+        if (!element) {
+          return;
+        }
+
+        var computed = window.getComputedStyle(element);
+        var frameWidth = parseFloat(computed.width);
+        var frameHeight = parseFloat(computed.height);
+
+        if (!frameWidth || !frameHeight) {
+          return;
+        }
+
+        var root = parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
+        var closeButton = lightbox.querySelector('.media-lightbox__close');
+        var size = closeButton && closeButton.offsetHeight ? closeButton.offsetHeight : 36;
+        var pad = 0.75 * root;
+        var gap = root;
+        var bottomInset = 1.75 * root;
+        var margin = 0.75 * root;
+        var controlsHeight = 0;
+
+        if (media.controlsGroup) {
+          // Measured with the gap it has right now; the framed layout gives it --lb-gap between buttons, so correct for the difference.
+          var visibleButtons = Array.prototype.filter.call(media.controlsGroup.children, function(child) {
+            return child.offsetHeight > 0;
+          }).length;
+          var currentGap = parseFloat(window.getComputedStyle(media.controlsGroup).rowGap) || 0;
+
+          controlsHeight = media.controlsGroup.offsetHeight + Math.max(0, visibleButtons - 1) * (gap - currentGap);
+        }
+
+        // Middle layout: previous / next must clear the close button above and the video's buttons below.
+        var centerNeeds = Math.max(
+          2 * (2 * size + gap / 2 + pad + margin),
+          2 * (size + gap / 2 + margin + bottomInset + controlsHeight)
+        );
+        // Top layout: the stack close + previous + next must clear the video's buttons below.
+        var topNeeds = pad + 3 * size + 2 * gap + margin + bottomInset + controlsHeight;
+        var layout = frameHeight >= centerNeeds ? 'center' : (frameHeight >= topNeeds ? 'top' : 'side');
+
+        wrapper.style.setProperty('--lightbox-frame-w', frameWidth + 'px');
+        wrapper.style.setProperty('--lightbox-frame-h', frameHeight + 'px');
+        wrapper.setAttribute('data-lightbox-layout', layout);
+      }
+
+      var framedIconsFrame = null;
+
+      window.addEventListener('resize', function() {
+        if (!framedIcons || framedIconsFrame) {
+          return;
+        }
+
+        framedIconsFrame = requestAnimationFrame(function() {
+          framedIconsFrame = null;
+          layoutFramedIcons();
+        });
+      });
+
       function updateNavButtons() {
         var index = cells.indexOf(activeCell);
 
@@ -913,6 +988,8 @@ progress bar) are simply skipped when no carousel_id is given.
         if (lightboxNextButton) {
           lightboxNextButton.disabled = index >= cells.length - 1;
         }
+
+        layoutFramedIcons();
       }
 
       function cancelSlideAnimations() {

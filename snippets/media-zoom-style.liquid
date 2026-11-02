@@ -769,6 +769,73 @@ bottom-right corner instead of the screen's.
 }
 
 {%- comment -%}
+Icons inside the media (framed_icons, set by the Instagram feed): close, previous / next and the video's buttons are pinned to the real box of
+the open photo or video (--lightbox-frame-w / -h, measured by media-zoom-script.liquid) instead of to the screen, so they never float outside a wide
+photo. The "data-lightbox-layout" it also sets picks the arrangement from the height of that box:
+  center: close at the top right, previous / next in the middle of the right edge, the video's buttons at the bottom right;
+  top:    close, previous and next stacked from the top right (a short box);
+  side:   previous / next on the left edge (a very short box).
+--lb-pad is the margin to the box's edge and --lb-gap the room between two icons. This is applied only when the attribute is there, so a
+lightbox without framed_icons keeps the rules above.
+{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] {
+  --lb-w: var(--lightbox-frame-w, var(--lightbox-media-w));
+  --lb-h: var(--lightbox-frame-h, var(--lightbox-media-h));
+  --lb-pad: 0.75rem;
+  --lb-gap: 1rem;
+  --lb-step: calc(var(--control-button-size, 1.75rem) + var(--lb-gap));
+  --lb-right: calc(var(--lb-w) / 2 - 100% - var(--lb-pad));
+  --lb-left: calc(var(--lb-w) / -2 + var(--lb-pad));
+  --lb-top: calc(var(--lb-h) / -2 + var(--lb-pad));
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] #{{ lightbox_id }} .media-lightbox__close,
+#{{ wrapper_id }}[data-lightbox-layout] #{{ lightbox_id }} .media-lightbox__prev,
+#{{ wrapper_id }}[data-lightbox-layout] #{{ lightbox_id }} .media-lightbox__next {
+  inset-inline-start: 50%;
+  inset-inline-end: auto;
+  inset-block-start: 50%;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] #{{ lightbox_id }} .media-lightbox__close {
+  translate: var(--lb-right) var(--lb-top);
+}
+
+#{{ wrapper_id }}[data-lightbox-layout="center"] #{{ lightbox_id }} .media-lightbox__prev {
+  translate: var(--lb-right) calc(-100% - var(--lb-gap) / 2);
+}
+
+#{{ wrapper_id }}[data-lightbox-layout="center"] #{{ lightbox_id }} .media-lightbox__next {
+  translate: var(--lb-right) calc(var(--lb-gap) / 2);
+}
+
+#{{ wrapper_id }}[data-lightbox-layout="top"] #{{ lightbox_id }} .media-lightbox__prev {
+  translate: var(--lb-right) calc(var(--lb-top) + var(--lb-step));
+}
+
+#{{ wrapper_id }}[data-lightbox-layout="top"] #{{ lightbox_id }} .media-lightbox__next {
+  translate: var(--lb-right) calc(var(--lb-top) + 2 * var(--lb-step));
+}
+
+#{{ wrapper_id }}[data-lightbox-layout="side"] #{{ lightbox_id }} .media-lightbox__prev {
+  translate: var(--lb-left) var(--lb-top);
+}
+
+#{{ wrapper_id }}[data-lightbox-layout="side"] #{{ lightbox_id }} .media-lightbox__next {
+  translate: var(--lb-left) calc(var(--lb-top) + var(--lb-step));
+}
+
+{%- comment -%}The video's buttons: bottom right corner of the box, 1.75rem up so they clear the playback line, with room between them{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls.is-lightbox-expanded {
+  inset-inline-start: 50%;
+  inset-inline-end: auto;
+  inset-block-start: 50%;
+  inset-block-end: auto;
+  translate: var(--lb-right) calc(var(--lb-h) / 2 - 100% - 1.75rem);
+  gap: var(--lb-gap);
+}
+
+{%- comment -%}
 Respect "reduce motion": the open/close still happens (classes still toggle, snippets/
 media-zoom-script.liquid still waits for a transitionend-or-timeout before actually hiding), it just
 happens instantly instead of animated.
