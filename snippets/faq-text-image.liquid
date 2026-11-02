@@ -215,6 +215,34 @@ There's no separate caption strip/slider.
       </style>
     {%- endif -%}
 
+    {%- comment -%}
+    Per-product color of the titles of THIS block, text + image (never the title of the section): the "Heading" lines of its text (the rich text the
+    merchant writes or connects from a product metafield: they come out as h1-h6) and the block's own title. The color is a product metafield of type Color; the key is read under a few spellings so it works whichever one was created
+    (custom.faq_title_color, custom.faqtitlecolor or custom.facultitlecolor). Without a value nothing changes: the headings keep the theme's color.
+    Its other lines, the section's header and the captions are untouched.
+    {%- endcomment -%}
+    {%- liquid
+      assign faq_title_color = nil
+
+      if product != blank
+        assign faq_title_color = product.metafields.custom.faq_title_color.value
+        if faq_title_color == blank
+          assign faq_title_color = product.metafields.custom.faqtitlecolor.value
+        endif
+        if faq_title_color == blank
+          assign faq_title_color = product.metafields.custom.facultitlecolor.value
+        endif
+      endif
+    -%}
+
+    {%- if faq_title_color != blank -%}
+      <style>
+        #{{ text_image_id }} :is(.faq__text-image-text-content, .faq__text-image-heading-row__title) :is(h1, h2, h3, h4, h5, h6) {
+          color: rgb({{ faq_title_color.rgb }});
+        }
+      </style>
+    {%- endif -%}
+
     {%- if has_text_column -%}
       {%- assign text_card_matches_media = false -%}
 
@@ -432,33 +460,6 @@ if (!window.customElements.get('read-more-match-height')) {
         </div>
       {%- endunless -%}
 
-      {%- comment -%}
-      Per-product color of the headings inside the text (the rich text the merchant writes or connects from a product metafield: its "Heading" lines
-      come out as h1-h6). The color is a product metafield of type Color; the key is read under a few spellings so it works whichever one was created
-      (custom.faq_title_color, custom.faqtitlecolor or custom.facultitlecolor). Without a value nothing changes: the headings keep the theme's color.
-      Only the headings of the text; its other lines, the block's own title and the captions are untouched.
-      {%- endcomment -%}
-      {%- liquid
-        assign faq_title_color = nil
-
-        if product != blank
-          assign faq_title_color = product.metafields.custom.faq_title_color.value
-          if faq_title_color == blank
-            assign faq_title_color = product.metafields.custom.faqtitlecolor.value
-          endif
-          if faq_title_color == blank
-            assign faq_title_color = product.metafields.custom.facultitlecolor.value
-          endif
-        endif
-      -%}
-
-      {%- if faq_title_color != blank -%}
-        <style>
-          #{{ text_image_id }} .faq__text-image-text-content :is(h1, h2, h3, h4, h5, h6) {
-            color: rgb({{ faq_title_color.rgb }});
-          }
-        </style>
-      {%- endif -%}
     {%- endif -%}
 
     {%- if has_media -%}
