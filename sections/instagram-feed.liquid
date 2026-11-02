@@ -1235,13 +1235,11 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
   }
 
   {%- comment -%}
-  The logo drawn on the video thumbnails (snippets/media-zoom-style.liquid, 3.5rem x 2rem there, for every section that uses it) is a bit larger in
-  this feed, on every screen size (phones included); its inset stays at .75rem, the margin the control icons share with it. Not for the expanded
-  video in the lightbox, which has its own size.
+  No logo on the video thumbnails of this feed (snippets/media-zoom-style.liquid draws it on every video of the sections that use it). Only the thumbnail:
+  the expanded video in the zoom view (.is-lightbox-expanded) keeps its logo.
   {%- endcomment -%}
   #{{ instagram_feed_id }} .has-video-logo video-media:not(.is-lightbox-expanded)::after {
-    width: min(4.25rem, 28%);
-    height: 2.45rem;
+    display: none;
   }
 
   {%- comment -%}
