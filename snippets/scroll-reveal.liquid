@@ -1,89 +1,53 @@
 {%- comment -%}
-  Scroll reveal, element by element: headings, text, images and buttons inside every section of <main> fade in while
-  sliding up, the first time they enter the viewport. Elements that are on screen when the page loads come in one after
-  another (staggered); the rest do as they are scrolled into view.
+  Scroll reveal, section by section: every section of the page (the ones in <main> and the footer) is revealed from top
+  to bottom (a wipe) while it rises slightly, the first time it enters the viewport. Sections that are on screen when
+  the page loads come in one after another; the rest do as they are scrolled into view.
 
-  - Uses the Web Animations API: nothing is left behind once an animation ends (no transform, so position: fixed / sticky
-    descendants keep working).
-  - Skips what already has its own animation or must not move: [reveal-on-scroll] items (product cards, etc.), carousels,
-    sliders, marquees, modals, accordions, the header and footer (they are outside <main>).
-  - A section with nothing to animate inside is animated as a whole instead.
-  - Off in the theme editor and for visitors who prefer reduced motion. If anything goes wrong, content is shown.
+  - Uses the Web Animations API: nothing is left behind once an animation ends (no transform / clip-path), so
+    position: fixed / sticky descendants and overflowing content (shadows, dropdowns) behave normally afterwards.
+  - Off only for visitors who prefer reduced motion. If anything goes wrong, content is shown.
+  - Adds data-scroll-reveal="on" to <html> when it is active (handy to check it is running).
 {%- endcomment -%}
 <script>
   (function () {
-    if (
-      !('IntersectionObserver' in window) ||
-      !Element.prototype.animate ||
-      (window.Shopify && Shopify.designMode) ||
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
+    if (!('IntersectionObserver' in window) || !Element.prototype.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return;
     }
 
-    var DISTANCE = 40; // px of upward travel
-    var DURATION = 900; // ms
-    var STEP = 90; // ms between elements revealed together
+    var DISTANCE = 60; // px of upward travel
+    var DURATION = 1100; // ms
+    var STEP = 150; // ms between sections revealed together
     var EASING = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
 
-    var CANDIDATES = 'h1, h2, h3, h4, p, blockquote, img, picture, video, .button, button.button, a.button, li';
-    var EXCLUDED =
-      '[reveal-on-scroll], product-card, x-carousel, x-slideshow, x-marquee, x-modal, x-drawer, dialog, details, ' +
-      '[class*="carousel"], [class*="slideshow"], [class*="marquee"], [class*="flickity"], [class*="lightbox"], ' +
-      '[class*="modal"], [class*="drawer"], [class*="popup"], [aria-hidden="true"], [hidden], nav, svg';
-
-    var main = document.getElementById('main');
-    var sections = main ? Array.prototype.slice.call(main.querySelectorAll(':scope > .shopify-section')) : [];
+    var sections = Array.prototype.filter.call(
+      document.querySelectorAll('main > .shopify-section, .shopify-section-group-footer-group'),
+      function (section) {
+        return section.getClientRects().length > 0;
+      }
+    );
 
     if (!sections.length) {
       return;
     }
 
-    var pending = [];
+    document.documentElement.setAttribute('data-scroll-reveal', 'on');
+
     var revealedCount = 0;
 
-    function eligible(element) {
-      if (element.closest(EXCLUDED)) {
-        return false;
-      }
-
-      // Keep only the outermost candidate (a <p> inside an <li> that is already animated is not animated twice).
-      var parent = element.parentElement;
-
-      while (parent && parent !== main) {
-        if (parent.matches(CANDIDATES) && parent.matches('li, blockquote, picture')) {
-          return false;
-        }
-
-        parent = parent.parentElement;
-      }
-
-      return element.getClientRects().length > 0;
-    }
-
     sections.forEach(function (section) {
-      var targets = Array.prototype.filter.call(section.querySelectorAll(CANDIDATES), eligible);
-
-      if (!targets.length && !section.closest(EXCLUDED)) {
-        targets = [section];
-      }
-
-      targets.forEach(function (element) {
-        element.style.opacity = '0';
-        pending.push(element);
-      });
+      section.style.opacity = '0';
     });
 
-    function reveal(element, index) {
-      element.style.opacity = '';
+    function reveal(section, index) {
+      section.style.opacity = '';
       revealedCount += 1;
 
-      element.animate(
+      section.animate(
         [
-          { opacity: 0, transform: 'translateY(' + DISTANCE + 'px)' },
-          { opacity: 1, transform: 'translateY(0)' }
+          { opacity: 0, transform: 'translateY(' + DISTANCE + 'px)', clipPath: 'inset(0 0 100% 0)' },
+          { opacity: 1, transform: 'translateY(0)', clipPath: 'inset(0 0 0 0)' }
         ],
-        { duration: DURATION, delay: Math.min(index, 8) * STEP, easing: EASING, fill: 'backwards' }
+        { duration: DURATION, delay: Math.min(index, 6) * STEP, easing: EASING, fill: 'backwards' }
       );
     }
 
@@ -94,27 +58,27 @@
             return entry.isIntersecting;
           })
           .sort(function (a, b) {
-            return a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left;
+            return a.boundingClientRect.top - b.boundingClientRect.top;
           })
           .forEach(function (entry, index) {
             observer.unobserve(entry.target);
             reveal(entry.target, index);
           });
       },
-      { threshold: 0.1, rootMargin: '0px 0px -6% 0px' }
+      { threshold: 0.05, rootMargin: '0px 0px -5% 0px' }
     );
 
-    pending.forEach(function (element) {
+    sections.forEach(function (section) {
       // Already scrolled past (restored scroll position): show it without animating.
-      if (element.getBoundingClientRect().bottom < 0) {
-        element.style.opacity = '';
+      if (section.getBoundingClientRect().bottom < 0) {
+        section.style.opacity = '';
         return;
       }
 
-      observer.observe(element);
+      observer.observe(section);
     });
 
-    // A fast jump (anchor link, scrollbar drag) can skip elements entirely: whatever is left above the viewport is shown as is.
+    // A fast jump (anchor link, scrollbar drag) can skip sections entirely: whatever is left above the viewport is shown as is.
     var scrollQueued = false;
 
     window.addEventListener(
@@ -129,10 +93,10 @@
         requestAnimationFrame(function () {
           scrollQueued = false;
 
-          pending.forEach(function (element) {
-            if (element.style.opacity === '0' && element.getBoundingClientRect().bottom < 0) {
-              observer.unobserve(element);
-              element.style.opacity = '';
+          sections.forEach(function (section) {
+            if (section.style.opacity === '0' && section.getBoundingClientRect().bottom < 0) {
+              observer.unobserve(section);
+              section.style.opacity = '';
             }
           });
         });
@@ -143,8 +107,8 @@
     // Safety net: if nothing was ever revealed, show everything instead of leaving the page blank.
     setTimeout(function () {
       if (!revealedCount) {
-        pending.forEach(function (element) {
-          element.style.opacity = '';
+        sections.forEach(function (section) {
+          section.style.opacity = '';
         });
       }
     }, 3000);
