@@ -752,7 +752,7 @@ bottom-right corner instead of the screen's.
 Icons inside the media (framed_icons, set by the Instagram feed): close, previous / next and the video's buttons are pinned to the real box of
 the open photo or video (--lightbox-frame-w / -h, measured by media-zoom-script.liquid) instead of to the screen, so they never float outside a wide
 photo. The "data-lightbox-layout" it also sets picks the arrangement from the height of that box:
-  center: close at the top right, previous / next in the middle of the right edge, the video's buttons at the bottom right;
+  center: close at the top right, previous / next in the middle of the right edge, the video's bar along the bottom;
   top:    close, previous and next stacked from the top right (a short box);
   side:   previous / next on the left edge (a very short box).
 --lb-pad is the margin to the box's edge and --lb-gap the room between two icons. This is applied only when the attribute is there, so a
@@ -805,14 +805,87 @@ lightbox without framed_icons keeps the rules above.
   translate: var(--lb-left) calc(var(--lb-top) + var(--lb-step));
 }
 
-{%- comment -%}The video's buttons: bottom right corner of the box, 1.75rem up so they clear the playback line, with room between them{%- endcomment -%}
+{%- comment -%}
+The video's bar (framed_icons): along the bottom of the box, inside it. From bottom to top: the row of controls (pause and the elapsed / total
+time on the left, like and sound on the right; plain icons, no background) and, just above it, the playback line with the same side margin. A soft
+dark gradient behind both keeps them readable over any video. The logo moves to the top-left corner so it never meets the bar.
+{%- endcomment -%}
 #{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls.is-lightbox-expanded {
   inset-inline-start: 50%;
   inset-inline-end: auto;
   inset-block-start: 50%;
   inset-block-end: auto;
-  translate: var(--lb-right) calc(var(--lb-h) / 2 - 100% - 1.75rem);
-  gap: var(--lb-gap);
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  width: calc(var(--lb-w) - 2 * var(--lb-pad));
+  translate: calc(var(--lb-w) / -2 + var(--lb-pad)) calc(var(--lb-h) / 2 - 100% - var(--lb-pad));
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-pause-toggle {
+  order: 0;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .lightbox-time {
+  order: 1;
+  margin-inline-end: auto;
+  color: var(--control-button-icon-color, #fff);
+  font: var(--text-font-style) var(--text-font-weight) 0.875rem / 1 var(--text-font-family);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-shadow: 0 0 0.25rem rgb(0 0 0 / .5);
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-like,
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-product-link {
+  order: 2;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-sound-toggle {
+  order: 3;
+}
+
+{%- comment -%}The like button keeps its count beside the heart in the bar instead of under it{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-like {
+  display: flex;
+  align-items: center;
+  column-gap: 0.125rem;
+}
+
+{%- comment -%}Plain icons: the round, blurred background of the other pop up buttons does not apply to the bar{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-pause-toggle,
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-sound-toggle,
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-product-link,
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-like-toggle {
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 0;
+  filter: drop-shadow(0 0 0.25rem rgb(0 0 0 / .5));
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] video-media.is-lightbox-expanded .lightbox-scrubber {
+  inset-inline: var(--lb-pad);
+  inset-block-end: calc(var(--lb-pad) + var(--control-button-size, 1.75rem) + 0.25rem);
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] video-media.is-lightbox-expanded::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 2;
+  height: calc(var(--lb-pad) + var(--control-button-size, 1.75rem) + 3.5rem);
+  background: linear-gradient(to top, rgb(0 0 0 / .5), transparent);
+  border-end-start-radius: inherit;
+  border-end-end-radius: inherit;
+  pointer-events: none;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .has-video-logo video-media.is-lightbox-expanded::after {
+  inset-block-start: var(--lb-pad);
+  inset-block-end: auto;
+  background-position: left top;
 }
 
 {%- comment -%}

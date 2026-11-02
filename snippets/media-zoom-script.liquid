@@ -336,10 +336,34 @@ progress bar) are simply skipped when no carousel_id is given.
         state.dot.setAttribute('cx', Math.min(width - 3, Math.max(3, positionX)).toFixed(1));
         state.dot.setAttribute('cy', lineY);
 
+        if (state.timeLabel) {
+          var timeText = formatTime(state.video.currentTime) + ' / ' + formatTime(isFinite(duration) ? duration : 0);
+
+          if (state.timeLabelText !== timeText) {
+            state.timeLabelText = timeText;
+            state.timeLabel.textContent = timeText;
+          }
+        }
+
         if (state.dragging) {
           state.time.textContent = formatTime(state.video.currentTime);
           state.time.style.insetInlineStart = Math.min(width - 16, Math.max(16, positionX)) + 'px';
         }
+      }
+
+      // Video bar (framed_icons): the elapsed / total time sits in the video's controls row, next to the pause button. It is created with the
+      // scrubber and updated by drawScrubber() on every frame while the video is shown.
+      function ensureTimeLabel(controlsGroup) {
+        var label = controlsGroup.querySelector('.lightbox-time');
+
+        if (!label) {
+          label = document.createElement('span');
+          label.className = 'lightbox-time';
+          label.setAttribute('aria-hidden', 'true');
+          controlsGroup.appendChild(label);
+        }
+
+        return label;
       }
 
       function seekScrubber(state, event) {
@@ -495,6 +519,10 @@ progress bar) are simply skipped when no carousel_id is given.
           var scrubber = ensureScrubber(media.videoMedia);
 
           if (scrubber) {
+            if (framedIcons && media.controlsGroup) {
+              scrubber.timeLabel = ensureTimeLabel(media.controlsGroup);
+            }
+
             drawScrubber(scrubber);
           }
         }
@@ -890,7 +918,7 @@ progress bar) are simply skipped when no carousel_id is given.
       // Icons inside the media (framed_icons). The open photo / video is a box centered on the screen whose size depends on its
       // shape; its real size is read here and handed to the CSS (--lightbox-frame-w / -h on the wrapper), which pins close, previous / next
       // and the video's buttons to that box instead of to the screen. The arrangement also depends on how tall the box is:
-      //   "center": close at the top right, previous / next in the middle of the right edge, the video's buttons at the bottom right;
+      //   "center": close at the top right, previous / next in the middle of the right edge, the video's bar along the bottom;
       //   "top":    close, previous and next stacked from the top right (a short box: the middle is taken by the video's buttons);
       //   "side":   previous / next move to the left edge (a very short box, like a phone held sideways).
       // Spacing numbers match --lb-pad / --lb-gap in media-zoom-style.liquid.
@@ -919,27 +947,17 @@ progress bar) are simply skipped when no carousel_id is given.
         var size = closeButton && closeButton.offsetHeight ? closeButton.offsetHeight : 36;
         var pad = 0.75 * root;
         var gap = root;
-        var bottomInset = 1.75 * root;
         var margin = 0.75 * root;
-        var controlsHeight = 0;
+        // A video's bar (playback line + the row of buttons) takes the bottom of the box; a photo has nothing there.
+        var reserved = media.videoMedia ? pad + size + 0.25 * root + 1.25 * root : 0;
 
-        if (media.controlsGroup) {
-          // Measured with the gap it has right now; the framed layout gives it --lb-gap between buttons, so correct for the difference.
-          var visibleButtons = Array.prototype.filter.call(media.controlsGroup.children, function(child) {
-            return child.offsetHeight > 0;
-          }).length;
-          var currentGap = parseFloat(window.getComputedStyle(media.controlsGroup).rowGap) || 0;
-
-          controlsHeight = media.controlsGroup.offsetHeight + Math.max(0, visibleButtons - 1) * (gap - currentGap);
-        }
-
-        // Middle layout: previous / next must clear the close button above and the video's buttons below.
+        // Middle layout: previous / next must clear the close button above and the video's bar below.
         var centerNeeds = Math.max(
           2 * (2 * size + gap / 2 + pad + margin),
-          2 * (size + gap / 2 + margin + bottomInset + controlsHeight)
+          2 * (size + gap / 2 + margin + reserved)
         );
-        // Top layout: the stack close + previous + next must clear the video's buttons below.
-        var topNeeds = pad + 3 * size + 2 * gap + margin + bottomInset + controlsHeight;
+        // Top layout: the stack close + previous + next must clear the video's bar below.
+        var topNeeds = pad + 3 * size + 2 * gap + margin + reserved;
         var layout = frameHeight >= centerNeeds ? 'center' : (frameHeight >= topNeeds ? 'top' : 'side');
 
         wrapper.style.setProperty('--lightbox-frame-w', frameWidth + 'px');
