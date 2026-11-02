@@ -1169,14 +1169,13 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
   }
 
   {%- comment -%}
-  Desktop (1000px and up): the logo drawn on the video thumbnails (snippets/media-zoom-style.liquid, 3.5rem x 2rem there, for every section that
-  uses it) is a bit larger in this feed; its inset stays at .75rem, the margin the control icons share with it. Not for the expanded video in the lightbox, which has its own size.
+  The logo drawn on the video thumbnails (snippets/media-zoom-style.liquid, 3.5rem x 2rem there, for every section that uses it) is a bit larger in
+  this feed, on every screen size (phones included); its inset stays at .75rem, the margin the control icons share with it. Not for the expanded
+  video in the lightbox, which has its own size.
   {%- endcomment -%}
-  @media screen and (min-width: 1000px) {
-    #{{ instagram_feed_id }} .has-video-logo video-media:not(.is-lightbox-expanded)::after {
-      width: min(4.25rem, 28%);
-      height: 2.45rem;
-    }
+  #{{ instagram_feed_id }} .has-video-logo video-media:not(.is-lightbox-expanded)::after {
+    width: min(4.25rem, 28%);
+    height: 2.45rem;
   }
 
   {%- comment -%}
