@@ -407,31 +407,10 @@ height-observer {
 }
 
 @media screen and (pointer: fine) {
-  .big-link--opacity:hover ~ .big-link--opacity > * {
-    opacity: .3;
-  }
-
-  .big-link--opacity:has( ~ .big-link--opacity:hover) > * {
-    opacity: .3;
-  }
-
   .big-link--colors {
     transition: background .2s ease-in-out, color .2s ease-in-out;
   }
 
-  .big-link--colors:hover {
-    background: rgb(var(--big-link-background-hover));
-    color: rgb(var(--big-link-text-color-hover));
-  }
-
-  .big-link--colors:hover > * {
-    transform: translateX(1.75rem);
-  }
-
-  .big-link--colors:hover > .big-link__arrow {
-    opacity: 1;
-    transform: translateX(-3rem);
-  }
 }
 
 @media screen and (min-width: 700px) {
@@ -577,20 +556,8 @@ height-observer {
   transition: transform .1s;
 }
 
-@media screen and (pointer: fine) {
-  .button:not(.button--outline, [disabled]):hover {
-    background: rgb(var(--button-hover-background));
-  }
-}
-
 :is(.button, .shopify-challenge__button, .shopify-payment-button__button--unbranded):not(:has(.button__content)) {
   padding: var(--button-padding-block) var(--button-padding-inline);
-}
-
-@media screen and (pointer: fine) {
-  :is(.button, .shopify-challenge__button, .shopify-payment-button__button--unbranded):has(.icon):hover .icon {
-    transform: translateX(4px);
-  }
 }
 
 .button--outline {
@@ -688,20 +655,8 @@ height-observer {
     transform: translateX(100%);
   }
 
-  .button:has(.button__content[glowing]):hover .button__content[glowing]:after {
-    transform: translateX(100%);
-  }
-
-  [dir="rtl"] :is(.button:has(.button__content[glowing]):hover .button__content[glowing]):after {
-    transform: translateX(calc(-1 * var(--glowing-shape-width)));
-  }
-
   .button:has(.button__content[up-text]) .button__content {
     transition: transform .2s ease-in-out;
-  }
-
-  .button:has(.button__content[up-text]):hover:not([aria-busy="true"]) .button__content[up-text] {
-    transform: translateY(-100%);
   }
 
   .button:has(.button__content[up-text]) .button__content[up-text]:before {
@@ -719,10 +674,6 @@ height-observer {
 
   .button:has(.button__content[marquee]) {
     transition: all .2s ease-in-out, border-color 0s;
-  }
-
-  .button:has(.button__content[marquee]):hover {
-    border-color: transparent;
   }
 
   .button:has(.button__content[marquee])::after {
@@ -743,10 +694,6 @@ height-observer {
     position: absolute;
   }
 
-  .button:has(.button__content[marquee]):hover::after {
-    opacity: 1;
-    animation: button-marquee-border .5s linear infinite;
-  }
 }
 
 @keyframes button-marquee-border {
@@ -791,11 +738,6 @@ height-observer {
   font: var(--button-font) !important;
 }
 
-.shopify-payment-button__button--unbranded:hover:not([disabled]) {
-  background-color: rgb(var(--button-background-primary)) !important;
-  color: rgb(var(--button-text-primary)) !important;
-}
-
 shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   --shopify-accelerated-checkout-button-block-size: 44px;
   --shopify-accelerated-checkout-button-border-radius: var(--button-border-radius);
@@ -834,21 +776,6 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   }
 }
 
-@media screen and (pointer: fine) {
-  /* :not(.circle-button--outline) below: this icon color-flip only makes sense for the filled
-     variant, where :before (right under it) goes fully solid/dark on hover - the icon needs to flip
-     near-light for contrast against that. The outline variant's own hover rule further down only
-     tints its background subtly (never goes solid), so flipping its icon the same way left it
-     reading as near-invisible/"transparent" against that light tint instead of a real color change. */
-  .circle-button:not(.circle-button--outline):not([disabled]):hover, .circle-button:not(.circle-button--outline) .group\:circle-button:hover {
-    color: color-mix(in srgb, rgb(var(--text-color)) 8%, rgb(var(--background)));
-  }
-
-  :is(.circle-button:not(.circle-button--outline):not([disabled]):hover, .circle-button:not(.circle-button--outline) .group\:circle-button:hover):before {
-    background: var(--nav-control-hover-background-color, rgb(var(--text-color)));
-  }
-}
-
 .circle-button--lg, .circle-button--xl {
   --button-size: 2.5rem;
 }
@@ -860,12 +787,6 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 
 .circle-button--outline:before {
   content: none;
-}
-
-@media screen and (pointer: fine) {
-  .circle-button--outline:not([disabled]):hover {
-    background: var(--nav-control-hover-background-color, rgb(var(--text-color) / .05));
-  }
 }
 
 .circle-button--blurred {
@@ -883,20 +804,6 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   }
 }
 
-@keyframes backButtonBounce {
-  0% {
-    transform: translateX(0);
-  }
-
-  50% {
-    transform: translateX(calc(var(--transform-logical-flip) * 4px));
-  }
-
-  100% {
-    transform: translateX(0);
-  }
-}
-
 .back-button {
   background: rgb(var(--text-color) / .08);
   border-radius: 20px;
@@ -904,12 +811,6 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   column-gap: .625rem;
   padding: .375rem .625rem;
   display: inline-flex;
-}
-
-@media screen and (pointer: fine) {
-  .back-button:hover svg {
-    animation: .5s backButtonBounce;
-  }
 }
 
 [aria-haspopup] .icon-chevron-down {
@@ -1730,10 +1631,6 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
 
 .removable-facet a {
   transition: rotate .2s ease-in-out;
-}
-
-.removable-facet a:hover {
-  rotate: 90deg;
 }
 
 .facets-clear-all {
@@ -2696,14 +2593,6 @@ video-media::part(play-button), .play-button {
   margin: 0;
 }
 
-video-media:hover::part(play-button), video-media:hover .play-button, .group:hover .group-hover\:scale {
-  scale: 1.1;
-}
-
-video-media:hover::part(play-button), video-media:hover .play-button {
-  background: var(--control-button-hover-background-color, var(--control-button-background-color, #fff3));
-}
-
 model-media {
   --default-aspect-ratio: 1;
 }
@@ -3304,16 +3193,6 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   position: absolute;
 }
 
-@media screen and (pointer: fine) {
-  .pswp__button:not([disabled]):hover {
-    color: color-mix(in srgb, rgb(var(--text-color)) 8%, rgb(var(--background)));
-  }
-
-  .pswp__button:not([disabled]):hover:before {
-    background: rgb(var(--text-color));
-  }
-}
-
 .pswp__button--close-button {
   inset-block-start: 1.75rem;
   inset-inline-end: 1.75rem;
@@ -3327,16 +3206,6 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 @supports (color: color-mix(in srgb, white, black)) {
   .pswp__button--close-button:before {
     background: var(--close-control-background-color, color-mix(in srgb, rgb(var(--text-color)) 8%, rgb(var(--background))));
-  }
-}
-
-@media screen and (pointer: fine) {
-  .pswp__button--close-button:not([disabled]):hover {
-    color: var(--close-control-icon-color, color-mix(in srgb, rgb(var(--text-color)) 8%, rgb(var(--background))));
-  }
-
-  .pswp__button--close-button:not([disabled]):hover:before {
-    background: var(--close-control-hover-background-color, rgb(var(--text-color)));
   }
 }
 
@@ -4027,14 +3896,6 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   --button-border-color: var(--button-scheme-border-color, 0 0 0 / 0);
   --button-padding-inline: 0px;
   transition: color .2s ease-in-out, background-color .2s ease-in-out, border-color .2s ease-in-out;
-}
-
-@media screen and (pointer: fine) {
-  .floating-size-selector__button:hover {
-    --button-background: var(--button-background-primary);
-    --button-text-color: var(--button-text-primary);
-    --button-border-color: var(--button-background-primary);
-  }
 }
 
 .floating-size-selector__button.is-disabled {
@@ -5484,13 +5345,6 @@ table caption {
     transition: opacity .2s;
   }
 
-  .social-media__item:hover ~ * {
-    opacity: .4;
-  }
-
-  .social-media__item:has( ~ .social-media__item:hover) {
-    opacity: .4;
-  }
 }
 
 .meta-information {
@@ -5524,13 +5378,6 @@ table caption {
     transition: opacity .2s;
   }
 
-  .share-buttons__item:hover ~ * {
-    opacity: .4;
-  }
-
-  .share-buttons__item:has( ~ .share-buttons__item:hover) {
-    opacity: .4;
-  }
 }
 
 @media screen and (pointer: fine) {
@@ -7550,10 +7397,6 @@ product-rerender {
   display: grid;
 }
 
-.header__dropdown-menu a:where(:hover, :has( ~ [open])) .icon-chevron-right {
-  transform: translateX(4px);
-}
-
 .header__dropdown-menu .icon-chevron-right {
   justify-self: end;
   transition: transform .2s;
@@ -8531,12 +8374,6 @@ shopify-account::part(signed-out-avatar) {
   padding: .75rem;
 }
 
-@media screen and (pointer: fine) {
-  .product-zoom-button:hover .product-zoom-button__label {
-    width: auto;
-  }
-}
-
 .product-zoom-button__label {
   width: 0;
   font: var(--button-font);
@@ -9391,15 +9228,6 @@ shopify-account::part(signed-out-avatar) {
 
 .predictive-search-link span {
   transition: transform .2s;
-}
-
-.predictive-search-link:hover svg {
-  opacity: 1;
-  transform: translateX(-.75rem);
-}
-
-.predictive-search-link:hover span {
-  transform: translateX(.75rem);
 }
 
 @media screen and (min-width: 700px) {
