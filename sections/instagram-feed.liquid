@@ -613,12 +613,29 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
 
         {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id, sound_on_open: true, preview_playback: true, framed_icons: true -%}
 
+        <style>
+          {%- comment -%}
+          Mobile / touch only: the round play button shows only on the video at the left edge (the one that is playing, marked data-at-left by
+          the script below). The others get theirs when the row is scrolled and they reach that position. Desktop keeps it on every video.
+          {%- endcomment -%}
+          @media not ((hover: hover) and (pointer: fine)) {
+            #{{ instagram_feed_id }} .instagram-feed__video-cell:not([data-at-left]) .video-open-button {
+              opacity: 0;
+              visibility: hidden;
+            }
+
+            #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button {
+              transition: opacity .25s ease, visibility .25s;
+            }
+          }
+        </style>
+
         {%- comment -%}
         Video previews. Nothing autoplays by itself; this script decides what plays:
 
         - Mobile / touch (no hover): only ONE video plays, the first one at the left edge of the row (the leftmost video that is at least half
           visible). Scrolling the row moves it to the next video: the previous one pauses and the new one starts. Nothing plays when the
-          section is out of the screen.
+          section is out of the screen. The round play button follows the same video (data-at-left): only that one shows it.
         - Desktop (mouse): none plays by itself. The video under the cursor plays and pauses when the cursor leaves. The round play button stays
           on top the whole time; only pressing it opens the zoom view (snippets/media-zoom-slide.liquid, media-zoom-script.liquid).
 
@@ -689,8 +706,12 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
 
               videoCells().forEach((cell) => {
                 const media = mediaOf(cell);
+                const isChosen = Boolean(chosen && media === chosen);
 
-                if (chosen && media === chosen) {
+                {%- comment -%}Marks the video at the left edge: on mobile only this one shows its round play button (style below){%- endcomment -%}
+                cell.toggleAttribute('data-at-left', isChosen);
+
+                if (isChosen) {
                   start(media);
                 } else {
                   stop(media);
