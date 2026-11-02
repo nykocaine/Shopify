@@ -1,9 +1,9 @@
 {%- comment -%}
-  Scroll reveal, section by section: every section of the page (the ones in <main> and the footer) is revealed from top
-  to bottom (a wipe) while it rises slightly, the first time it enters the viewport. Sections that are on screen when
+  Scroll reveal, section by section: every section of the page (the ones in <main> and the footer) rises slightly
+  (with a soft fade-in), the first time it enters the viewport. Sections that are on screen when
   the page loads come in one after another; the rest do as they are scrolled into view.
 
-  - Uses the Web Animations API: nothing is left behind once an animation ends (no transform / clip-path), so
+  - Uses the Web Animations API: nothing is left behind once an animation ends (no transform), so
     position: fixed / sticky descendants and overflowing content (shadows, dropdowns) behave normally afterwards.
   - Off only for visitors who prefer reduced motion. If anything goes wrong, content is shown.
   - Adds data-scroll-reveal="on" to <html> when it is active (handy to check it is running).
@@ -44,8 +44,8 @@
 
       section.animate(
         [
-          { opacity: 0, transform: 'translateY(' + DISTANCE + 'px)', clipPath: 'inset(0 0 100% 0)' },
-          { opacity: 1, transform: 'translateY(0)', clipPath: 'inset(0 0 0 0)' }
+          { opacity: 0, transform: 'translateY(' + DISTANCE + 'px)' },
+          { opacity: 1, transform: 'translateY(0)' }
         ],
         { duration: DURATION, delay: Math.min(index, 6) * STEP, easing: EASING, fill: 'backwards' }
       );
