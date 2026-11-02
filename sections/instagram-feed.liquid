@@ -133,14 +133,14 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
 
             {%- if instagram_block_has_video -%}
               {%- comment -%}
-              autoplay: true (muted, looped) instead of the default tap-to-play, matching an
-              Instagram-style feed, on every screen size. The play / pause / sound buttons are hidden by CSS below: the
-              videos just play while they are on screen.
+              The videos are a muted, looped preview that THIS section starts and stops (script "Video previews" below), not
+              autoplay: on mobile only the first video at the left edge plays, and it changes as the row is scrolled; on desktop
+              none plays by itself, each one plays while the cursor is over it. The round play button on top opens the zoom view.
               {%- endcomment -%}
               <div class="snap-start instagram-feed__video-cell" data-block-id="{{ block.id }}" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
                 {%- render 'media-zoom-slide',
                   video: block.settings.video,
-                  autoplay: true,
+                  loop_video: true,
                   reveal_controls_on_tap: true,
                   show_like: section.settings.show_likes,
                   like_id: block.id,
@@ -314,17 +314,17 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
             Lazy video loading: nothing is fetched for a video until the visitor gets near the section. Every <video> starts
             with preload="none" (instead of the "metadata" the media snippet sets), and <video-media> (theme.js, VideoMedia)
             switches it to "auto" and picks the right source once the video is within 800px of the screen, so it is ready
-            when it comes into view. The autoplay below is also limited to videos actually on screen, vertically as well.
+            when it comes into view.
             {%- endcomment -%}
             Array.prototype.forEach.call(carousel.querySelectorAll('video'), function (video) {
               video.setAttribute('preload', 'none');
             });
 
             {%- comment -%}
-            Every video of the feed autoplays (muted, looped) while it is on screen, on every screen size, and none shows play /
-            pause or sound buttons (CSS below hides them). Pausing a video when it leaves the screen and starting it again every
-            time it comes back is a rule for every autoplaying video of the theme (BaseMedia in assets/theme.js); a video only
-            fetches data once the visitor is near it (preload none, see above), so only what is on screen costs anything.
+            The videos of the feed are a muted, looped preview started and stopped by the "Video previews" script below (mobile: the
+            first one at the left edge; desktop: the one under the cursor), and none shows play / pause or sound buttons on its
+            thumbnail (CSS below hides them); a video only fetches data once the visitor is near it (preload none, see above), so
+            only what is on screen costs anything.
             {%- endcomment -%}
             {%- comment -%}
             Loading cue: while a video has been asked to play but has no frames yet, its cell gets .is-video-loading, which shows a
@@ -428,44 +428,6 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
               });
 
               render();
-            });
-
-            {%- comment -%}
-            <video-media autoplay> (assets/theme.js, BaseMedia#connectedCallback) only calls
-            .play() once an IntersectionObserver first reports it as visible - that observer is set
-            up when each element connects, which (since theme.js is deferred) happens AFTER this
-            same script has already reordered them above. It should already re-fire from that
-            reorder alone, but requestAnimationFrame + an explicit .play() call here is a cheap
-            safety net for whichever shuffled-in item ends up visible first on mobile.
-
-            Scoped to cells actually inside the carousel's own visible (horizontally un-clipped)
-            width on purpose - calling .play() unconditionally on every cell, including the ones
-            scrolled off-screen, was making every autoplaying video in the whole carousel start
-            fetching/buffering at once on page load (a real page-load slowdown with more than a
-            couple of video items), not just the one or two actually on screen. media-blocks.liquid's
-            own carousel never hits this at all: it never passes autoplay: true to media-zoom-slide
-            in the first place, so nothing there ever force-plays off-screen video - autoplay here is
-            the one deliberate difference from that section (per an earlier request), so unlike
-            media-blocks this needs this extra visibility check to stay just as lazy for everything
-            that isn't actually on screen yet.
-            {%- endcomment -%}
-            requestAnimationFrame(function () {
-              var carouselRect = carousel.getBoundingClientRect();
-
-              cells.forEach(function (cell) {
-                var videoMedia = cell.querySelector('video-media[autoplay]');
-
-                if (!videoMedia || typeof videoMedia.play !== 'function') {
-                  return;
-                }
-
-                var cellRect = cell.getBoundingClientRect();
-                var isWithinCarousel = cellRect.right > carouselRect.left && cellRect.left < carouselRect.right && cellRect.bottom > 0 && cellRect.top < window.innerHeight;
-
-                if (isWithinCarousel) {
-                  videoMedia.play();
-                }
-              });
             });
           })();
         </script>
@@ -665,7 +627,149 @@ sound control logic, so it isn't worth re-implementing just to also hide that on
           </script>
         {%- endif -%}
 
-        {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id, sound_on_open: true -%}
+        {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id, sound_on_open: true, preview_playback: true -%}
+
+        {%- comment -%}
+        Video previews. Nothing autoplays by itself; this script decides what plays:
+
+        - Mobile / touch (no hover): only ONE video plays, the first one at the left edge of the row (the leftmost video that is at least half
+          visible). Scrolling the row moves it to the next video: the previous one pauses and the new one starts. Nothing plays when the
+          section is out of the screen.
+        - Desktop (mouse): none plays by itself. The video under the cursor plays and pauses when the cursor leaves. The round play button stays
+          on top the whole time; only pressing it opens the zoom view (snippets/media-zoom-slide.liquid, media-zoom-script.liquid).
+
+        A video opened in the zoom view is never touched here. When it is closed (event "thumbnail:collapsed") the right state is recomputed.
+        {%- endcomment -%}
+        <script>
+          (function () {
+            var carousel = document.getElementById('{{ instagram_carousel_id }}');
+
+            if (!carousel) {
+              return;
+            }
+
+            var desktopQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+            var sectionVisible = false;
+            var queued = false;
+
+            function cells() {
+              return Array.prototype.slice.call(carousel.querySelectorAll(':scope > .instagram-feed__video-cell'));
+            }
+
+            function mediaOf(cell) {
+              return cell.querySelector('video-media');
+            }
+
+            function isExpanded(media) {
+              return media.classList.contains('is-lightbox-expanded');
+            }
+
+            function start(media) {
+              if (media && !isExpanded(media) && typeof media.play === 'function' && !media.playing) {
+                media.play();
+              }
+            }
+
+            function stop(media) {
+              if (media && !isExpanded(media) && typeof media.pause === 'function' && media.playing) {
+                media.pause({ manual: false });
+              }
+            }
+
+            {%- comment -%}The leftmost video that is at least half visible inside the row{%- endcomment -%}
+            function firstVideoAtTheLeft() {
+              var rowRect = carousel.getBoundingClientRect();
+              var best = null;
+              var bestLeft = Infinity;
+
+              cells().forEach(function (cell) {
+                var media = mediaOf(cell);
+                var rect = cell.getBoundingClientRect();
+
+                if (!media || !rect.width) {
+                  return;
+                }
+
+                var visible = Math.min(rect.right, rowRect.right) - Math.max(rect.left, rowRect.left);
+
+                if (visible / rect.width >= 0.5 && rect.left < bestLeft) {
+                  best = media;
+                  bestLeft = rect.left;
+                }
+              });
+
+              return best;
+            }
+
+            function apply() {
+              queued = false;
+
+              var chosen = null;
+
+              if (!desktopQuery.matches && sectionVisible && !document.hidden) {
+                chosen = firstVideoAtTheLeft();
+              }
+
+              cells().forEach(function (cell) {
+                var media = mediaOf(cell);
+
+                if (media === chosen && chosen) {
+                  start(media);
+                } else {
+                  stop(media);
+                }
+              });
+            }
+
+            function queueApply() {
+              if (!queued) {
+                queued = true;
+                requestAnimationFrame(apply);
+              }
+            }
+
+            {%- comment -%}Desktop: hover plays, leaving pauses (mouse only, never touch){%- endcomment -%}
+            carousel.addEventListener('pointerover', function (event) {
+              var cell = event.target.closest ? event.target.closest('.instagram-feed__video-cell') : null;
+
+              if (cell && desktopQuery.matches && event.pointerType === 'mouse') {
+                start(mediaOf(cell));
+              }
+            });
+
+            carousel.addEventListener('pointerout', function (event) {
+              var cell = event.target.closest ? event.target.closest('.instagram-feed__video-cell') : null;
+
+              if (cell && !cell.contains(event.relatedTarget) && desktopQuery.matches && event.pointerType === 'mouse') {
+                stop(mediaOf(cell));
+              }
+            });
+
+            carousel.addEventListener('scroll', queueApply, { passive: true });
+            window.addEventListener('resize', queueApply);
+            document.addEventListener('visibilitychange', queueApply);
+
+            if (desktopQuery.addEventListener) {
+              desktopQuery.addEventListener('change', queueApply);
+            }
+
+            {%- comment -%}The zoom view was closed: its video goes back to its thumbnail paused, then the right state is recomputed{%- endcomment -%}
+            carousel.addEventListener('thumbnail:collapsed', function () {
+              setTimeout(queueApply, 80);
+            });
+
+            if ('IntersectionObserver' in window) {
+              new IntersectionObserver(function (entries) {
+                sectionVisible = entries[entries.length - 1].intersectionRatio >= 0.4;
+                queueApply();
+              }, { threshold: [0, 0.4, 1] }).observe(carousel);
+            } else {
+              sectionVisible = true;
+            }
+
+            customElements.whenDefined('video-media').then(queueApply);
+          })();
+        </script>
 
         {%- comment -%}
         Keeps the lightbox caption's TEXT and POSITION in sync with whichever item is currently

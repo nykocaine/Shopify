@@ -13,6 +13,7 @@ progress bar) are simply skipped when no carousel_id is given.
 @param {string} [controls_slot_id] - id of the element the selected slide's controls should be relocated into on touch devices. Only used when relocate_controls is true.
 @param {boolean} [relocate_controls] - whether to relocate controls next to the progress bar on touch devices (carousel-only, see section.settings.controls_position)
 @param {boolean} [sound_on_open] - whether a video opened in the lightbox with the zoom button starts with sound on (default false). An autoplaying video is muted again when the lightbox closes.
+@param {boolean} [preview_playback] - the section plays the thumbnails' videos as a muted preview on its own (the Instagram feed: hover on desktop, the first one on mobile). They are treated like autoplaying videos here: not paused when the carousel moves, muted again when the lightbox closes, and left to the section afterwards (it is told with a 'thumbnail:collapsed' event).
 {%- enddoc -%}
 
 <script>
@@ -28,6 +29,12 @@ progress bar) are simply skipped when no carousel_id is given.
       var isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
       var relocateControls = {% if relocate_controls %}true{% else %}false{% endif %};
       var soundOnOpen = {% if sound_on_open %}true{% else %}false{% endif %};
+      var previewPlayback = {% if preview_playback %}true{% else %}false{% endif %};
+
+      // A video whose thumbnail plays by itself (autoplay attribute) or is played by its section as a preview.
+      function playsOnItsOwn(videoMedia) {
+        return previewPlayback || videoMedia.hasAttribute('autoplay');
+      }
       var controlsSlot = (relocateControls && isTouchDevice) ? document.getElementById('{{ controls_slot_id }}') : null;
 
       // The list of "cells" to pause/relocate/navigate between: a real carousel's own cells when
@@ -61,7 +68,7 @@ progress bar) are simply skipped when no carousel_id is given.
             // visibility rule pauses it when it leaves, whichever cell the carousel has selected. Pausing it here stopped
             // every visible video but the selected one, and it then never started again (the poster stayed on screen).
             var otherVideoMedia = cell.querySelector('video-media');
-            if (otherVideoMedia && !otherVideoMedia.hasAttribute('autoplay')) {
+            if (otherVideoMedia && !playsOnItsOwn(otherVideoMedia)) {
               otherVideoMedia.pause();
             }
           }
@@ -526,7 +533,7 @@ progress bar) are simply skipped when no carousel_id is given.
 
           // An autoplaying video goes back to playing in its thumbnail if it is on screen: the pause is not "on purpose"
           // (even if the visitor paused it inside the lightbox), and the thumbnail is silent again, like before it was opened.
-          if (media.videoMedia.hasAttribute('autoplay')) {
+          if (playsOnItsOwn(media.videoMedia)) {
             var thumbnailSoundButton = media.controlsGroup ? media.controlsGroup.querySelector('.carousel-video-sound-toggle') : null;
 
             if (video && !video.muted && thumbnailSoundButton) {
@@ -544,6 +551,9 @@ progress bar) are simply skipped when no carousel_id is given.
                 }
               }, delay);
             });
+
+            // A video the section previews on its own: tell it the thumbnail is back, so it decides what plays (see the section).
+            media.videoMedia.dispatchEvent(new CustomEvent('thumbnail:collapsed', { bubbles: true }));
           } else {
             media.videoMedia.pause();
           }
@@ -948,7 +958,7 @@ progress bar) are simply skipped when no carousel_id is given.
         var carriedSound = outgoingVideo ? !outgoingVideo.muted : lightboxSoundOn;
 
         if (outgoingMedia.videoMedia) {
-          outgoingMedia.videoMedia.pause(outgoingMedia.videoMedia.hasAttribute('autoplay') ? { manual: false } : undefined);
+          outgoingMedia.videoMedia.pause(playsOnItsOwn(outgoingMedia.videoMedia) ? { manual: false } : undefined);
         }
 
         lightboxSoundOn = carriedSound;
