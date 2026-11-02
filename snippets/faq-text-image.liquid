@@ -431,6 +431,34 @@ if (!window.customElements.get('read-more-match-height')) {
           </div>
         </div>
       {%- endunless -%}
+
+      {%- comment -%}
+      Per-product color of the headings inside the text (the rich text the merchant writes or connects from a product metafield: its "Heading" lines
+      come out as h1-h6). The color is a product metafield of type Color; the key is read under a few spellings so it works whichever one was created
+      (custom.faq_title_color, custom.faqtitlecolor or custom.facultitlecolor). Without a value nothing changes: the headings keep the theme's color.
+      Only the headings of the text; its other lines, the block's own title and the captions are untouched.
+      {%- endcomment -%}
+      {%- liquid
+        assign faq_title_color = nil
+
+        if product != blank
+          assign faq_title_color = product.metafields.custom.faq_title_color.value
+          if faq_title_color == blank
+            assign faq_title_color = product.metafields.custom.faqtitlecolor.value
+          endif
+          if faq_title_color == blank
+            assign faq_title_color = product.metafields.custom.facultitlecolor.value
+          endif
+        endif
+      -%}
+
+      {%- if faq_title_color != blank -%}
+        <style>
+          #{{ text_image_id }} .faq__text-image-text-content :is(h1, h2, h3, h4, h5, h6) {
+            color: rgb({{ faq_title_color.rgb }});
+          }
+        </style>
+      {%- endif -%}
     {%- endif -%}
 
     {%- if has_media -%}
