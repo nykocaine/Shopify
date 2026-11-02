@@ -39,12 +39,17 @@ Pair with snippets/media-lightbox.liquid (the lightbox chrome) and snippets/medi
   assign resolved_sizes = sizes | default: '85vw'
   assign resolved_placeholder = placeholder | default: 'hero-apparel-1'
   assign resolved_aria_controls_id = aria_controls_id | default: lightbox_id
+  assign resolved_loop = false
+
+  if autoplay or loop_video
+    assign resolved_loop = true
+  endif
 -%}
 
 <div class="content-box h-full min-h-{{ mobile_block_size }} md:min-h-{{ block_size }}" style="border-radius: {{ corner_radius }}; overflow: hidden;" {% if as_lightbox_cell %}data-media-cell{% endif %}>
   <div class="content-box__background-media {% if video != blank %}carousel-video-tap-to-play has-video-logo{% endif %}">
     {%- if video != blank -%}
-      {%- render 'media', media: video, autoplay: autoplay, muted: true, controls: false, show_play_button: false, playsinline: true, loop: autoplay or loop_video, sizes: resolved_sizes -%}
+      {%- render 'media', media: video, autoplay: autoplay, muted: true, controls: false, show_play_button: false, playsinline: true, loop: resolved_loop, sizes: resolved_sizes -%}
 
       {%- capture control_button_style -%}
         width: var(--control-button-size, 1.75rem); height: var(--control-button-size, 1.75rem); background: var(--control-button-background-color, #000000); border: var(--control-button-border-width, 1px) solid var(--control-button-border-color, transparent); border-radius: var(--control-button-border-radius, 100%); color: var(--control-button-icon-color, #ffffff);
