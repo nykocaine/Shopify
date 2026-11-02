@@ -19,7 +19,7 @@ Media Blocks' Carousel: snippets/media-zoom-slide.liquid (sound/play-pause toggl
 snippets/media-lightbox.liquid, snippets/media-zoom-script.liquid and snippets/media-zoom-style.liquid.
 With more than one media item, they additionally scroll inside a <product-list> exactly like
 sections/media-blocks.liquid's 'carousel' block cells do - see that section for the other caller of
-the same snippets. Each item's caption (its own per-slide caption) is drawn INSIDE the photo/video, in white, centered,
+the same snippets. Each item's caption (its own per-slide caption) is drawn INSIDE the photo/video, in white, aligned to the left,
 at the bottom edge with no background or shadow - like the gallery on the main product page.
 There's no separate caption strip/slider.
 
@@ -593,7 +593,7 @@ if (!window.customElements.get('read-more-match-height')) {
         }
 
         {%- comment -%}
-        Caption inside the photo/video, like the gallery of the main product page: white text centered horizontally at the
+        Caption inside the photo/video, like the gallery of the main product page: white text aligned to the left at the
         bottom edge with no background or shadow, flush with the bottom edge of the photo (just .5rem of air under the last line). pointer-events: none so
         the caption never blocks the zoom / play buttons under it. Overrides theme.css's global
         figcaption { margin-block-start: .625rem !important; } for this caption only.
@@ -642,7 +642,7 @@ if (!window.customElements.get('read-more-match-height')) {
           padding: 0 1rem .5rem;
           line-height: 1.25;
           color: #fff;
-          text-align: center;
+          text-align: start;
           pointer-events: none;
         }
 
