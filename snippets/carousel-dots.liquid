@@ -1,84 +1,105 @@
 {%- doc -%}
-Mobile dots under a carousel: one per item, centered, the current one bigger. They take the place of the side arrows
-(snippets/carousel-side-arrows.liquid) below 1000px (the theme's "md" breakpoint, phones and tablets); from 1000px up they hide, and the arrows are the ones that show.
+Dots under a carousel, centered, the current one bigger. They are the only navigation of the carousels that use this snippet (Instagram Feed, FAQ
+"Text + image/video"), on every screen size.
 
-The dots are built by the script below from the carousel's own items (the direct children with the .snap-start class), follow how far
-the row has been scrolled (so the last dot is reached even though the last items share the screen), jump to an item when tapped, and
-hide by themselves when there is nothing to scroll. Look: assets/theme.css (.carousel-dots).
+There is one dot per stop of the row: as many as the positions it can be scrolled to (with one and a half items on screen, one per item; with
+four and a half, fewer, because the last items share the screen). The dots follow how far the row has been scrolled (so the last dot is reached),
+jump to an item when tapped, and hide by themselves when there is nothing to scroll. They are built by the script below from the carousel's own
+items (the direct children with the .snap-start class) and rebuilt when the screen size changes. Look: assets/theme.css (.carousel-dots).
 
 @param {string} target_id - id of the scrollable carousel the dots follow
 {%- enddoc -%}
 
-<div id="{{ target_id }}-dots" class="carousel-dots scroll-marker-group scroll-marker-group--dots md:hidden" hidden></div>
+<div id="{{ target_id }}-dots" class="carousel-dots scroll-marker-group scroll-marker-group--dots" hidden></div>
 
 <script>
-  (function () {
-    var carousel = document.getElementById('{{ target_id }}');
-    var dots = document.getElementById('{{ target_id }}-dots');
+  (() => {
+    const carousel = document.getElementById('{{ target_id }}');
+    const dots = document.getElementById('{{ target_id }}-dots');
 
     if (!carousel || !dots) {
       return;
     }
 
-    var labelTemplate = {{ 'general.accessibility.go_to_item' | t: index: '__INDEX__' | json }};
-    var itemCount = carousel.querySelectorAll(':scope > .snap-start').length;
-    var buttons = [];
+    const labelTemplate = {{ 'general.accessibility.go_to_item' | t: index: '__INDEX__' | json }};
+    const SCROLL_TOLERANCE = 1;
 
-    function maxScroll() {
-      return carousel.scrollWidth - carousel.clientWidth;
-    }
+    let buttons = [];
+    let queued = false;
 
-    for (var i = 0; i < itemCount; i++) {
-      (function (index) {
-        var button = document.createElement('button');
-        var label = document.createElement('span');
+    const items = () => [...carousel.querySelectorAll(':scope > .snap-start')];
+    const maxScroll = () => carousel.scrollWidth - carousel.clientWidth;
 
-        button.type = 'button';
-        button.className = 'scroll-marker tap-area tap-area--sm';
-        button.setAttribute('aria-current', 'false');
-        label.className = 'sr-only';
-        label.textContent = labelTemplate.replace('__INDEX__', index + 1);
-        button.appendChild(label);
+    {%- comment -%}Distance between the start of two neighbouring items (item width plus the gap); RTL rows give a negative distance{%- endcomment -%}
+    const itemStep = () => {
+      const [first, second] = items();
 
-        button.addEventListener('click', function () {
-          if (typeof carousel.select === 'function') {
-            carousel.select(index);
-          } else {
-            carousel.scrollTo({ left: (index / Math.max(itemCount - 1, 1)) * maxScroll(), behavior: 'smooth' });
-          }
-        });
+      return first && second ? Math.abs(second.offsetLeft - first.offsetLeft) : 0;
+    };
 
-        dots.appendChild(button);
-        buttons.push(button);
-      })(i);
-    }
+    {%- comment -%}One dot per position the row can stop at: from the start to the very end, an item at a time{%- endcomment -%}
+    const stopCount = () => {
+      const step = itemStep();
+      const max = maxScroll();
 
-    var queued = false;
+      return step && max > SCROLL_TOLERANCE ? Math.ceil((max - SCROLL_TOLERANCE) / step) + 1 : 0;
+    };
 
-    function update() {
+    const goTo = (index) => {
+      if (typeof carousel.select === 'function') {
+        carousel.select(index);
+      } else {
+        carousel.scrollTo({ left: Math.min(index * itemStep(), maxScroll()), behavior: 'smooth' });
+      }
+    };
+
+    const build = (count) => {
+      dots.replaceChildren(
+        ...Array.from({ length: count }, (_, index) => {
+          const button = document.createElement('button');
+          const label = document.createElement('span');
+
+          button.type = 'button';
+          button.className = 'scroll-marker tap-area tap-area--sm';
+          button.setAttribute('aria-current', 'false');
+          label.className = 'sr-only';
+          label.textContent = labelTemplate.replace('__INDEX__', index + 1);
+          button.append(label);
+          button.addEventListener('click', () => goTo(index));
+
+          return button;
+        })
+      );
+
+      buttons = [...dots.children];
+    };
+
+    const update = () => {
       queued = false;
 
-      var max = maxScroll();
+      const count = stopCount();
 
-      dots.hidden = itemCount < 2 || max <= 1;
+      dots.hidden = count < 2;
 
       if (dots.hidden) {
         return;
       }
 
-      var current = Math.round((Math.abs(carousel.scrollLeft) / max) * (itemCount - 1));
+      if (count !== buttons.length) {
+        build(count);
+      }
 
-      buttons.forEach(function (button, index) {
-        button.setAttribute('aria-current', index === current ? 'true' : 'false');
-      });
-    }
+      const current = Math.round((Math.abs(carousel.scrollLeft) / maxScroll()) * (count - 1));
 
-    function queueUpdate() {
+      buttons.forEach((button, index) => button.setAttribute('aria-current', String(index === current)));
+    };
+
+    const queueUpdate = () => {
       if (!queued) {
         queued = true;
         requestAnimationFrame(update);
       }
-    }
+    };
 
     carousel.addEventListener('scroll', queueUpdate, { passive: true });
     window.addEventListener('resize', queueUpdate);

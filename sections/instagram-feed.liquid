@@ -7,7 +7,7 @@ swaps the type per block from the editor). Extracted from sections/reviews.liqui
   "Text + image/video" block and Media Blocks' Carousel: a round play button in the middle of the video opens the zoom view.
 - Nothing autoplays by itself: on mobile only the first video at the left edge plays (a muted preview), on desktop a video plays while the
   cursor is over it (script "Video previews" below).
-- Navigation: round arrows over the row on desktop, dots under it on mobile (snippets/carousel-side-arrows.liquid, carousel-dots.liquid).
+- Navigation: dots under the row on every screen size (snippets/carousel-dots.liquid).
 - The zoom view (snippets/media-zoom-script.liquid) keeps its icons inside the open photo or video (framed_icons).
 
 Colors and the shape of the round controls come from Theme settings > Controls; the color of a liked heart from this section's settings.
@@ -118,77 +118,70 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
       {%- endif -%}
 
       {%- if instagram_media_count > 0 -%}
-        <div class="carousel-frame">
-          <scroll-carousel id="{{ instagram_carousel_id }}" class="instagram-feed__carousel snap-x scroll-area">
-          {%- assign instagram_slide_index = 0 -%}
+        <scroll-carousel id="{{ instagram_carousel_id }}" class="instagram-feed__carousel snap-x scroll-area">
+        {%- assign instagram_slide_index = 0 -%}
 
-          {%- for block in instagram_media_blocks -%}
-            {%- if block.settings.media_type == 'video' and block.settings.video != blank -%}
-              {%- comment -%}
-              The videos are a muted, looped preview that THIS section starts and stops (script "Video previews" below), not
-              autoplay: on mobile only the first video at the left edge plays, and it changes as the row is scrolled; on desktop
-              none plays by itself, each one plays while the cursor is over it. The round play button on top opens the zoom view.
-              {%- endcomment -%}
-              <div class="snap-start instagram-feed__video-cell" data-block-id="{{ block.id }}" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
-                {%- render 'media-zoom-slide',
-                  video: block.settings.video,
-                  loop_video: true,
-                  show_like: section.settings.show_likes,
-                  like_id: block.id,
-                  like_count: block.settings.likes_count,
-                  corner_radius: instagram_corner_radius_px,
-                  lightbox_id: instagram_lightbox_id,
-                  lightbox_index: instagram_slide_index,
-                  sizes: instagram_media_sizes
-                -%}
-              </div>
+        {%- for block in instagram_media_blocks -%}
+          {%- if block.settings.media_type == 'video' and block.settings.video != blank -%}
+            {%- comment -%}
+            The videos are a muted, looped preview that THIS section starts and stops (script "Video previews" below), not
+            autoplay: on mobile only the first video at the left edge plays, and it changes as the row is scrolled; on desktop
+            none plays by itself, each one plays while the cursor is over it. The round play button on top opens the zoom view.
+            {%- endcomment -%}
+            <div class="snap-start instagram-feed__video-cell" data-block-id="{{ block.id }}" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
+              {%- render 'media-zoom-slide',
+                video: block.settings.video,
+                loop_video: true,
+                show_like: section.settings.show_likes,
+                like_id: block.id,
+                like_count: block.settings.likes_count,
+                corner_radius: instagram_corner_radius_px,
+                lightbox_id: instagram_lightbox_id,
+                lightbox_index: instagram_slide_index,
+                sizes: instagram_media_sizes
+              -%}
+            </div>
 
-              {%- assign instagram_slide_index = instagram_slide_index | plus: 1 -%}
-            {%- elsif block.settings.image != blank -%}
-              {%- comment -%}
-              No separate "zoom" button shown - the button wraps the image itself, so the whole
-              square opens the lightbox on tap. It stays invisible with zero extra CSS: the theme's
-              global reset already strips any button border/background/padding, and
-              .content-box__background-media's width/height: 100% (theme.css) sizes it to fill the
-              square since it's the only direct child, same as a plain img would be.
+            {%- assign instagram_slide_index = instagram_slide_index | plus: 1 -%}
+          {%- elsif block.settings.image != blank -%}
+            {%- comment -%}
+            No separate "zoom" button shown - the button wraps the image itself, so the whole
+            square opens the lightbox on tap. It stays invisible with zero extra CSS: the theme's
+            global reset already strips any button border/background/padding, and
+            .content-box__background-media's width/height: 100% (theme.css) sizes it to fill the
+            square since it's the only direct child, same as a plain img would be.
 
-              The direct flex item is a plain div (like the video branch above, and like
-              trust-icons.liquid's own carousel items) - open-lightbox-button sits one level inside
-              it instead of being the flex item itself, same as it already is inside
-              media-zoom-slide.liquid's own output for the video branch.
-              {%- endcomment -%}
-              <div class="snap-start" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
-                <open-lightbox-button class="block" aria-controls="{{ instagram_lightbox_id }}" image-index="{{ instagram_slide_index }}">
-                  <div class="content-box__background-media">
-                    <button type="button">
-                      {%- comment -%}
-                      sizes/widths are sized for the lightbox's expanded view (up to 96vw, see
-                      media-zoom-style.liquid), not the small grid thumbnail - it's the same img
-                      element in both states (the lightbox only repositions/rescales it via CSS, never
-                      swaps in a different image), so a thumbnail-sized sizes hint here would have the
-                      browser fetch a small srcset candidate that then looks soft/blurry once expanded
-                      full-screen.
-                      {%- endcomment -%}
-                      {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: instagram_media_sizes, widths: '150,300,450,600,900,1200,1500', class: 'instagram-feed__image aspect-square image-cover' -}}
-                      <span class="sr-only">{{ 'product.gallery.zoom' | t }}</span>
-                    </button>
-                  </div>
-                </open-lightbox-button>
-              </div>
+            The direct flex item is a plain div (like the video branch above, and like
+            trust-icons.liquid's own carousel items) - open-lightbox-button sits one level inside
+            it instead of being the flex item itself, same as it already is inside
+            media-zoom-slide.liquid's own output for the video branch.
+            {%- endcomment -%}
+            <div class="snap-start" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
+              <open-lightbox-button class="block" aria-controls="{{ instagram_lightbox_id }}" image-index="{{ instagram_slide_index }}">
+                <div class="content-box__background-media">
+                  <button type="button">
+                    {%- comment -%}
+                    sizes/widths are sized for the lightbox's expanded view (up to 96vw, see
+                    media-zoom-style.liquid), not the small grid thumbnail - it's the same img
+                    element in both states (the lightbox only repositions/rescales it via CSS, never
+                    swaps in a different image), so a thumbnail-sized sizes hint here would have the
+                    browser fetch a small srcset candidate that then looks soft/blurry once expanded
+                    full-screen.
+                    {%- endcomment -%}
+                    {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: instagram_media_sizes, widths: '150,300,450,600,900,1200,1500', class: 'instagram-feed__image aspect-square image-cover' -}}
+                    <span class="sr-only">{{ 'product.gallery.zoom' | t }}</span>
+                  </button>
+                </div>
+              </open-lightbox-button>
+            </div>
 
-              {%- assign instagram_slide_index = instagram_slide_index | plus: 1 -%}
-            {%- endif -%}
-          {%- endfor -%}
-          </scroll-carousel>
+            {%- assign instagram_slide_index = instagram_slide_index | plus: 1 -%}
+          {%- endif -%}
+        {%- endfor -%}
+        </scroll-carousel>
 
-          {%- comment -%}Round arrows over the photos and videos, one at each side (desktop only: on mobile the dots below take their place). They make no sense on an endless, self-moving row, so they only show when auto-scroll is off{%- endcomment -%}
-          {%- unless instagram_autoscroll -%}
-            {%- render 'carousel-side-arrows', target_id: instagram_carousel_id, show_mobile: false, show_desktop: section.settings.show_progress_bar_desktop -%}
-          {%- endunless -%}
-        </div>
-
-        {%- comment -%}Mobile only: dots centered under the row instead of arrows (snippets/carousel-dots.liquid). Not with auto-scroll, like the arrows{%- endcomment -%}
-        {%- if section.settings.show_progress_bar_mobile and instagram_autoscroll == false -%}
+        {%- comment -%}Dots centered under the row (snippets/carousel-dots.liquid), the navigation on every screen size. Not with auto-scroll, which moves the row by itself{%- endcomment -%}
+        {%- if section.settings.show_dots and instagram_autoscroll == false -%}
           {%- render 'carousel-dots', target_id: instagram_carousel_id -%}
         {%- endif -%}
 
@@ -1480,15 +1473,10 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
     },
     {
       "type": "checkbox",
-      "id": "show_progress_bar_mobile",
-      "label": "Show dots on mobile",
+      "id": "show_dots",
+      "label": "Show dots",
+      "info": "One dot per position of the row, under it. Not shown while the row scrolls by itself.",
       "default": true
-    },
-    {
-      "type": "checkbox",
-      "id": "show_progress_bar_desktop",
-      "label": "Show arrows on desktop",
-      "default": false
     },
     {
       "type": "header",
