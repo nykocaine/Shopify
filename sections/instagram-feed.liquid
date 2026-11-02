@@ -649,6 +649,14 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
               return;
             }
 
+            {%- comment -%}The zoom view opens photos in the shape of the videos (style above): read it from the first video, when there is one{%- endcomment -%}
+            const firstVideo = carousel.querySelector('video-media');
+            const videoRatio = firstVideo ? parseFloat(firstVideo.style.getPropertyValue('--aspect-ratio')) : 0;
+
+            if (videoRatio > 0) {
+              document.getElementById('{{ instagram_feed_id }}')?.style.setProperty('--instagram-zoom-ratio', videoRatio);
+            }
+
             const MIN_VISIBLE_SHARE = 0.5;
             const SECTION_VISIBLE_RATIO = 0.4;
             const COLLAPSE_DELAY = 80;
@@ -1237,24 +1245,35 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
   }
 
   {%- comment -%}
-  The video case never has this problem: its forced aspect-ratio lives on .content-box, an ANCESTOR
-  of the element that actually gets .is-lightbox-expanded (video-media) - once that's position: fixed,
-  it's sized purely by its own width/height/max-width/max-height (media-zoom-style.liquid), completely
-  independent of its parent's box. The image case is different: .is-lightbox-expanded (and
-  position: fixed) lands directly ON the <img> that ALSO carries .instagram-feed__image's own forced
-  aspect-ratio above - that's a property of the element itself, not something position: fixed exempts
-  it from, so without this it stayed locked to the grid's cropped 4/5 (or 2/3) shape even full-screen,
-  instead of showing the photo's real proportions like every other expanded image in the theme does.
-
-  border-radius is re-asserted here too (same instagram_corner_radius_px value media-zoom-style.liquid
-  already sets on img.is-lightbox-expanded) at higher specificity (two ids instead of one) so it wins
-  regardless of source order - belt-and-suspenders against whatever was making the expanded video
-  round but the expanded image not, since nothing else here explains that difference once
-  aspect-ratio is accounted for.
+  Zoom view: every photo opens in the SAME box as the videos (their height and shape), never in its own proportions - a landscape photo used to open
+  as a wide, short strip next to the tall videos. The photo fills that box (object-fit: cover, centered both ways), so whatever its size or shape,
+  it is cropped evenly around its middle instead of letterboxed.
+  - Phones / tablets (up to 999px): the videos' box is the whole available area (--lightbox-media-w x --lightbox-media-h, media-zoom-style.liquid),
+    so the photo gets exactly that.
+  - Desktop: a video's box is the biggest one of its own shape that fits the screen. The photo takes the shape of the feed's videos (--instagram-zoom-ratio,
+    read from the first video by the script below; 9:16 when there is none) and the same "biggest that fits" width formula.
+  This is a property of the <img> itself (it also carries the thumbnail's forced aspect-ratio above), so it is re-stated here at higher specificity
+  (two ids). border-radius is re-asserted here too (same instagram_corner_radius_px media-zoom-style.liquid sets on img.is-lightbox-expanded).
   {%- endcomment -%}
+  #{{ instagram_feed_id }} {
+    --instagram-zoom-ratio: .5625;
+  }
+
   #shopify-section-{{ section.id }} #{{ instagram_feed_id }} img.is-lightbox-expanded {
-    aspect-ratio: auto;
+    width: min(var(--lightbox-media-w), calc(var(--lightbox-media-h) * var(--instagram-zoom-ratio)));
+    height: auto;
+    aspect-ratio: var(--instagram-zoom-ratio);
+    object-fit: cover;
+    object-position: center;
     border-radius: {{ instagram_corner_radius_px }};
+  }
+
+  @media screen and (max-width: 999px) {
+    #shopify-section-{{ section.id }} #{{ instagram_feed_id }} img.is-lightbox-expanded {
+      width: var(--lightbox-media-w);
+      height: var(--lightbox-media-h);
+      aspect-ratio: auto;
+    }
   }
 </style>
 
