@@ -764,6 +764,8 @@ lightbox without framed_icons keeps the rules above.
   --lb-pad: 0.75rem;
   --lb-gap: 1rem;
   --lb-line: 3px;
+  --lb-icon-scale: 1.25;
+  --lb-icon-stroke: 2.25px;
   --lb-step: calc(var(--control-button-size, 1.75rem) + var(--lb-gap));
   --lb-right: calc(var(--lb-w) / 2 - 100% - var(--lb-pad));
   --lb-left: calc(var(--lb-w) / -2 + var(--lb-pad));
@@ -863,6 +865,23 @@ dark gradient behind both keeps them readable over any video. The logo moves to 
   backdrop-filter: none;
   border: 0;
   filter: drop-shadow(0 0 0.25rem rgb(0 0 0 / .5));
+}
+
+{%- comment -%}
+Icons of the bar (pause / play, sound, heart): a little bigger than the other controls, drawn with a thicker, fully rounded stroke and nothing else,
+so they read as minimal, soft shapes. --lb-icon-scale and --lb-icon-stroke (above) set how big and how thick.
+{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .icon {
+  box-sizing: content-box;
+  width: calc(var(--control-icon-size, 16px) * var(--lb-icon-scale));
+  height: auto;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .icon :is(path, circle, line, polyline, rect) {
+  stroke-width: var(--lb-icon-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
 }
 
 #{{ wrapper_id }}[data-lightbox-layout] video-media.is-lightbox-expanded .lightbox-scrubber {

@@ -990,6 +990,9 @@ progress bar) are simply skipped when no carousel_id is given.
         }
 
         layoutFramedIcons();
+
+        // The item shown in the zoom view changed (opened, or moved to the next / previous one): sections can react, eg. count the likes up.
+        wrapper.dispatchEvent(new CustomEvent('lightbox:item-active', { detail: { cell: activeCell } }));
       }
 
       function cancelSlideAnimations() {

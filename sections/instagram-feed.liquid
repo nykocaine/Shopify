@@ -252,6 +252,8 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
             const DEEP_LINK_PREFIX = '#video-';
             const DEEP_LINK_DELAY = 600;
             const LIKE_KEY_PREFIX = 'instagram-feed-like-';
+            const LIKE_COUNT_UP_DURATION = 1400;
+            const LIKE_COUNT_UP_DELAY = 300;
             const VIDEO_STATE_EVENTS = ['play', 'playing', 'waiting', 'stalled', 'seeking', 'seeked', 'loadeddata', 'canplay', 'canplaythrough', 'timeupdate', 'pause', 'ended', 'emptied', 'abort', 'error'];
             const HAVE_FUTURE_DATA = 3;
 
@@ -334,12 +336,16 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
             real likes) plus the visitor's own like, which is remembered in this browser. There is no server behind it: nothing here invents or
             sums likes from other visitors.
             {%- endcomment -%}
+            const countUps = new WeakMap();
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
             carousel.querySelectorAll('.carousel-video-like').forEach((likeBox) => {
               const storageKey = LIKE_KEY_PREFIX + likeBox.dataset.likeId;
               const baseLikes = parseInt(likeBox.dataset.likeBase, 10);
               const toggle = likeBox.querySelector('.carousel-video-like-toggle');
               const countElement = likeBox.querySelector('.carousel-video-like__count');
               let liked = false;
+              let countFrame = null;
 
               try {
                 liked = window.localStorage.getItem(storageKey) === '1';
@@ -347,10 +353,41 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
                 liked = false;
               }
 
+              const currentTotal = () => baseLikes + Number(liked);
+
+              {%- comment -%}Shows the final number at once (and stops a count-up that is still running){%- endcomment -%}
               const render = () => {
+                cancelAnimationFrame(countFrame);
                 toggle.setAttribute('aria-pressed', String(liked));
-                countElement.textContent = Number.isNaN(baseLikes) ? '' : (baseLikes + Number(liked)).toLocaleString();
+                countElement.textContent = Number.isNaN(baseLikes) ? '' : currentTotal().toLocaleString();
               };
+
+              {%- comment -%}
+              Each time the video comes up in the zoom view the number counts up from 0 to its real total (the "Likes" of the block plus the
+              visitor's own like): fast at first, slowing down as it gets there, once the zoom has settled. Without motion it just shows the total.
+              {%- endcomment -%}
+              countUps.set(likeBox, () => {
+                if (Number.isNaN(baseLikes) || reducedMotion.matches) {
+                  return;
+                }
+
+                cancelAnimationFrame(countFrame);
+                countElement.textContent = '0';
+
+                const startAt = performance.now() + LIKE_COUNT_UP_DELAY;
+
+                const tick = (now) => {
+                  const progress = Math.min(1, Math.max(0, (now - startAt) / LIKE_COUNT_UP_DURATION));
+
+                  countElement.textContent = Math.round(currentTotal() * (1 - (1 - progress) ** 3)).toLocaleString();
+
+                  if (progress < 1) {
+                    countFrame = requestAnimationFrame(tick);
+                  }
+                };
+
+                countFrame = requestAnimationFrame(tick);
+              });
 
               toggle.addEventListener('click', (event) => {
                 event.stopPropagation();
@@ -366,6 +403,12 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
               });
 
               render();
+            });
+
+            feed.addEventListener('lightbox:item-active', (event) => {
+              const likeBox = event.detail.cell?.querySelector('.carousel-video-like');
+
+              countUps.get(likeBox)?.();
             });
           })();
         </script>
@@ -1020,6 +1063,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
   #shopify-section-{{ section.id }} .carousel-video-like__count {
     font: var(--text-font-style) var(--text-font-weight) var(--text-base) / var(--text-line-height) var(--text-font-family);
     letter-spacing: var(--text-letter-spacing);
+    font-variant-numeric: tabular-nums;
     color: var(--like-icon-color);
   }
 
