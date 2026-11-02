@@ -1081,12 +1081,12 @@
       {%- comment -%}
       theme.css's own bare figcaption rule sets font-size: var(--text-sm) (a deliberately smaller, caption-sized token) - overridden here
       so each photo/video's caption (drawn inside the photo, white, at its bottom edge - snippets/faq-text-image.liquid) is the theme's Body
-      text size (no adjustment), on both mobile and desktop (--text-base already resolves to whichever of the two sizes the current breakpoint
+      text size minus .5px, on both mobile and desktop (--text-base already resolves to whichever of the two sizes the current breakpoint
       calls for - see snippets/css-variables.liquid). Scoped to this block's own media captions only, not theme.css's figcaption rule itself,
       which other features (eg. blocks/image-with-caption.liquid) still rely on.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__text-image-media figcaption {
-        font-size: var(--text-base);
+        font-size: calc(var(--text-base) - .5px);
       }
 
       {%- comment -%}Captions are rich text (so multi-line metafields can be connected): the paragraph wrappers it adds must not add spacing of their own{%- endcomment -%}
