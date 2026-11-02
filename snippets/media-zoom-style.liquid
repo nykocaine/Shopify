@@ -664,25 +664,43 @@ Rule: the play button is 30% bigger than the global control button (Theme settin
 
 {%- comment -%}
 Mobile / touch only: while a thumbnail's video plays on its own (muted, the video-media element carries the "playing" attribute; in the zoom view the
-button is hidden anyway), its round play button gives a slow, soft pulse - a thin ring that spreads and fades out while the button breathes a little -
-to say "tap to open". Only transform and box-shadow are animated (nothing moves in the layout). Off with "reduce motion".
+button is hidden anyway), its round play button gives off two thin rings, one line wide, that spread out slowly and fade away one after the other, like
+a ripple, to say "tap to open". The button itself stays still. The rings are the button's own ::before / ::after, drawn with the button's own
+shape, so they follow the global control shape (Theme settings > Controls). Only transform and opacity are animated (nothing moves in the layout).
+Off with "reduce motion".
 {%- endcomment -%}
-@keyframes video-play-pulse {
+@keyframes video-play-ripple {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgb(255 255 255 / .5);
+    opacity: .6;
   }
 
-  70%, 100% {
-    transform: scale(1.06);
-    box-shadow: 0 0 0 .9rem rgb(255 255 255 / 0);
+  80%, 100% {
+    transform: scale(1.75);
+    opacity: 0;
   }
 }
 
 @media not ((hover: hover) and (pointer: fine)) {
   @media (prefers-reduced-motion: no-preference) {
     #{{ wrapper_id }} .content-box:has(video-media[playing]:not(.is-lightbox-expanded)) .video-open-button .overlay-control {
-      animation: video-play-pulse 2.4s cubic-bezier(.2, .6, .3, 1) infinite;
+      position: relative;
+    }
+
+    #{{ wrapper_id }} .content-box:has(video-media[playing]:not(.is-lightbox-expanded)) .video-open-button .overlay-control::before,
+    #{{ wrapper_id }} .content-box:has(video-media[playing]:not(.is-lightbox-expanded)) .video-open-button .overlay-control::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgb(255 255 255 / .9);
+      border-radius: inherit;
+      opacity: 0;
+      pointer-events: none;
+      animation: video-play-ripple 3.2s cubic-bezier(.25, .6, .3, 1) infinite;
+    }
+
+    #{{ wrapper_id }} .content-box:has(video-media[playing]:not(.is-lightbox-expanded)) .video-open-button .overlay-control::after {
+      animation-delay: 1.6s;
     }
   }
 }
