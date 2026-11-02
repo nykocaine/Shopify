@@ -661,8 +661,21 @@ is expanded in the zoom view.
   z-index: 1;
 }
 
+{%- comment -%}
+Rule: the play button is 25% bigger than the global control button (Theme settings > Controls > Size), icon included, on every video that shows it.
+{%- endcomment -%}
+#{{ wrapper_id }} .video-open-button {
+  --play-button-scale: 1.25;
+}
+
 #{{ wrapper_id }} .video-open-button .overlay-control {
+  width: calc(var(--control-button-size, 2rem) * var(--play-button-scale));
+  height: calc(var(--control-button-size, 2rem) * var(--play-button-scale));
   pointer-events: auto;
+}
+
+#{{ wrapper_id }} .video-open-button .overlay-control .icon {
+  width: calc(var(--control-icon-size, 16px) * var(--play-button-scale));
 }
 
 #{{ wrapper_id }} .content-box:has(.is-lightbox-expanded) .video-open-button {
