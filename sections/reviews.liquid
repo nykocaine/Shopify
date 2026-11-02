@@ -211,10 +211,8 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
                         <span class="review-card__name">{{ block.settings.reviewer_name }}</span>
 
                         {%- if block.settings.verified_buyer -%}
-                          <span class="review-card__verified">
-                            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="review-card__verified-badge"><path d="M12.00 2.00 L15.21 4.24 L19.07 4.93 L19.76 8.79 L22.00 12.00 L19.76 15.21 L19.07 19.07 L15.21 19.76 L12.00 22.00 L8.79 19.76 L4.93 19.07 L4.24 15.21 L2.00 12.00 L4.24 8.79 L4.93 4.93 L8.79 4.24Z" fill="#0095f6" stroke="#0095f6" stroke-width="1.6" stroke-linejoin="round"/><path d="m7.9 12.2 2.9 2.9 5.4-5.8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            <span class="sr-only">Comprador verificado</span>
-                          </span>
+                          {%- comment -%}No visible badge next to the name: the "verified" seal lives only in the box under the review count (snippets/review-notice.liquid). Screen readers still hear it.{%- endcomment -%}
+                          <span class="sr-only">Comprador verificado</span>
                         {%- endif -%}
                       </div>
 
@@ -863,12 +861,6 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
     display: contents;
   }
 
-  #shopify-section-{{ section.id }} .review-card__verified {
-    align-items: center;
-    flex: none;
-    display: inline-flex;
-  }
-
   #shopify-section-{{ section.id }} .review-card__main {
     min-width: 0;
     flex-direction: column;
@@ -892,6 +884,7 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
   #shopify-section-{{ section.id }} .review-card__title {
     margin: 0;
     font-weight: 600;
+    text-transform: none;
   }
 
   #shopify-section-{{ section.id }} .review-card__body {
