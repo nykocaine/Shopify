@@ -594,7 +594,7 @@ if (!window.customElements.get('read-more-match-height')) {
 
         {%- comment -%}
         Caption inside the photo/video, like the gallery of the main product page: white text aligned to the left at the
-        bottom edge with no background or shadow, flush with the bottom edge of the photo (just .5rem of air under the last line). pointer-events: none so
+        bottom edge with no background or shadow, at the bottom edge of the photo, inset by the theme's --container-gutter on the left, right and bottom (the same inner padding used everywhere else). pointer-events: none so
         the caption never blocks the zoom / play buttons under it. Overrides theme.css's global
         figcaption { margin-block-start: .625rem !important; } for this caption only.
         {%- endcomment -%}
@@ -639,7 +639,7 @@ if (!window.customElements.get('read-more-match-height')) {
           inset-block-end: 0;
           z-index: 1;
           margin: 0 !important;
-          padding: 0 1rem .5rem;
+          padding: 0 var(--container-gutter) var(--container-gutter);
           line-height: 1.25;
           color: #fff;
           text-align: start;
