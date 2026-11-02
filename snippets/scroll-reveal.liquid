@@ -5,7 +5,7 @@
   - Disabled in the theme editor and for visitors who prefer reduced motion.
   - The transform exists only while the animation runs (keyframes, no fill-mode "forwards"), so afterwards the section
     has no transform and position: fixed / sticky descendants (lightboxes, sticky headers) keep working.
-  - The first section of the page is skipped: it is already on screen at load and should not flash.
+  - Sections on screen at load animate in one after another; the rest animate as they are scrolled into view.
 {%- endcomment -%}
 <style>
   @media (prefers-reduced-motion: no-preference) {
@@ -41,42 +41,53 @@
       return;
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-      var all = Array.prototype.slice.call(document.querySelectorAll('main > .shopify-section'));
-      var sections = all.slice(1);
+    var sections = Array.prototype.slice.call(document.querySelectorAll('main > .shopify-section'));
 
-      if (!sections.length) {
+    if (!sections.length) {
+      return;
+    }
+
+    // This script sits right after <main>, so the sections already exist: hide them at once (no flash of visible content).
+    document.documentElement.classList.add('sr-ready');
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        var visible = entries
+          .filter(function (entry) {
+            return entry.isIntersecting;
+          })
+          .sort(function (a, b) {
+            return a.boundingClientRect.top - b.boundingClientRect.top;
+          });
+
+        // Sections that appear together (page load) come in one after another.
+        visible.forEach(function (entry, index) {
+          entry.target.style.animationDelay = index * 0.12 + 's';
+          entry.target.classList.add('sr-in');
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.05, rootMargin: '0px 0px -5% 0px' }
+    );
+
+    sections.forEach(function (section) {
+      // Sections already above the viewport (e.g. restored scroll position) are shown without animating.
+      if (section.getBoundingClientRect().bottom < 0) {
+        section.classList.add('sr-in');
+        section.style.animation = 'none';
         return;
       }
 
-      // The first section is never hidden nor animated.
-      all[0].classList.add('sr-in');
-      all[0].style.animation = 'none';
-
-      var observer = new IntersectionObserver(
-        function (entries) {
-          entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('sr-in');
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0.08, rootMargin: '0px 0px -8% 0px' }
-      );
-
-      sections.forEach(function (section) {
-        // Sections already above the viewport (e.g. restored scroll position) are shown without animating.
-        if (section.getBoundingClientRect().bottom < 0) {
-          section.classList.add('sr-in');
-          section.style.animation = 'none';
-          return;
-        }
-
-        observer.observe(section);
-      });
-
-      document.documentElement.classList.add('sr-ready');
+      observer.observe(section);
     });
+
+    // Safety net: if the observer never fired at all, show everything rather than leave the page blank.
+    setTimeout(function () {
+      if (!document.querySelector('main > .shopify-section.sr-in')) {
+        sections.forEach(function (section) {
+          section.classList.add('sr-in');
+        });
+      }
+    }, 3000);
   })();
 </script>
