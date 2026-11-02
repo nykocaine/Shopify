@@ -19,8 +19,9 @@ Media Blocks' Carousel: snippets/media-zoom-slide.liquid (sound/play-pause toggl
 snippets/media-lightbox.liquid, snippets/media-zoom-script.liquid and snippets/media-zoom-style.liquid.
 With more than one media item, they additionally scroll inside a <product-list> exactly like
 sections/media-blocks.liquid's 'carousel' block cells do - see that section for the other caller of
-the same snippets. Each item gets a <figcaption> below it (its own per-slide caption), outside the
-media itself - the same <figure>/<figcaption> pattern as blocks/image-with-caption.liquid.
+the same snippets. Each item's caption (its own per-slide caption) is drawn INSIDE the photo/video, in white
+over a soft dark gradient at the bottom edge - the same look as the gallery on the main product page and the
+bottom bar of the video pop up (snippets/media-zoom-style.liquid). There's no separate caption strip/slider.
 
 @param {object} block - the "text_image" block to render
 @param {number} [fit_from] - width in px from which the media sits next to the text, where the gallery fits the height of the text card (default 700)
@@ -426,11 +427,9 @@ if (!window.customElements.get('read-more-match-height')) {
         assign media_corner_radius = border_radius_px
         assign media_lightbox_id = 'faq-text-image-lightbox-' | append: block.id
         assign media_carousel_id = nil
-        assign media_caption_row_id = nil
 
         if is_carousel
           assign media_carousel_id = 'faq-text-image-carousel-' | append: block.id
-          assign media_caption_row_id = 'faq-text-image-captions-' | append: block.id
         endif
       -%}
 
@@ -441,23 +440,8 @@ if (!window.customElements.get('read-more-match-height')) {
           grid rule) - same technique as sections/instagram-feed.liquid's .instagram-feed__carousel:
           the SAME element that already has overflow-x: auto / overflow-y: hidden (.scroll-area)
           also gets the rounded corners, so the clip stays correctly tied to its own scrollport as
-          it scrolls, and (since <product-list> now holds ONLY the media, no caption) the rounded
-          bottom edge lands right at each image's own bottom edge, not past a caption below it.
-
-          The caption row below is a SEPARATE sibling element, NOT nested inside <product-list> -
-          it has its own overflow: hidden and the exact same grid template (same column widths/
-          gaps), and its scrollLeft is mirrored from <product-list> by the small script at the
-          bottom (one-way: the carousel drives it, the caption row is never itself draggable, so
-          there's nothing for it to get out of sync with). Every slide still gets a caption CELL
-          even when it has no caption text, so a missing caption on one slide doesn't shift the
-          following ones out of alignment with their own image.
-
-          Two earlier attempts got this wrong: wrapping <product-list> in an extra div with
-          overflow: hidden (clips a caption placed back inside it near the scroll edges), and
-          putting overflow: hidden on a non-scrolling wrapper OUTSIDE <product-list> (that clip
-          moves WITH the content instead of staying fixed as a window onto it, so scrolling never
-          reveals the later slides). This is the only one of the three where the clipped element
-          and the scrolling element are the same element.
+          it scrolls. Each slide's caption lives inside its own slide frame (see below), so it scrolls
+          with its photo and needs no separate, synced element.
           {%- endcomment -%}
           <product-list id="{{ media_carousel_id }}" cell-selector=".snap-start" class="scroll-area snap-x">
               {%- liquid
@@ -466,6 +450,7 @@ if (!window.customElements.get('read-more-match-height')) {
               {%- for i in (1..3) -%}
                 {%- capture image_key -%}image_{{ i }}{%- endcapture -%}
                 {%- capture video_key -%}video_{{ i }}{%- endcapture -%}
+                {%- capture caption_key -%}caption_{{ i }}{%- endcapture -%}
                 {%- capture show_icon_key -%}show_icon_{{ i }}{%- endcapture -%}
                 {%- capture icon_type_key -%}icon_type_{{ i }}{%- endcapture -%}
                 {%- capture icon_size_key -%}icon_size_{{ i }}{%- endcapture -%}
@@ -479,9 +464,10 @@ if (!window.customElements.get('read-more-match-height')) {
                 {%- assign slide_show_icon = block.settings[show_icon_key] -%}
 
                 {%- if slide_image != blank or slide_video != blank -%}
-                  {%- assign slide_caption_id = media_caption_row_id | append: '-' | append: i -%}
+                  {%- assign slide_caption = block.settings[caption_key] -%}
+                  {%- assign slide_caption_id = media_wrapper_id | append: '-caption-' | append: i -%}
 
-                  <div class="snap-start faq__text-image-media-frame" aria-describedby="{{ slide_caption_id }}">
+                  <div class="snap-start faq__text-image-media-frame"{% if slide_caption != blank %} aria-describedby="{{ slide_caption_id }}"{% endif %}>
                     {%- render 'media-zoom-slide',
                       video: slide_video,
                       image: slide_image,
@@ -507,6 +493,10 @@ if (!window.customElements.get('read-more-match-height')) {
                         -%}
                       </div>
                     {%- endif -%}
+
+                    {%- if slide_caption != blank -%}
+                      <figcaption class="faq__text-image-caption" id="{{ slide_caption_id }}">{{ slide_caption }}</figcaption>
+                    {%- endif -%}
                   </div>
 
                   {%- assign lightbox_slide_index = lightbox_slide_index | plus: 1 -%}
@@ -514,55 +504,11 @@ if (!window.customElements.get('read-more-match-height')) {
               {%- endfor -%}
             </product-list>
 
-            <div id="{{ media_caption_row_id }}" class="faq__text-image-caption-row">
-              {%- for i in (1..3) -%}
-                {%- capture image_key -%}image_{{ i }}{%- endcapture -%}
-                {%- capture video_key -%}video_{{ i }}{%- endcapture -%}
-                {%- capture caption_key -%}caption_{{ i }}{%- endcapture -%}
-
-                {%- assign slide_image = block.settings[image_key] -%}
-                {%- assign slide_video = block.settings[video_key] -%}
-                {%- assign slide_caption = block.settings[caption_key] -%}
-
-                {%- if slide_image != blank or slide_video != blank -%}
-                  <figure id="{{ media_caption_row_id }}-{{ i }}">
-                    {%- if slide_caption != blank -%}
-                      <figcaption>{{ slide_caption }}</figcaption>
-                    {%- endif -%}
-                  </figure>
-                {%- endif -%}
-              {%- endfor -%}
-            </div>
-
-          {%- comment -%}Dots under the captions (snippets/carousel-dots.liquid), the navigation on every screen size{%- endcomment -%}
+          {%- comment -%}Dots under the carousel (snippets/carousel-dots.liquid), the navigation on every screen size{%- endcomment -%}
           {%- render 'carousel-dots', target_id: media_carousel_id -%}
 
           {%- render 'media-lightbox', id: media_lightbox_id, show_nav: true -%}
 
-          <script>
-            (function () {
-              var carousel = document.getElementById('{{ media_carousel_id }}');
-              var captionRow = document.getElementById('{{ media_caption_row_id }}');
-              if (!carousel || !captionRow) return;
-
-              function syncCaptions() {
-                // The theme editor replaces this markup on every setting change: drop the window listener then.
-                if (!carousel.isConnected) {
-                  window.removeEventListener('resize', syncCaptions);
-                  return;
-                }
-
-                captionRow.scrollLeft = carousel.scrollLeft;
-              }
-
-              carousel.addEventListener('scroll', syncCaptions, { passive: true });
-
-              // The carousel can move without a scroll the visitor made (resize/orientation change re-snaps
-              // it, the browser restores a scroll position), which would leave the captions behind.
-              window.addEventListener('resize', syncCaptions);
-              syncCaptions();
-            })();
-          </script>
         {%- else -%}
           <figure>
             <div class="faq__text-image-media-frame">
@@ -591,11 +537,11 @@ if (!window.customElements.get('read-more-match-height')) {
                   -%}
                 </div>
               {%- endif -%}
-            </div>
 
-            {%- if single_slide_caption != blank -%}
-              <figcaption>{{ single_slide_caption }}</figcaption>
-            {%- endif -%}
+              {%- if single_slide_caption != blank -%}
+                <figcaption class="faq__text-image-caption">{{ single_slide_caption }}</figcaption>
+              {%- endif -%}
+            </div>
           </figure>
 
           {%- render 'media-lightbox', id: media_lightbox_id, show_nav: false -%}
@@ -612,14 +558,38 @@ if (!window.customElements.get('read-more-match-height')) {
         top-left is the one corner never used by anything else this block renders, on image or video
         slides alike, so the icon can't ever sit on top of those buttons.
 
-        .faq__text-image-media-frame (position: relative + overflow: hidden, wrapping the media and
-        the icon together but NOT the <figcaption> below) keeps the icon clipped to the media's own
-        box - without it, a large icon (up to 80px) over a short "Original image ratio" photo could
-        spill past the photo's bottom edge into the caption below it.
+        .faq__text-image-media-frame (position: relative + overflow: hidden, wrapping the media, the
+        icon and the caption together) keeps them clipped to the media's own box, with the same
+        rounded corners as the media - without it, a large icon (up to 80px) over a short "Original
+        image ratio" photo could spill past the photo's bottom edge, and the caption's gradient
+        would show square corners over the rounded ones.
         {%- endcomment -%}
         #{{ media_wrapper_id }} .faq__text-image-media-frame {
           position: relative;
           overflow: hidden;
+          border-radius: {{ media_corner_radius }};
+        }
+
+        {%- comment -%}
+        Caption inside the photo/video, like the gallery of the main product page: white text at the
+        bottom edge over a soft dark gradient (the same one as the bottom bar of the video pop up,
+        snippets/media-zoom-style.liquid: to top, 50% black into transparent). The gradient is the
+        caption's own background, so it is only as tall as the caption plus its top padding - it fades
+        out well before the middle of the photo and never covers all of it. pointer-events: none so
+        the caption never blocks the zoom / play buttons under it. Overrides theme.css's global
+        figcaption { margin-block-start: .625rem !important; } for this caption only.
+        {%- endcomment -%}
+        #{{ media_wrapper_id }} .faq__text-image-caption {
+          position: absolute;
+          inset-inline: 0;
+          inset-block-end: 0;
+          z-index: 1;
+          margin: 0 !important;
+          padding: 2.5rem 1rem 1rem;
+          color: #fff;
+          background: linear-gradient(to top, rgb(0 0 0 / .5), transparent);
+          text-shadow: 0 0 .25rem rgb(0 0 0 / .35);
+          pointer-events: none;
         }
 
         #{{ media_wrapper_id }} .faq__text-image-slide-icon {
@@ -645,18 +615,12 @@ if (!window.customElements.get('read-more-match-height')) {
           width as each other and as a 2-slide row's own 45% (nothing stretches just because a 3rd
           slide happens to be present).
 
-          .faq__text-image-caption-row (the separate caption strip below, synced by the script above)
-          reuses the exact same flex rules on its own cells so its columns land at the same
-          width/offset as #{{ media_carousel_id }}'s own - every caption stays lined up under its
-          own image as both move together.
-
           align-items: start (flex's own default is stretch) keeps each media cell at its own
           natural height instead of being stretched to match the row's tallest slide - with
           block_size "auto" ("Original image ratio"), stretching would otherwise distort that
           slide's aspect ratio to fill a taller row.
           {%- endcomment -%}
-          #{{ media_carousel_id }},
-          #{{ media_caption_row_id }} {
+          #{{ media_carousel_id }} {
             display: flex;
             align-items: start;
             gap: var(--horizontal-gap);
@@ -664,30 +628,24 @@ if (!window.customElements.get('read-more-match-height')) {
 
           {%- comment -%}
           The gap between the media items is the theme's shared carousel gap (--horizontal-gap, css-variables.liquid), the same one the Instagram feed
-          uses, on mobile and on desktop. The caption row shares this rule, so
-          its columns stay under their images.
+          uses, on mobile and on desktop.
           {%- endcomment -%}
           @media screen and (min-width: 700px) {
-            #{{ media_carousel_id }},
-            #{{ media_caption_row_id }} {
+            #{{ media_carousel_id }} {
               column-gap: var(--horizontal-gap);
             }
           }
 
           {%- comment -%}
-          .snap-start (not figure): the carousel's own cells are <div class="snap-start
-          faq__text-image-media-frame"> - the <figure> wrapper now lives only in the separate,
-          synced .faq__text-image-caption-row below it, which holds just the captions.
+          The carousel's own cells are <div class="snap-start faq__text-image-media-frame">.
           {%- endcomment -%}
-          #{{ media_carousel_id }} > .snap-start,
-          #{{ media_caption_row_id }} > figure {
+          #{{ media_carousel_id }} > .snap-start {
             flex: 1 0 85%;
             min-width: 0;
           }
 
           @media screen and (min-width: 700px) {
-            #{{ media_carousel_id }} > .snap-start,
-            #{{ media_caption_row_id }} > figure {
+            #{{ media_carousel_id }} > .snap-start {
               flex-basis: 45%;
             }
           }
@@ -706,18 +664,6 @@ if (!window.customElements.get('read-more-match-height')) {
             scroll-snap-stop: normal;
           }
 
-          #{{ media_caption_row_id }} {
-            overflow: hidden;
-          }
-
-          {%- comment -%}
-          Overrides theme.css's global figcaption { margin-block-start: .625rem !important; } -
-          scoped to this caption row only, not removed globally (other callers of <figcaption>
-          elsewhere in the theme still rely on that default spacing).
-          {%- endcomment -%}
-          #{{ media_caption_row_id }} figcaption {
-            margin-block-start: 0 !important;
-          }
         {%- endif -%}
 
         {%- if block.settings.block_size == 'auto' -%}
@@ -728,8 +674,7 @@ if (!window.customElements.get('read-more-match-height')) {
           (".content-box[class*='min-h-']:not(.min-h-auto) ..."), which correctly excludes the "auto"
           ("Original image ratio") case. With no sized min-height class to size against and its own
           media pulled out of flow, an "auto"-sized content-box has nothing left to size itself from at
-          1000px+, collapsing the figure around it - which is what was hiding the figcaption below it
-          (present in the DOM, just inside a collapsed box). This restores the same static positioning
+          1000px+, collapsing the figure around it (and with it the caption drawn over the photo). This restores the same static positioning
           theme.css's own mobile rule already uses for "auto", scoped to this block only.
           {%- endcomment -%}
           @media screen and (min-width: 1000px) {
@@ -746,10 +691,10 @@ if (!window.customElements.get('read-more-match-height')) {
           }
 
           {%- comment -%}
-          Gallery + captions take the height of the text (the white card) next to them, never the other way round. From 700px, when the media sits
+          Gallery takes the height of the text (the white card) next to them, never the other way round. From 700px, when the media sits
           beside the text: contain: size makes the media column add nothing to the row's height (the row is as tall as the card), and the
-          column then stretches to that height (align-self) as a flex column - the photos/videos take what is left under the captions
-          (flex: 1 1 0), the captions keep their own height. Photos fill their box (object-fit: cover, the "image-cover" class).
+          column then stretches to that height (align-self) as a flex column - the photos/videos (carousel + dots) take that height
+          (flex: 1 1 0). Photos fill their box (object-fit: cover, the "image-cover" class).
           Phones keep the stacked layout, and so does any width where the section stacks the block (fit_from).
           {%- endcomment -%}
           @media screen and (min-width: {{ fit_from | default: 700 }}px) {
@@ -782,7 +727,6 @@ if (!window.customElements.get('read-more-match-height')) {
                 height: 100%;
               }
 
-              #{{ text_image_id }}:not([data-natural]) #{{ media_caption_row_id }},
               #{{ text_image_id }}:not([data-natural]) #{{ media_carousel_id }}-dots {
                 flex: none;
               }
@@ -797,10 +741,6 @@ if (!window.customElements.get('read-more-match-height')) {
               #{{ text_image_id }}:not([data-natural]) #{{ media_wrapper_id }} > figure > .faq__text-image-media-frame {
                 flex: 1 1 0;
                 min-height: 6rem;
-              }
-
-              #{{ text_image_id }}:not([data-natural]) #{{ media_wrapper_id }} > figure > figcaption {
-                flex: none;
               }
             {%- endif -%}
 
