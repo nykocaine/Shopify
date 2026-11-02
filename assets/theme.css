@@ -5110,21 +5110,37 @@ table caption {
 /* snippets/carousel-dots.liquid: mobile dots under a carousel, centered, the current one bigger and solid. Their color is the
    "Step Controls > Background color" of the section's color scheme (the text color of the scheme when that one is not set). */
 .carousel-dots {
-  --scroll-marker-group-gap: .5rem;
   justify-self: center;
   align-self: center;
   color: var(--step-control-background-color, rgb(var(--text-color)));
 }
 
+/* The row never changes size when the current dot changes (that was a small jump of everything below it): every dot keeps the same .5rem box
+   and the current one is only drawn bigger with a transform (scale does not take part in the layout), the row has a fixed height, never wraps,
+   and only transform / opacity are animated (the default "transition: all" animated width and height, so the row shrank for a moment). */
+.carousel-dots {
+  --scroll-marker-group-gap: .625rem;
+  flex-wrap: nowrap;
+  height: 1rem;
+}
+
 .carousel-dots .scroll-marker {
   --scroll-marker-size: .5rem;
+  flex: none;
   border-radius: 50%;
   opacity: .45;
+  transition: transform .2s ease-in-out, opacity .2s ease-in-out;
 }
 
 .carousel-dots .scroll-marker[aria-current="true"] {
-  --scroll-marker-size: .75rem;
+  transform: scale(1.5);
   opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-dots .scroll-marker {
+    transition: none;
+  }
 }
 
 [data-tooltip] {
