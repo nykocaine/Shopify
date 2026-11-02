@@ -97,8 +97,9 @@
   theme's normal inner padding (same value .content-box uses) on all four sides and clips whatever is inside it.
   {%- endcomment -%}
   {%- comment -%}
-  The panel is the dark box (the tab's color) and the content card sits on top of it with its own rounded corners, so the tab
-  shows through behind them: the tab slides under the card by one corner radius (negative margin + extra padding).
+  The panel is the dark box (the tab's color) and the content card sits on top of it. With a tab, the card's corners that touch the tab are
+  square and the tab does not slide under the card: the two pieces meet in one straight edge, with no rounded notch between them (only the
+  outer corners of the whole panel are rounded, by the panel itself).
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .recycling-panel {
     display: grid;
@@ -109,6 +110,12 @@
 
   #shopify-section-{{ section.id }} .recycling-panel--has-tab {
     background: rgb(var(--recycling-tab-bg));
+  }
+
+  {%- comment -%}Phones: the tab is below the card, so the card's bottom corners are square{%- endcomment -%}
+  #shopify-section-{{ section.id }} .recycling-panel--has-tab .recycling-panel__content {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
   }
 
   #shopify-section-{{ section.id }} .recycling-panel__content {
@@ -257,8 +264,7 @@
   #shopify-section-{{ section.id }} .recycling-panel__tab {
     display: flex;
     align-items: center;
-    margin-block-start: calc(-1 * var(--recycling-radius));
-    padding: calc(1rem + var(--recycling-radius)) max(1.5rem, var(--container-gutter)) 1rem;
+    padding: 1rem max(1.5rem, var(--container-gutter));
     color: rgb(var(--recycling-tab-text));
   }
 
@@ -306,11 +312,17 @@
       align-items: stretch;
     }
 
+    {%- comment -%}From tablet width the tab is at the side: the card's side corners that touch it are square, the other two are rounded{%- endcomment -%}
+    #shopify-section-{{ section.id }} .recycling-panel--has-tab .recycling-panel__content {
+      border-end-start-radius: var(--recycling-radius);
+      border-start-end-radius: 0;
+      border-end-end-radius: 0;
+    }
+
     #shopify-section-{{ section.id }} .recycling-panel__tab {
       align-items: flex-end;
       margin-block-start: 0;
-      margin-inline-start: calc(-1 * var(--recycling-radius));
-      padding: max(1.5rem, var(--container-gutter)) 0.75rem max(1.5rem, var(--container-gutter)) calc(0.75rem + var(--recycling-radius));
+      padding: max(1.5rem, var(--container-gutter)) 0.75rem;
     }
 
     #shopify-section-{{ section.id }} .recycling-panel__tab-text {
