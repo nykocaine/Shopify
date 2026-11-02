@@ -20,8 +20,8 @@ snippets/media-lightbox.liquid, snippets/media-zoom-script.liquid and snippets/m
 With more than one media item, they additionally scroll inside a <product-list> exactly like
 sections/media-blocks.liquid's 'carousel' block cells do - see that section for the other caller of
 the same snippets. Each item's caption (its own per-slide caption) is drawn INSIDE the photo/video, in white
-over a soft dark gradient at the bottom edge - the same look as the gallery on the main product page and the
-bottom bar of the video pop up (snippets/media-zoom-style.liquid). There's no separate caption strip/slider.
+at the bottom edge with a soft text shadow and no background - like the gallery on the main product page.
+There's no separate caption strip/slider.
 
 @param {object} block - the "text_image" block to render
 @param {number} [fit_from] - width in px from which the media sits next to the text, where the gallery fits the height of the text card (default 700)
@@ -584,8 +584,7 @@ if (!window.customElements.get('read-more-match-height')) {
         .faq__text-image-media-frame (position: relative + overflow: hidden, wrapping the media, the
         icon and the caption together) keeps them clipped to the media's own box, with the same
         rounded corners as the media - without it, a large icon (up to 80px) over a short "Original
-        image ratio" photo could spill past the photo's bottom edge, and the caption's gradient
-        would show square corners over the rounded ones.
+        image ratio" photo could spill past the photo's bottom edge.
         {%- endcomment -%}
         #{{ media_wrapper_id }} .faq__text-image-media-frame {
           position: relative;
@@ -595,10 +594,7 @@ if (!window.customElements.get('read-more-match-height')) {
 
         {%- comment -%}
         Caption inside the photo/video, like the gallery of the main product page: white text at the
-        bottom edge over a soft dark gradient (same idea as the bottom bar of the video pop up,
-        snippets/media-zoom-style.liquid, but lighter: to top, 10% black into transparent). The gradient is the
-        caption's own background, so it is only as tall as the caption plus its top padding - it fades
-        out well before the middle of the photo and never covers all of it. pointer-events: none so
+        bottom edge with no background (only a soft text shadow so it still reads on light photos). pointer-events: none so
         the caption never blocks the zoom / play buttons under it. Overrides theme.css's global
         figcaption { margin-block-start: .625rem !important; } for this caption only.
         {%- endcomment -%}
@@ -643,10 +639,9 @@ if (!window.customElements.get('read-more-match-height')) {
           inset-block-end: 0;
           z-index: 1;
           margin: 0 !important;
-          padding: 1.75rem 1rem 1rem;
+          padding: 1rem;
           color: #fff;
-          background: linear-gradient(to top, rgb(0 0 0 / .1), transparent);
-          text-shadow: 0 0 .25rem rgb(0 0 0 / .35);
+          text-shadow: 0 0 .25rem rgb(0 0 0 / .5);
           pointer-events: none;
         }
 
