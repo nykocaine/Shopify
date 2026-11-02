@@ -25,7 +25,7 @@ To render an icon made of an image, you need to explicitly pass the image, and t
 {%- comment -%}
 The control icon set (media/lightbox/bar controls) has no size of its own: .icon--control (theme.css) sizes every one of them from Theme Settings > Controls > Icon size.
 {%- endcomment -%}
-{%- assign control_icon_names = 'close,arrow-left,arrow-right,big-arrow-left,big-arrow-right,back-arrow,zoom-plus,volume,volume-off,slideshow-pause,slideshow-play,heart,comment,share-outline,cart-add' | split: ',' -%}
+{%- assign control_icon_names = 'close,arrow-left,arrow-right,big-arrow-left,big-arrow-right,back-arrow,zoom-plus,volume,volume-off,slideshow-pause,slideshow-play,play-rounded,heart,comment,share-outline,cart-add' | split: ',' -%}
 
 {%- capture class -%}{{ class }} icon {% if icon != blank %}icon-{{ icon | handle }}{% endif %} {% if control_icon_names contains icon %}icon--control{% endif %} {% if offset %}offset-icon{% endif %} {% if direction_aware %}icon--direction-aware{% endif %}{%- endcapture -%}
 
@@ -189,6 +189,16 @@ The control icon set (media/lightbox/bar controls) has no size of its own: .icon
     {%- when 'slideshow-play' -%}
       <svg aria-hidden="true" focusable="false" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
         <path fill="currentColor" stroke="currentColor" stroke-width="{{ settings.icon_stroke_width }}" stroke-linejoin="round" d="M5 3.5v9l7-4.5-7-4.5Z"/>
+      </svg>
+
+    {%- when 'play-rounded' -%}
+      {%- comment -%}
+      Play triangle with clearly rounded corners (the video thumbnails' round play button, snippets/media-zoom-slide.liquid): each corner is a real curve
+      (quadratic, 2 units from the corner along both edges), on top of a round-joined stroke that softens it further - so the rounding does not
+      depend on the Icon stroke width setting, which on the plain slideshow-play only rounds the join of a thin outline.
+      {%- endcomment -%}
+      <svg aria-hidden="true" focusable="false" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
+        <path fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" d="M4.7 5Q4.7 3.1 6.35 4.05L11 6.95Q12.7 8 11 9.05L6.35 11.95Q4.7 12.9 4.7 11Z"/>
       </svg>
 
     {%- when 'slideshow-pause' -%}
