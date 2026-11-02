@@ -663,6 +663,29 @@ Rule: the play button is 30% bigger than the global control button (Theme settin
 }
 
 {%- comment -%}
+Mobile / touch only: while a thumbnail's video plays on its own (muted, the video-media element carries the "playing" attribute; in the zoom view the
+button is hidden anyway), its round play button gives a slow, soft pulse - a thin ring that spreads and fades out while the button breathes a little -
+to say "tap to open". Only transform and box-shadow are animated (nothing moves in the layout). Off with "reduce motion".
+{%- endcomment -%}
+@keyframes video-play-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgb(255 255 255 / .5);
+  }
+
+  70%, 100% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 .9rem rgb(255 255 255 / 0);
+  }
+}
+
+@media not ((hover: hover) and (pointer: fine)) and (prefers-reduced-motion: no-preference) {
+  #{{ wrapper_id }} .content-box:has(video-media[playing]:not(.is-lightbox-expanded)) .video-open-button .overlay-control {
+    animation: video-play-pulse 2.4s cubic-bezier(.2, .6, .3, 1) infinite;
+  }
+}
+
+{%- comment -%}
 product-zoom-button (theme.css) inherits currentColor and has a negative inset-inline-end meant to
 slightly overhang a card's edge - here it sits inside .content-box's own overflow: hidden, so that
 negative offset clips it off-center instead. Pinning both fixes it without touching the shared rule
