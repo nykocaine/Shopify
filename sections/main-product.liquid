@@ -199,9 +199,9 @@
     margin-block-start: calc((var(--product-block-item-margin) - 0.5rem) / 1.5);
   }
 
-  /* The rating block right under the title (its text is the product's subtitle): closer still, almost touching the title. */
+  /* The rating block right under the title (its text is the product's subtitle): closer still: a negative margin takes up the empty space the title's line height leaves under its text. */
   #shopify-section-{{ section.id }} .product-info__block-item[data-block-type="title"] + .product-info__block-item[data-block-type="rating"] {
-    margin-block-start: .125rem;
+    margin-block-start: -.25rem;
   }
 
   {%- if section.settings.allow_transparent_header and section.settings.transparent_header_use_primary_colors and product.media.size > 0 -%}
