@@ -927,21 +927,31 @@
       }
 
       {%- comment -%}
-      The tab label is a .h6, and .h6 (heading styles in theme.css) renders with -webkit-font-smoothing: antialiased, which draws
-      the glyphs thinner and so looks lighter than the same color elsewhere (the color itself carries no opacity). Back to the
-      normal smoothing, and the label takes the tab's color explicitly.
+      The tab label is a .h6, and .h6 (heading styles in theme.css) gives it the HEADING font, weight, letter spacing, case and line height -
+      with a heading font heavier than the body's, the tab looked bold. The label takes everything from the BODY text instead (the same theme
+      settings the body uses: Text font, weight, style, letter spacing, case and line height), and the tab's color explicitly. .h6 also renders with
+      -webkit-font-smoothing: antialiased, which draws the glyphs thinner (the color itself carries no opacity): back to the normal smoothing.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__category-tab .h6 {
         color: inherit;
         -webkit-font-smoothing: auto;
+        font-family: var(--text-font-family);
         font-size: inherit;
-        font-weight: inherit;
+        font-style: var(--text-font-style);
+        font-weight: var(--text-font-weight);
+        letter-spacing: var(--text-letter-spacing);
+        text-transform: var(--text-transform);
+        line-height: var(--text-line-height);
       }
 
-      {%- comment -%}The tab label's size is the body's (inherited), not a heading size: the button has to inherit it too, since form controls get their own size from the browser otherwise.{%- endcomment -%}
+      {%- comment -%}The tab label's size is the body's (inherited), not a heading size: the button has to take the body's text styles too, since form controls get their own from the browser otherwise.{%- endcomment -%}
       #shopify-section-{{ section.id }} .faq__category-tab {
+        font-family: var(--text-font-family);
         font-size: inherit;
-        font-weight: inherit;
+        font-style: var(--text-font-style);
+        font-weight: var(--text-font-weight);
+        letter-spacing: var(--text-letter-spacing);
+        text-transform: var(--text-transform);
       }
 
       #shopify-section-{{ section.id }} .faq__category-tab-icon {
