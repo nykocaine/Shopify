@@ -167,6 +167,14 @@
     cursor: pointer;
   }
 
+  /* With the side text: the link is exactly one line tall (the height of the first text line) and centers the number and the star in it, so the
+     rating sits on the same row as the first text however many lines the text has. */
+  #shopify-section-{{ section.id }} .product-rating-row > .product-rating-link {
+    align-items: center;
+    height: 1lh;
+    display: flex;
+  }
+
   #shopify-section-{{ section.id }} .product-rating-row__text {
     color: rgb(var(--text-color) / 0.7);
   }
@@ -189,6 +197,11 @@
 
   #shopify-section-{{ section.id }} .product-info__block-item[data-block-type="title"] + * {
     margin-block-start: calc((var(--product-block-item-margin) - 0.5rem) / 1.5);
+  }
+
+  /* The rating block right under the title (its text is the product's subtitle): closer still, almost touching the title. */
+  #shopify-section-{{ section.id }} .product-info__block-item[data-block-type="title"] + .product-info__block-item[data-block-type="rating"] {
+    margin-block-start: .125rem;
   }
 
   {%- if section.settings.allow_transparent_header and section.settings.transparent_header_use_primary_colors and product.media.size > 0 -%}

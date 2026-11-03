@@ -5356,17 +5356,20 @@ table caption {
    badge pinned to the right of the same row (space-between) - only rendered when side_text is actually
    set, so the block keeps its plain rating-only look (no row) when left blank, same as before this
    setting existed. column-gap matches .rating-badge's own internal gap below instead of a separate,
-   wider value. align-items: center (not flex-start) keeps the badge's number/star vertically centered
-   against the text instead of pinned to its top edge. */
+   wider value. align-items: flex-start: the rating sits on the row of the FIRST text line (see the rating link in sections/main-product.liquid: exactly one line tall,
+   the number and the star centered in it), not centered against the whole stack of lines. */
 .product-rating-row {
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   column-gap: .375rem;
   display: flex;
 }
 
 .product-rating-row__lines {
+  flex-direction: column;
+  row-gap: .375rem;
   min-width: 0;
+  display: flex;
 }
 
 .product-rating-row__lines > p {
