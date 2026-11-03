@@ -1351,12 +1351,26 @@ var CarouselNavigation = class extends HTMLElement {
     __privateGet(this, _allItems).forEach((button) => button.addEventListener("click", () => this.onButtonClicked(this.items.indexOf(button)), { signal: __privateGet(this, _abortController2).signal }));
     this.carousel.addEventListener("carousel:change", (event) => this.onNavigationChange(event.detail.index), { signal: __privateGet(this, _abortController2).signal });
     this.carousel.addEventListener("carousel:filter", __privateMethod(this, _CarouselNavigation_instances, onCarouselFilter_fn).bind(this), { signal: __privateGet(this, _abortController2).signal });
+    // Crossing a breakpoint can show / hide items with CSS (see items): the marked one is recomputed against the new set.
+    window.addEventListener("resize", () => {
+      const selectedIndex = this.carousel.selectedIndex;
+      if (Number.isInteger(selectedIndex)) {
+        this.onNavigationChange(selectedIndex);
+      }
+    }, { signal: __privateGet(this, _abortController2).signal });
   }
   disconnectedCallback() {
     __privateGet(this, _abortController2).abort();
   }
+  /**
+   * The markers that stand for a slide of the carousel. The carousel only counts the slides that are really shown (no "hidden" attribute and a
+   * box on screen: ScrollCarousel#cells), and its "carousel:change" index is a position among them - so the markers have to be counted the same
+   * way. A marker taken out with CSS (display: none) is skipped too, not only the ones with the attribute: the product gallery hides its first
+   * image's slide and its marker with a media query on desktop (it is shown in its own column), and counting that marker used to shift every
+   * dot after it, so the dot of the slide in view was not the one marked.
+   */
   get items() {
-    return __privateGet(this, _allItems).filter((item) => !item.hasAttribute("hidden"));
+    return __privateGet(this, _allItems).filter((item) => !item.hasAttribute("hidden") && getComputedStyle(item).display !== "none");
   }
   get carousel() {
     return document.getElementById(this.getAttribute("aria-controls"));
