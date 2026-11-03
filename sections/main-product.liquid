@@ -104,7 +104,7 @@
   }
 
   {%- comment -%}
-  Desktop: the caption is under the carousel image (product-gallery.liquid), a strip of the card with HALF the inner padding (container gutter + .5rem) on the sides and the bottom, and NONE at the top: the caption sits right against the bottom edge of the image.
+  Desktop: the caption is under the carousel image (product-gallery.liquid), a strip of the card with HALF the inner padding (container gutter + .5rem) on all four sides, the same as the thumbnails strip. The content of both strips starts exactly at the top padding line (the caption has no padding or margin of its own and its text is trimmed to the line; the thumbnails sit at the top of the strip).
   {%- endcomment -%}
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} {
@@ -112,7 +112,7 @@
     }
 
     #shopify-section-{{ section.id }} .product-gallery__controls-floating .product-gallery__top-bar {
-      padding: 0 var(--product-gallery-strip-inset) var(--product-gallery-strip-inset) !important;
+      padding: var(--product-gallery-strip-inset) !important;
     }
   }
 
@@ -202,7 +202,7 @@
         box-sizing: border-box;
         height: var(--product-gallery-strip-height);
         min-width: 0;
-        padding: 0 var(--product-gallery-strip-inset) var(--product-gallery-strip-inset);
+        padding: var(--product-gallery-strip-inset);
       }
 
       {%- if thumbnails_out -%}
