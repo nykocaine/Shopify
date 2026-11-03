@@ -27,6 +27,9 @@
        (16px phones, Desktop icon size from 700px). The control icons (arrows, zoom, close...) draw their line with exactly this, see
        .icon--control in theme.css, so they have the same thickness as the header icons everywhere. */
     --header-icon-line-width: {{ settings.icon_stroke_width }}px;
+    /* Width of the header icons (16px on phones, "Desktop icon size" from 700px): other parts of the page that want icons of the same size as the
+       header's (eg. the announcement bar's controls) read it from here. */
+    --header-icon-size: 16px;
     {%- if section.settings.transparent_logo != blank %}
     /* The transparent-header logo, shared with videos (media-zoom-style.liquid draws it in their bottom-left corner). Defined here,
        on :root, because the header is the one place guaranteed to have this setting in scope on every page. */
@@ -74,6 +77,7 @@
   @media screen and (min-width: 700px) {
     :root {
       --header-icon-line-width: {{ settings.icon_stroke_width | times: section.settings.desktop_icon_size | divided_by: 16.0 }}px;
+      --header-icon-size: {{ section.settings.desktop_icon_size }}px;
     }
   }
 

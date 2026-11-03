@@ -239,11 +239,45 @@
           max-width: none;
         }
 
+        {%- comment -%}
+        The controls (previous, next, pause / play): in a row, centered vertically against the message, the icons at exactly the size of the header's
+        (--header-icon-size, header.liquid: 16px on phones, the header's "Desktop icon size" from 700px, the same as the cart icon). Each icon sits in its
+        own button with no padding or margin: the only space is the gap between them (the 44px touch area of each button is invisible and takes no room).
+        The buttons are laid out as grids with line-height 0 so the svg does not leave the empty strip below it that an inline image does.
+        {%- endcomment -%}
         #shopify-section-{{ section.id }} .announcement-bar__controls {
           flex: none;
           align-items: center;
           column-gap: 1rem;
+          margin: 0;
+          padding: 0;
           display: flex;
+        }
+
+        #shopify-section-{{ section.id }} .announcement-bar__controls > * {
+          align-items: center;
+          margin: 0;
+          padding: 0;
+          line-height: 0;
+          display: flex;
+        }
+
+        #shopify-section-{{ section.id }} .announcement-bar__controls .tap-area {
+          place-items: center;
+          margin: 0;
+          padding: 0;
+          line-height: 0;
+          display: grid;
+        }
+
+        #shopify-section-{{ section.id }} .announcement-bar__controls .icon,
+        #shopify-section-{{ section.id }} .announcement-bar__controls .icon.icon--control {
+          box-sizing: border-box;
+          width: var(--header-icon-size, 16px);
+          height: var(--header-icon-size, 16px);
+          margin: 0;
+          padding: 0;
+          display: block;
         }
 
         {%- comment -%}
