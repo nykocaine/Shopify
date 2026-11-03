@@ -159,10 +159,22 @@ This component is used to show the product gallery (used in product page and fea
         z-index: 1;
       }
 
+      {%- comment -%}
+      The container of the thumbnails is a rounded box (the same radius as the gallery's images) with a very light fill, so its corners read; it clips the
+      thumbnails when the strip is scrolled sideways, and keeps the corners round while it scrolls (isolation + radial mask: WebKit does not clip scrolling
+      children to a radius reliably otherwise). The inner padding is the strips' one.
+      {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-gallery__thumbs-strip {
         grid-area: 2 / 1;
         min-width: 0;
         padding: var(--product-gallery-strip-inset, var(--container-gutter));
+        {%- if gallery_border_radius %}
+        border-radius: {{ gallery_border_radius }}px;
+        {%- endif %}
+        background: rgb(var(--text-color) / .04);
+        overflow: hidden;
+        isolation: isolate;
+        -webkit-mask-image: -webkit-radial-gradient(white, black);
       }
 
       #shopify-section-{{ section.id }} .product-gallery__thumbs-strip .scroll-marker-group--thumbnails {
@@ -785,10 +797,19 @@ only way to do it on Shopify right now.
               when 'bar'
                 echo bar_controls
                 echo dots_controls
-                echo mobile_thumbs_strip
             endcase
           -%}
         </div>
+
+        {%- comment -%}
+        The thumbnails strip is NOT inside the floating-controls wrapper above: the theme pins everything in there over the bottom of the photo (absolute /
+        sticky, theme.css "product-gallery__controls-floating"), which put the thumbnails ON the photo. Here it is a plain item of the image list.
+        {%- endcomment -%}
+        {%- if mobile_controls == 'bar' -%}
+          <div class="contents md:hidden">
+            {{- mobile_thumbs_strip -}}
+          </div>
+        {%- endif -%}
       {%- endif -%}
 
       {%- comment -%}
