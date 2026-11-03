@@ -270,8 +270,9 @@
           display: grid;
         }
 
-        #shopify-section-{{ section.id }} .announcement-bar__controls .icon,
-        #shopify-section-{{ section.id }} .announcement-bar__controls .icon.icon--control {
+        {%- comment -%}:not(.hidden): the pause / play button holds both icons and shows one at a time (the other has the .hidden class, display: none) - this rule must not turn the hidden one back on{%- endcomment -%}
+        #shopify-section-{{ section.id }} .announcement-bar__controls .icon:not(.hidden),
+        #shopify-section-{{ section.id }} .announcement-bar__controls .icon.icon--control:not(.hidden) {
           box-sizing: border-box;
           width: var(--header-icon-size, 16px);
           height: var(--header-icon-size, 16px);
