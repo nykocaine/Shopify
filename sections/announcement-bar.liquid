@@ -8,6 +8,22 @@
 
   assign bar_is_sticky = section.settings.enable_sticky
 
+  # Text alignment (original mode): left / center / right, in logical terms so it also reads right in right-to-left languages.
+  assign bar_text_align = 'center'
+  assign bar_justify_items = 'center'
+  assign bar_prose_justify = 'center'
+
+  case section.settings.text_alignment
+    when 'left'
+      assign bar_text_align = 'start'
+      assign bar_justify_items = 'start'
+      assign bar_prose_justify = 'start'
+    when 'right'
+      assign bar_text_align = 'end'
+      assign bar_justify_items = 'end'
+      assign bar_prose_justify = 'end'
+  endcase
+
   if template.suffix == 'faq'
     assign bar_is_sticky = false
   endif
@@ -193,7 +209,8 @@
       #shopify-section-{{ section.id }} carousel-prev-button.tap-area,
       #shopify-section-{{ section.id }} carousel-next-button.tap-area,
       #shopify-section-{{ section.id }} carousel-prev-button .tap-area,
-      #shopify-section-{{ section.id }} carousel-next-button .tap-area {
+      #shopify-section-{{ section.id }} carousel-next-button .tap-area,
+      #shopify-section-{{ section.id }} carousel-player-button .tap-area {
         color: var(--nav-control-icon-color, currentColor);
       }
 
@@ -207,6 +224,28 @@
       }
 
       {%- if section.settings.display_mode != 'marquee' -%}
+        {%- comment -%}
+        Inner side padding of the bar: the page's container gutter, on the left and right only (nothing vertical: that stays the "Vertical padding"
+        setting). The text is aligned as chosen in "Text alignment" inside the room the controls (grouped at the end) leave, and the controls
+        keep their own spacing.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} announcement-bar.announcement-bar {
+          padding-inline: var(--container-gutter);
+          text-align: {{ bar_text_align }};
+        }
+
+        #shopify-section-{{ section.id }} .announcement-bar__message-list {
+          justify-items: {{ bar_justify_items }};
+          max-width: none;
+        }
+
+        #shopify-section-{{ section.id }} .announcement-bar__controls {
+          flex: none;
+          align-items: center;
+          column-gap: 1rem;
+          display: flex;
+        }
+
         {%- comment -%}
         Same duration as the message's fade-out in AnnouncementBar (theme.js: 0.4s) - the script below sets an explicit height on this element so it can transition instead
         of jumping between however tall each message naturally is.
@@ -246,32 +285,54 @@
           {%- assign carousel_id = 'carousel-' | append: section.id -%}
 
           <announcement-bar id="{{ carousel_id }}" allow-swipe cell-selector=".announcement-bar__message-list > *" {% if section.settings.autoplay %}autoplay="{{ section.settings.cycle_speed }}"{% endif %} {% if section.settings.pause_on_hover %}pause-on-hover{% endif %} class="announcement-bar" style="padding-block: {{ section.settings.vertical_padding }}px;">
-            {%- if section.blocks.size > 1 and section.settings.hide_arrows == false -%}
-              <carousel-prev-button aria-controls="{{ carousel_id }}">
-                <button type="button" class="tap-area">
-                  <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
-                  {%- render 'icon' with 'arrow-left', direction_aware: true -%}
-                </button>
-              </carousel-prev-button>
-            {%- endif -%}
-
             <div class="announcement-bar__message-list">
               {%- for block in section.blocks -%}
                 {%- if block.settings.text != blank -%}
-                  <div class="{% if forloop.first %}is-selected{% endif %} prose prose-justify-center" {{ block.shopify_attributes }}>
+                  <div class="{% if forloop.first %}is-selected{% endif %} prose prose-justify-{{ bar_prose_justify }}" {{ block.shopify_attributes }}>
                     <p>{{ block.settings.text }}</p>
                   </div>
                 {%- endif -%}
               {%- endfor -%}
             </div>
 
-            {%- if section.blocks.size > 1 and section.settings.hide_arrows == false -%}
-              <carousel-next-button aria-controls="{{ carousel_id }}">
-                <button type="button" class="tap-area">
-                  <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
-                  {%- render 'icon' with 'arrow-right', direction_aware: true -%}
-                </button>
-              </carousel-next-button>
+            {%- comment -%}
+            The controls, grouped at the end of the bar: previous, next and (when the messages rotate by themselves) pause / play. Pause and play are the
+            theme's own player button (carousel-player-button, the same one the slideshow uses): it pauses and resumes the auto-rotation.
+            {%- endcomment -%}
+            {%- if section.blocks.size > 1 -%}
+              {%- assign show_bar_arrows = true -%}
+              {%- if section.settings.hide_arrows -%}
+                {%- assign show_bar_arrows = false -%}
+              {%- endif -%}
+
+              {%- if show_bar_arrows or section.settings.autoplay -%}
+                <div class="announcement-bar__controls">
+                  {%- if show_bar_arrows -%}
+                    <carousel-prev-button aria-controls="{{ carousel_id }}">
+                      <button type="button" class="tap-area">
+                        <span class="sr-only">{{ 'general.accessibility.previous' | t }}</span>
+                        {%- render 'icon' with 'arrow-left', direction_aware: true -%}
+                      </button>
+                    </carousel-prev-button>
+
+                    <carousel-next-button aria-controls="{{ carousel_id }}">
+                      <button type="button" class="tap-area">
+                        <span class="sr-only">{{ 'general.accessibility.next' | t }}</span>
+                        {%- render 'icon' with 'arrow-right', direction_aware: true -%}
+                      </button>
+                    </carousel-next-button>
+                  {%- endif -%}
+
+                  {%- if section.settings.autoplay -%}
+                    <carousel-player-button aria-controls="{{ carousel_id }}">
+                      <button type="button" class="tap-area" aria-label="{{ 'general.accessibility.toggle_autoplay' | t | escape }}">
+                        {%- render 'icon' with 'slideshow-pause' -%}
+                        {%- render 'icon' with 'slideshow-play', class: 'hidden' -%}
+                      </button>
+                    </carousel-player-button>
+                  {%- endif -%}
+                </div>
+              {%- endif -%}
             {%- endif -%}
           </announcement-bar>
 
@@ -423,6 +484,18 @@
         }
       ],
       "default": "original"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center",
+      "visible_if": "{{ section.settings.display_mode == 'original' }}"
     },
     {
       "type": "checkbox",
