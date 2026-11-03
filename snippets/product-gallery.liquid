@@ -147,8 +147,19 @@ This component is used to show the product gallery (used in product page and fea
     card (no blend), static, no arrows or counter. The dots stay over the photo, at its bottom, centered: they are put in the first row too (grid-area: 1 / 1,
     on top of the carousel) instead of being pinned to the bottom of the whole list, which now also holds the caption.
     {%- endcomment -%}
+    {%- comment -%}
+    Every item of that grid is placed explicitly: the carousel in the first row, the dots on top of it (same cell), the caption in the second row. This matters:
+    the browser places the items with an explicit position FIRST and only then the automatic ones, so with only the dots placed (1 / 1) the carousel was
+    pushed down to the next free cell - the second row - and sat under an empty strip at the bottom of the first one, starting lower than the image next to it
+    (more so on screens with less width than height).
+    {%- endcomment -%}
     @media screen and (min-width: 1000px) {
+      #shopify-section-{{ section.id }} .product-gallery__image-list > :first-child {
+        grid-area: 1 / 1;
+      }
+
       #shopify-section-{{ section.id }} .product-gallery__controls-floating .product-gallery__top-bar {
+        grid-area: 2 / 1;
         position: static;
         inset: auto;
         margin: 0;
