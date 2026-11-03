@@ -106,6 +106,67 @@
     fill rules further down force it) so the strip is not pushed out of the card; the card is only a flex column from 1000px, where it is shown at all.
     {%- endcomment -%}
     @media screen and (min-width: 1000px) {
+      {%- comment -%}
+      Both columns now end in a strip under the image (the thumbnails here, the caption in the gallery) and the two strips are exactly the same height, so
+      the two images start at the same top and end at the same bottom. The strip height is what the thumbnails need (a thumbnail, the scroll strip
+      padding and the inner padding above and below). Both images FILL the height the row gives them (cropped to cover, centered) and every corner of
+      each image is rounded by the image itself, since the card around it also holds the strip.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} {
+        --product-gallery-strip-height: calc(4.375rem + 6px + 2 * (var(--container-gutter) + 0.5rem));
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery-frame {
+        position: relative;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery-frame > .product-gallery {
+        position: absolute !important;
+        inset: 0 !important;
+        height: 100% !important;
+        grid-template-rows: 100% !important;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__image-list {
+        height: 100% !important;
+        grid-template-rows: minmax(0, 1fr) auto !important;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__image-list > *:first-child {
+        height: 100% !important;
+        min-height: 0 !important;
+        border-radius: {{ gallery_border_radius }}px;
+        overflow: hidden;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__carousel {
+        height: 100% !important;
+        max-height: none !important;
+        grid-template-rows: 100% !important;
+        align-items: stretch !important;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__media,
+      #shopify-section-{{ section.id }} .product-gallery__media video-media,
+      #shopify-section-{{ section.id }} .product-gallery__media model-media {
+        height: 100% !important;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__media img {
+        height: 100% !important;
+        width: 100% !important;
+        object-fit: cover !important;
+        object-position: center !important;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__controls-floating .product-gallery__top-bar {
+        align-items: flex-start;
+        box-sizing: border-box;
+        height: var(--product-gallery-strip-height);
+        overflow: hidden;
+        display: flex;
+      }
+
       #shopify-section-{{ section.id }} .product-first-image-frame {
         display: flex;
         flex-direction: column;
@@ -115,10 +176,14 @@
         flex: 1 1 auto;
         height: auto !important;
         min-height: 0;
+        border-radius: {{ gallery_border_radius }}px;
+        overflow: hidden;
       }
 
       #shopify-section-{{ section.id }} .product-first-image-thumbs {
         flex: none;
+        box-sizing: border-box;
+        height: var(--product-gallery-strip-height);
         min-width: 0;
         padding: calc(var(--container-gutter) + 0.5rem);
       }
