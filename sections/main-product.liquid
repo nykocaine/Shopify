@@ -91,11 +91,15 @@
   }
 
   {%- comment -%}
-  Desktop: the caption is under the carousel image (product-gallery.liquid), a strip of the card with the same inner padding on every side as the rest.
+  Desktop: the caption is under the carousel image (product-gallery.liquid), a strip of the card with HALF the inner padding (container gutter + .5rem) on every side, the same as the thumbnails strip.
   {%- endcomment -%}
   @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} {
+      --product-gallery-strip-inset: calc((var(--container-gutter) + 0.5rem) / 2);
+    }
+
     #shopify-section-{{ section.id }} .product-gallery__controls-floating .product-gallery__top-bar {
-      padding-block: calc(var(--container-gutter) + 0.5rem) !important;
+      padding: var(--product-gallery-strip-inset) !important;
     }
   }
 
@@ -113,7 +117,7 @@
       each image is rounded by the image itself, since the card around it also holds the strip.
       {%- endcomment -%}
       #shopify-section-{{ section.id }} {
-        --product-gallery-strip-height: calc(4.375rem + 6px + 2 * (var(--container-gutter) + 0.5rem));
+        --product-gallery-strip-height: calc(4.375rem + 6px + 2 * var(--product-gallery-strip-inset));
       }
 
       #shopify-section-{{ section.id }} .product-gallery-frame {
@@ -185,7 +189,7 @@
         box-sizing: border-box;
         height: var(--product-gallery-strip-height);
         min-width: 0;
-        padding: calc(var(--container-gutter) + 0.5rem);
+        padding: var(--product-gallery-strip-inset);
       }
 
       #shopify-section-{{ section.id }} .product-first-image-thumbs .product-gallery__thumbnail-list {
