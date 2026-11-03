@@ -160,18 +160,19 @@ This component is used to show the product gallery (used in product page and fea
       }
 
       {%- comment -%}
-      The container of the thumbnails is a rounded box (the same radius as the gallery's images) with a very light fill, so its corners read; it clips the
-      thumbnails when the strip is scrolled sideways, and keeps the corners round while it scrolls (isolation + radial mask: WebKit does not clip scrolling
-      children to a radius reliably otherwise). The inner padding is the strips' one.
+      The container of the thumbnails: no fill and no padding of its own. The space above and below it is MARGIN (the strips' inner padding value, top and
+      bottom only), so the thumbnails use the full width of the card. Its corners are rounded (the same radius as the gallery's images): it clips the thumbnails
+      when the strip is scrolled sideways, and keeps the corners round while it scrolls (isolation + radial mask: WebKit does not clip scrolling children to a
+      radius reliably otherwise).
       {%- endcomment -%}
       #shopify-section-{{ section.id }} .product-gallery__thumbs-strip {
         grid-area: 2 / 1;
         min-width: 0;
-        padding: var(--product-gallery-strip-inset, var(--container-gutter));
+        margin-block: var(--product-gallery-strip-inset, var(--container-gutter));
+        padding: 0;
         {%- if gallery_border_radius %}
         border-radius: {{ gallery_border_radius }}px;
         {%- endif %}
-        background: rgb(var(--text-color) / .04);
         overflow: hidden;
         isolation: isolate;
         -webkit-mask-image: -webkit-radial-gradient(white, black);
