@@ -57,9 +57,7 @@ This component is used to show the product gallery (used in product page and fea
   (dots/numbers/thumbnails) already use to sit over the image without adding to the gallery's height -
   .product-gallery__controls-floating's "display: contents" wrapper means this still resolves its
   containing block against .product-gallery__image-list (position: relative, theme.css), same as those.
-  Only the anchor edge changes (top here vs. their inset-block-end). The progress-bar element's own
-  scroll-tracking (assets/theme.js, track-scroll-target) reads the carousel by id, not DOM position, so it
-  keeps working unchanged.
+  Only the anchor edge changes (top here vs. their inset-block-end).
   {%- endcomment -%}
   {%- capture bar_css -%}
     #shopify-section-{{ section.id }} .product-gallery__controls-floating .product-gallery__top-bar {
@@ -86,32 +84,24 @@ This component is used to show the product gallery (used in product page and fea
     first line regardless of how many lines the alt text wraps to.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .product-gallery__caption-row {
-      margin-block-start: .5rem;
       align-items: flex-start;
     }
 
     {%- comment -%}
-    With a single slide the indicator bar is hidden (assets/theme.js): the caption moves up to where the bar was, at the bar's own top
-    inset and keeping the gallery's inner side padding (same box as the bar), instead of leaving the gap that was under the bar.
+    The dots (dots_controls, with the theme's .carousel-dots look: assets/theme.css - the same ones as the FAQ and the Instagram Feed) sit at the bottom
+    of the photo, centered horizontally, on the same line as the zoom button (1rem from the bottom), in plain white.
     {%- endcomment -%}
-    #shopify-section-{{ section.id }} .product-gallery__top-bar:has(.carousel-segments[hidden]) .product-gallery__caption-row {
-      margin-block-start: 0;
+    #shopify-section-{{ section.id }} .product-gallery__controls-floating .carousel-dots {
+      --scroll-marker-group-inset-block-end: 1rem;
+      color: #fff;
     }
 
     {%- comment -%}
-    The whole bar (progress bar, caption and counter) is one blended group. --progress-bar-background-color/--progress-bar-fill-color
-    (css-variables.liquid) are what .progress-bar (theme.css) paints from, so they are redefined here; .text-subdued (theme.css) sets
-    its own dark color for the counter's "/" and total, so it gets a white-based one.
+    The caption bar is one blended group (white, inverted against the photo behind it).
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .product-gallery__top-bar {
       color: #fff;
       mix-blend-mode: difference;
-      --progress-bar-background-color: rgb(255 255 255 / .3);
-      --progress-bar-fill-color: #fff;
-    }
-
-    #shopify-section-{{ section.id }} .product-gallery__top-bar .text-subdued {
-      color: rgb(255 255 255 / .6);
     }
 
     {%- comment -%}
@@ -165,40 +155,6 @@ This component is used to show the product gallery (used in product page and fea
       }
     {%- endif -%}
   }
-
-  {%- if desktop_layout == 'carousel' -%}
-    {%- comment -%}
-    Unconditional (not nested in a breakpoint media query, unlike the rest of this block) so the buttons
-    show on mobile too, not just desktop - same inline/block inset as .product-gallery__top-bar
-    (padding-inline: var(--container-gutter), inset-block-start: 1rem, both in bar_css above), mirrored to
-    the bottom, so it reads as one consistent alignment with the bar and with .product-zoom-button below.
-    Bare SVGs, no .circle-button background: .product-gallery__nav-button below resets the <button> itself,
-    with no padding of its own so its icon's actual edge lines up with the bar's, instead of sitting
-    further in.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .product-gallery__nav-buttons {
-      position: absolute;
-      inset-inline-start: var(--container-gutter);
-      inset-block-end: 1rem;
-      align-items: center;
-      color: #fff;
-      mix-blend-mode: difference;
-    }
-
-    #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-gallery__nav-buttons {
-      mix-blend-mode: normal;
-    }
-
-    #shopify-section-{{ section.id }} .product-gallery__nav-button {
-      background: none;
-      border: none;
-      padding: 0;
-      color: inherit;
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-    }
-  {%- endif -%}
 
   {%- comment -%}
   .product-zoom-button (theme.css) inherits currentColor and has a negative inset-inline-end meant to
@@ -520,28 +476,6 @@ only way to do it on Shopify right now.
         {%- endif -%}
       </scroll-carousel>
 
-      {%- comment -%}
-      Replaces the old mouse-following <custom-cursor> click-to-navigate overlay: two static prev/next
-      buttons pinned to the bottom-left corner instead. Bare arrow icons (same control icon set and size as
-      the zoom button), no button background - only for desktop_layout "carousel", since grid layouts show
-      every slide at once and have no single "current slide" to step through.
-      {%- endcomment -%}
-      {%- if desktop_layout == 'carousel' and product != blank and gallery_media.size > 1 -%}
-        <div class="product-gallery__nav-buttons flex gap-4">
-          <carousel-prev-button aria-controls="{{ product_gallery_carousel_id }}">
-            <button type="button" class="product-gallery__nav-button">
-              {%- render 'icon' with 'arrow-left', direction_aware: true -%}
-            </button>
-          </carousel-prev-button>
-
-          <carousel-next-button aria-controls="{{ product_gallery_carousel_id }}">
-            <button type="button" class="product-gallery__nav-button">
-              {%- render 'icon' with 'arrow-right', direction_aware: true -%}
-            </button>
-          </carousel-next-button>
-        </div>
-      {%- endif -%}
-
       {%- if enable_image_zoom -%}
         <open-lightbox-button aria-controls="{{ product_gallery_carousel_id}}" {% if desktop_layout contains 'grid' %}class="sm:hidden"{% endif %}>
           <button class="product-zoom-button">
@@ -620,7 +554,7 @@ only way to do it on Shopify right now.
       {%- comment -%}DOTS{%- endcomment -%}
 
       {%- capture dots_controls -%}
-        <carousel-navigation class="scroll-marker-group scroll-marker-group--dots align-self-center" aria-controls="{{ product_gallery_carousel_id }}">
+        <carousel-navigation class="scroll-marker-group scroll-marker-group--dots carousel-dots align-self-center" aria-controls="{{ product_gallery_carousel_id }}">
           {%- if product != blank -%}
             {%- for media in gallery_media -%}
               <button type="button" class="scroll-marker tap-area tap-area--sm" data-media-id="{{ media.id }}" {% if filtered_indexes contains media.position %}hidden{% endif %} aria-current="{% if media == effective_default_media %}true{% else %}false{% endif %}">
@@ -671,36 +605,19 @@ only way to do it on Shopify right now.
 
       {%- capture bar_controls -%}
         <div class="product-gallery__top-bar full-bleed md:unbleed" style="width: 100%;">
-          <carousel-segments aria-controls="{{ product_gallery_carousel_id }}" class="carousel-segments" {% if product != blank %}style="--segments: {{ media_count }}; --segment-index: {{ default_media_index | minus: 1 }};"{% endif %}></carousel-segments>
-
           {%- comment -%}
-          Numbering sits inline with the alt-text caption (both meta info about the current slide) rather
-          than next to the progress bar - default_media_caption/media_count/default_media_index are all
-          computed above. The counter's spans carry no font-size of their own, so like the caption they
-          just inherit the body's, keeping the two visually paired.
+          The bar is just the alt-text caption now: the progress line and the "1 / 4" counter are gone (the dots at the bottom, dots_controls, show where the
+          visitor is). default_media_caption is computed above.
           {%- endcomment -%}
           <div class="product-gallery__caption-row h-stack justify-between gap-2 align-self-center">
             {%- comment -%}
             The currently visible slide's alt text (data-caption, set per-slide above), kept in sync via
-            <carousel-caption> (assets/theme.js) listening for the same carousel:change event
-            carousel-page-indicator already listens to - default_media_caption (computed above) is only
-            the FIRST paint's value, before any swipe/click has fired that event yet.
+            <carousel-caption> (assets/theme.js) listening for the carousel:change event - default_media_caption
+            (computed above) is only the FIRST paint's value, before any swipe/click has fired that event yet.
             {%- endcomment -%}
             {%- if product != blank -%}
               <carousel-caption class="product-gallery__caption" aria-controls="{{ product_gallery_carousel_id }}">{{ default_media_caption }}</carousel-caption>
             {%- endif -%}
-
-            <carousel-page-indicator class="h-stack gap-2 shrink-0" aria-controls="{{ product_gallery_carousel_id }}">
-              {%- if product != blank -%}
-                <span current-slide-index>{{ default_media_index }}</span>
-                <span class="text-subdued">/</span>
-                <span page-size class="text-subdued">{{ media_count }}</span>
-              {%- else -%}
-                <span current-slide-index>1</span>
-                <span class="text-subdued">/</span>
-                <span page-size class="text-subdued">3</span>
-              {%- endif -%}
-            </carousel-page-indicator>
           </div>
         </div>
       {%- endcapture -%}
@@ -723,6 +640,7 @@ only way to do it on Shopify right now.
 
               when 'bar'
                 echo bar_controls
+                echo dots_controls
             endcase
           -%}
         </div>
@@ -746,6 +664,7 @@ only way to do it on Shopify right now.
 
               when 'bar'
                 echo bar_controls
+                echo dots_controls
             endcase
           -%}
         </div>
