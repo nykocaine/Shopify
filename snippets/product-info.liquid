@@ -184,7 +184,8 @@ no need to manually pass the section as it is globally available)
             {%- endcomment -%}
             {%- if block.settings.side_text != blank -%}
               <div class="product-rating-row">
-                <p class="product-rating-row__text">{{ block.settings.side_text }}</p>
+                {%- comment -%}A multi-line field (textarea): every line break of the text becomes a line of its own, one below the other{%- endcomment -%}
+                <p class="product-rating-row__text">{{ block.settings.side_text | newline_to_br }}</p>
                 <a href="#reviews" class="product-rating-link" data-scroll-to-reviews>
                   {%- if product != blank -%}
                     {%- render 'product-rating', product: product, alignment: 'end', show_empty: block.settings.show_empty, show_placeholder: false -%}
