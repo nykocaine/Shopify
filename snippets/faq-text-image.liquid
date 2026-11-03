@@ -619,22 +619,18 @@ if (!window.customElements.get('read-more-match-height')) {
           position: relative;
           overflow: hidden;
           border-radius: {{ media_corner_radius }};
-          --faq-media-inset: var(--container-gutter);
+          --faq-media-inset: calc(var(--container-gutter) + 0.5rem);
         }
 
         {%- comment -%}
         Inner padding of EACH photo/video (inside the image itself, not around the carousel): what the caption and the decorative icon keep from the
-        edges of their own image. Phones: the theme's container gutter, the same inner padding used everywhere else; desktop (1000px and up): half of it.
+        edges of their own image, on every side and every screen size. The same value as the overlays of the product page's gallery
+        (sections/main-product.liquid): the theme's container gutter plus .5rem.
         {%- endcomment -%}
-        @media screen and (min-width: 1000px) {
-          #{{ media_wrapper_id }} .faq__text-image-media-frame {
-            --faq-media-inset: calc(var(--container-gutter) / 2);
-          }
-        }
 
         {%- comment -%}
         Caption inside the photo/video, like the gallery of the main product page: white text aligned to the left at the
-        bottom edge with no background or shadow, at the bottom edge of the photo, inset by --faq-media-inset (the container gutter on phones, half of it on desktop, set on the frame above) on the left, right and bottom. pointer-events: none so
+        bottom edge with no background or shadow, at the bottom edge of the photo, inset by --faq-media-inset (the container gutter plus .5rem, set on the frame above, the same as the product gallery's overlays) on the left, right and bottom. pointer-events: none so
         the caption never blocks the zoom / play buttons under it. Overrides theme.css's global
         figcaption { margin-block-start: .625rem !important; } for this caption only.
         {%- endcomment -%}
