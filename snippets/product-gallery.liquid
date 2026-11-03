@@ -13,6 +13,7 @@ This component is used to show the product gallery (used in product page and fea
 @param {number} [gallery_border_radius] - if set, rounds the bottom corners of the image carousel on mobile
 @param {number} [thumbnail_border_radius] - if set, rounds the corners of the gallery thumbnails
 @param {string} [class] - extra class applied on the container
+@param {boolean} [thumbnails_out] - if set (main-product.liquid, desktop), the thumbnails of the carousel are NOT drawn inside the gallery: they are output between two <!--gallery-thumbs--> markers at the very end, so the caller can split them out of the gallery's markup and place them elsewhere (under the static first image). Only the thumbnails that follow the carousel (same order, same hidden ones, same click behaviour: they point to it by id).
 @param {number} [move_to_second_media_id] - if set, this media's id is kept in the gallery but repositioned to the second slide and hidden - itself and its scroll-marker - at desktop widths (min-width: 1000px), where it's shown elsewhere instead (eg. main-product.liquid's separate first-image column)
 @param {object} [section]
 {%- enddoc -%}
@@ -138,6 +139,36 @@ This component is used to show the product gallery (used in product page and fea
   {%- if desktop_carousel_controls == 'bar' -%}
     @media screen and (min-width: 1000px) {
       {{ bar_css }}
+    }
+
+    {%- comment -%}
+    Desktop: the caption is not drawn over the photo any more, it goes BELOW the carousel image, in the grid row under it (.product-gallery__image-list is a
+    grid: the carousel in the first row, this bar - a direct grid item, the controls wrapper is display: contents - in the next one). Plain text color on the
+    card (no blend), static, no arrows or counter. The dots stay over the photo, at its bottom, centered: they are put in the first row too (grid-area: 1 / 1,
+    on top of the carousel) instead of being pinned to the bottom of the whole list, which now also holds the caption.
+    {%- endcomment -%}
+    @media screen and (min-width: 1000px) {
+      #shopify-section-{{ section.id }} .product-gallery__controls-floating .product-gallery__top-bar {
+        position: static;
+        inset: auto;
+        margin: 0;
+        padding-block: var(--container-gutter);
+        color: inherit;
+        mix-blend-mode: normal;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__controls-floating .carousel-dots {
+        position: relative;
+        inset: auto;
+        left: auto;
+        width: auto;
+        transform: none;
+        grid-area: 1 / 1;
+        align-self: end;
+        justify-self: center;
+        margin-block-end: var(--scroll-marker-group-inset-block-end);
+        z-index: 1;
+      }
     }
   {%- endif -%}
 
@@ -673,6 +704,14 @@ only way to do it on Shopify right now.
             endcase
           -%}
         </div>
+      {%- endif -%}
+
+      {%- comment -%}
+      Thumbnails for another place (thumbnails_out): output between two markers, at the very end of the gallery, for the caller to cut out of this markup and
+      put elsewhere. The "bleed" classes (they pull the strip out to the page edge on phones) are dropped: it sits inside a card.
+      {%- endcomment -%}
+      {%- if thumbnails_out and product != blank -%}
+        <!--gallery-thumbs-->{{ thumbnails_controls | replace: ' bleed md:unbleed', '' }}<!--gallery-thumbs-->
       {%- endif -%}
     {%- endif -%}
   </div>
