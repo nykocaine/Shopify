@@ -68,10 +68,10 @@
   {%- endcomment -%}
 
   {%- comment -%}
-  Block 3's inner controls (top bar, prev/next arrows, zoom button) only - never the media itself, which
-  isn't positioned against this same inset at all. Adds the same container-gutter-based extra already
+  Block 3's inner controls (top bar, dots, zoom button) only - never the media itself, which isn't positioned
+  against this same inset at all. Sideways they keep the same container-gutter-based inner padding already
   used for the floating card padding in sections/reviews.liquid and sections/faq.liquid (--container-gutter
-  + .5rem / 1rem + .5rem), reusing that system instead of a new one. Overridden here, scoped to this
+  + .5rem), reusing that system instead of a new one; vertically they are FLUSH with the top / bottom edge (no distance). Overridden here, scoped to this
   section only, rather than in product-gallery.liquid itself, which is shared as-is by featured-product.liquid
   and the quick-buy modal. !important is needed because product-gallery.liquid's own <style> block (emitted
   where the snippet is rendered, further down this section) comes later in the page than this one, and sets
@@ -80,17 +80,16 @@
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-gallery__controls-floating .product-gallery__top-bar {
     padding-inline: calc(var(--container-gutter) + 0.5rem) !important;
-    inset-block-start: calc(1rem + 0.5rem) !important;
-  }
-
-  #shopify-section-{{ section.id }} .product-gallery__nav-buttons {
-    inset-inline-start: calc(var(--container-gutter) + 0.5rem) !important;
-    inset-block-end: calc(1rem + 0.5rem) !important;
+    inset-block-start: 0 !important;
   }
 
   #shopify-section-{{ section.id }} .product-zoom-button {
     inset-inline-end: calc(var(--container-gutter) + 0.5rem) !important;
-    inset-block-end: calc(1rem + 0.5rem) !important;
+    inset-block-end: 0 !important;
+  }
+
+  #shopify-section-{{ section.id }} .product-gallery__controls-floating .carousel-dots {
+    --scroll-marker-group-inset-block-end: 0 !important;
   }
 
   {%- if section.settings.desktop_carousel_controls == 'thumbnails_left' -%}
@@ -299,8 +298,8 @@
         {%- endcomment -%}
         {%- if section.settings.show_icon -%}
           #shopify-section-{{ section.id }} .product-first-image-icon {
-            top: .75rem;
-            {% if section.settings.icon_corner == 'right' %}right: .75rem;{% else %}left: .75rem;{% endif %}
+            top: 0;
+            {% if section.settings.icon_corner == 'right' %}right: calc(var(--container-gutter) + 0.5rem);{% else %}left: calc(var(--container-gutter) + 0.5rem);{% endif %}
             z-index: 2;
             position: absolute;
             pointer-events: none;
@@ -320,12 +319,12 @@
     The gallery's top bar (progress bar, alt-text caption and page counter, product-gallery.liquid) floats over the same top edge of the photo, and
     its height changes with the caption's lines and the screen width. The script after the icon's markup measures where that bar ends and
     hands it over as --product-gallery-icon-top, so the badge always sits just under it (on either corner) instead of on top of the bar, its text and
-    its numbers. Without the bar (or without script) it keeps the plain .75rem inset.
+    its numbers. Without the bar (or without script) it sits flush with the top edge.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .product-gallery-icon {
-      top: var(--product-gallery-icon-top, .75rem);
+      top: var(--product-gallery-icon-top, 0px);
       transition: top .2s ease;
-      {% if section.settings.icon_corner == 'right' %}right: .75rem;{% else %}left: .75rem;{% endif %}
+      {% if section.settings.icon_corner == 'right' %}right: calc(var(--container-gutter) + 0.5rem);{% else %}left: calc(var(--container-gutter) + 0.5rem);{% endif %}
       z-index: 2;
       position: absolute;
       pointer-events: none;
