@@ -29,6 +29,18 @@ access to filters.
 <div class="collection__toolbar color-scheme color-scheme--{{ section.settings.toolbar_color_scheme.id }}{% if section.settings.floating_toolbar %} section-floating{% endif %}"{% if section.settings.floating_toolbar %} style="border-radius: 0 0 {{ section.settings.toolbar_border_radius }}px {{ section.settings.toolbar_border_radius }}px; overflow: hidden;"{% endif %}>
   {%- if leading_content != blank -%}
     {{ leading_content }}
+  {%- elsif section.settings.quick_links_menu.links.size > 0 -%}
+    {%- comment -%}
+    Quick links INSIDE the bar (tablet and desktop, from 700px): plain text links at the start, the current page underlined, with the view / filter / sort controls
+    at the end. They replace the products count there. Phones keep the row of buttons under the bar (below), which does not fit in the bar.
+    {%- endcomment -%}
+    <nav class="collection__toolbar-links sm-max:hidden" aria-label="{{ section.settings.quick_links_menu.title | escape }}">
+      <div class="collection__toolbar-links-list">
+        {%- for link in section.settings.quick_links_menu.links -%}
+          <a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
+        {%- endfor -%}
+      </div>
+    </nav>
   {%- else -%}
     <span class="subheading sm-max:hidden">{{ 'collection.products_count' | t: count: toolbar_count }}</span>
   {%- endif -%}
@@ -91,7 +103,7 @@ access to filters.
 </div>
 
 {%- comment -%}
-Quick links: a row of the theme's buttons right below the toolbar, on every screen size (it scrolls sideways when it does not fit). The current page is the solid one, the others are outline.
+Quick links: a row of the theme's buttons right below the toolbar on phones (from 700px they are inside the toolbar itself, see above; it scrolls sideways when it does not fit). The current page is the solid one, the others are outline.
 Styles live in sections/main-collection.liquid. The menu is the section's "Quick links" setting.
 {%- endcomment -%}
 {%- if section.settings.quick_links_menu.links.size > 0 -%}

@@ -111,6 +111,55 @@
     padding-block-start: var(--container-gutter);
   }
 
+  {%- comment -%}
+  Tablet and desktop (700px and up): the quick links are inside the toolbar as text links (snippets/collection-toolbar.liquid), so the row of buttons under it
+  is not shown there. The links sit at the start of the bar, in the body's text size, the current page underlined; the bar's own controls stay at the end.
+  A long menu scrolls sideways inside its own space instead of breaking the bar.
+  {%- endcomment -%}
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .collection__quick-links {
+      display: none;
+    }
+  }
+
+  #shopify-section-{{ section.id }} .collection__toolbar-links {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  #shopify-section-{{ section.id }} .collection__toolbar-links-list {
+    align-items: center;
+    column-gap: 1.5rem;
+    white-space: nowrap;
+    scrollbar-width: none;
+    overflow-x: auto;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .collection__toolbar-links-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  #shopify-section-{{ section.id }} .collection__toolbar-links a {
+    flex: none;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  #shopify-section-{{ section.id }} .collection__toolbar-links a[aria-current="page"] {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .3em;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    #shopify-section-{{ section.id }} .collection__toolbar-links a:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: .3em;
+    }
+  }
+
   {%- comment -%}"safe": centered while the buttons fit; when they do not (phones) the row starts at its left edge and scrolls, instead of cutting the first ones off.{%- endcomment -%}
   #shopify-section-{{ section.id }} .collection__quick-links-list {
     display: flex;
