@@ -9920,16 +9920,10 @@ shopify-account::part(signed-out-avatar) {
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  [reveal-on-scroll="true"] {
-    opacity: 0;
-  }
-}
-
-@media (scripting: none) {
-  [reveal-on-scroll="true"] {
-    opacity: 1;
-  }
+/* No entrance animation: elements marked reveal-on-scroll used to start transparent and rise in (products, blog posts, logos, press). They are always shown now;
+   the animations that did it are switched off in theme.js (ProductList, BlogPostList, LogoList, PressCarousel). */
+[reveal-on-scroll="true"] {
+  opacity: 1;
 }
 
 .border {

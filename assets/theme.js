@@ -4176,20 +4176,10 @@ var ProductList = class extends ScrollCarousel {
   connectedCallback() {
     super.connectedCallback();
 
-    if (matchesMediaQuery("motion-safe") && this.querySelectorAll("product-card[reveal-on-scroll=\"true\"], .product-list__promo[reveal-on-scroll=\"true\"]").length > 0) {
-      inView6(this, this.reveal.bind(this));
-    }
   }
 
+  // Entrance animation switched off (the cards no longer rise in when the page loads or the layout changes): they are simply shown.
   async reveal() {
-    animate7(this.querySelectorAll("product-card[reveal-on-scroll=\"true\"], .product-list__promo[reveal-on-scroll=\"true\"]"), {
-      opacity: [0, 1],
-      transform: ["translateY(20px)", "translateY(0)"]
-    }, {
-      duration: 0.1,
-      ease: "easeInOut",
-      delay: window.themeVariables.settings.staggerProducts ? stagger(0.05, { startDelay: 0.1, ease: "easeOut" }) : 0
-    });
   }
 };
 if (!window.customElements.get("product-list")) {
@@ -5807,20 +5797,10 @@ if (!window.customElements.get("before-after")) {
 // js/sections/blog-post-list.js
 import { inView as inView11, animate as animate13, stagger as stagger2 } from "vendor";
 var BlogPostList = class extends ScrollCarousel {
+  // Entrance animation switched off: the posts are simply shown.
   connectedCallback() {
-    if (matchesMediaQuery("motion-safe") && this.querySelectorAll(':scope > [reveal-on-scroll="true"]').length > 0) {
-      inView11(this, this.reveal.bind(this));
-    }
   }
   reveal() {
-    animate13(this.querySelectorAll(':scope > [reveal-on-scroll="true"]'), {
-      opacity: [0, 1],
-      transform: ["translateY(20px)", "translateY(0)"]
-    }, {
-      duration: 0.1,
-      ease: "easeInOut",
-      delay: stagger2(0.05, { startDelay: 0.1, ease: "easeOut" })
-    });
   }
 };
 if (!window.customElements.get("blog-post-list")) {
@@ -6578,11 +6558,7 @@ var LogoList = class extends HTMLElement {
 };
 _LogoList_instances = new WeakSet();
 reveal_fn = function() {
-  animate18(
-    this.querySelectorAll('[reveal-on-scroll="true"]'),
-    { opacity: [0, 1], transform: ["translateY(24px)", "translateY(0)"] },
-    { duration: 1, delay: stagger4(0.05, { ease: "easeOut" }), ease: [0.22, 1, 0.36, 1] }
-  );
+  // Entrance animation switched off: the logos are simply shown.
 };
 if (!window.customElements.get("logo-list")) {
   window.customElements.define("logo-list", LogoList);
@@ -6857,9 +6833,7 @@ if (!window.customElements.get("newsletter-popup")) {
 import { animate as animate20, animateSequence as animateSequence11 } from "vendor";
 var PressCarousel = class extends EffectCarousel {
   createOnBecameVisibleAnimationControls(toSlide) {
-    if (toSlide.hasAttribute("reveal-on-scroll") && toSlide.getAttribute("reveal-on-scroll") === "true") {
-      return animate20(toSlide, { opacity: [0, 1], transform: ["translateY(1em)", "translateY(0)"] }, { duration: 0.5, delay: 0.25, ease: [0.25, 0.46, 0.45, 0.94] });
-    }
+    // The first slide no longer rises in when the page loads (entrance animation switched off).
     return super.createOnBecameVisibleAnimationControls(toSlide);
   }
   createOnChangeAnimationControls(fromSlide, toSlide) {
