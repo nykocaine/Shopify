@@ -34,6 +34,19 @@
     assign thumbnails_out = true
   endif
 
+  # Desktop, carousel layout with the static first image: both images FILL the same height (cropped to cover), whatever the product has. The static
+  # image gets a strip under it (the thumbnails, or an empty one of the same height) when the gallery has its caption strip under its own image (bar
+  # controls), so the two images start and end at the same lines.
+  assign first_image_fill = false
+  if use_first_image_column and section.settings.desktop_media_layout == 'carousel'
+    assign first_image_fill = true
+  endif
+
+  assign first_image_strip = false
+  if thumbnails_out or first_image_fill and section.settings.desktop_carousel_controls == 'bar'
+    assign first_image_strip = true
+  endif
+
   # Passed to 'product-gallery' below: only set when the static desktop column is actually showing this
   # same image, so the gallery knows which media to reposition (mobile) / hide (desktop) - see that
   # render call and product-gallery.liquid's own move_to_second_media_id handling for the full reasoning.
@@ -103,7 +116,7 @@
     }
   }
 
-  {%- if thumbnails_out -%}
+  {%- if first_image_fill -%}
     {%- comment -%}
     Desktop: the thumbnails of the carousel in a strip under the static first image, inside the same card (the card is a column: the image takes what is
     left, the strip keeps its own height). Same inner padding as the caption strip beside it. The image wrapper gives up its fixed 100% height (the
@@ -192,6 +205,7 @@
         padding: var(--product-gallery-strip-inset);
       }
 
+      {%- if thumbnails_out -%}
       #shopify-section-{{ section.id }} .product-first-image-thumbs .product-gallery__thumbnail-list {
         max-width: 100%;
       }
@@ -223,6 +237,7 @@
         height: 100%;
         object-fit: cover;
       }
+      {%- endif -%}
     }
   {%- endif -%}
 
@@ -1026,7 +1041,7 @@
                 {%- render 'media', product: product, media: first_product_image, sizes: '(min-width: 1000px) 33vw, 100vw', preload: false -%}
               </div>
 
-              {%- if product_gallery_thumbs_html != blank -%}
+              {%- if first_image_strip -%}
                 <div class="product-first-image-thumbs">
                   {{- product_gallery_thumbs_html -}}
                 </div>
