@@ -23,17 +23,17 @@
   {%- if section.settings.floating_toolbar -%}
     {%- comment -%}
     Floating mode: same calc(var(--container-gutter) + 0.5rem) formula as sections/reviews.liquid and
-    sections/faq.liquid on the sides; top and bottom use three quarters of it (half from 700px up), so the toolbar reads as a compact
+    sections/faq.liquid on the sides; top and bottom use half of it (two fifths from 700px up), so the toolbar reads as a compact
     padded card instead of keeping its default, non-uniform padding values (theme.css).
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .collection__toolbar {
-      padding-block: calc((var(--container-gutter) + 0.5rem) * 0.75);
+      padding-block: calc((var(--container-gutter) + 0.5rem) * 0.5);
       padding-inline: calc(var(--container-gutter) + 0.5rem);
     }
 
     @media screen and (min-width: 700px) {
       #shopify-section-{{ section.id }} .collection__toolbar {
-        padding-block: calc((var(--container-gutter) + 0.5rem) / 2);
+        padding-block: calc((var(--container-gutter) + 0.5rem) * 0.4);
       }
     }
 
@@ -98,30 +98,9 @@
   {%- endif -%}
 
   {%- comment -%}
-  Quick links: outline buttons on one row below the toolbar (markup in snippets/collection-toolbar.liquid). Same side margin as the product grid. Phones: the row
-  scrolls sideways, bleeding to the screen edges; from 700px it wraps. The buttons are the theme's own (snippets/button.liquid): outline, and solid for the
-  current page, so height, typography, radius and colors are the ones of every other button.
+  Quick links: text links INSIDE the toolbar, at the start of the bar, on every screen size (snippets/collection-toolbar.liquid). The current page is
+  underlined; the bar's own controls stay at the end. A menu that does not fit (phones) scrolls sideways inside its own space instead of breaking the bar.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .collection__quick-links {
-    padding-inline: var(--container-gutter);
-    padding-block-end: var(--container-gutter);
-  }
-
-  #shopify-section-{{ section.id }} .collection__toolbar:not(.section-floating) + .collection__quick-links {
-    padding-block-start: var(--container-gutter);
-  }
-
-  {%- comment -%}
-  Tablet and desktop (700px and up): the quick links are inside the toolbar as text links (snippets/collection-toolbar.liquid), so the row of buttons under it
-  is not shown there. The links sit at the start of the bar, in the body's text size, the current page underlined; the bar's own controls stay at the end.
-  A long menu scrolls sideways inside its own space instead of breaking the bar.
-  {%- endcomment -%}
-  @media screen and (min-width: 700px) {
-    #shopify-section-{{ section.id }} .collection__quick-links {
-      display: none;
-    }
-  }
-
   #shopify-section-{{ section.id }} .collection__toolbar-links {
     flex: 1 1 auto;
     min-width: 0;
@@ -129,7 +108,7 @@
 
   #shopify-section-{{ section.id }} .collection__toolbar-links-list {
     align-items: center;
-    column-gap: 1.5rem;
+    column-gap: 1.25rem;
     white-space: nowrap;
     scrollbar-width: none;
     overflow-x: auto;
@@ -138,6 +117,12 @@
 
   #shopify-section-{{ section.id }} .collection__toolbar-links-list::-webkit-scrollbar {
     display: none;
+  }
+
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .collection__toolbar-links-list {
+      column-gap: 1.5rem;
+    }
   }
 
   #shopify-section-{{ section.id }} .collection__toolbar-links a {
@@ -157,41 +142,6 @@
       text-decoration: underline;
       text-decoration-thickness: 1px;
       text-underline-offset: .3em;
-    }
-  }
-
-  {%- comment -%}"safe": centered while the buttons fit; when they do not (phones) the row starts at its left edge and scrolls, instead of cutting the first ones off.{%- endcomment -%}
-  #shopify-section-{{ section.id }} .collection__quick-links-list {
-    display: flex;
-    justify-content: safe center;
-    gap: 0.75rem;
-    margin-inline: calc(-1 * var(--container-gutter));
-    padding: 2px var(--container-gutter);
-    overflow-x: auto;
-    scroll-padding-inline: var(--container-gutter);
-    scrollbar-width: none;
-  }
-
-  #shopify-section-{{ section.id }} .collection__quick-links-list::-webkit-scrollbar {
-    display: none;
-  }
-
-  {%- comment -%}The buttons are the theme's own (outline / solid): only the row's behavior is set here.{%- endcomment -%}
-  #shopify-section-{{ section.id }} .collection__quick-link {
-    flex: none;
-    white-space: nowrap;
-  }
-
-  {%- comment -%}
-  Hover (mouse only, so a tap on a phone does not leave it stuck): the theme gives its outline buttons no hover at all, so these fill with the primary button colors,
-  the same ones the current page already wears. The current page's button does not react: it is where the visitor already is.
-  {%- endcomment -%}
-  @media screen and (min-width: 700px) {
-    #shopify-section-{{ section.id }} .collection__quick-links-list {
-      flex-wrap: wrap;
-      margin-inline: 0;
-      padding-inline: 0;
-      overflow: visible;
     }
   }
 

@@ -31,10 +31,10 @@ access to filters.
     {{ leading_content }}
   {%- elsif section.settings.quick_links_menu.links.size > 0 -%}
     {%- comment -%}
-    Quick links INSIDE the bar (tablet and desktop, from 700px): plain text links at the start, the current page underlined, with the view / filter / sort controls
-    at the end. They replace the products count there. Phones keep the row of buttons under the bar (below), which does not fit in the bar.
+    Quick links INSIDE the bar (every screen size): plain text links at the start, the current page underlined, with the view / filter / sort controls at the
+    end. They replace the products count. On phones the row scrolls sideways in the room the controls leave.
     {%- endcomment -%}
-    <nav class="collection__toolbar-links sm-max:hidden" aria-label="{{ section.settings.quick_links_menu.title | escape }}">
+    <nav class="collection__toolbar-links" aria-label="{{ section.settings.quick_links_menu.title | escape }}">
       <div class="collection__toolbar-links-list">
         {%- for link in section.settings.quick_links_menu.links -%}
           <a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
@@ -101,39 +101,3 @@ access to filters.
     {%- endif -%}
   </div>
 </div>
-
-{%- comment -%}
-Quick links: a row of the theme's buttons right below the toolbar on phones (from 700px they are inside the toolbar itself, see above; it scrolls sideways when it does not fit). The current page is the solid one, the others are outline.
-Styles live in sections/main-collection.liquid. The menu is the section's "Quick links" setting.
-{%- endcomment -%}
-{%- if section.settings.quick_links_menu.links.size > 0 -%}
-  {%- assign menu = section.settings.quick_links_menu -%}
-
-  <nav class="collection__quick-links color-scheme color-scheme--{{ section.settings.color_scheme.id }}" aria-label="{{ menu.title | escape }}">
-    <div class="collection__quick-links-list">
-      {%- for link in menu.links -%}
-        {%- comment -%}The theme's own buttons (snippets/button.liquid): outline for the other pages, solid for the current one. Height, typography and radius are theirs.{%- endcomment -%}
-        {%- if link.current -%}
-          {%- capture quick_link -%}
-            {%- render 'button', content: link.title, href: link.url, class: 'collection__quick-link is-current' -%}
-          {%- endcapture -%}
-          {{- quick_link | replace_first: '<a ', '<a aria-current="page" ' -}}
-        {%- else -%}
-          {%- render 'button', content: link.title, href: link.url, style: 'outline', class: 'collection__quick-link' -%}
-        {%- endif -%}
-      {%- endfor -%}
-    </div>
-  </nav>
-
-  <script>
-    (function () {
-      var script = document.currentScript;
-      var list = script && script.previousElementSibling && script.previousElementSibling.querySelector('.collection__quick-links-list');
-      var current = list && list.querySelector('.is-current');
-      if (!current || list.scrollWidth <= list.clientWidth) return;
-
-      {%- comment -%}Sideways row (phones): the current button starts in the middle of the row, not hidden past the edge.{%- endcomment -%}
-      list.scrollLeft = current.offsetLeft - (list.clientWidth - current.offsetWidth) / 2;
-    })();
-  </script>
-{%- endif -%}
