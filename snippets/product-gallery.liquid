@@ -64,7 +64,7 @@ This component is used to show the product gallery (used in product page and fea
       margin-inline: 0;
       padding-inline: var(--container-gutter);
       position: absolute;
-      inset-block-start: 0;
+      inset-block-start: var(--container-gutter);
       inset-inline: 0;
       z-index: 1;
     }
@@ -89,11 +89,11 @@ This component is used to show the product gallery (used in product page and fea
 
     {%- comment -%}
     The dots (dots_controls, with the theme's .carousel-dots look: assets/theme.css - the same ones as the FAQ and the Instagram Feed) sit at the bottom
-    of the photo, centered horizontally, in plain white. FLUSH with the bottom edge: no distance to it, and the row is exactly as tall as the biggest
-    dot (the current one, .5rem scaled 1.5x = .75rem), with no padding above or below.
+    of the photo, centered horizontally, in plain white. They keep the gallery's inner padding from the bottom edge (--container-gutter, the same one the
+    sides use), and the row itself has no padding of its own: it is exactly as tall as the biggest dot (the current one, .5rem scaled 1.5x = .75rem).
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .product-gallery__controls-floating .carousel-dots {
-      --scroll-marker-group-inset-block-end: 0;
+      --scroll-marker-group-inset-block-end: var(--container-gutter);
       height: .75rem;
       padding: 0;
       color: #fff;
@@ -116,7 +116,7 @@ This component is used to show the product gallery (used in product page and fea
       mix-blend-mode: normal;
     }
 
-    {%- comment -%}No padding around the caption, and the empty space the line height leaves above the first line is trimmed (text-box), so the text itself touches the top edge{%- endcomment -%}
+    {%- comment -%}No padding or margin of its own, and the empty space the line height leaves above the first line is trimmed (text-box), so the text itself starts exactly at the inner padding line{%- endcomment -%}
     #shopify-section-{{ section.id }} .product-gallery__caption {
       display: block;
       padding: 0;
@@ -167,7 +167,7 @@ This component is used to show the product gallery (used in product page and fea
   slightly overhang a card's edge - here it sits inside the gallery's own overflow: hidden, so that
   negative offset clips it off-center instead. Uses the same inline/block inset as .product-gallery__top-bar
   (padding-inline: var(--container-gutter), inset-block-start: 1rem, bar_css above) mirrored to the bottom
-  corner, instead of theme.css's own 8px/-12px offsets. Flush with the bottom edge (no distance to it); the sides keep the container gutter.
+  corner, instead of theme.css's own 8px/-12px offsets. It keeps the gallery's inner padding (the container gutter) from the bottom and the end edges, like every other element over the photo.
 
   White with mix-blend-mode: difference, like the bar and the arrows (it blends with the photo behind it).
   {%- endcomment -%}
@@ -175,7 +175,7 @@ This component is used to show the product gallery (used in product page and fea
     color: #fff;
     mix-blend-mode: difference;
     inset-inline-end: var(--container-gutter);
-    inset-block-end: 0;
+    inset-block-end: var(--container-gutter);
   }
 
   #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-zoom-button {
