@@ -182,10 +182,17 @@ no need to manually pass the section as it is globally available)
             The rating (number + star) is a link to the reviews section of the page, scrolled to by the small script in
             sections/main-product.liquid (data-scroll-to-reviews). It stays visually identical to a plain rating.
             {%- endcomment -%}
-            {%- if block.settings.side_text != blank -%}
+            {%- if block.settings.side_text != blank or block.settings.side_text_2 != blank -%}
               <div class="product-rating-row">
-                {%- comment -%}A multi-line field (textarea): every line break of the text becomes a line of its own, one below the other{%- endcomment -%}
-                <p class="product-rating-row__text">{{ block.settings.side_text | newline_to_br }}</p>
+                {%- comment -%}Two separate text fields (each can be connected to its own metafield): the second line sits below the first, either one alone also works{%- endcomment -%}
+                <div class="product-rating-row__lines">
+                  {%- if block.settings.side_text != blank -%}
+                    <p class="product-rating-row__text">{{ block.settings.side_text }}</p>
+                  {%- endif -%}
+                  {%- if block.settings.side_text_2 != blank -%}
+                    <p class="product-rating-row__text">{{ block.settings.side_text_2 }}</p>
+                  {%- endif -%}
+                </div>
                 <a href="#reviews" class="product-rating-link" data-scroll-to-reviews>
                   {%- if product != blank -%}
                     {%- render 'product-rating', product: product, alignment: 'end', show_empty: block.settings.show_empty, show_placeholder: false -%}
