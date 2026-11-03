@@ -136,6 +136,64 @@ This component is used to show the product gallery (used in product page and fea
     }
   {%- endif -%}
 
+  {%- if mobile_controls == 'bar' -%}
+    {%- comment -%}
+    Phones: the thumbnails strip goes in the second row of the image list, under the carousel; the dots stay over the photo, at its bottom (same cell as the
+    carousel). Every item is placed explicitly (the browser places the explicit ones first - see the desktop note below).
+    {%- endcomment -%}
+    @media screen and (max-width: 999px) {
+      #shopify-section-{{ section.id }} .product-gallery__image-list > :first-child {
+        grid-area: 1 / 1;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__controls-floating .carousel-dots {
+        position: relative;
+        inset: auto;
+        left: auto;
+        width: auto;
+        transform: none;
+        grid-area: 1 / 1;
+        align-self: end;
+        justify-self: center;
+        margin-block-end: var(--scroll-marker-group-inset-block-end);
+        z-index: 1;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__thumbs-strip {
+        grid-area: 2 / 1;
+        min-width: 0;
+        padding: var(--product-gallery-strip-inset, var(--container-gutter));
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__thumbs-strip .scroll-marker-group--thumbnails {
+        flex-wrap: nowrap;
+        gap: .5rem;
+        margin: 0;
+        padding: 0 0 6px;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__thumbs-strip .scroll-marker {
+        --scroll-marker-width: 3.5rem;
+        flex: none;
+        width: var(--scroll-marker-width);
+        aspect-ratio: 4 / 5;
+        overflow: hidden;
+        opacity: .7;
+        transition: opacity .2s ease;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__thumbs-strip .scroll-marker[aria-current="true"] {
+        opacity: 1;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery__thumbs-strip .scroll-marker img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  {%- endif -%}
+
   {%- if desktop_carousel_controls == 'bar' -%}
     @media screen and (min-width: 1000px) {
       {{ bar_css }}
@@ -674,6 +732,16 @@ only way to do it on Shopify right now.
         </div>
       {%- endcapture -%}
 
+      {%- comment -%}
+      Phones, bar controls: the same thumbnails as on desktop, in a strip UNDER the carousel (a grid item of the image list, in its second row). The caption stays
+      where it is, over the photo. The "bleed" classes (they pull the strip out to the page edge) are dropped: it sits inside the card, with its own inner padding.
+      {%- endcomment -%}
+      {%- capture mobile_thumbs_strip -%}
+        {%- if mobile_controls == 'bar' and product != blank -%}
+          <div class="product-gallery__thumbs-strip">{{ thumbnails_controls | replace: ' bleed md:unbleed', '' }}</div>
+        {%- endif -%}
+      {%- endcapture -%}
+
       {%- if desktop_layout == 'carousel' -%}
         <div class="{% if desktop_carousel_controls != 'thumbnails_under' %}product-gallery__controls-floating{% endif %} hidden md:contents">
           {%- liquid
@@ -717,6 +785,7 @@ only way to do it on Shopify right now.
               when 'bar'
                 echo bar_controls
                 echo dots_controls
+                echo mobile_thumbs_strip
             endcase
           -%}
         </div>
