@@ -140,26 +140,6 @@
   }
 
   {%- comment -%}
-  Mobile only: the big logo ignores the section's inner padding - no side padding (edge to edge of the
-  footer card) and no top padding when it is the first thing in the footer. The bottom padding is untouched.
-  - Side: negative margin equal to the container's inset (--distance-to-bleed, same value .full-bleed uses,
-    which the scrolling layout already gets from its class).
-  - Top: negative margin equal to .footer__content's padding-block (--footer-row-padding). Only applied when the
-    logo is the first element, so a logo placed after the other blocks keeps its spacing from them.
-  {%- endcomment -%}
-  @media screen and (max-width: 699px) {
-    #shopify-section-{{ section.id }} .footer__big-logo--full,
-    #shopify-section-{{ section.id }} .footer__block--scrolling_logo {
-      margin-inline: calc(-1 * var(--distance-to-bleed));
-    }
-
-    #shopify-section-{{ section.id }} .footer__content > .footer__big-logo:first-child,
-    #shopify-section-{{ section.id }} .footer__content > .footer__block-list:first-child > .footer__block--scrolling_logo:first-child {
-      margin-block-start: calc(-1 * var(--footer-row-padding));
-    }
-  }
-
-  {%- comment -%}
   Desktop layout: theme.css lays out .footer__block-list as a flex row that wraps (flex-wrap: wrap)
   and gives .footer__block--links / .footer__block--social_menu flex-shrink: 0 (never shrink). With
   4 blocks, once their natural/max widths no longer all fit on one line, the non-shrinking blocks
