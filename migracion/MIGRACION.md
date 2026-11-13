@@ -80,15 +80,17 @@ El tema referencia estos handles:
 
 Los textos de cada una ya vienen en la plantilla. La página en sí puede estar vacía; solo hay que crearla y elegir la plantilla.
 
-## 5. Archivos (Content > Files)
+## 5. Archivos (imágenes, logos y videos)
 
-El tema apunta a imágenes y videos por nombre. En la tienda nueva hay que subirlos **con el mismo nombre** para que se enlacen solos; si no, hay que elegirlos de nuevo en el editor. Lista de los que usa:
+**Ya los quité del tema** (en la rama `claude/clever-franklin-hplg6w`): no queda ninguna referencia a imágenes, logos ni videos subidos a Shopify (`shopify://shop_images/...` y `shopify://files/...`). Eso incluye el logo del header (normal y transparente).
 
-- Logos SVG: `SOEN_logo_caja-SA_horizontal_B0AEA8.svg`, `SOEN_logo_caja-SA_vertical_B0AEA8.svg`, `SOEN_logo_horizontal_5B5954.svg`, `SOEN_logo_9FA19C.svg`, `soen_logo_blanco.svg`
-- Imágenes: 20 archivos `Generated_Image_*` / `GeneratedImage*`, además de `sss.avif` y `descarga.png`
-- Videos: 6 archivos `TikVid.io_*.mp4` y `descarga (1).mp4`
+En la tienda nueva esos espacios quedan vacíos. Hay que subir las fotos y elegirlas en el editor de temas:
 
-Puedes ver la lista completa con `git grep "shopify://shop_images\|shopify://files" -- templates sections config`.
+- Logo del header (y el logo para header transparente): Theme editor > Header.
+- Slideshow, banners, bloques de imagen con texto, contacto, Circle, colección, blog, búsqueda, página de contraseña: elegir imagen en cada bloque.
+- Videos del home y de la ficha de producto: elegir video en cada bloque.
+
+Los textos de los bloques se mantienen; solo se quitaron las imágenes y videos.
 
 ## 6. Ajustes de la tienda (no vienen con el tema)
 
