@@ -4939,12 +4939,10 @@ table caption {
 
 /* Newsletter button hover: the button fills with the color scheme's own Button colors (theme settings > Colors >
    Primary button: "Hover background" --button-hover-background and "Text" --button-text-primary, the same
-   variables every solid .button uses), so it follows the scheme instead of a color set here. The button is inset by .25rem inside the pill, with
-   its own rounded corners, so the fill never touches the email field, the divider or the pill's edge. */
+   variables every solid .button uses), so it follows the scheme instead of a color set here. The fill covers the
+   whole button area, edge to edge of the pill (the pill's own rounded corners and overflow: hidden clip it), with no
+   inner margin or padding around it. */
 .newsletter-input-group .link {
-  --newsletter-button-inset: .25rem;
-  margin: var(--newsletter-button-inset);
-  border-radius: max(0px, calc(var(--input-border-radius) - var(--newsletter-button-inset)));
   transition: color .2s ease-in-out, background-color .2s ease-in-out;
 }
 
