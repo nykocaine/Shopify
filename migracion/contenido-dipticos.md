@@ -112,3 +112,28 @@ Ensayo clínico: «ensayo clínico con TCA al 30 %, el activo de TCA Peel: 4 ses
 - Duo Peel (no hay díptico).
 
 Para esas secciones hace falta otro documento tuyo. No voy a inventar contenido.
+
+## 6. Qué se corrigió en la web (rama `claude/clever-franklin-hplg6w`)
+
+- FAQ (`page.faq`): contraindicaciones, prueba de parche (1 día / 24 h), protector solar (SPF 50+ cada 2 h, sin sol directo, sauna ni piscina 72 h), descamación (días 2–5 SA, 2–7 TCA), seguridad (1 día). Pregunta nueva: "¿Cuándo debo consultar a un médico después de aplicarlo?".
+- Ficha de producto (`product.json`): resultados, recuperación, cuidados, frecuencia, retinol, tipo de piel, prueba de parche. Preguntas nuevas: "¿Cómo se aplica un peeling de Soen?" y "¿Cuándo debo consultar a un médico?".
+- Test "Nuestro método": isotretinoína de 6 a 2 meses.
+- Isotretinoína queda en 2 meses en toda la web.
+
+## 7. Borradores para los metacampos por producto
+
+Para que cada producto tenga su propio contenido (y la web no dependa de que solo vendas peelings). Texto tomado del díptico, listo para pegar.
+
+### SA Peel
+- `contraindicaciones`: No usar en embarazo, lactancia, herpes activo o heridas.
+- `aplicacion`: Layer Control™ dosifica la intensidad capa a capa: cada capa fina suma un nivel medible, y la película blanca marca cuándo aplicar la siguiente. 3 capas (intensidad baja): para brillo, poros y textura; película blanca fina. 4 a 6 capas (media): para acné y puntos negros; película blanca densa. 7 a 10 capas (alta): para acné persistente y manchas; película blanca opaca.
+- `estudios_clinicos`: Ensayo clínico con ácido salicílico al 30 %, activo de SA Peel: 3 sesiones redujeron las lesiones de acné no inflamatorias (Bae et al., 2013).
+- `ingredientes` (solo lo que dice el díptico; falta la lista INCI completa): ácido salicílico 30 % + ácido láctico 10 %.
+
+### TCA Peel
+- `contraindicaciones`: No usar en embarazo, lactancia, herpes activo o heridas. No usar si tomaste isotretinoína en los últimos 2 meses.
+- `aplicacion`: Frost Control™ gradúa la profundidad capa a capa: cada capa fina suma un nivel controlado, y el velo blanco (frost) indica cuándo detenerse. 1 capa (baja): para textura, poros y brillo; velo blanco tenue. 2 capas (media): para manchas y marcas de acné; velo blanco y rosado. 3 capas (alta): para manchas y cicatrices de acné; velo blanco uniforme.
+- `estudios_clinicos`: Ensayo clínico con TCA al 30 %, activo de TCA Peel: 4 sesiones mejoraron las cicatrices de acné más que el ácido glicólico al 70 % (Manjhi et al., 2024).
+- `ingredientes` (solo lo que dice el díptico; falta la lista INCI completa): TCA 30 % + ácido salicílico 10 %.
+
+Nota: `aplicacion_primer_dia`, `aplicacion_segundo_dia` y `aplicacion_resultado` son los pies de las fotos de "Sistema de acción". El díptico no trae ese contenido, así que no lo inventé.
