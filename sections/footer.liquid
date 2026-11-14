@@ -138,16 +138,28 @@
   }
 
   {%- comment -%}
-  Mobile only: thin dividers that run edge to edge of the footer card between the big logo, the newsletter and
-  the menus below. Each one is the bottom border of the block above it. The block is widened by the container's
+  Mobile and tablet (below 1000px): thin dividers that run edge to edge of the footer card between the big logo,
+  the newsletter and the menus below. Each one is the bottom border of the block above it. The block is widened by the container's
   inset (--distance-to-bleed, the same value .full-bleed uses) so the line reaches the card's edges, and the same
   amount is given back as padding so its content stays aligned with the rest. The space under the line is the
   grid's own row gap; the same space is added above it as padding. The line only exists when something follows
   the block (:not(:last-child)). Color: the theme's border color (same one used by the footer accordions).
-  Also: the vertical divider between the email field and the SUBSCRIBE button of the newsletter form, which the
-  theme's form snippet renders (an <hr>) but hides by default.
+  From 1000px (desktop) the blocks sit in one row, so the dividers are vertical lines between the columns instead
+  (see the min-width: 1000px block below).
+  Also, on every screen size: the vertical divider between the email field and the SUBSCRIBE button of the
+  newsletter form, which the theme's form snippet renders (an <hr>) but hides by default.
   {%- endcomment -%}
-  @media screen and (max-width: 699px) {
+  #shopify-section-{{ section.id }} .newsletter-input-group hr {
+    display: block;
+    align-self: stretch;
+    width: 1px;
+    height: auto;
+    margin: 0;
+    border: 0;
+    background: rgb(var(--border-color));
+  }
+
+  @media screen and (max-width: 999px) {
     #shopify-section-{{ section.id }} .footer__block--scrolling_logo:not(:last-child),
     #shopify-section-{{ section.id }} .footer__block--newsletter:not(:last-child) {
       margin-inline: calc(-1 * var(--distance-to-bleed));
@@ -164,16 +176,6 @@
     #shopify-section-{{ section.id }} .footer__content > .footer__big-logo--full:first-child {
       margin-inline: calc(-1 * var(--distance-to-bleed));
       padding-inline: var(--distance-to-bleed);
-    }
-
-    #shopify-section-{{ section.id }} .newsletter-input-group hr {
-      display: block;
-      align-self: stretch;
-      width: 1px;
-      height: auto;
-      margin: 0;
-      border: 0;
-      background: rgb(var(--border-color));
     }
   }
 
@@ -237,6 +239,20 @@
     }
   }
 
+  {%- comment -%}
+  Tablets: the newsletter block is capped to a reading width above (34rem), which would also cap its divider line.
+  The block takes the whole row again (so the line reaches the card's edges) and its content keeps the cap.
+  {%- endcomment -%}
+  @media screen and (min-width: 700px) and (max-width: 999px) {
+    #shopify-section-{{ section.id }} .footer__block--newsletter:not(:last-child) {
+      max-width: none;
+    }
+
+    #shopify-section-{{ section.id }} .footer__block--newsletter:not(:last-child) > * {
+      max-width: 34rem;
+    }
+  }
+
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} .footer__block-list {
       flex-wrap: nowrap;
@@ -253,6 +269,25 @@
 
     #shopify-section-{{ section.id }} .footer__block--align-end {
       align-self: flex-end;
+    }
+
+    {%- comment -%}
+    Vertical divider between columns: a line half of the row's column gap (3rem) before every block except the
+    first, as tall as the block (the blocks stretch to the height of the row). A pseudo-element, so it adds nothing to
+    the block's width. Color: the theme's border color, the same as the mobile dividers.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .footer__block-list > .footer__block + .footer__block {
+      position: relative;
+    }
+
+    #shopify-section-{{ section.id }} .footer__block-list > .footer__block + .footer__block::before {
+      content: '';
+      position: absolute;
+      inset-block: 0;
+      inset-inline-start: -1.5rem;
+      width: 1px;
+      background: rgb(var(--border-color));
+      pointer-events: none;
     }
   }
 </style>
