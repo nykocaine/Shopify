@@ -138,6 +138,46 @@
   }
 
   {%- comment -%}
+  Mobile only: thin dividers that run edge to edge of the footer card between the big logo, the newsletter and
+  the menus below. Each one is the bottom border of the block above it. The block is widened by the container's
+  inset (--distance-to-bleed, the same value .full-bleed uses) so the line reaches the card's edges, and the same
+  amount is given back as padding so its content stays aligned with the rest. The space under the line is the
+  grid's own row gap; the same space is added above it as padding. The line only exists when something follows
+  the block (:not(:last-child)). Color: the theme's border color (same one used by the footer accordions).
+  Also: the vertical divider between the email field and the SUBSCRIBE button of the newsletter form, which the
+  theme's form snippet renders (an <hr>) but hides by default.
+  {%- endcomment -%}
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .footer__block--scrolling_logo:not(:last-child),
+    #shopify-section-{{ section.id }} .footer__block--newsletter:not(:last-child) {
+      margin-inline: calc(-1 * var(--distance-to-bleed));
+      padding-inline: var(--distance-to-bleed);
+      padding-block-end: 2rem;
+      border-bottom: 1px solid rgb(var(--border-color));
+    }
+
+    #shopify-section-{{ section.id }} .footer__content > .footer__big-logo:first-child {
+      padding-block-end: 2rem;
+      border-bottom: 1px solid rgb(var(--border-color));
+    }
+
+    #shopify-section-{{ section.id }} .footer__content > .footer__big-logo--full:first-child {
+      margin-inline: calc(-1 * var(--distance-to-bleed));
+      padding-inline: var(--distance-to-bleed);
+    }
+
+    #shopify-section-{{ section.id }} .newsletter-input-group hr {
+      display: block;
+      align-self: stretch;
+      width: 1px;
+      height: auto;
+      margin: 0;
+      border: 0;
+      background: rgb(var(--border-color));
+    }
+  }
+
+  {%- comment -%}
   Desktop layout: theme.css lays out .footer__block-list as a flex row that wraps (flex-wrap: wrap)
   and gives .footer__block--links / .footer__block--social_menu flex-shrink: 0 (never shrink). With
   4 blocks, once their natural/max widths no longer all fit on one line, the non-shrinking blocks
