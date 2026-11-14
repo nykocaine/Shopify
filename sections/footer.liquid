@@ -63,14 +63,12 @@
   }
 
   {%- comment -%}
-  Icons only ever show in the mobile-only compact row (.footer-social-menu--compact, icon-only by
-  design - see the comment on the social_menu case above). The regular list (.footer-social-menu,
-  not --compact) never shows its icons, on any breakpoint - including on mobile when "Collapse on
-  mobile" is off and the compact row doesn't exist at all, so the regular list is all there is.
+  The social menu block's icons show in both layouts: next to each network name in the regular list
+  (.footer-social-menu, desktop and mobile when "Collapse on mobile" is off) and icon-only in the
+  compact mobile row (.footer-social-menu--compact). An earlier version hid the icons of the regular
+  list with display: none, which is why they never appeared when the "social" menu was added.
+  The icon color and size come from the block's own "Icon color" / "Icon width" settings.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .footer-social-menu .footer-social-menu__icon-wrap {
-    display: none;
-  }
 
   {%- comment -%}
   Vertical padding: same container-gutter + 0.5rem formula as sections/reviews.liquid and
