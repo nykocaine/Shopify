@@ -69,16 +69,15 @@
   list with display: none, which is why they never appeared when the "social" menu was added.
   The icon color and size come from the block's own "Icon color" / "Icon width" settings.
 
-  Why the footer's columns spilled out of the card (around 1000-1250px, worse with three menus + the icons):
-  every block is built from .v-stack (a one-column grid, minmax(0, 1fr)), and a column like that can be squeezed to
-  0 wide. On desktop the blocks sit in one flex row where each one may shrink (flex-shrink: 1, min-width:
-  min-content), but since a stack's min-content is 0 they shrank below their longest word / widest row (the social
-  menu rows are icon + gap + name) and the text spilled over the next column and past the card's inner padding.
-  Every stack inside the footer's block list now keeps its column at least as wide as its min-content (minmax(min-content, 1fr)):
-  the longest word, or icon + name, never narrower. A longer text still wraps, but cannot be squeezed below that, so
-  the block's own min-width: min-content is really the width of its content and the columns share what is left.
+  With the icons visible each row is icon + gap + network name, which is wider than the name alone. The block and its
+  list are .v-stack (a one-column grid, minmax(0, 1fr)), whose column can be squeezed to 0, so on desktop the flex row shrank
+  the social block below the width of its rows and the names spilled out of the footer card (around 1000-1150px).
+  The columns now never go below their min-content (icon + gap + the longest word of a row): minmax(min-content, 1fr).
+  A longer name still wraps, but never narrower than that, so the block's min-width: min-content (desktop rule below)
+  is really the width of its content and the other columns give way instead of the names spilling out.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .footer__block-list .v-stack {
+  #shopify-section-{{ section.id }} .footer-social-menu,
+  #shopify-section-{{ section.id }} .footer-social-menu__list {
     grid-template-columns: minmax(min-content, 1fr);
   }
 
@@ -286,17 +285,6 @@
     }
 
     {%- comment -%}
-    The big logo gives way last: with five or more blocks in the row (logo, newsletter and three menus) the row is
-    tight between 1000 and ~1250px, and a logo that shrinks as fast as the text columns ends up tiny. It shrinks at a
-    fifth of their rate and never below 7rem; the text columns take most of the squeeze (they can't go below their
-    min-content, see the v-stack rule above, so nothing spills out).
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .footer__block-list > .footer__block--scrolling_logo {
-      flex-shrink: .2;
-      min-width: 7rem;
-    }
-
-    {%- comment -%}
     Vertical divider between columns: a line half of the row's column gap (3rem) before every block except the
     first. A pseudo-element, so it adds nothing to the block's width. It runs from the top edge of the footer card to
     the horizontal line under the blocks, without gaps: it is extended by the footer's vertical padding
@@ -318,47 +306,6 @@
     }
 
     #shopify-section-{{ section.id }} .footer__block-list > :is(.footer__block--links, .footer__block--social_menu) + :is(.footer__block--links, .footer__block--social_menu)::before {
-      display: none;
-    }
-  }
-
-  {%- comment -%}
-  Narrow desktops (1000-1249px) with five or more blocks in the row (logo, newsletter and three menus): a single row
-  doesn't fit - the email field and the logo ended up tiny or the text spilled out. In that range the footer uses the
-  stacked layout of tablets instead: logo and newsletter each on their own full-width row, the menus in three columns
-  below, with the same edge-to-edge horizontal dividers (and no vertical lines, which only make sense in one row).
-  From 1250px the single row fits again. With four blocks or fewer nothing changes.
-  {%- endcomment -%}
-  @media screen and (min-width: 1000px) and (max-width: 1249px) {
-    #shopify-section-{{ section.id }} .footer__block-list:has(> :nth-child(5)) {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      justify-content: start;
-      gap: 2.5rem 2rem;
-    }
-
-    #shopify-section-{{ section.id }} .footer__block-list:has(> :nth-child(5)) > .footer__block {
-      max-width: none;
-      min-width: 0;
-    }
-
-    #shopify-section-{{ section.id }} .footer__block-list:has(> :nth-child(5)) > :is(.footer__block--scrolling_logo, .footer__block--newsletter, .footer__block--text) {
-      grid-column: 1 / -1;
-    }
-
-    #shopify-section-{{ section.id }} .footer__block-list:has(> :nth-child(5)) > .footer__block--scrolling_logo:not(:last-child),
-    #shopify-section-{{ section.id }} .footer__block-list:has(> :nth-child(5)) > .footer__block--newsletter:not(:last-child) {
-      margin-inline: calc(-1 * var(--distance-to-bleed));
-      padding-inline: var(--distance-to-bleed);
-      padding-block-end: 2rem;
-      border-bottom: 1px solid rgb(var(--border-color));
-    }
-
-    #shopify-section-{{ section.id }} .footer__block-list:has(> :nth-child(5)) > .footer__block--newsletter:not(:last-child) > * {
-      max-width: 34rem;
-    }
-
-    #shopify-section-{{ section.id }} .footer__block-list:has(> :nth-child(5)) > .footer__block + .footer__block::before {
       display: none;
     }
   }
