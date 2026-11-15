@@ -68,7 +68,20 @@
   compact mobile row (.footer-social-menu--compact). An earlier version hid the icons of the regular
   list with display: none, which is why they never appeared when the "social" menu was added.
   The icon color and size come from the block's own "Icon color" / "Icon width" settings.
+
+  With the icons visible each row is icon + gap + network name, which is wider than the name alone. The block and its
+  list are .v-stack (a one-column grid, minmax(0, 1fr)), whose column can be squeezed to 0, so on desktop the flex row shrank
+  the social block below the width of its rows and the names spilled out of the footer card (around 1000-1150px).
+  The columns now never go below their min-content (icon + gap + the longest word of a row): minmax(min-content, 1fr).
+  A longer name still wraps, but never narrower than that, so the block's min-width: min-content (desktop rule below)
+  is really the width of its content and the other columns give way instead of the names spilling out.
   {%- endcomment -%}
+  #shopify-section-{{ section.id }} .footer-social-menu,
+  #shopify-section-{{ section.id }} .footer-social-menu__list {
+    grid-template-columns: minmax(min-content, 1fr);
+  }
+
+
 
   {%- comment -%}
   Vertical padding: same container-gutter + 0.5rem formula as sections/reviews.liquid and
