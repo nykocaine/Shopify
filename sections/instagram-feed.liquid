@@ -963,12 +963,12 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
     }
 
     {%- comment -%}
-    When the section's color scheme has a pure white background (#ffffff, exactly), the section loses only its left and right inner padding.
-    The top and bottom padding stay as they are.
+    When the section's color scheme has a pure white background (#ffffff, exactly), the section loses its inner padding on every side: left,
+    right, top and bottom.
     {%- endcomment -%}
     {%- if section.settings.color_scheme.settings.background.rgb == '255 255 255' -%}
       #shopify-section-{{ section.id }} .instagram-feed {
-        padding-inline: 0;
+        padding: 0;
       }
     {%- endif -%}
 
