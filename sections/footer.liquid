@@ -84,13 +84,6 @@
 
 
   {%- comment -%}
-  Vertical space inside each block (title -> text -> form/button -> disclaimer, menu title -> list): 1rem everywhere, set in the
-  markup with gap-4 on each block's .v-stack. Same 1rem the other sections use between title, subtitle and button
-  (sections/instagram-feed.liquid, sections/rich-text.liquid). The theme had a different value per step (1.125rem under the
-  titles, 1.375rem between the newsletter text and the form, 1rem above the disclaimer).
-  {%- endcomment -%}
-
-  {%- comment -%}
   Newsletter block: the space between its paragraphs. Text written in a rich text field (.prose) separates paragraphs by --prose-default-spacing
   (1.5rem), which is far too much for these short lines; here it is a small one. Only inside the footer's newsletter block, the rest of the
   site's rich text keeps the theme's spacing.
@@ -440,7 +433,7 @@
 
                 {%- when 'text' -%}
                   {%- if block.settings.title != blank or block.settings.content != blank or shop.features.follow_on_shop? and block.settings.enable_follow_on_shop -%}
-                    <div class="v-stack gap-4">
+                    <div class="v-stack gap-4.5">
                       {%- if block.settings.title != blank -%}
                         <p class="subheading">{{ block.settings.title }}</p>
                       {%- endif -%}
@@ -475,7 +468,7 @@
                       </ul>
                     {%- endcapture -%}
 
-                    <div class="v-stack gap-4 {% if block.settings.collapse_on_mobile %}sm-max:hidden{% endif %}">
+                    <div class="v-stack gap-4.5 {% if block.settings.collapse_on_mobile %}sm-max:hidden{% endif %}">
                       {%- if block.settings.show_menu_title -%}
                         <p class="subheading">{{ menu_title }}</p>
                       {%- endif -%}
@@ -571,7 +564,7 @@
                     {%- endcomment -%}
                     {%- assign social_collapse_on_mobile = block.settings.collapse_on_mobile -%}
 
-                    <div class="footer-social-menu v-stack gap-4 {% if social_collapse_on_mobile %}sm-max:hidden{% endif %}">
+                    <div class="footer-social-menu v-stack gap-4.5 {% if social_collapse_on_mobile %}sm-max:hidden{% endif %}">
                       {%- if block.settings.show_menu_title and block.settings.heading != blank -%}
                         <p class="subheading footer-social-menu__heading">{{ block.settings.heading }}</p>
                       {%- endif -%}
@@ -587,12 +580,12 @@
                   {%- endif -%}
 
                 {%- when 'newsletter' -%}
-                  <div class="v-stack gap-4">
+                  <div class="v-stack gap-4.5">
                     {%- if block.settings.title != blank -%}
                       <p class="subheading">{{ block.settings.title }}</p>
                     {%- endif -%}
 
-                    <div class="v-stack gap-4">
+                    <div class="v-stack gap-5.5">
                       {%- if block.settings.content != blank -%}
                         <div class="prose">
                           {{- block.settings.content -}}
