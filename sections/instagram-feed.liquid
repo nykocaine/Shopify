@@ -707,6 +707,23 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
               transition: opacity .25s ease, visibility .25s;
             }
           }
+
+          {%- comment -%}
+          Desktop (mouse): while the cursor is over a video (the one that plays its preview), its round play button stays and "breathes" - the
+          same animation the playing video gets on mobile (video-play-breathe in snippets/media-zoom-style.liquid: the button grows a few percent
+          and goes back, its icon a little softer at the smallest point) - to show it can be pressed to open the video. It starts with the hover
+          itself, not with the playback, so it also shows while the video is still loading. Off with "reduce motion"; never in the zoom view
+          (the button is hidden there).
+          {%- endcomment -%}
+          @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+            #{{ instagram_feed_id }} .instagram-feed__video-cell:hover .video-open-button .overlay-control {
+              animation: video-play-breathe 1.8s ease-in-out infinite alternate;
+            }
+
+            #{{ instagram_feed_id }} .instagram-feed__video-cell:hover .video-open-button .overlay-control .icon {
+              animation: video-play-breathe-icon 1.8s ease-in-out infinite alternate;
+            }
+          }
         </style>
 
         {%- comment -%}
@@ -716,7 +733,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
           visible). Scrolling the row moves it to the next video: the previous one pauses and the new one starts. Nothing plays when the
           section is out of the screen. The round play button follows the same video (data-at-left): only that one shows it.
         - Desktop (mouse): none plays by itself. The video under the cursor plays and pauses when the cursor leaves. The round play button stays
-          on top the whole time; only pressing it opens the zoom view (snippets/media-zoom-slide.liquid, media-zoom-script.liquid).
+          on top the whole time (it breathes while the cursor is over the video, style above); only pressing it opens the zoom view (snippets/media-zoom-slide.liquid, media-zoom-script.liquid).
 
         A video opened in the zoom view is never touched here. When it is closed (event "thumbnail:collapsed") the right state is recomputed.
         {%- endcomment -%}
