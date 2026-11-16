@@ -104,7 +104,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
 
       {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank or section.settings.show_icon -%}
         <div class="instagram-feed__header{% if instagram_header_only_button %} sm-max:hidden{% endif %}">
-          <div class="instagram-feed__content">
+          <div class="instagram-feed__content{% if section.settings.title == blank and section.settings.subtitle == blank %} instagram-feed__content--no-text{% endif %}">
             {%- if section.settings.title != blank or section.settings.subtitle != blank -%}
               <div class="prose prose--compact">
                 {%- if section.settings.title != blank -%}
@@ -989,6 +989,12 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
       grid-row: 1 / span 2;
       justify-self: end;
       align-self: start;
+    }
+
+    {%- comment -%}No title and no subtitle: nothing to sit next to, so the button goes to the left (the start of the row) instead{%- endcomment -%}
+    #shopify-section-{{ section.id }} .instagram-feed__content--no-text > .instagram-feed__button {
+      grid-column: 1;
+      justify-self: start;
     }
   }
 
