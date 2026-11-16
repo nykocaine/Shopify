@@ -180,16 +180,23 @@
       padding-block-end: 2rem;
       border-bottom: 1px solid rgb(var(--border-color));
     }
+  }
 
-    #shopify-section-{{ section.id }} .footer__content > .footer__big-logo:first-child {
-      padding-block-end: 2rem;
-      border-bottom: 1px solid rgb(var(--border-color));
-    }
+  {%- comment -%}
+  Big logo in its own row above the blocks (layouts "Full width" and "Scrolling"), on every screen size: the same divider line as the other
+  dividers (the theme's border color), edge to edge of the footer card, right under it. The row is widened by the container's inset
+  (--distance-to-bleed) and gives it back as padding so the logo stays aligned; the scrolling logo already bleeds to the edges (.full-bleed).
+  The space under the line is the row gap of .footer__content; the same space is added above it as padding. Only when the logo is the first
+  thing in the footer. On desktop the vertical lines between columns (below) go up to this line, so every line meets the next one.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .footer__content > .footer__big-logo:first-child {
+    padding-block-end: 2rem;
+    border-bottom: 1px solid rgb(var(--border-color));
+  }
 
-    #shopify-section-{{ section.id }} .footer__content > .footer__big-logo--full:first-child {
-      margin-inline: calc(-1 * var(--distance-to-bleed));
-      padding-inline: var(--distance-to-bleed);
-    }
+  #shopify-section-{{ section.id }} .footer__content > .footer__big-logo--full:first-child {
+    margin-inline: calc(-1 * var(--distance-to-bleed));
+    padding-inline: var(--distance-to-bleed);
   }
 
   {%- comment -%}
@@ -307,6 +314,11 @@
 
     #shopify-section-{{ section.id }} .footer__block-list > :is(.footer__block--links, .footer__block--social_menu) + :is(.footer__block--links, .footer__block--social_menu)::before {
       display: none;
+    }
+
+    {%- comment -%}With the big logo in its own row above, the vertical lines also go up to the line under it (the row gap of the footer, 4.8rem on desktop){%- endcomment -%}
+    #shopify-section-{{ section.id }} .footer__big-logo ~ .footer__block-list > .footer__block + .footer__block::before {
+      inset-block-start: -4.8rem;
     }
   }
 </style>
