@@ -525,7 +525,7 @@
         Never on the FAQ page, which has its own vertical menu (see the end of this style block).
         The tab row takes the container's own white and its top rounded corners (the corner radius setting); the container
         loses its top rounded corners and the gap that separated it from the tabs, so the two read as one container with the
-        menu inside. The tabs turn into plain links: no pill, no background, the active one underlined. The edge fade of the
+        menu inside. The tabs turn into plain links: no pill, no background, the active one at full strength (the others muted). The edge fade of the
         scrolling row is switched off here, since it would fade the white of the bar itself.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .faq__category-tab.faq__tab-clone {
@@ -580,21 +580,14 @@
             border-radius: 0;
           }
 
-          {%- comment -%}The underline of the active tab is a line that grows in and out (not a text-decoration), so changing tab is gradual.{%- endcomment -%}
-          #shopify-section-{{ section.id }} .faq__category-tab::after {
-            content: "";
-            position: absolute;
-            inset-inline: 0;
-            inset-block-end: .5rem;
-            height: 1px;
-            background: currentColor;
-            transform: scaleX(0);
-            transform-origin: left center;
-            transition: transform var(--faq-motion-duration) var(--faq-motion-ease);
+          {%- comment -%}No underline: the selected tab is told apart by opacity (full strength; the others are muted){%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab {
+            opacity: .55;
+            transition: opacity var(--faq-motion-duration) var(--faq-motion-ease);
           }
 
-          #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"]::after {
-            transform: scaleX(1);
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab[aria-selected="true"] {
+            opacity: 1;
           }
 
           {%- comment -%}
@@ -1007,30 +1000,15 @@
             line-height: var(--heading-line-height);
           }
 
-          {%- comment -%}Selected category: underlined (a line that grows in and out, as in the glued bar) and at 70% opacity.{%- endcomment -%}
+          {%- comment -%}Selected category: no underline; it is at full strength and the other categories are muted.{%- endcomment -%}
           #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab {
             position: relative;
+            opacity: .55;
             transition: opacity var(--faq-motion-duration) var(--faq-motion-ease);
           }
 
           #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab[aria-selected="true"] {
-            opacity: .7;
-          }
-
-          #shopify-section-{{ section.id }} .faq__category-tab::after {
-            content: "";
-            position: absolute;
-            inset-inline: 0;
-            inset-block-end: .25rem;
-            height: 1px;
-            background: currentColor;
-            transform: scaleX(0);
-            transform-origin: left center;
-            transition: transform var(--faq-motion-duration) var(--faq-motion-ease);
-          }
-
-          #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"]::after {
-            transform: scaleX(1);
+            opacity: 1;
           }
 
           #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab,
@@ -1236,21 +1214,14 @@
             hyphens: auto;
           }
 
-          {%- comment -%}The underline of the active tab is a line that grows in and out (not a text-decoration), so changing tab is gradual.{%- endcomment -%}
-          #shopify-section-{{ section.id }} .faq__category-tab::after {
-            content: "";
-            position: absolute;
-            inset-inline: 0;
-            inset-block-end: .5rem;
-            height: 1px;
-            background: currentColor;
-            transform: scaleX(0);
-            transform-origin: left center;
-            transition: transform var(--faq-motion-duration) var(--faq-motion-ease);
+          {%- comment -%}No underline: the selected tab is told apart by opacity (full strength; the others are muted){%- endcomment -%}
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab {
+            opacity: .55;
+            transition: opacity var(--faq-motion-duration) var(--faq-motion-ease);
           }
 
-          #shopify-section-{{ section.id }} .faq__category-tab[aria-selected="true"]::after {
-            transform: scaleX(1);
+          #shopify-section-{{ section.id }} .faq__category-tab.faq__category-tab[aria-selected="true"] {
+            opacity: 1;
           }
         }
 
