@@ -89,6 +89,15 @@ progress bar) are simply skipped when no carousel_id is given.
         });
       }
 
+      // Whether this browser lets a page change a video's volume (it does not on iPhone, where only the device's own buttons do).
+      function volumeIsSettable() {
+        var probe = document.createElement('video');
+
+        probe.volume = 0.5;
+
+        return probe.volume === 0.5;
+      }
+
       // Tracks the mute-setter of every video under this wrapper, so that unmuting one can mute
       // every other one (only one video can have sound at a time).
       var muteSetters = [];
@@ -182,6 +191,102 @@ progress bar) are simply skipped when no carousel_id is given.
           event.stopPropagation();
           toggleSound();
         });
+
+        // Volume (framed_icons): a vertical slider that opens above the sound button (hover, focus or tap). Dragging it (or the arrow keys)
+        // sets the video's volume; at 0 the video is muted, above 0 it is unmuted (through toggleSound, so every other video is muted).
+        // Browsers that do not allow changing a video's volume (iPhone) get no slider, just the sound button.
+        if (framedIcons && volumeIsSettable()) {
+          var volumeBox = document.createElement('div');
+          var volumeSlider = document.createElement('div');
+
+          volumeBox.className = 'lightbox-volume';
+          volumeSlider.className = 'lightbox-volume__slider';
+          volumeSlider.setAttribute('role', 'slider');
+          volumeSlider.setAttribute('aria-label', 'Volume');
+          volumeSlider.setAttribute('aria-orientation', 'vertical');
+          volumeSlider.setAttribute('aria-valuemin', '0');
+          volumeSlider.setAttribute('aria-valuemax', '100');
+          volumeSlider.setAttribute('tabindex', '0');
+          volumeSlider.innerHTML = '<span class="lightbox-volume__track"><span class="lightbox-volume__fill"></span></span>';
+
+          soundButton.parentNode.insertBefore(volumeBox, soundButton);
+          volumeBox.appendChild(soundButton);
+          volumeBox.appendChild(volumeSlider);
+
+          var volumeFill = volumeSlider.querySelector('.lightbox-volume__fill');
+
+          function showVolume() {
+            var level = video.muted ? 0 : video.volume;
+
+            volumeFill.style.height = (level * 100) + '%';
+            volumeSlider.setAttribute('aria-valuenow', String(Math.round(level * 100)));
+          }
+
+          function applyVolume(level) {
+            level = Math.min(1, Math.max(0, level));
+
+            if (level === 0) {
+              if (!video.muted) {
+                setMuted(true);
+              }
+            } else {
+              video.volume = level;
+
+              if (video.muted) {
+                toggleSound();
+              }
+            }
+
+            showVolume();
+          }
+
+          function volumeFromPointer(event) {
+            var rect = volumeSlider.querySelector('.lightbox-volume__track').getBoundingClientRect();
+
+            applyVolume(1 - (event.clientY - rect.top) / Math.max(1, rect.height));
+          }
+
+          volumeSlider.addEventListener('pointerdown', function(event) {
+            if (event.button > 0) {
+              return;
+            }
+
+            volumeSlider.setPointerCapture(event.pointerId);
+            volumeSlider.classList.add('is-dragging');
+            volumeFromPointer(event);
+            event.preventDefault();
+            event.stopPropagation();
+          });
+
+          volumeSlider.addEventListener('pointermove', function(event) {
+            if (volumeSlider.classList.contains('is-dragging')) {
+              volumeFromPointer(event);
+            }
+          });
+
+          ['pointerup', 'pointercancel'].forEach(function(name) {
+            volumeSlider.addEventListener(name, function() {
+              volumeSlider.classList.remove('is-dragging');
+            });
+          });
+
+          volumeSlider.addEventListener('click', function(event) {
+            event.stopPropagation();
+          });
+
+          volumeSlider.addEventListener('keydown', function(event) {
+            var step = event.key === 'ArrowUp' || event.key === 'ArrowRight' ? 0.1 : (event.key === 'ArrowDown' || event.key === 'ArrowLeft' ? -0.1 : 0);
+
+            if (step) {
+              applyVolume((video.muted ? 0 : video.volume) + step);
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          });
+
+          video.addEventListener('volumechange', showVolume);
+          showVolume();
+        }
 
         // No tap-anywhere-on-the-video handler here on purpose: video-media itself (theme.js,
         // VideoMedia#connectedCallback) already attaches its own one-time "click starts playback"
@@ -521,6 +626,11 @@ progress bar) are simply skipped when no carousel_id is given.
           if (scrubber) {
             if (framedIcons && media.controlsGroup) {
               scrubber.timeLabel = ensureTimeLabel(media.controlsGroup);
+
+              // The playback line lives inside the video's floating bar (its first row) instead of floating over the video.
+              if (scrubber.root.parentNode !== media.controlsGroup) {
+                media.controlsGroup.insertBefore(scrubber.root, media.controlsGroup.firstChild);
+              }
             }
 
             drawScrubber(scrubber);
