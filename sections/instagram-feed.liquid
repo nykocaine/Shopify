@@ -926,7 +926,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
   HEADER (content column + icon column)
   ============================================================
   Two real columns, same on mobile and desktop - no breakpoint-specific swap. .instagram-feed__content
-  (title, subtitle and button stacked) takes the start side, the icon (when shown) sits in its own
+  (title and subtitle stacked, the button on the title's row from 700px - see below) takes the start side, the icon (when shown) sits in its own
   column flush to the end. A plain flex row instead of pulling the icon out with position: absolute:
   that let the icon overlap the subtitle on narrow screens once the column grew tall enough to reach
   it, since an out-of-flow element doesn't share space with in-flow content. flex: 1 + min-width: 0
@@ -955,6 +955,41 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
 
   #shopify-section-{{ section.id }} .instagram-feed__icon {
     flex-shrink: 0;
+  }
+
+  {%- comment -%}
+  From 700px (tablet and desktop; phones show the button under the dots instead): the button sits on the title's row, flush with the right edge
+  of the section's content (the section's inner padding), with the title at the left and the free space in between. The content column becomes
+  a two-column grid: the text on the left (1fr) and the button on the right (auto). The .prose wrapper is display: contents, so the title and
+  the subtitle are separate rows of that grid. The button's top lines up with the top of the title (the title's top is trimmed to its capital
+  letters, see below, so both start at the section's inner padding) and it spans the title and subtitle rows: a button taller than the title
+  never pushes the subtitle down, so the 1rem between title and subtitle (the subtitle's own margin - .prose rules match the markup, not the
+  boxes - so the grid has no row gap of its own) stays the same. The button never shrinks or wraps its label (auto column), the title wraps instead.
+  {%- endcomment -%}
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .instagram-feed__content {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: 2rem;
+      row-gap: 0;
+      align-items: start;
+    }
+
+    #shopify-section-{{ section.id }} .instagram-feed__content > .prose {
+      display: contents;
+    }
+
+    #shopify-section-{{ section.id }} .instagram-feed__content > .prose > * {
+      grid-column: 1;
+      min-width: 0;
+    }
+
+    #shopify-section-{{ section.id }} .instagram-feed__content > .instagram-feed__button {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      justify-self: end;
+      align-self: start;
+    }
   }
 
   {%- comment -%}
