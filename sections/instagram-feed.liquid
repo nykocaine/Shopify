@@ -963,6 +963,16 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
     }
 
     {%- comment -%}
+    When the section's color scheme has a pure white background (#ffffff, exactly), the section loses only its left and right inner padding.
+    The top and bottom padding stay as they are.
+    {%- endcomment -%}
+    {%- if section.settings.color_scheme.settings.background.rgb == '255 255 255' -%}
+      #shopify-section-{{ section.id }} .instagram-feed {
+        padding-inline: 0;
+      }
+    {%- endif -%}
+
+    {%- comment -%}
     Same corner radius as the outer floating wrapper (which only clips the section's own edges,
     far from the carousel once the padding above is in between). Without this, scrolling the
     carousel reveals a plain square-cornered viewport in the middle of a rounded section - adding
