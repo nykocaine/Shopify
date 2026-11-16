@@ -7,7 +7,7 @@ swaps the type per block from the editor). Extracted from sections/reviews.liqui
   "Text + image/video" block and Media Blocks' Carousel: a round play button in the middle of the video opens the zoom view.
 - Nothing autoplays by itself: on mobile only the first video at the left edge plays (a muted preview), on desktop a video plays while the
   cursor is over it (script "Video previews" below).
-- Navigation: dots under the row on every screen size (snippets/carousel-dots.liquid).
+- Navigation: dots under the row on every screen size (snippets/carousel-dots.liquid). On phones the section button sits under them, centered.
 - The zoom view (snippets/media-zoom-script.liquid) keeps its icons inside the open photo or video (framed_icons).
 
 Colors and the shape of the round controls come from Theme settings > Controls; the color of a liked heart from this section's settings.
@@ -88,8 +88,22 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {% if instagram_scheme_is_white %}0{% else %}{{ instagram_corner_radius_px }}{% endif %}; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
     <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack{% if section.settings.bw_intro %} is-bw{% endif %}">
+      {%- liquid
+        # Phones: the button moves under the dots (see below the carousel), so it is hidden up here. Only when there is a row to put it under.
+        assign instagram_button_below_on_mobile = false
+        if section.settings.button_text != blank and instagram_media_count > 0
+          assign instagram_button_below_on_mobile = true
+        endif
+
+        # With the button gone on phones and nothing else in the header (no title, subtitle or icon), the empty header is hidden there too
+        assign instagram_header_only_button = false
+        if instagram_button_below_on_mobile and section.settings.title == blank and section.settings.subtitle == blank and section.settings.show_icon == false
+          assign instagram_header_only_button = true
+        endif
+      -%}
+
       {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank or section.settings.show_icon -%}
-        <div class="instagram-feed__header">
+        <div class="instagram-feed__header{% if instagram_header_only_button %} sm-max:hidden{% endif %}">
           <div class="instagram-feed__content">
             {%- if section.settings.title != blank or section.settings.subtitle != blank -%}
               <div class="prose prose--compact">
@@ -106,7 +120,11 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
             {%- endif -%}
 
             {%- if section.settings.button_text != blank -%}
-              {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style, class: 'instagram-feed__button' -%}
+              {%- if instagram_button_below_on_mobile -%}
+                {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style, class: 'instagram-feed__button sm-max:hidden' -%}
+              {%- else -%}
+                {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style, class: 'instagram-feed__button' -%}
+              {%- endif -%}
             {%- endif -%}
           </div>
 
@@ -190,6 +208,13 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
         {%- comment -%}Dots centered under the row (snippets/carousel-dots.liquid), the navigation on every screen size. Not with auto-scroll, which moves the row by itself{%- endcomment -%}
         {%- if section.settings.show_dots and instagram_autoscroll == false -%}
           {%- render 'carousel-dots', target_id: instagram_carousel_id -%}
+        {%- endif -%}
+
+        {%- comment -%}Phones only: the section's button, centered under the dots (under the row when there are no dots). Desktop keeps it in the header{%- endcomment -%}
+        {%- if instagram_button_below_on_mobile -%}
+          <div class="instagram-feed__mobile-button sm:hidden">
+            {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style, class: 'instagram-feed__button' -%}
+          </div>
         {%- endif -%}
 
         {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple -%}
@@ -943,6 +968,14 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__content > .prose > h2 {
     text-box: trim-start cap alphabetic;
+  }
+
+  {%- comment -%}
+  Phones: the button under the dots, centered horizontally. It is its own row of the .section-stack grid, so the space above it is the same
+  row gap as between the row of photos and the dots.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__mobile-button {
+    justify-self: center;
   }
 
   {%- comment -%}
