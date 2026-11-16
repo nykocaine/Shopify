@@ -462,11 +462,11 @@
 
                   {%- render 'heading', content: result_product.title, style: 'h3', html_tag: 'h3', instant: true -%}
 
-                  {%- if result_product.metafields.custom.sistema != blank or result_product.metafields.custom.enfoque != blank -%}
+                  {%- if result_product.metafields.custom.enfoque != blank or result_product.metafields.custom.sistema != blank -%}
                     <p class="the-method__result-subtitle">
-                      {{- result_product.metafields.custom.sistema -}}
-                      {%- if result_product.metafields.custom.sistema != blank and result_product.metafields.custom.enfoque != blank %} · {% endif -%}
                       {{- result_product.metafields.custom.enfoque -}}
+                      {%- if result_product.metafields.custom.enfoque != blank and result_product.metafields.custom.sistema != blank %} · {% endif -%}
+                      {{- result_product.metafields.custom.sistema -}}
                     </p>
                   {%- endif -%}
 

@@ -19,8 +19,8 @@ Namespace `custom`. Los tipos son los que deduje por cómo los usa el tema; veri
 
 | Clave (key) | Tipo recomendado | Para qué lo usa el tema |
 |---|---|---|
-| `sistema` | Texto de una línea | La tecnología (Layer Control™ / Frost Control™). Primera línea bajo el título en las tarjetas, en el menú de productos y en el test "Nuestro método" |
-| `enfoque` | Texto de una línea | Para qué sirve (acné, poros, textura…). Segunda línea en las tarjetas y en el test "Nuestro método" |
+| `enfoque` | Texto de una línea | Para qué sirve (acné, poros, textura…). Va primero: encima del nombre del producto en las tarjetas, en el menú de productos y primero en el test "Nuestro método" |
+| `sistema` | Texto de una línea | La tecnología (Layer Control™ / Frost Control™). Va debajo del nombre del producto en las tarjetas y después de `enfoque` en el test "Nuestro método" |
 | `badges` | Lista de texto de una línea | Etiquetas sobre el producto |
 | `badge_background_color` | Color | Fondo de la etiqueta |
 | `badge_text_color` | Color | Texto de la etiqueta |
