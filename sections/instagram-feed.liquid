@@ -937,9 +937,12 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
   align-items: start above lines the icon up with the top of the title's full line-height box, not
   its visible glyphs - text-box trims that invisible leading off so the icon's top edge is flush with
   the visible top of the title text instead of sitting visibly lower than it.
+  Only the top is trimmed: trimming the bottom too (trim-both) also removed the title's lower leading, so the title sat closer to the
+  subtitle than in the other sections (sections/rich-text.liquid: same 1rem, untrimmed title). With the bottom kept, title -> subtitle
+  -> button reads the same as there.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__content > .prose > h2 {
-    text-box: trim-both cap alphabetic;
+    text-box: trim-start cap alphabetic;
   }
 
   {%- comment -%}
