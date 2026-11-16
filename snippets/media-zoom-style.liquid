@@ -800,9 +800,7 @@ lightbox without framed_icons keeps the rules above.
   --lb-h: var(--lightbox-frame-h, var(--lightbox-media-h));
   --lb-pad: 0.75rem;
   --lb-gap: 1rem;
-  --lb-line: 3px;
-  --lb-icon-scale: 1.25;
-  --lb-icon-stroke: 2.25px;
+  --lb-line: 2px;
   --lb-step: calc(var(--control-button-size, 1.75rem) + var(--lb-gap));
   --lb-right: calc(var(--lb-w) / 2 - 100% - var(--lb-pad));
   --lb-left: calc(var(--lb-w) / -2 + var(--lb-pad));
@@ -846,10 +844,22 @@ lightbox without framed_icons keeps the rules above.
 }
 
 {%- comment -%}
-The video's bar (framed_icons): along the bottom of the box, inside it. From bottom to top: the row of controls (pause and the elapsed / total
-time on the left, like and sound on the right; plain icons, no background) and, just above it, the playback line with the same side margin. A soft
-dark gradient behind both keeps them readable over any video. The logo moves to the top-left corner so it never meets the bar.
+The video's bar (framed_icons): ONE floating glass pill along the bottom of the box, inside it, with the same margin to the box's edge on three sides
+(--lb-pad), like the floating menu of the page. It holds every control of the video: pause / play and the elapsed / total time on the left; like,
+sound and the previous / next pair (up / down, the lightbox is a vertical feed) on the right. The playback line floats just above it.
+Look, in the style of Apple's floating controls: translucent blurred glass (the theme's own "Controls" background, blur raised to at least 20px
+and a little extra saturation), a hairline light border, a soft shadow, fully rounded (never more than the theme's own control radius allows), and
+plain, thin icons at the theme's own control size and stroke - nothing bigger or bolder than the rest of the site's controls.
+The pill is the video's own controls group (so its buttons stay where they are in the DOM); previous / next live in the lightbox element, so they
+are placed over the right end of the pill, which keeps room for them (padding), only when the lightbox has them.
+Only for a video (:has): a photo has no bar and keeps the arrangement above (close, previous / next stacked on its right edge).
+--lb-bar-pad is the room between the pill's edge and its buttons, --lb-bar-h the pill's height.
 {%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] {
+  --lb-bar-pad: 0.25rem;
+  --lb-bar-h: calc(var(--control-button-size, 1.75rem) + 2 * var(--lb-bar-pad));
+}
+
 #{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls.is-lightbox-expanded {
   inset-inline-start: 50%;
   inset-inline-end: auto;
@@ -857,9 +867,23 @@ dark gradient behind both keeps them readable over any video. The logo moves to 
   inset-block-end: auto;
   flex-direction: row;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
+  box-sizing: border-box;
   width: calc(var(--lb-w) - 2 * var(--lb-pad));
+  height: var(--lb-bar-h);
+  padding: var(--lb-bar-pad);
+  background: var(--overlay-control-background, rgb(0 0 0 / .35));
+  -webkit-backdrop-filter: blur(max(var(--control-button-blur, 12px), 20px)) saturate(1.8);
+  backdrop-filter: blur(max(var(--control-button-blur, 12px), 20px)) saturate(1.8);
+  border: 1px solid rgb(255 255 255 / .16);
+  border-radius: min(var(--control-button-border-radius, 100px), calc(var(--lb-bar-h) / 2));
+  box-shadow: 0 0.5rem 2rem rgb(0 0 0 / .25);
   translate: calc(var(--lb-w) / -2 + var(--lb-pad)) calc(var(--lb-h) / 2 - 100% - var(--lb-pad));
+}
+
+{%- comment -%}Room at the right end of the pill for the previous / next pair (two buttons and the gap between them){%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout]:has(#{{ lightbox_id }} .media-lightbox__prev) .carousel-video-controls.is-lightbox-expanded {
+  padding-inline-end: calc(var(--lb-bar-pad) + 2 * var(--control-button-size, 1.75rem) + 0.25rem);
 }
 
 #{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-pause-toggle {
@@ -868,12 +892,14 @@ dark gradient behind both keeps them readable over any video. The logo moves to 
 
 #{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .lightbox-time {
   order: 1;
-  margin-inline-end: auto;
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-inline: 0.25rem auto;
   color: var(--control-button-icon-color, #fff);
-  font: var(--text-font-style) var(--text-font-weight) 0.875rem / 1 var(--text-font-family);
+  font: var(--text-font-style) var(--text-font-weight) 0.8125rem / 1 var(--text-font-family);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  text-shadow: 0 0 0.25rem rgb(0 0 0 / .5);
+  overflow: hidden;
 }
 
 #{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-like,
@@ -892,7 +918,7 @@ dark gradient behind both keeps them readable over any video. The logo moves to 
   column-gap: 0.125rem;
 }
 
-{%- comment -%}Plain icons: the round, blurred background of the other pop up buttons does not apply to the bar{%- endcomment -%}
+{%- comment -%}Plain icons: the pill is the background, so the buttons inside it have none (the round, blurred background of the other pop up buttons does not apply to the bar){%- endcomment -%}
 #{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-pause-toggle,
 #{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-sound-toggle,
 #{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-product-link,
@@ -901,32 +927,36 @@ dark gradient behind both keeps them readable over any video. The logo moves to 
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   border: 0;
-  filter: drop-shadow(0 0 0.25rem rgb(0 0 0 / .5));
+  filter: none;
 }
 
-{%- comment -%}
-Icons of the bar (pause / play, sound, heart): a little bigger than the other controls, drawn with a thicker, fully rounded stroke and nothing else,
-so they read as minimal, soft shapes. --lb-icon-scale and --lb-icon-stroke (above) set how big and how thick.
-{%- endcomment -%}
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .icon {
-  box-sizing: content-box;
-  width: calc(var(--control-icon-size, 16px) * var(--lb-icon-scale));
-  height: auto;
+{%- comment -%}Previous / next: over the right end of the pill, vertically centered in it, plain icons like the rest of the bar{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout]:has(video-media.is-lightbox-expanded) #{{ lightbox_id }} :is(.media-lightbox__prev, .media-lightbox__next).media-lightbox__prev,
+#{{ wrapper_id }}[data-lightbox-layout]:has(video-media.is-lightbox-expanded) #{{ lightbox_id }} :is(.media-lightbox__prev, .media-lightbox__next).media-lightbox__next {
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 0;
+  filter: none;
+  inset-inline-start: 50%;
+  inset-inline-end: auto;
+  inset-block-start: 50%;
 }
 
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .icon :is(path, circle, line, polyline, rect) {
-  stroke-width: var(--lb-icon-stroke);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
+#{{ wrapper_id }}[data-lightbox-layout]:has(video-media.is-lightbox-expanded) #{{ lightbox_id }} .media-lightbox__prev.media-lightbox__prev {
+  translate: calc(var(--lb-w) / 2 - var(--lb-pad) - var(--lb-bar-pad) - 2 * var(--control-button-size, 1.75rem)) calc(var(--lb-h) / 2 - var(--lb-pad) - var(--lb-bar-h) / 2 - 50%);
 }
 
+#{{ wrapper_id }}[data-lightbox-layout]:has(video-media.is-lightbox-expanded) #{{ lightbox_id }} .media-lightbox__next.media-lightbox__next {
+  translate: calc(var(--lb-w) / 2 - var(--lb-pad) - var(--lb-bar-pad) - var(--control-button-size, 1.75rem)) calc(var(--lb-h) / 2 - var(--lb-pad) - var(--lb-bar-h) / 2 - 50%);
+}
+
+{%- comment -%}The playback line floats just above the pill, with the same side margin; a thin line with a small dot, like the control icons' stroke{%- endcomment -%}
 #{{ wrapper_id }}[data-lightbox-layout] video-media.is-lightbox-expanded .lightbox-scrubber {
   inset-inline: var(--lb-pad);
-  inset-block-end: calc(var(--lb-pad) + var(--control-button-size, 1.75rem) + 0.25rem);
+  inset-block-end: calc(var(--lb-pad) + var(--lb-bar-h) + 0.25rem);
 }
 
-{%- comment -%}A thicker playback line in the bar (the base rule is as thin as the control icons' strokes), with a dot that goes with it{%- endcomment -%}
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber__rest,
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber__played {
   stroke-width: var(--lb-line);
@@ -936,14 +966,15 @@ so they read as minimal, soft shapes. --lb-icon-scale and --lb-icon-stroke (abov
   r: calc(var(--lb-line) * 1.75);
 }
 
+{%- comment -%}A soft dark gradient behind the playback line and the pill keeps them readable over any video{%- endcomment -%}
 #{{ wrapper_id }}[data-lightbox-layout] video-media.is-lightbox-expanded::before {
   content: "";
   position: absolute;
   inset-inline: 0;
   inset-block-end: 0;
   z-index: 2;
-  height: calc(var(--lb-pad) + var(--control-button-size, 1.75rem) + 3.5rem);
-  background: linear-gradient(to top, rgb(0 0 0 / .5), transparent);
+  height: calc(var(--lb-pad) + var(--lb-bar-h) + 3rem);
+  background: linear-gradient(to top, rgb(0 0 0 / .35), transparent);
   border-end-start-radius: inherit;
   border-end-end-radius: inherit;
   pointer-events: none;
