@@ -211,14 +211,22 @@ note that this may have impact on different places.
   {%- endif -%}
 
   {%- comment -%}
-  Rektorat: the store's own font (assets/rektorat.woff2), only for the "Italic" heading effect (Theme settings > Heading effect > Font source).
-  One file for every weight (font-weight range), so the browser never makes up a fake bold of it.
+  Rektorat (NN Rektorat STD): the store's own font, only for the "Italic" heading effect (Theme settings > Heading effect > Font source).
+  Two weights, both upright: Bold (700, assets/rektorat-bold.woff2) and Heavy (800, assets/rektorat-heavy.woff2); the "Rektorat weight"
+  setting picks one. Each file is declared at its own weight, so the browser downloads only the one in use.
   {%- endcomment -%}
   {%- if settings.heading_italic_font_source == 'rektorat' -%}
     @font-face {
       font-family: 'Rektorat';
-      src: url('{{ 'rektorat.woff2' | asset_url }}') format('woff2');
-      font-weight: 100 900;
+      src: url('{{ 'rektorat-bold.woff2' | asset_url }}') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: 'Rektorat';
+      src: url('{{ 'rektorat-heavy.woff2' | asset_url }}') format('woff2');
+      font-weight: 800;
       font-style: normal;
       font-display: fallback;
     }
@@ -347,7 +355,7 @@ note that this may have impact on different places.
     {%- if settings.heading_italic_font_source == 'rektorat' -%}
     {%- comment -%}Rektorat is used as it is drawn (no slanted style made up by the browser); the heading font is the fallback while it loads{%- endcomment -%}
     --heading-italic-font-family: 'Rektorat', var(--heading-font-family);
-    --heading-italic-font-weight: 400;
+    --heading-italic-font-weight: {{ settings.heading_italic_rektorat_weight | default: '700' }};
     --heading-italic-font-style: normal;
     --heading-italic-font-size-multiplier: {{ settings.heading_italic_font_size_multiplier }}%;
     {%- else -%}
