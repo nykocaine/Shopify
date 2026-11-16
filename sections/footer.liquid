@@ -84,6 +84,15 @@
 
 
   {%- comment -%}
+  Newsletter block: the space between its paragraphs. Text written in a rich text field (.prose) separates paragraphs by --prose-default-spacing
+  (1.5rem), which is far too much for these short lines; here it is a small one. Only inside the footer's newsletter block, the rest of the
+  site's rich text keeps the theme's spacing.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .footer__block--newsletter .prose {
+    --prose-default-spacing: 0.5rem;
+  }
+
+  {%- comment -%}
   Vertical padding: same container-gutter + 0.5rem formula as sections/reviews.liquid and
   sections/faq.liquid, same on mobile and desktop, replacing this section's own fixed 2.8rem.
   {%- endcomment -%}
