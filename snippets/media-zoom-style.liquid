@@ -800,7 +800,7 @@ lightbox without framed_icons keeps the rules above.
   --lb-h: var(--lightbox-frame-h, var(--lightbox-media-h));
   --lb-pad: 0.75rem;
   --lb-gap: 1rem;
-  --lb-line: 3px;
+  --lb-line: 5px;
   --lb-step: calc(var(--control-button-size, 1.75rem) + var(--lb-gap));
   --lb-right: calc(var(--lb-w) / 2 - 100% - var(--lb-pad));
   --lb-left: calc(var(--lb-w) / -2 + var(--lb-pad));
@@ -849,9 +849,10 @@ sides (--lb-pad), like the floating menu of the page, laid out like Apple's play
   row 1: elapsed time, the playback line, time left;
   row 2: like on the left; previous, play / pause and next in the middle (pause a little bigger); sound, with a vertical volume slider that opens
          above it, on the right.
-Look: translucent blurred glass (the theme's own "Controls" background, blur raised to at least 20px and a little extra saturation), a light
-hairline border with a soft highlight on top, a soft shadow, the same corner radius as the drawers (--drawer-border-radius), and plain, thin icons
-at the theme's own control size and stroke - nothing bigger or bolder than the rest of the site's controls, except the middle pause.
+Everything is inherited from the theme, nothing is set here to taste: the glass is the Controls background and blur (Theme settings > Controls), the
+corner radius is the drawers' (--drawer-border-radius), the numbers use the body text (font, size, line height, letter spacing), every icon and
+button has the control size and stroke of the rest of the site's controls, and the color of the icons is the Controls icon color. No border, no
+bevel, no shadow and no dark gradient.
 The card is the video's own controls group (so its buttons stay where they are in the DOM, except the ones moved into its rows). Only for a video:
 a photo has no bar and keeps the arrangement above (close, previous / next stacked on its right edge).
 {%- endcomment -%}
@@ -866,13 +867,13 @@ a photo has no bar and keeps the arrangement above (close, previous / next stack
   box-sizing: border-box;
   width: calc(var(--lb-w) - 2 * var(--lb-pad));
   height: auto;
-  padding: 0.75rem 1rem;
+  padding: var(--lb-pad);
   background: var(--overlay-control-background, rgb(0 0 0 / .35));
-  -webkit-backdrop-filter: blur(max(var(--control-button-blur, 12px), 20px)) saturate(1.8);
-  backdrop-filter: blur(max(var(--control-button-blur, 12px), 20px)) saturate(1.8);
-  border: 1px solid rgb(255 255 255 / .22);
+  -webkit-backdrop-filter: blur(var(--control-button-blur, 12px));
+  backdrop-filter: blur(var(--control-button-blur, 12px));
+  border: 0;
   border-radius: var(--drawer-border-radius, 1.5rem);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .3), 0 0.5rem 2rem rgb(0 0 0 / .25);
+  box-shadow: none;
   translate: calc(var(--lb-w) / -2 + var(--lb-pad)) calc(var(--lb-h) / 2 - 100% - var(--lb-pad));
 }
 
@@ -886,12 +887,12 @@ a photo has no bar and keeps the arrangement above (close, previous / next stack
 
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-time {
   flex: 0 0 auto;
-  min-width: 2.25rem;
+  min-width: 3ch;
   color: var(--control-button-icon-color, #fff);
-  font: var(--text-font-style) var(--text-font-weight) 0.75rem / 1 var(--text-font-family);
+  font: var(--text-font-style) var(--text-font-weight) var(--text-base) / var(--text-line-height) var(--text-font-family);
+  letter-spacing: var(--text-letter-spacing);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  opacity: 0.85;
 }
 
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-time--remaining {
@@ -908,7 +909,7 @@ it, like Apple's.
   flex: 1 1 auto;
   min-width: 0;
   inset: auto;
-  height: 1rem;
+  height: 1.25rem;
   z-index: 1;
   color: var(--control-button-icon-color, #ffffff);
   cursor: pointer;
@@ -922,7 +923,7 @@ it, like Apple's.
 }
 
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber__dot {
-  r: calc(var(--lb-line) * 1.75);
+  r: calc(var(--lb-line) * 1.5);
   opacity: 0;
   animation: none;
   transition: opacity .15s ease;
@@ -970,7 +971,8 @@ it, like Apple's.
 }
 
 #{{ wrapper_id }}[data-lightbox-layout] .carousel-video-like__count {
-  font-size: 0.8125rem;
+  font: var(--text-font-style) var(--text-font-weight) var(--text-base) / var(--text-line-height) var(--text-font-family);
+  letter-spacing: var(--text-letter-spacing);
   font-variant-numeric: tabular-nums;
 }
 
@@ -988,7 +990,8 @@ it, like Apple's.
 
 {%- comment -%}
 Previous / next once they are moved into the bar: they leave the lightbox element, so the rules scoped to it (fixed position, round glass, quarter
-turn) no longer reach them. Same plain look as the other buttons, arrows left / right (back / forward), dimmed when there is nothing to go to.
+turn) no longer reach them. Same plain look as the other buttons, with the arrows turned a quarter turn as in the lightbox (previous points up, next
+points down: the lightbox is a vertical feed), dimmed when there is nothing to go to.
 {%- endcomment -%}
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__center :is(.media-lightbox__prev, .media-lightbox__next) {
   position: static;
@@ -1002,7 +1005,7 @@ turn) no longer reach them. Same plain look as the other buttons, arrows left / 
   border-radius: 100%;
   color: var(--control-button-icon-color, #fff);
   cursor: pointer;
-  rotate: none;
+  rotate: 90deg;
   scale: 1;
   opacity: 1;
   translate: none;
@@ -1019,23 +1022,13 @@ turn) no longer reach them. Same plain look as the other buttons, arrows left / 
   cursor: default;
 }
 
-{%- comment -%}The middle button (pause / play) is a little bigger than its neighbours, like the one of Apple's player{%- endcomment -%}
-#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__center .carousel-video-pause-toggle {
-  width: calc(var(--control-button-size, 1.75rem) * 1.4);
-  height: calc(var(--control-button-size, 1.75rem) * 1.4);
-}
-
-#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__center .carousel-video-pause-toggle .icon {
-  width: calc(var(--control-icon-size, 16px) * 1.4);
-}
-
 {%- comment -%}
 Volume: the sound button and, above the card, a vertical slider that opens on hover / focus (media-zoom-script.liquid builds the wrapper). The slider
 is its own small glass capsule with the same radius as the card, a thin track filled from the bottom and no knob, like Apple's. A little invisible
 bridge joins it to the button (over the card's first row), so moving the pointer up does not close it.
 {%- endcomment -%}
 #{{ wrapper_id }}[data-lightbox-layout] {
-  --lb-pop-offset: calc(0.75rem + 1rem + 0.375rem + 0.5rem);
+  --lb-pop-offset: calc(var(--lb-pad) + 1.25rem + 0.375rem + 0.5rem);
 }
 
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-volume {
@@ -1056,11 +1049,10 @@ bridge joins it to the button (over the card's first row), so moving the pointer
   height: 7rem;
   padding: 0.75rem 0;
   background: var(--overlay-control-background, rgb(0 0 0 / .35));
-  -webkit-backdrop-filter: blur(max(var(--control-button-blur, 12px), 20px)) saturate(1.8);
-  backdrop-filter: blur(max(var(--control-button-blur, 12px), 20px)) saturate(1.8);
-  border: 1px solid rgb(255 255 255 / .22);
+  -webkit-backdrop-filter: blur(var(--control-button-blur, 12px));
+  backdrop-filter: blur(var(--control-button-blur, 12px));
+  border: 0;
   border-radius: var(--drawer-border-radius, 1.5rem);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .3), 0 0.5rem 2rem rgb(0 0 0 / .25);
   cursor: pointer;
   touch-action: none;
   opacity: 0;
@@ -1110,20 +1102,6 @@ bridge joins it to the button (over the card's first row), so moving the pointer
   height: 100%;
   background: var(--control-button-icon-color, #fff);
   border-radius: 999px;
-}
-
-{%- comment -%}A soft dark gradient behind the playback line and the pill keeps them readable over any video{%- endcomment -%}
-#{{ wrapper_id }}[data-lightbox-layout] video-media.is-lightbox-expanded::before {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: 0;
-  z-index: 2;
-  height: calc(var(--lb-pad) + 9rem);
-  background: linear-gradient(to top, rgb(0 0 0 / .35), transparent);
-  border-end-start-radius: inherit;
-  border-end-end-radius: inherit;
-  pointer-events: none;
 }
 
 #{{ wrapper_id }}[data-lightbox-layout] .has-video-logo video-media.is-lightbox-expanded::after {
