@@ -844,80 +844,200 @@ lightbox without framed_icons keeps the rules above.
 }
 
 {%- comment -%}
-The video's bar (framed_icons): ONE floating glass pill along the bottom of the box, inside it, with the same margin to the box's edge on three sides
-(--lb-pad), like the floating menu of the page. It holds every control of the video: pause / play and the elapsed / total time on the left; like,
-sound (with a vertical volume slider that opens above it) and the previous / next pair (up / down, the lightbox is a vertical feed) on the right. The playback line is the bar's first row.
-Look, in the style of Apple's floating controls: translucent blurred glass (the theme's own "Controls" background, blur raised to at least 20px
-and a little extra saturation), a hairline light border, a soft shadow, with the same corner radius as the drawers (--drawer-border-radius), and
-plain, thin icons at the theme's own control size and stroke - nothing bigger or bolder than the rest of the site's controls.
-The pill is the video's own controls group (so its buttons stay where they are in the DOM); previous / next live in the lightbox element, so they
-are placed over the right end of the pill, which keeps room for them (padding), only when the lightbox has them.
-Only for a video (:has): a photo has no bar and keeps the arrangement above (close, previous / next stacked on its right edge).
---lb-bar-pad is the room between the pill's edge and its buttons, --lb-line-row the height of the playback line's row (the top of the pill, where the line sits), --lb-bar-h the pill's height.
+The video's bar (framed_icons): ONE floating glass card along the bottom of the box, inside it, with the same margin to the box's edge on three
+sides (--lb-pad), like the floating menu of the page, laid out like Apple's player (media-zoom-script.liquid builds the two rows):
+  row 1: elapsed time, the playback line, time left;
+  row 2: like on the left; previous, play / pause and next in the middle (pause a little bigger); sound, with a vertical volume slider that opens
+         above it, on the right.
+Look: translucent blurred glass (the theme's own "Controls" background, blur raised to at least 20px and a little extra saturation), a light
+hairline border with a soft highlight on top, a soft shadow, the same corner radius as the drawers (--drawer-border-radius), and plain, thin icons
+at the theme's own control size and stroke - nothing bigger or bolder than the rest of the site's controls, except the middle pause.
+The card is the video's own controls group (so its buttons stay where they are in the DOM, except the ones moved into its rows). Only for a video:
+a photo has no bar and keeps the arrangement above (close, previous / next stacked on its right edge).
 {%- endcomment -%}
-#{{ wrapper_id }}[data-lightbox-layout] {
-  --lb-bar-pad: 0.5rem;
-  --lb-line-row: 1rem;
-  --lb-bar-h: calc(var(--lb-line-row) + var(--control-button-size, 1.75rem) + 2 * var(--lb-bar-pad));
-}
-
 #{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls.is-lightbox-expanded {
   inset-inline-start: 50%;
   inset-inline-end: auto;
   inset-block-start: 50%;
   inset-block-end: auto;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 0.25rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.375rem;
   box-sizing: border-box;
   width: calc(var(--lb-w) - 2 * var(--lb-pad));
-  height: var(--lb-bar-h);
-  padding: calc(var(--lb-bar-pad) + var(--lb-line-row)) calc(var(--lb-bar-pad) + 0.25rem) var(--lb-bar-pad);
+  height: auto;
+  padding: 0.75rem 1rem;
   background: var(--overlay-control-background, rgb(0 0 0 / .35));
   -webkit-backdrop-filter: blur(max(var(--control-button-blur, 12px), 20px)) saturate(1.8);
   backdrop-filter: blur(max(var(--control-button-blur, 12px), 20px)) saturate(1.8);
-  border: 1px solid rgb(255 255 255 / .16);
+  border: 1px solid rgb(255 255 255 / .22);
   border-radius: var(--drawer-border-radius, 1.5rem);
-  box-shadow: 0 0.5rem 2rem rgb(0 0 0 / .25);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .3), 0 0.5rem 2rem rgb(0 0 0 / .25);
   translate: calc(var(--lb-w) / -2 + var(--lb-pad)) calc(var(--lb-h) / 2 - 100% - var(--lb-pad));
 }
 
-{%- comment -%}Room at the right end of the pill for the previous / next pair (two buttons and the gap between them), only when the lightbox has them{%- endcomment -%}
-#{{ wrapper_id }}[data-lightbox-layout]:has(#{{ lightbox_id }} .media-lightbox__prev) .carousel-video-controls .lightbox-volume {
-  margin-inline-end: calc(2 * var(--control-button-size, 1.75rem) + 0.25rem);
-}
-
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-pause-toggle {
-  order: 0;
-}
-
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .lightbox-time {
-  order: 1;
-  flex: 0 1 auto;
+{%- comment -%}Row 1: elapsed, line, left{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   min-width: 0;
-  margin-inline: 0.25rem auto;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-time {
+  flex: 0 0 auto;
+  min-width: 2.25rem;
   color: var(--control-button-icon-color, #fff);
-  font: var(--text-font-style) var(--text-font-weight) 0.8125rem / 1 var(--text-font-family);
+  font: var(--text-font-style) var(--text-font-weight) 0.75rem / 1 var(--text-font-family);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  overflow: hidden;
+  opacity: 0.85;
 }
 
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-like,
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-product-link {
-  order: 2;
-}
-
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-sound-toggle,
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .lightbox-volume {
-  order: 3;
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-time--remaining {
+  text-align: end;
 }
 
 {%- comment -%}
-Volume: the sound button and, above it, a vertical slider that opens on hover / focus (media-zoom-script.liquid builds the wrapper). The slider is
-its own small glass capsule with the same radius as the bar. A thin track filled from the bottom; no knob, like Apple's.
+The playback line: a thin rounded track across the row, filled up to the playhead. The knob only shows while the pointer is on the line or dragging
+it, like Apple's.
 {%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__progress .lightbox-scrubber {
+  display: block;
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  inset: auto;
+  height: 1rem;
+  z-index: 1;
+  color: var(--control-button-icon-color, #ffffff);
+  cursor: pointer;
+  touch-action: none;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber__rest,
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber__played {
+  stroke-width: var(--lb-line);
+  stroke-linecap: round;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber__dot {
+  r: calc(var(--lb-line) * 1.75);
+  opacity: 0;
+  animation: none;
+  transition: opacity .15s ease;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber:hover .lightbox-scrubber__dot,
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber.is-scrubbing .lightbox-scrubber__dot {
+  opacity: 1;
+}
+
+{%- comment -%}Row 2: three groups, the middle one centered whatever the width of the other two{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__left,
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__center,
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__right {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__left {
+  justify-self: start;
+  gap: 0.25rem;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__center {
+  justify-self: center;
+  gap: 0.5rem;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__right {
+  justify-self: end;
+}
+
+{%- comment -%}The like button keeps its count beside the heart in the bar instead of under it{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-like {
+  display: flex;
+  align-items: center;
+  column-gap: 0.125rem;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-like__count {
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+{%- comment -%}Plain icons: the card is the background, so the buttons inside it have none{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-pause-toggle,
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-sound-toggle,
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-product-link,
+#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-like-toggle {
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 0;
+  filter: none;
+}
+
+{%- comment -%}
+Previous / next once they are moved into the bar: they leave the lightbox element, so the rules scoped to it (fixed position, round glass, quarter
+turn) no longer reach them. Same plain look as the other buttons, arrows left / right (back / forward), dimmed when there is nothing to go to.
+{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__center :is(.media-lightbox__prev, .media-lightbox__next) {
+  position: static;
+  display: grid;
+  place-content: center;
+  width: var(--control-button-size, 1.75rem);
+  height: var(--control-button-size, 1.75rem);
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 100%;
+  color: var(--control-button-icon-color, #fff);
+  cursor: pointer;
+  rotate: none;
+  scale: 1;
+  opacity: 1;
+  translate: none;
+  filter: none;
+  transition: opacity .2s ease;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__center :is(.media-lightbox__prev, .media-lightbox__next)::before {
+  content: none;
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__center :is(.media-lightbox__prev, .media-lightbox__next):disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+{%- comment -%}The middle button (pause / play) is a little bigger than its neighbours, like the one of Apple's player{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__center .carousel-video-pause-toggle {
+  width: calc(var(--control-button-size, 1.75rem) * 1.4);
+  height: calc(var(--control-button-size, 1.75rem) * 1.4);
+}
+
+#{{ wrapper_id }}[data-lightbox-layout] .lightbox-bar__center .carousel-video-pause-toggle .icon {
+  width: calc(var(--control-icon-size, 16px) * 1.4);
+}
+
+{%- comment -%}
+Volume: the sound button and, above the card, a vertical slider that opens on hover / focus (media-zoom-script.liquid builds the wrapper). The slider
+is its own small glass capsule with the same radius as the card, a thin track filled from the bottom and no knob, like Apple's. A little invisible
+bridge joins it to the button (over the card's first row), so moving the pointer up does not close it.
+{%- endcomment -%}
+#{{ wrapper_id }}[data-lightbox-layout] {
+  --lb-pop-offset: calc(0.75rem + 1rem + 0.375rem + 0.5rem);
+}
+
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-volume {
   position: relative;
   display: flex;
@@ -926,7 +1046,7 @@ its own small glass capsule with the same radius as the bar. A thin track filled
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-volume__slider {
   position: absolute;
   inset-inline-start: 50%;
-  inset-block-end: calc(100% + var(--lb-bar-pad) + var(--lb-line-row) + 0.5rem);
+  inset-block-end: calc(100% + var(--lb-pop-offset));
   z-index: 2;
   translate: -50% 0;
   display: grid;
@@ -938,9 +1058,9 @@ its own small glass capsule with the same radius as the bar. A thin track filled
   background: var(--overlay-control-background, rgb(0 0 0 / .35));
   -webkit-backdrop-filter: blur(max(var(--control-button-blur, 12px), 20px)) saturate(1.8);
   backdrop-filter: blur(max(var(--control-button-blur, 12px), 20px)) saturate(1.8);
-  border: 1px solid rgb(255 255 255 / .16);
+  border: 1px solid rgb(255 255 255 / .22);
   border-radius: var(--drawer-border-radius, 1.5rem);
-  box-shadow: 0 0.5rem 2rem rgb(0 0 0 / .25);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .3), 0 0.5rem 2rem rgb(0 0 0 / .25);
   cursor: pointer;
   touch-action: none;
   opacity: 0;
@@ -950,13 +1070,12 @@ its own small glass capsule with the same radius as the bar. A thin track filled
   transition: opacity .2s ease, scale .2s ease, visibility 0s linear .2s;
 }
 
-{%- comment -%}The slider opens above the pill (clear of the playback line, which sits at the top of it). A little invisible bridge between the button and the slider, over that line, so moving the pointer up does not close it{%- endcomment -%}
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-volume__slider::after {
   content: "";
   position: absolute;
   inset-inline: 0;
   inset-block-start: 100%;
-  height: calc(var(--lb-bar-pad) + var(--lb-line-row) + 0.5rem);
+  height: var(--lb-pop-offset);
 }
 
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-volume:hover .lightbox-volume__slider,
@@ -993,80 +1112,6 @@ its own small glass capsule with the same radius as the bar. A thin track filled
   border-radius: 999px;
 }
 
-{%- comment -%}The like button keeps its count beside the heart in the bar instead of under it{%- endcomment -%}
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-like {
-  display: flex;
-  align-items: center;
-  column-gap: 0.125rem;
-}
-
-{%- comment -%}Plain icons: the pill is the background, so the buttons inside it have none (the round, blurred background of the other pop up buttons does not apply to the bar){%- endcomment -%}
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-pause-toggle,
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-sound-toggle,
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-product-link,
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls .carousel-video-like-toggle {
-  background: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  border: 0;
-  filter: none;
-}
-
-{%- comment -%}Previous / next: over the right end of the pill, vertically centered in it, plain icons like the rest of the bar{%- endcomment -%}
-#{{ wrapper_id }}[data-lightbox-layout]:has(video-media.is-lightbox-expanded) #{{ lightbox_id }} :is(.media-lightbox__prev, .media-lightbox__next).media-lightbox__prev,
-#{{ wrapper_id }}[data-lightbox-layout]:has(video-media.is-lightbox-expanded) #{{ lightbox_id }} :is(.media-lightbox__prev, .media-lightbox__next).media-lightbox__next {
-  background: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  border: 0;
-  filter: none;
-  inset-inline-start: 50%;
-  inset-inline-end: auto;
-  inset-block-start: 50%;
-}
-
-#{{ wrapper_id }}[data-lightbox-layout]:has(video-media.is-lightbox-expanded) #{{ lightbox_id }} .media-lightbox__prev.media-lightbox__prev {
-  translate: calc(var(--lb-w) / 2 - var(--lb-pad) - var(--lb-bar-pad) - 0.25rem - 2 * var(--control-button-size, 1.75rem)) calc(var(--lb-h) / 2 - var(--lb-pad) - var(--lb-bar-pad) - var(--control-button-size, 1.75rem) / 2 - 50%);
-}
-
-#{{ wrapper_id }}[data-lightbox-layout]:has(video-media.is-lightbox-expanded) #{{ lightbox_id }} .media-lightbox__next.media-lightbox__next {
-  translate: calc(var(--lb-w) / 2 - var(--lb-pad) - var(--lb-bar-pad) - 0.25rem - var(--control-button-size, 1.75rem)) calc(var(--lb-h) / 2 - var(--lb-pad) - var(--lb-bar-pad) - var(--control-button-size, 1.75rem) / 2 - 50%);
-}
-
-{%- comment -%}
-The playback line is the first row of the bar (media-zoom-script.liquid moves it into the video's controls group): a thin rounded track across the
-whole bar, filled up to the playhead. The knob only shows while the pointer is on the line or dragging it, like Apple's.
-{%- endcomment -%}
-#{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls.is-lightbox-expanded .lightbox-scrubber {
-  display: block;
-  position: absolute;
-  inset-block-start: var(--lb-bar-pad);
-  inset-inline: calc(var(--lb-bar-pad) + 0.25rem);
-  height: var(--lb-line-row);
-  z-index: 1;
-  color: var(--control-button-icon-color, #ffffff);
-  cursor: pointer;
-  touch-action: none;
-}
-
-#{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber__rest,
-#{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber__played {
-  stroke-width: var(--lb-line);
-  stroke-linecap: round;
-}
-
-#{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber__dot {
-  r: calc(var(--lb-line) * 1.75);
-  opacity: 0;
-  animation: none;
-  transition: opacity .15s ease;
-}
-
-#{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber:hover .lightbox-scrubber__dot,
-#{{ wrapper_id }}[data-lightbox-layout] .lightbox-scrubber.is-scrubbing .lightbox-scrubber__dot {
-  opacity: 1;
-}
-
 {%- comment -%}A soft dark gradient behind the playback line and the pill keeps them readable over any video{%- endcomment -%}
 #{{ wrapper_id }}[data-lightbox-layout] video-media.is-lightbox-expanded::before {
   content: "";
@@ -1074,7 +1119,7 @@ whole bar, filled up to the playhead. The knob only shows while the pointer is o
   inset-inline: 0;
   inset-block-end: 0;
   z-index: 2;
-  height: calc(var(--lb-pad) + var(--lb-bar-h) + 3rem);
+  height: calc(var(--lb-pad) + 9rem);
   background: linear-gradient(to top, rgb(0 0 0 / .35), transparent);
   border-end-start-radius: inherit;
   border-end-end-radius: inherit;
