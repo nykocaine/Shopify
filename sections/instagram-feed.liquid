@@ -103,7 +103,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
       -%}
 
       {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank or section.settings.show_icon -%}
-        <div class="instagram-feed__header{% if instagram_header_only_button %} sm-max:hidden{% endif %}">
+        <div class="instagram-feed__header{% if instagram_header_only_button %} instagram-feed__header--desktop-only{% endif %}">
           <div class="instagram-feed__content{% if section.settings.title == blank and section.settings.subtitle == blank %} instagram-feed__content--no-text{% endif %}">
             {%- if section.settings.title != blank or section.settings.subtitle != blank -%}
               <div class="prose prose--compact">
@@ -938,6 +938,17 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
     gap: 1rem;
     margin-block-end: var(--section-stack-row-gap);
     display: flex;
+  }
+
+  {%- comment -%}
+  Phones: a header that only holds the button (no title, subtitle or icon) is empty there, because the button moves under the dots. It is
+  removed so it leaves no space above the photos. Not done with the sm-max:hidden utility: the display: flex rule just above has the section's
+  id in it, so it is more specific than that class and won over it, and the empty header kept its height and its bottom margin.
+  {%- endcomment -%}
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .instagram-feed__header--desktop-only {
+      display: none;
+    }
   }
 
   #shopify-section-{{ section.id }} .instagram-feed__content {
