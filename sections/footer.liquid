@@ -93,6 +93,25 @@
   }
 
   {%- comment -%}
+  One spacing unit for the whole footer: --footer-row-padding (container gutter + .5rem, the same formula as the other sections). The space above
+  and below the content, between the big logo and the blocks, between stacked blocks and on both sides of every divider line is that same value, so no
+  gap is taller than another. The theme's own gaps (2.8rem between the logo row and the blocks, 4.8rem from 1000px, 2rem between blocks) were much
+  bigger than the padding around them.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .footer__content,
+  #shopify-section-{{ section.id }} .footer__block-list {
+    row-gap: var(--footer-row-padding);
+  }
+
+  @media screen and (max-width: 699px) {
+    {%- comment -%}The collapsed (accordion) menus pull each other up by the old gap; they follow the new one{%- endcomment -%}
+    #shopify-section-{{ section.id }} .footer__block--accordion-links + .footer__block--accordion-links,
+    #shopify-section-{{ section.id }} .footer__block--accordion-links:first-child {
+      margin-block-start: calc(-1 * var(--footer-row-padding));
+    }
+  }
+
+  {%- comment -%}
   Vertical padding: same container-gutter + 0.5rem formula as sections/reviews.liquid and
   sections/faq.liquid, same on mobile and desktop, replacing this section's own fixed 2.8rem.
   {%- endcomment -%}
@@ -186,7 +205,7 @@
     #shopify-section-{{ section.id }} .footer__block--newsletter:not(:last-child) {
       margin-inline: calc(-1 * var(--distance-to-bleed));
       padding-inline: var(--distance-to-bleed);
-      padding-block-end: 2rem;
+      padding-block-end: var(--footer-row-padding);
       border-bottom: 1px solid rgb(var(--border-color));
     }
   }
@@ -199,7 +218,7 @@
   thing in the footer. On desktop the vertical lines between columns (below) go up to this line, so every line meets the next one.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .footer__content > .footer__big-logo:first-child {
-    padding-block-end: 2rem;
+    padding-block-end: var(--footer-row-padding);
     border-bottom: 1px solid rgb(var(--border-color));
   }
 
@@ -242,7 +261,7 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       justify-content: start;
-      gap: 2.5rem 2rem;
+      gap: var(--footer-row-padding) 2rem;
     }
 
     #shopify-section-{{ section.id }} .footer__block,
@@ -325,9 +344,9 @@
       display: none;
     }
 
-    {%- comment -%}With the big logo in its own row above, the vertical lines also go up to the line under it (the row gap of the footer, 4.8rem on desktop){%- endcomment -%}
+    {%- comment -%}With the big logo in its own row above, the vertical lines also go up to the line under it (the footer's row gap, which is --footer-row-padding){%- endcomment -%}
     #shopify-section-{{ section.id }} .footer__big-logo ~ .footer__block-list > .footer__block + .footer__block::before {
-      inset-block-start: -4.8rem;
+      inset-block-start: calc(-1 * var(--footer-row-padding));
     }
   }
 </style>
