@@ -853,7 +853,7 @@ plain, thin icons at the theme's own control size and stroke - nothing bigger or
 The pill is the video's own controls group (so its buttons stay where they are in the DOM); previous / next live in the lightbox element, so they
 are placed over the right end of the pill, which keeps room for them (padding), only when the lightbox has them.
 Only for a video (:has): a photo has no bar and keeps the arrangement above (close, previous / next stacked on its right edge).
---lb-bar-pad is the room between the pill's edge and its buttons, --lb-line-row the height of the playback line's row, --lb-bar-h the pill's height.
+--lb-bar-pad is the room between the pill's edge and its buttons, --lb-line-row the height of the playback line's row (the top of the pill, where the line sits), --lb-bar-h the pill's height.
 {%- endcomment -%}
 #{{ wrapper_id }}[data-lightbox-layout] {
   --lb-bar-pad: 0.5rem;
@@ -867,14 +867,13 @@ Only for a video (:has): a photo has no bar and keeps the arrangement above (clo
   inset-block-start: 50%;
   inset-block-end: auto;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  align-content: center;
-  gap: 0 0.25rem;
+  gap: 0.25rem;
   box-sizing: border-box;
   width: calc(var(--lb-w) - 2 * var(--lb-pad));
   height: var(--lb-bar-h);
-  padding: var(--lb-bar-pad) calc(var(--lb-bar-pad) + 0.25rem);
+  padding: calc(var(--lb-bar-pad) + var(--lb-line-row)) calc(var(--lb-bar-pad) + 0.25rem) var(--lb-bar-pad);
   background: var(--overlay-control-background, rgb(0 0 0 / .35));
   -webkit-backdrop-filter: blur(max(var(--control-button-blur, 12px), 20px)) saturate(1.8);
   backdrop-filter: blur(max(var(--control-button-blur, 12px), 20px)) saturate(1.8);
@@ -927,7 +926,8 @@ its own small glass capsule with the same radius as the bar. A thin track filled
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-volume__slider {
   position: absolute;
   inset-inline-start: 50%;
-  inset-block-end: calc(100% + 0.5rem);
+  inset-block-end: calc(100% + var(--lb-bar-pad) + var(--lb-line-row) + 0.5rem);
+  z-index: 2;
   translate: -50% 0;
   display: grid;
   place-items: center;
@@ -950,13 +950,13 @@ its own small glass capsule with the same radius as the bar. A thin track filled
   transition: opacity .2s ease, scale .2s ease, visibility 0s linear .2s;
 }
 
-{%- comment -%}A little invisible bridge between the button and the slider so moving the pointer up does not close it{%- endcomment -%}
+{%- comment -%}The slider opens above the pill (clear of the playback line, which sits at the top of it). A little invisible bridge between the button and the slider, over that line, so moving the pointer up does not close it{%- endcomment -%}
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-volume__slider::after {
   content: "";
   position: absolute;
   inset-inline: 0;
   inset-block-start: 100%;
-  height: 0.75rem;
+  height: calc(var(--lb-bar-pad) + var(--lb-line-row) + 0.5rem);
 }
 
 #{{ wrapper_id }}[data-lightbox-layout] .lightbox-volume:hover .lightbox-volume__slider,
@@ -1039,11 +1039,10 @@ whole bar, filled up to the playhead. The knob only shows while the pointer is o
 {%- endcomment -%}
 #{{ wrapper_id }}[data-lightbox-layout] .carousel-video-controls.is-lightbox-expanded .lightbox-scrubber {
   display: block;
-  position: relative;
-  order: -1;
-  flex: 0 0 100%;
+  position: absolute;
+  inset-block-start: var(--lb-bar-pad);
+  inset-inline: calc(var(--lb-bar-pad) + 0.25rem);
   height: var(--lb-line-row);
-  inset: auto;
   z-index: 1;
   color: var(--control-button-icon-color, #ffffff);
   cursor: pointer;
