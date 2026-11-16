@@ -442,11 +442,18 @@ progress bar) are simply skipped when no carousel_id is given.
         state.dot.setAttribute('cy', lineY);
 
         if (state.timeLabel) {
-          var timeText = formatTime(state.video.currentTime) + ' / ' + formatTime(isFinite(duration) ? duration : 0);
+          // Elapsed on the left of the playback line and what is left (with a minus sign) on the right, like Apple's player.
+          var timeText = formatTime(state.video.currentTime);
+          var remainingText = '\u2212' + formatTime(isFinite(duration) ? Math.max(0, duration - state.video.currentTime) : 0);
 
           if (state.timeLabelText !== timeText) {
             state.timeLabelText = timeText;
             state.timeLabel.textContent = timeText;
+          }
+
+          if (state.remainingLabel && state.remainingLabelText !== remainingText) {
+            state.remainingLabelText = remainingText;
+            state.remainingLabel.textContent = remainingText;
           }
         }
 
@@ -469,6 +476,94 @@ progress bar) are simply skipped when no carousel_id is given.
         }
 
         return label;
+      }
+
+      // The video's floating bar (framed_icons) is built from the pieces it already has, in two rows like Apple's player:
+      //   row 1: elapsed time, the playback line, time left;
+      //   row 2: like (or the product link) on the left; previous, play / pause and next in the middle; sound (and its volume slider) on the right.
+      // Moving the buttons keeps their listeners. Previous / next are moved in by placeNavInBar() each time the item shown changes.
+      function ensureBar(group, scrubberRoot, elapsedLabel) {
+        if (group.lightboxBar) {
+          return group.lightboxBar;
+        }
+
+        var progress = document.createElement('div');
+        var controls = document.createElement('div');
+        var left = document.createElement('div');
+        var center = document.createElement('div');
+        var right = document.createElement('div');
+        var remaining = document.createElement('span');
+        var pause = group.querySelector('.carousel-video-pause-toggle');
+        var like = group.querySelector('.carousel-video-like');
+        var product = group.querySelector('.carousel-video-product-link');
+        var sound = group.querySelector('.lightbox-volume') || group.querySelector('.carousel-video-sound-toggle');
+
+        progress.className = 'lightbox-bar__progress';
+        controls.className = 'lightbox-bar__controls';
+        left.className = 'lightbox-bar__left';
+        center.className = 'lightbox-bar__center';
+        right.className = 'lightbox-bar__right';
+        remaining.className = 'lightbox-time lightbox-time--remaining';
+        remaining.setAttribute('aria-hidden', 'true');
+
+        progress.appendChild(elapsedLabel);
+        progress.appendChild(scrubberRoot);
+        progress.appendChild(remaining);
+
+        [like, product].forEach(function(item) {
+          if (item) {
+            left.appendChild(item);
+          }
+        });
+
+        if (pause) {
+          center.appendChild(pause);
+        }
+
+        if (sound) {
+          right.appendChild(sound);
+        }
+
+        controls.appendChild(left);
+        controls.appendChild(center);
+        controls.appendChild(right);
+        group.appendChild(progress);
+        group.appendChild(controls);
+
+        group.lightboxBar = { center: center, pause: pause, remaining: remaining };
+
+        return group.lightboxBar;
+      }
+
+      // Previous / next live in the lightbox element; in the framed layout they sit in the bar of the video that is open, around its pause button.
+      function restoreNav() {
+        [lightboxPrevButton, lightboxNextButton].forEach(function(button) {
+          if (button && button.parentNode !== lightbox) {
+            lightbox.appendChild(button);
+          }
+        });
+      }
+
+      function placeNavInBar() {
+        if (!framedIcons) {
+          return;
+        }
+
+        var media = activeCell ? getCellMedia(activeCell) : null;
+        var bar = media && media.videoMedia && media.controlsGroup ? media.controlsGroup.lightboxBar : null;
+
+        if (!bar) {
+          restoreNav();
+          return;
+        }
+
+        if (lightboxPrevButton) {
+          bar.center.insertBefore(lightboxPrevButton, bar.pause || bar.center.firstChild);
+        }
+
+        if (lightboxNextButton) {
+          bar.center.insertBefore(lightboxNextButton, bar.pause ? bar.pause.nextSibling : null);
+        }
       }
 
       function seekScrubber(state, event) {
@@ -626,11 +721,7 @@ progress bar) are simply skipped when no carousel_id is given.
           if (scrubber) {
             if (framedIcons && media.controlsGroup) {
               scrubber.timeLabel = ensureTimeLabel(media.controlsGroup);
-
-              // The playback line lives inside the video's floating bar (its first row) instead of floating over the video.
-              if (scrubber.root.parentNode !== media.controlsGroup) {
-                media.controlsGroup.insertBefore(scrubber.root, media.controlsGroup.firstChild);
-              }
+              scrubber.remainingLabel = ensureBar(media.controlsGroup, scrubber.root, scrubber.timeLabel).remaining;
             }
 
             drawScrubber(scrubber);
@@ -937,6 +1028,7 @@ progress bar) are simply skipped when no carousel_id is given.
 
           collapseCell();
           revealInThumbnail(element);
+          restoreNav();
           lightbox.hidden = true;
           document.documentElement.style.overflow = '';
           document.documentElement.style.scrollbarGutter = '';
@@ -1099,6 +1191,7 @@ progress bar) are simply skipped when no carousel_id is given.
           lightboxNextButton.disabled = index >= cells.length - 1;
         }
 
+        placeNavInBar();
         layoutFramedIcons();
 
         // The item shown in the zoom view changed (opened, or moved to the next / previous one): sections can react, eg. count the likes up.
