@@ -976,7 +976,7 @@
         "type": "select",
         "id": "heading_italic_font_source",
         "label": "Font source",
-        "info": "Rektorat is the store's own font (assets/rektorat.woff2), it is not in Shopify's font library.",
+        "info": "Rektorat is the store's own font (assets/rektorat-bold.woff2 and assets/rektorat-heavy.woff2), it is not in Shopify's font library.",
         "options": [
           {
             "value": "shopify",
@@ -988,6 +988,23 @@
           }
         ],
         "default": "shopify"
+      },
+      {
+        "type": "select",
+        "id": "heading_italic_rektorat_weight",
+        "label": "Rektorat weight",
+        "options": [
+          {
+            "value": "700",
+            "label": "Bold"
+          },
+          {
+            "value": "800",
+            "label": "Heavy"
+          }
+        ],
+        "default": "700",
+        "visible_if": "{{ settings.heading_italic_font_source == 'rektorat' }}"
       },
       {
         "type": "font_picker",
