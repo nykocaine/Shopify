@@ -6,8 +6,8 @@ Se quitaron de `templates/product.json` y `templates/product.gift-card-2.json` p
 
 | Dónde en el editor | Campo | Metacampo | Tipo |
 |---|---|---|---|
-| Producto > bloque "Valoración" | Texto lateral | `subtitle_2` | Texto de una línea |
-| Producto > bloque "Valoración" | Texto lateral 2 | `subtitle` | Texto de una línea |
+| Producto > bloque "Valoración" | Texto lateral | `enfoque` | Texto de una línea |
+| Producto > bloque "Valoración" | Texto lateral 2 | `sistema` | Texto de una línea |
 | FAQ > "Sistema de acción" (texto con imagen) | Texto | `aplicacion` | Texto enriquecido |
 | Idem | Imagen 1 | `1aplicacionfoto` | Archivo (una imagen) |
 | Idem | Pie de foto 1 | `aplicacion_primer_dia` | Texto enriquecido |
@@ -23,7 +23,7 @@ Se quitaron de `templates/product.json` y `templates/product.gift-card-2.json` p
 
 | Dónde | Campo | Metacampo | Tipo |
 |---|---|---|---|
-| Producto > bloque "Valoración" | Texto lateral | `subtitle` | Texto de una línea |
+| Producto > bloque "Valoración" | Texto lateral | `sistema` | Texto de una línea |
 | Producto > bloque de compra | Texto de la etiqueta "New" | `badges` | Lista de texto de una línea |
 
 Los metacampos `badge_background_color`, `badge_text_color`, `highlight_card`, `card_icon`, `reviews_rating` y `reviews_count` los lee el código del tema directamente; no hay nada que reconectar, solo crearlos (ver `MIGRACION.md`).
