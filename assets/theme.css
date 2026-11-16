@@ -4492,7 +4492,15 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   }
 }
 
-.link, .prose a:not(.display-xl, .display-l, .display-m, .h1, .h2, .h3, .h4, .h5, .h6, .h7, .button) {
+.link {
+  text-decoration: none;
+  transition: color .3s ease-in-out;
+  position: relative;
+}
+
+/* Underline effect of the links written inside rich text (the animated line under the text that goes away on hover). Menus, buttons and
+   links styled as buttons (.link, .link-reversed) have no underline of their own: it was removed on purpose. */
+.prose a:not(.display-xl, .display-l, .display-m, .h1, .h2, .h3, .h4, .h5, .h6, .h7, .button) {
   background: linear-gradient(to right, currentColor, currentColor) 0 100% / 100% 1px no-repeat;
   background-position-x: var(--transform-origin-start);
   text-decoration: none;
@@ -4501,32 +4509,15 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 }
 
 @media screen and (pointer: fine) {
-  :is(.link, .prose a:not(.display-xl, .display-l, .display-m, .h1, .h2, .h3, .h4, .h5, .h6, .h7, .button)):not([aria-current="true"]):hover {
+  .prose a:not(.display-xl, .display-l, .display-m, .h1, .h2, .h3, .h4, .h5, .h6, .h7, .button):not([aria-current="true"]):hover {
     background-size: 0% 1px;
     background-position-x: var(--transform-origin-end);
   }
 }
 
+/* Menu links: no underline in any state (normal, hover, current, selected). */
 .link-reversed {
-  background: linear-gradient(to right, currentColor, currentColor) 0 100% / 0 1px no-repeat;
-  background-position-x: var(--transform-origin-end);
   text-decoration: none;
-  transition: background-size .2s ease-in-out;
-}
-
-.link-reversed[aria-current="true"], .link-reversed[aria-selected="true"] {
-  background-size: 100% 1px;
-}
-
-.link-reversed:has( + [open]) {
-  background-size: 100% 1px;
-}
-
-@media screen and (pointer: fine) {
-  .link-reversed:not([aria-current="true"], [aria-selected="true"]):hover {
-    background-size: 100% 1px;
-    background-position-x: var(--transform-origin-start);
-  }
 }
 
 .link-faded {
@@ -7838,8 +7829,6 @@ shopify-account::part(signed-out-avatar) {
 
 .menu-drawer-products__tab[aria-selected="true"] {
   opacity: 1;
-  text-decoration: underline;
-  text-underline-offset: .4em;
 }
 
 .menu-drawer-products__list {
@@ -9781,8 +9770,7 @@ shopify-account::part(signed-out-avatar) {
   }
 
   .timeline__content-with-nav--left-nav .timeline__nav .link-reversed {
-    background-position: 0 0;
-    background-size: 1px 0;
+    background: linear-gradient(to bottom, currentColor, currentColor) 0 0 / 1px 0 no-repeat;
   }
 
   .timeline__content-with-nav--left-nav .timeline__nav .link-reversed[aria-current="true"] {
