@@ -165,6 +165,11 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
                 lightbox_index: instagram_slide_index,
                 sizes: instagram_media_sizes
               -%}
+
+              {%- comment -%}Desktop only: the video's caption, at the bottom of the thumbnail while the cursor is over it (style "Thumbnail caption" below){%- endcomment -%}
+              {%- if block.settings.caption != blank -%}
+                <p class="instagram-feed__thumb-caption">{{ block.settings.caption | escape }}</p>
+              {%- endif -%}
             </div>
 
             {%- assign instagram_slide_index = instagram_slide_index | plus: 1 -%}
@@ -709,37 +714,25 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
           }
 
           {%- comment -%}
-          Desktop (mouse): while the video under the cursor is still loading (.is-video-loading, set by the "Loading cue" script above), its
-          round play button fades out and the loading spinner (same spot, the middle of the cell) shows alone instead of under it. Same 0.35s
-          delay as the spinner, so a video that starts right away never makes the button blink. The button comes back as soon as the video
-          plays (and then breathes, rule below).
+          Desktop (mouse): the round play button shows on the videos at rest and disappears while the cursor is over one (that video plays
+          its preview, and its caption shows at the bottom, style "Thumbnail caption" below). The whole video then opens the zoom view on
+          click: the button's wrapper (open-lightbox-button, which covers the whole video and opens the zoom view on any click inside it, see
+          assets/theme.js) takes the clicks there instead of letting them through. The button stays reachable with the keyboard: it shows
+          again when it has the keyboard focus. While the video loads, the loading spinner shows alone in the middle.
           {%- endcomment -%}
           @media (hover: hover) and (pointer: fine) {
             #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button {
+              pointer-events: auto;
+              cursor: pointer;
+            }
+
+            #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button .overlay-control {
               transition: opacity .2s ease, visibility .2s;
             }
 
-            #{{ instagram_feed_id }} .instagram-feed__video-cell.is-video-loading .video-open-button {
+            #{{ instagram_feed_id }} .instagram-feed__video-cell:hover .video-open-button .overlay-control:not(:focus-visible) {
               opacity: 0;
               visibility: hidden;
-              transition-delay: .35s;
-            }
-          }
-
-          {%- comment -%}
-          Desktop (mouse): while the cursor is over a video (the one that plays its preview), its round play button "breathes" - the same
-          animation the playing video gets on mobile (video-play-breathe in snippets/media-zoom-style.liquid: the button grows a few percent
-          and goes back, its icon a little softer at the smallest point) - to show it can be pressed to open the video. While the video is
-          still loading the button is hidden (rule above), so the breathing is seen once it plays. Off with "reduce motion"; never in the
-          zoom view (the button is hidden there).
-          {%- endcomment -%}
-          @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-            #{{ instagram_feed_id }} .instagram-feed__video-cell:hover .video-open-button .overlay-control {
-              animation: video-play-breathe 1.8s ease-in-out infinite alternate;
-            }
-
-            #{{ instagram_feed_id }} .instagram-feed__video-cell:hover .video-open-button .overlay-control .icon {
-              animation: video-play-breathe-icon 1.8s ease-in-out infinite alternate;
             }
           }
         </style>
@@ -751,7 +744,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
           visible). Scrolling the row moves it to the next video: the previous one pauses and the new one starts. Nothing plays when the
           section is out of the screen. The round play button follows the same video (data-at-left): only that one shows it.
         - Desktop (mouse): none plays by itself. The video under the cursor plays and pauses when the cursor leaves. The round play button stays
-          on top (hidden only while the hovered video is still loading, then it breathes while the cursor is over the video, style above); only pressing it opens the zoom view (snippets/media-zoom-slide.liquid, media-zoom-script.liquid).
+          on the videos at rest and disappears while the cursor is over one (style above; the whole video opens the zoom view then); only pressing it opens the zoom view (snippets/media-zoom-slide.liquid, media-zoom-script.liquid).
 
         A video opened in the zoom view is never touched here. When it is closed (event "thumbnail:collapsed") the right state is recomputed.
         {%- endcomment -%}
@@ -1423,6 +1416,53 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
     }
   }
 
+  {%- comment -%}
+  Thumbnail caption (each video's "Caption" setting): desktop only (mouse), at the bottom of the video while the cursor is over it, in white
+  with the body text font (family, weight, size, line height, letter spacing, case). A soft dark fade behind it, from the bottom edge up, so
+  the white text stays readable on light videos. At most three lines. It lets every click through to the video, and it is hidden while the
+  video is open in the zoom view (that one shows the caption under the video, .instagram-feed__lightbox-caption).
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__thumb-caption {
+    display: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    #shopify-section-{{ section.id }} .instagram-feed__thumb-caption {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+      position: absolute;
+      inset-inline: 0;
+      inset-block-end: 0;
+      z-index: 2;
+      margin: 0;
+      padding: 2.5rem 1rem 1rem;
+      color: #fff;
+      font-family: var(--text-font-family);
+      font-weight: var(--text-font-weight);
+      font-style: var(--text-font-style);
+      font-size: var(--text-base);
+      line-height: var(--text-line-height);
+      letter-spacing: var(--text-letter-spacing);
+      text-transform: var(--text-transform);
+      background: linear-gradient(to top, rgb(0 0 0 / .45), rgb(0 0 0 / 0));
+      border-end-start-radius: {{ instagram_corner_radius_px }};
+      border-end-end-radius: {{ instagram_corner_radius_px }};
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+
+    #shopify-section-{{ section.id }} .instagram-feed__video-cell:hover .instagram-feed__thumb-caption {
+      opacity: 1;
+    }
+
+    #shopify-section-{{ section.id }} .instagram-feed__video-cell:has(.is-lightbox-expanded) .instagram-feed__thumb-caption {
+      display: none;
+    }
+  }
+
 
   {%- comment -%}
   object-fit: cover/display: block for the image case come from the theme's global img rule, and
@@ -1905,7 +1945,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
           "type": "text",
           "id": "caption",
           "label": "t:global.image.caption",
-          "info": "Only shown in the zoomed-in lightbox view, not in the feed itself."
+          "info": "Shown under the video in the zoomed-in view and, on desktop, at the bottom of the video while the cursor is over it."
         },
         {
           "type": "number",
