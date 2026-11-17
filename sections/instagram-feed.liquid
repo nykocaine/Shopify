@@ -715,6 +715,24 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
           itself, not with the playback, so it also shows while the video is still loading. Off with "reduce motion"; never in the zoom view
           (the button is hidden there).
           {%- endcomment -%}
+          {%- comment -%}
+          Desktop (mouse): while the video under the cursor is still loading (.is-video-loading, set by the "Loading cue" script above), its
+          round play button fades out and the loading spinner (same spot, the middle of the cell) shows alone instead of under it. Same 0.35s
+          delay as the spinner, so a video that starts right away never makes the button blink. The button comes back as soon as the video
+          plays (and then breathes, rule below).
+          {%- endcomment -%}
+          @media (hover: hover) and (pointer: fine) {
+            #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button {
+              transition: opacity .2s ease, visibility .2s;
+            }
+
+            #{{ instagram_feed_id }} .instagram-feed__video-cell.is-video-loading .video-open-button {
+              opacity: 0;
+              visibility: hidden;
+              transition-delay: .35s;
+            }
+          }
+
           @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
             #{{ instagram_feed_id }} .instagram-feed__video-cell:hover .video-open-button .overlay-control {
               animation: video-play-breathe 1.8s ease-in-out infinite alternate;
