@@ -3529,12 +3529,11 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   margin-block-start: .3125rem;
 }
 
-/* Product cards: title, subtitle and price render with the same font smoothing. Only the subtitle had
-   "antialiased" (set for the product page), which made it look thinner than the title and the price even with the
-   same font weight. */
-.product-card .product-subtitle {
-  -webkit-font-smoothing: auto;
-}
+/* Product cards: title, enfoque, sistema and price all render with the same font smoothing, the site-wide "antialiased"
+   (body, top of this file, inherited by the title and the price; .product-subtitle sets it too). A rule here used to switch the
+   enfoque/sistema lines back to "auto", on the wrong idea that the title was not antialiased: on macOS/iOS "auto" draws text
+   heavier, so those lines looked bolder than the title and the price with the same font and weight. Removed, so nothing in the
+   card overrides the smoothing. */
 
 /* Product card price (context: 'card', body_text/heading styles - see snippets/price-list.liquid):
    never bold, and the same color/opacity as .product-subtitle above (.7 alpha), explicitly, rather
