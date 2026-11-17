@@ -166,7 +166,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
                 sizes: instagram_media_sizes
               -%}
 
-              {%- comment -%}Desktop only: the video's caption, at the bottom of the thumbnail while the cursor is over it (style "Thumbnail caption" below){%- endcomment -%}
+              {%- comment -%}The video's caption, always at the bottom of the thumbnail, mobile and desktop (style "Thumbnail caption" below){%- endcomment -%}
               {%- if block.settings.caption != blank -%}
                 <p class="instagram-feed__thumb-caption">{{ block.settings.caption | escape }}</p>
               {%- endif -%}
@@ -715,7 +715,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
 
           {%- comment -%}
           Desktop (mouse): the round play button shows on the videos at rest and disappears while the cursor is over one (that video plays
-          its preview, and its caption shows at the bottom, style "Thumbnail caption" below). The whole video then opens the zoom view on
+          its preview). The whole video then opens the zoom view on
           click: the button's wrapper (open-lightbox-button, which covers the whole video and opens the zoom view on any click inside it, see
           assets/theme.js) takes the clicks there instead of letting them through. The button stays reachable with the keyboard: it shows
           again when it has the keyboard focus. While the video loads, the loading spinner shows alone in the middle.
@@ -1417,50 +1417,44 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
   }
 
   {%- comment -%}
-  Thumbnail caption (each video's "Caption" setting): desktop only (mouse), at the bottom of the video while the cursor is over it, in white
-  with the body text font (family, weight, size, line height, letter spacing, case). A soft dark fade behind it, from the bottom edge up, so
-  the white text stays readable on light videos. At most three lines. It lets every click through to the video, and it is hidden while the
-  video is open in the zoom view (that one shows the caption under the video, .instagram-feed__lightbox-caption).
+  Thumbnail caption (each video's "Caption" setting): always shown, on mobile and desktop, at the bottom of the video, in white with the body
+  text font (family, weight, size, line height, letter spacing, case). A soft dark fade behind it, from the bottom edge up, so the white text
+  stays readable on light videos. At most three lines. It lets every click through to the video, and it is hidden while the video is open in
+  the zoom view (that one shows the caption under the video, .instagram-feed__lightbox-caption).
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__thumb-caption {
-    display: none;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: 2;
+    margin: 0;
+    padding: 2rem .75rem .75rem;
+    color: #fff;
+    font-family: var(--text-font-family);
+    font-weight: var(--text-font-weight);
+    font-style: var(--text-font-style);
+    font-size: var(--text-base);
+    line-height: var(--text-line-height);
+    letter-spacing: var(--text-letter-spacing);
+    text-transform: var(--text-transform);
+    background: linear-gradient(to top, rgb(0 0 0 / .45), rgb(0 0 0 / 0));
+    border-end-start-radius: {{ instagram_corner_radius_px }};
+    border-end-end-radius: {{ instagram_corner_radius_px }};
+    pointer-events: none;
   }
 
-  @media (hover: hover) and (pointer: fine) {
+  @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .instagram-feed__thumb-caption {
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
-      overflow: hidden;
-      position: absolute;
-      inset-inline: 0;
-      inset-block-end: 0;
-      z-index: 2;
-      margin: 0;
       padding: 2.5rem 1rem 1rem;
-      color: #fff;
-      font-family: var(--text-font-family);
-      font-weight: var(--text-font-weight);
-      font-style: var(--text-font-style);
-      font-size: var(--text-base);
-      line-height: var(--text-line-height);
-      letter-spacing: var(--text-letter-spacing);
-      text-transform: var(--text-transform);
-      background: linear-gradient(to top, rgb(0 0 0 / .45), rgb(0 0 0 / 0));
-      border-end-start-radius: {{ instagram_corner_radius_px }};
-      border-end-end-radius: {{ instagram_corner_radius_px }};
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .25s ease;
     }
+  }
 
-    #shopify-section-{{ section.id }} .instagram-feed__video-cell:hover .instagram-feed__thumb-caption {
-      opacity: 1;
-    }
-
-    #shopify-section-{{ section.id }} .instagram-feed__video-cell:has(.is-lightbox-expanded) .instagram-feed__thumb-caption {
-      display: none;
-    }
+  #shopify-section-{{ section.id }} .instagram-feed__video-cell:has(.is-lightbox-expanded) .instagram-feed__thumb-caption {
+    display: none;
   }
 
 
@@ -1945,7 +1939,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
           "type": "text",
           "id": "caption",
           "label": "t:global.image.caption",
-          "info": "Shown under the video in the zoomed-in view and, on desktop, at the bottom of the video while the cursor is over it."
+          "info": "Shown at the bottom of the video in the feed (mobile and desktop) and under the video in the zoomed-in view."
         },
         {
           "type": "number",
