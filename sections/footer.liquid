@@ -84,6 +84,38 @@
 
 
   {%- comment -%}
+  Libro de Reclamaciones: in a "Links" menu, the link to that page shows the logo (snippets/libro-reclamaciones-logo.liquid) instead of
+  its text; the text stays for screen readers. Its width comes from the menu block's own settings, one for phones (below 700px) and one
+  for larger screens; the height follows the drawing. Same color as the menu text (the drawing uses currentColor), a little softer on hover.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .footer-libro-reclamaciones {
+    display: inline-block;
+    width: var(--libro-reclamaciones-mobile-width);
+    max-width: 100%;
+    line-height: 0;
+    color: inherit;
+    transition: opacity .2s ease;
+  }
+
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .footer-libro-reclamaciones {
+      width: var(--libro-reclamaciones-width);
+    }
+  }
+
+  @media (hover: hover) {
+    #shopify-section-{{ section.id }} .footer-libro-reclamaciones:hover {
+      opacity: .7;
+    }
+  }
+
+  #shopify-section-{{ section.id }} .footer-libro-reclamaciones .libro-reclamaciones-logo {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  {%- comment -%}
   Newsletter block: the space between its paragraphs. Text written in a rich text field (.prose) separates paragraphs by --prose-default-spacing
   (1.5rem), which is far too much for these short lines; here it is a small one. Only inside the footer's newsletter block, the rest of the
   site's rich text keeps the theme's spacing.
@@ -461,8 +493,32 @@
                     {%- capture menu_content -%}
                       <ul class="v-stack gap-2.5 unstyled-list" role="list">
                         {%- for link in menu.links -%}
+                          {%- liquid
+                            # The link to the Libro de Reclamaciones page shows its logo (snippets/libro-reclamaciones-logo.liquid) instead of its text.
+                            # Found by the page's template (page.libro-reclamaciones, whatever the page or the link is called), or, for a typed URL, by
+                            # "reclamaciones" in it.
+                            assign link_is_libro_reclamaciones = false
+
+                            if link.type == 'page_link' and link.object.template_suffix == 'libro-reclamaciones'
+                              assign link_is_libro_reclamaciones = true
+                            else
+                              assign link_url_downcase = link.url | downcase
+
+                              if link_url_downcase contains 'reclamaciones'
+                                assign link_is_libro_reclamaciones = true
+                              endif
+                            endif
+                          -%}
+
                           <li>
-                            <a href="{{ link.url }}" class="link-reversed link-tap-area">{{ link.title }}</a>
+                            {%- if link_is_libro_reclamaciones -%}
+                              <a href="{{ link.url }}" class="footer-libro-reclamaciones link-tap-area" style="--libro-reclamaciones-width: {{ block.settings.libro_reclamaciones_width }}px; --libro-reclamaciones-mobile-width: {{ block.settings.libro_reclamaciones_mobile_width }}px;">
+                                <span class="sr-only">{{ link.title }}</span>
+                                {%- render 'libro-reclamaciones-logo' -%}
+                              </a>
+                            {%- else -%}
+                              <a href="{{ link.url }}" class="link-reversed link-tap-area">{{ link.title }}</a>
+                            {%- endif -%}
                           </li>
                         {%- endfor -%}
                       </ul>
@@ -883,6 +939,31 @@
           "id": "menu_title",
           "label": "t:sections.footer.blocks.links.menu_title",
           "info": "t:sections.footer.blocks.links.menu_title_info"
+        },
+        {
+          "type": "header",
+          "content": "Libro de Reclamaciones",
+          "info": "If this menu links to the Libro de Reclamaciones page, that link shows its logo instead of its text."
+        },
+        {
+          "type": "range",
+          "id": "libro_reclamaciones_width",
+          "min": 40,
+          "max": 300,
+          "step": 2,
+          "unit": "px",
+          "label": "Logo width (desktop)",
+          "default": 140
+        },
+        {
+          "type": "range",
+          "id": "libro_reclamaciones_mobile_width",
+          "min": 40,
+          "max": 300,
+          "step": 2,
+          "unit": "px",
+          "label": "Logo width (mobile)",
+          "default": 120
         }
       ]
     },
