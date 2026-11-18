@@ -495,18 +495,18 @@
                         {%- for link in menu.links -%}
                           {%- liquid
                             # The link to the Libro de Reclamaciones page shows its logo (snippets/libro-reclamaciones-logo.liquid) instead of its text.
-                            # Found by the page's template (page.libro-reclamaciones, whatever the page or the link is called), or, for a typed URL, by
-                            # "reclamaciones" in it.
+                            # Found by any of: the page's template (page.libro-reclamaciones, whatever the page or the link is called), "reclamacion" or
+                            # "reclamo" in the link's address (/pages/libro-de-reclamaciones, /pages/reclamos...), or "reclamacion" in the link's name.
                             assign link_is_libro_reclamaciones = false
+                            assign link_url_downcase = link.url | downcase
+                            assign link_title_downcase = link.title | downcase
 
                             if link.type == 'page_link' and link.object.template_suffix == 'libro-reclamaciones'
                               assign link_is_libro_reclamaciones = true
-                            else
-                              assign link_url_downcase = link.url | downcase
-
-                              if link_url_downcase contains 'reclamaciones'
-                                assign link_is_libro_reclamaciones = true
-                              endif
+                            elsif link_url_downcase contains 'reclamacion' or link_url_downcase contains 'reclamo'
+                              assign link_is_libro_reclamaciones = true
+                            elsif link_title_downcase contains 'reclamacion' or link_title_downcase contains 'reclamación'
+                              assign link_is_libro_reclamaciones = true
                             endif
                           -%}
 
