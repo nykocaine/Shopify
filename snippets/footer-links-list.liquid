@@ -1,0 +1,67 @@
+{%- doc -%}
+The list of links of a footer "Links" block (sections/footer.liquid), with the optional Libro de Reclamaciones logo
+(snippets/libro-reclamaciones-logo.liquid). Rendered once and shared by the desktop list and the mobile accordion.
+
+When show_libro_reclamaciones is on, the menu's own link to the Libro de Reclamaciones (found by the page's template
+page.libro-reclamaciones, "reclamacion" / "reclamo" in its address, or "reclamacion" in its name) shows the logo instead of its text;
+if the menu has no such link, the logo is added at the end of the list, linked to libro_reclamaciones_page. The link's name stays for
+screen readers. With it off, every link is plain text. Look (width per screen size, color): .footer-libro-reclamaciones in the footer.
+
+@param {object} menu - the block's menu (linklist)
+@param {boolean} [show_libro_reclamaciones] - show the Libro de Reclamaciones logo
+@param {object} [libro_reclamaciones_page] - page the logo links to when the menu has no link to it
+@param {number} [libro_reclamaciones_width] - logo width in px from 700px
+@param {number} [libro_reclamaciones_mobile_width] - logo width in px below 700px
+{%- enddoc -%}
+
+{%- liquid
+  assign libro_reclamaciones_in_menu = false
+  capture libro_reclamaciones_style
+    echo '--libro-reclamaciones-width: ' | append: libro_reclamaciones_width | append: 'px; --libro-reclamaciones-mobile-width: ' | append: libro_reclamaciones_mobile_width | append: 'px;'
+  endcapture
+-%}
+
+<ul class="v-stack gap-2.5 unstyled-list" role="list">
+  {%- for link in menu.links -%}
+    {%- liquid
+      assign link_is_libro_reclamaciones = false
+
+      if show_libro_reclamaciones
+        assign link_url_downcase = link.url | downcase
+        assign link_title_downcase = link.title | downcase
+
+        if link.type == 'page_link' and link.object.template_suffix == 'libro-reclamaciones'
+          assign link_is_libro_reclamaciones = true
+        elsif link_url_downcase contains 'reclamacion' or link_url_downcase contains 'reclamo'
+          assign link_is_libro_reclamaciones = true
+        elsif link_title_downcase contains 'reclamacion' or link_title_downcase contains 'reclamación'
+          assign link_is_libro_reclamaciones = true
+        endif
+
+        if link_is_libro_reclamaciones
+          assign libro_reclamaciones_in_menu = true
+        endif
+      endif
+    -%}
+
+    <li>
+      {%- if link_is_libro_reclamaciones -%}
+        <a href="{{ link.url }}" class="footer-libro-reclamaciones link-tap-area" style="{{ libro_reclamaciones_style }}">
+          <span class="sr-only">{{ link.title }}</span>
+          {%- render 'libro-reclamaciones-logo' -%}
+        </a>
+      {%- else -%}
+        <a href="{{ link.url }}" class="link-reversed link-tap-area">{{ link.title }}</a>
+      {%- endif -%}
+    </li>
+  {%- endfor -%}
+
+  {%- if show_libro_reclamaciones and libro_reclamaciones_in_menu == false and libro_reclamaciones_page != blank -%}
+    <li>
+      <a href="{{ libro_reclamaciones_page.url }}" class="footer-libro-reclamaciones link-tap-area" style="{{ libro_reclamaciones_style }}">
+        <span class="sr-only">{{ libro_reclamaciones_page.title }}</span>
+        {%- render 'libro-reclamaciones-logo' -%}
+      </a>
+    </li>
+  {%- endif -%}
+</ul>
