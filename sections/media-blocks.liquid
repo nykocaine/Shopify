@@ -1,4 +1,16 @@
 {%- if section.blocks.size > 0 -%}
+  {%- comment -%}
+  "Tabs with media" takes the full width of the section: when the section has one, only that block is shown (the others are skipped and
+  the theme editor shows a notice) and the section uses its own two-column grid instead of the "Items per row" one.
+  {%- endcomment -%}
+  {%- liquid
+    assign tabs_block = section.blocks | where: 'type', 'tabs_with_media' | first
+    assign media_blocks_cells = section.blocks.size
+    if tabs_block
+      assign media_blocks_cells = 2
+    endif
+  -%}
+
   <style>
     #shopify-section-{{ section.id }} {
       --media-blocks-grid: {% if section.settings.stack_on_mobile %}auto-flow / minmax(0, 1fr){% else %}auto / auto-flow 78vw{% endif %};
@@ -24,7 +36,7 @@
 
     @media screen and (min-width: 700px) {
       #shopify-section-{{ section.id }} {
-        --media-blocks-grid: {% if section.settings.stack_on_mobile or section.blocks.size <= 2 %}auto / repeat(2, minmax(0, 1fr)){% else %}auto / auto-flow 45vw{% endif %};
+        --media-blocks-grid: {% if section.settings.stack_on_mobile or media_blocks_cells <= 2 %}auto / repeat(2, minmax(0, 1fr)){% else %}auto / auto-flow 45vw{% endif %};
       }
     }
 
@@ -140,7 +152,65 @@
       --content-box-spacing: calc(var(--container-gutter) + 0.5rem);
     }
 
-    {%- if section.settings.column_spacing == 'none' -%}
+    {%- comment -%}
+    Desktop size "Auto" fix: theme.css has no md:min-h-auto class, so with Desktop "Auto" and a Mobile size other than "Auto" the card kept the
+    mobile height on desktop, and the image was taken out of the flow (absolute) as if a fixed height was set. On desktop, "Auto" now means
+    the same as on mobile: no minimum height, the image keeps its own proportions and gives the card its height.
+    {%- endcomment -%}
+    {%- if section.settings.block_size == 'auto' -%}
+      @media screen and (min-width: 1000px) {
+        #shopify-section-{{ section.id }} .media-blocks__item .content-box.content-box {
+          min-height: auto;
+        }
+
+        #shopify-section-{{ section.id }} .media-blocks__item .content-box.content-box .content-box__background-media {
+          position: static;
+          inset: auto;
+        }
+      }
+    {%- endif -%}
+
+    {%- comment -%}
+    Cards that do not stack on mobile scroll sideways: snap each card to the start so a swipe never stops half way between two cards.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .media-blocks.scroll-area {
+      scroll-snap-type: x mandatory;
+    }
+
+    #shopify-section-{{ section.id }} .media-blocks.scroll-area > * {
+      scroll-snap-align: start;
+    }
+
+    {%- if tabs_block and section.settings.column_spacing == 'none' -%}
+      {%- comment -%}Tabs with media, no spacing: the two cards read as one piece, so only the outer corners are rounded{%- endcomment -%}
+      @media screen and (max-width: 699px) {
+        #shopify-section-{{ section.id }} .media-tabs-media {
+          {%- if tabs_block.settings.mobile_image_position == 'top' -%}
+            border-radius: var(--media-blocks-corner-radius) var(--media-blocks-corner-radius) 0 0;
+          {%- else -%}
+            border-radius: 0 0 var(--media-blocks-corner-radius) var(--media-blocks-corner-radius);
+          {%- endif -%}
+        }
+
+        #shopify-section-{{ section.id }} .media-tabs {
+          {%- if tabs_block.settings.mobile_image_position == 'top' -%}
+            border-radius: 0 0 var(--media-blocks-corner-radius) var(--media-blocks-corner-radius);
+          {%- else -%}
+            border-radius: var(--media-blocks-corner-radius) var(--media-blocks-corner-radius) 0 0;
+          {%- endif -%}
+        }
+      }
+
+      @media screen and (min-width: 700px) {
+        #shopify-section-{{ section.id }} .media-blocks > :first-child {
+          border-radius: var(--media-blocks-corner-radius) 0 0 var(--media-blocks-corner-radius);
+        }
+
+        #shopify-section-{{ section.id }} .media-blocks > :last-child {
+          border-radius: 0 var(--media-blocks-corner-radius) var(--media-blocks-corner-radius) 0;
+        }
+      }
+    {%- elsif section.settings.column_spacing == 'none' -%}
       {%- comment -%}
         No spacing between cards: they form a single continuous piece, so the radius only applies to the outer corners of the whole set,
         never on the touching inner edges between cards. How the cards are laid out depends on the breakpoint (see --media-blocks-grid
@@ -148,7 +218,7 @@
         every card, so it also works with several rows.
       {%- endcomment -%}
       {%- assign section_selector = '#shopify-section-' | append: section.id -%}
-      {%- assign blocks_count = section.blocks.size -%}
+      {%- assign blocks_count = media_blocks_cells -%}
 
       {%- comment -%}Tablet (700-999px): two columns when the cards stack on mobile or there are two or fewer, otherwise one horizontal scroller (one row){%- endcomment -%}
       {%- assign tablet_cols = blocks_count -%}
@@ -252,6 +322,138 @@
     #shopify-section-{{ section.id }} .info-panel__list-item-content {
       text-align: end;
     }
+
+    {%- comment -%}
+    Tabs with media: two cards side by side. The text card shows the active tab (heading, text, button) on top and the list of tab titles at
+    the bottom, each one above a divider; the media card holds one image per tab, stacked vertically, and slides up or down to the active one.
+    All tab panels share one grid cell, so the card always takes the height of the tallest one and nothing jumps when switching tabs.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .media-tabs {
+      padding: calc(var(--container-gutter) + 0.5rem);
+      gap: 2.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #shopify-section-{{ section.id }} .media-tabs__panels {
+      display: grid;
+    }
+
+    #shopify-section-{{ section.id }} .media-tabs__panel {
+      grid-area: 1 / 1;
+      align-content: start;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(0.5rem);
+      transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0.35s;
+    }
+
+    #shopify-section-{{ section.id }} .media-tabs__panel.is-active {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      transition: opacity 0.5s ease 0.15s, transform 0.5s ease 0.15s, visibility 0s;
+    }
+
+    #shopify-section-{{ section.id }} .media-tabs__list {
+      margin-block-start: auto;
+      display: grid;
+    }
+
+    #shopify-section-{{ section.id }} .media-tabs__tab {
+      text-align: start;
+      padding-block: 1.25rem;
+      border-block-start: 1px solid rgb(var(--text-color) / 0.2);
+      cursor: pointer;
+      display: block;
+      width: 100%;
+    }
+
+    #shopify-section-{{ section.id }} .media-tabs__tab > span {
+      opacity: 0.5;
+      transition: opacity 0.25s ease;
+    }
+
+    #shopify-section-{{ section.id }} .media-tabs__tab:last-child {
+      padding-block-end: 0;
+    }
+
+    #shopify-section-{{ section.id }} .media-tabs__tab:hover > span {
+      opacity: 0.8;
+    }
+
+    #shopify-section-{{ section.id }} .media-tabs__tab[aria-selected="true"] > span {
+      opacity: 1;
+    }
+
+    #shopify-section-{{ section.id }} .media-tabs-media {
+      position: relative;
+      overflow: hidden;
+    }
+
+    {%- if section.settings.mobile_block_size == 'auto' -%}
+      @media screen and (max-width: 699px) {
+        #shopify-section-{{ section.id }} .media-tabs-media {
+          aspect-ratio: 4 / 5;
+        }
+      }
+    {%- endif -%}
+
+    #shopify-section-{{ section.id }} .media-tabs-media__track {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(calc(-100% * var(--media-tabs-index, 0)));
+      transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+
+    #shopify-section-{{ section.id }} .media-tabs-media__slide {
+      flex: 0 0 100%;
+      overflow: hidden;
+    }
+
+    #shopify-section-{{ section.id }} .media-tabs-media__slide > img,
+    #shopify-section-{{ section.id }} .media-tabs-media__slide > svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.12);
+      transition: transform 1.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    #shopify-section-{{ section.id }} .media-tabs-media__slide.is-active > img,
+    #shopify-section-{{ section.id }} .media-tabs-media__slide.is-active > svg {
+      transform: none;
+    }
+
+    {%- if tabs_block -%}
+      #shopify-section-{{ section.id }} .media-blocks--tabs {
+        --media-blocks-grid: auto-flow / minmax(0, 1fr);
+      }
+
+      @media screen and (max-width: 699px) {
+        #shopify-section-{{ section.id }} .media-tabs-media {
+          order: {% if tabs_block.settings.mobile_image_position == 'top' %}-1{% else %}1{% endif %};
+        }
+      }
+
+      @media screen and (min-width: 700px) {
+        #shopify-section-{{ section.id }} .media-blocks--tabs {
+          --media-blocks-grid: auto / repeat(2, minmax(0, 1fr));
+        }
+      }
+    {%- endif -%}
+
+    @media (prefers-reduced-motion: reduce) {
+      #shopify-section-{{ section.id }} .media-tabs__panel,
+      #shopify-section-{{ section.id }} .media-tabs__panel.is-active,
+      #shopify-section-{{ section.id }} .media-tabs-media__track,
+      #shopify-section-{{ section.id }} .media-tabs-media__slide > img {
+        transform: none;
+        transition: none;
+      }
+    }
   </style>
 
   {%- assign allow_transparent_header = false -%}
@@ -304,8 +506,21 @@
           </div>
         {%- endif -%}
 
-        <div class="media-blocks {% unless section.settings.stack_on_mobile %}scroll-area bleed{% endunless %}">
+        {%- if tabs_block and media_blocks_cells != section.blocks.size and request.design_mode -%}
+          {%- comment -%}Only visible in the theme editor: tells the merchant why the other blocks are not shown{%- endcomment -%}
+          <div class="{% unless section.settings.floating_media_blocks %}container{% endunless %}">
+            <p class="text-sm" style="padding: 0.75rem 1rem; border: 1px dashed rgb(var(--text-color) / 0.4); border-radius: 0.5rem;">
+              Esta sección tiene un bloque "Tabs with media", que ocupa todo el ancho: los demás bloques de la sección están ocultos. Quítalos o muévelos a otra sección Media Blocks.
+            </p>
+          </div>
+        {%- endif -%}
+
+        <div class="media-blocks {% if tabs_block %}media-blocks--tabs{% elsif section.settings.stack_on_mobile == false %}scroll-area bleed{% endif %}">
           {%- for block in section.blocks -%}
+            {%- if tabs_block and block.type != 'tabs_with_media' -%}
+              {%- continue -%}
+            {%- endif -%}
+
             {%- case block.type -%}
               {%- when 'image_with_text' or 'video_with_text' -%}
                 {%- liquid
@@ -603,6 +818,239 @@
                     </div>
                   {%- endif -%}
                 </div>
+
+              {%- when 'tabs_with_media' -%}
+                {%- comment -%}
+                Two sibling cards (text + images) so both are real grid cells of .media-blocks: the outer-corner and grid rules above see them
+                as two cards. The <media-tabs> element finds its image card through the "media" attribute. Tabs with an empty title are skipped.
+                {%- endcomment -%}
+                {%- liquid
+                  assign tabs_media_id = 'media-tabs-media-' | append: block.id
+                  assign tabs_count = 0
+                  for i in (1..4)
+                    capture tab_title_key
+                      echo 'tab_'
+                      echo i
+                      echo '_title'
+                    endcapture
+                    if block.settings[tab_title_key] != blank
+                      assign tabs_count = tabs_count | plus: 1
+                    endif
+                  endfor
+                -%}
+
+                {%- capture tabs_text_card -%}
+                  <media-tabs
+                    id="block-{{ block.id }}"
+                    media="{{ tabs_media_id }}"
+                    {% if block.settings.autoplay %}autoplay="{{ block.settings.autoplay_speed | times: 1000 }}"{% endif %}
+                    class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} media-tabs min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}"
+                    {{ block.shopify_attributes }}
+                  >
+                    <div class="media-tabs__panels">
+                      {%- assign tab_position = 0 -%}
+                      {%- for i in (1..4) -%}
+                        {%- liquid
+                          capture tab_title_key
+                            echo 'tab_'
+                            echo i
+                            echo '_title'
+                          endcapture
+                          capture tab_text_key
+                            echo 'tab_'
+                            echo i
+                            echo '_text'
+                          endcapture
+                          capture tab_link_text_key
+                            echo 'tab_'
+                            echo i
+                            echo '_link_text'
+                          endcapture
+                          capture tab_link_url_key
+                            echo 'tab_'
+                            echo i
+                            echo '_link_url'
+                          endcapture
+                        -%}
+
+                        {%- if block.settings[tab_title_key] != blank -%}
+                          {%- assign tab_position = tab_position | plus: 1 -%}
+                          <div
+                            id="block-{{ block.id }}-panel-{{ tab_position }}"
+                            class="media-tabs__panel prose {% if tab_position == 1 %}is-active{% endif %}"
+                            role="tabpanel"
+                            aria-labelledby="block-{{ block.id }}-tab-{{ tab_position }}"
+                            {% if tab_position != 1 %}inert{% endif %}
+                          >
+                            {%- render 'heading', content: block.settings[tab_title_key], style: block.settings.heading_tag, html_tag: 'p', instant: true -%}
+
+                            {%- if block.settings[tab_text_key] != blank -%}
+                              <div class="max-w-sm">{{ block.settings[tab_text_key] }}</div>
+                            {%- endif -%}
+
+                            {%- if block.settings[tab_link_text_key] != blank -%}
+                              {%- render 'button', content: block.settings[tab_link_text_key], href: block.settings[tab_link_url_key], style: block.settings.button_style -%}
+                            {%- endif -%}
+                          </div>
+                        {%- endif -%}
+                      {%- endfor -%}
+                    </div>
+
+                    {%- if tabs_count > 1 -%}
+                      <div class="media-tabs__list" role="tablist" aria-orientation="vertical">
+                        {%- assign tab_position = 0 -%}
+                        {%- for i in (1..4) -%}
+                          {%- capture tab_title_key -%}tab_{{ i }}_title{%- endcapture -%}
+
+                          {%- if block.settings[tab_title_key] != blank -%}
+                            {%- assign tab_position = tab_position | plus: 1 -%}
+                            <button
+                              type="button"
+                              id="block-{{ block.id }}-tab-{{ tab_position }}"
+                              class="media-tabs__tab"
+                              role="tab"
+                              aria-controls="block-{{ block.id }}-panel-{{ tab_position }}"
+                              aria-selected="{% if tab_position == 1 %}true{% else %}false{% endif %}"
+                              {% if tab_position != 1 %}tabindex="-1"{% endif %}
+                            >
+                              <span class="{{ block.settings.tab_title_tag }}">{{ block.settings[tab_title_key] | strip_html }}</span>
+                            </button>
+                          {%- endif -%}
+                        {%- endfor -%}
+                      </div>
+                    {%- endif -%}
+                  </media-tabs>
+                {%- endcapture -%}
+
+                {%- capture tabs_media_card -%}
+                  <div id="{{ tabs_media_id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} media-tabs-media min-h-{{ section.settings.mobile_block_size }} md:min-h-{% if section.settings.block_size == 'auto' %}md{% else %}{{ section.settings.block_size }}{% endif %}" aria-hidden="true">
+                    <div class="media-tabs-media__track">
+                      {%- assign tab_position = 0 -%}
+                      {%- for i in (1..4) -%}
+                        {%- liquid
+                          capture tab_title_key
+                            echo 'tab_'
+                            echo i
+                            echo '_title'
+                          endcapture
+                          capture tab_image_key
+                            echo 'tab_'
+                            echo i
+                            echo '_image'
+                          endcapture
+                        -%}
+
+                        {%- if block.settings[tab_title_key] != blank -%}
+                          {%- assign tab_position = tab_position | plus: 1 -%}
+                          <div class="media-tabs-media__slide {% if tab_position == 1 %}is-active{% endif %}">
+                            {%- liquid
+                              assign tab_image = block.settings[tab_image_key]
+                              assign loading_attribute = 'lazy'
+                              if section.index <= 1 and tab_position == 1
+                                assign loading_attribute = nil
+                              endif
+
+                              if tab_image != blank
+                                echo tab_image | image_url: width: tab_image.width | image_tag: loading: loading_attribute, sizes: '(max-width: 699px) 100vw, 50vw', widths: '400,600,800,1000,1200,1400,1600,1800', alt: tab_image.alt
+                              else
+                                echo 'lifestyle-1' | placeholder_svg_tag
+                              endif
+                            -%}
+                          </div>
+                        {%- endif -%}
+                      {%- endfor -%}
+                    </div>
+                  </div>
+                {%- endcapture -%}
+
+                {%- if block.settings.image_position == 'left' -%}
+                  {{- tabs_media_card -}}
+                  {{- tabs_text_card -}}
+                {%- else -%}
+                  {{- tabs_text_card -}}
+                  {{- tabs_media_card -}}
+                {%- endif -%}
+
+                <script>
+                  if (!window.customElements.get('media-tabs')) {
+                    window.customElements.define('media-tabs', class extends HTMLElement {
+                      connectedCallback() {
+                        this.tabs = Array.from(this.querySelectorAll('[role="tab"]'));
+                        this.panels = Array.from(this.querySelectorAll('[role="tabpanel"]'));
+                        this.media = document.getElementById(this.getAttribute('media'));
+                        this.slides = this.media ? Array.from(this.media.querySelectorAll('.media-tabs-media__slide')) : [];
+                        this.index = 0;
+
+                        this.tabs.forEach((tab, index) => {
+                          tab.addEventListener('click', () => this.select(index, true));
+                          tab.addEventListener('keydown', (event) => this.onKeydown(event, index));
+                        });
+
+                        this.startAutoplay();
+                        this.addEventListener('pointerenter', () => this.stopAutoplay());
+                        this.addEventListener('pointerleave', () => this.startAutoplay());
+                        this.addEventListener('focusin', () => this.stopAutoplay());
+
+                        this.onBlockSelect = (event) => {
+                          if (event.target === this) this.stopAutoplay(true);
+                        };
+                        document.addEventListener('shopify:block:select', this.onBlockSelect);
+                      }
+
+                      disconnectedCallback() {
+                        this.stopAutoplay(true);
+                        document.removeEventListener('shopify:block:select', this.onBlockSelect);
+                      }
+
+                      select(index, fromUser = false) {
+                        if (index === this.index && !fromUser) return;
+                        this.index = index;
+
+                        this.tabs.forEach((tab, i) => {
+                          tab.setAttribute('aria-selected', i === index ? 'true' : 'false');
+                          tab.tabIndex = i === index ? 0 : -1;
+                        });
+
+                        this.panels.forEach((panel, i) => {
+                          panel.classList.toggle('is-active', i === index);
+                          panel.inert = i !== index;
+                        });
+
+                        this.slides.forEach((slide, i) => slide.classList.toggle('is-active', i === index));
+                        this.media?.style.setProperty('--media-tabs-index', index);
+
+                        if (fromUser) this.stopAutoplay(true);
+                      }
+
+                      onKeydown(event, index) {
+                        const keys = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
+                        let next = null;
+
+                        if (event.key in keys) next = (index + keys[event.key] + this.tabs.length) % this.tabs.length;
+                        if (event.key === 'Home') next = 0;
+                        if (event.key === 'End') next = this.tabs.length - 1;
+                        if (next === null) return;
+
+                        event.preventDefault();
+                        this.select(next, true);
+                        this.tabs[next].focus();
+                      }
+
+                      startAutoplay() {
+                        const delay = parseInt(this.getAttribute('autoplay'), 10);
+                        if (!delay || this.autoplayStopped || this.tabs.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+                        clearInterval(this.timer);
+                        this.timer = setInterval(() => this.select((this.index + 1) % this.tabs.length), delay);
+                      }
+
+                      stopAutoplay(forever = false) {
+                        clearInterval(this.timer);
+                        if (forever) this.autoplayStopped = true;
+                      }
+                    });
+                  }
+                </script>
 
               {%- when 'empty_item' -%}
                 <div class="media-blocks__item color-scheme color-scheme--{{ block.settings.color_scheme.id }} md-max:hidden" {{ block.shopify_attributes }}>
@@ -2609,6 +3057,278 @@
           "id": "color_scheme",
           "label": "t:global.colors.scheme",
           "default": "scheme-2"
+        }
+      ]
+    },
+    {
+      "type": "tabs_with_media",
+      "name": "Tabs with media",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Pestañas con un carrusel vertical de imágenes. Este bloque ocupa todo el ancho de la sección: si la sección lo tiene, solo se muestra este bloque (los demás bloques se ocultan). Usa una sección Media Blocks aparte para él."
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-2"
+        },
+        {
+          "type": "select",
+          "id": "image_position",
+          "label": "Posición de la imagen",
+          "options": [
+            {
+              "value": "left",
+              "label": "Izquierda"
+            },
+            {
+              "value": "right",
+              "label": "Derecha"
+            }
+          ],
+          "default": "right"
+        },
+        {
+          "type": "select",
+          "id": "mobile_image_position",
+          "label": "Posición de la imagen en móvil",
+          "options": [
+            {
+              "value": "top",
+              "label": "Arriba del texto"
+            },
+            {
+              "value": "bottom",
+              "label": "Debajo del texto"
+            }
+          ],
+          "default": "top"
+        },
+        {
+          "type": "select",
+          "id": "heading_tag",
+          "label": "Tamaño del título",
+          "options": [
+            {
+              "value": "h1",
+              "label": "XX-Large"
+            },
+            {
+              "value": "h2",
+              "label": "X-Large"
+            },
+            {
+              "value": "h3",
+              "label": "Large"
+            },
+            {
+              "value": "h4",
+              "label": "Medium"
+            },
+            {
+              "value": "h5",
+              "label": "Small"
+            },
+            {
+              "value": "h6",
+              "label": "XX-Small"
+            }
+          ],
+          "default": "h2"
+        },
+        {
+          "type": "select",
+          "id": "tab_title_tag",
+          "label": "Tamaño de los títulos de la lista",
+          "options": [
+            {
+              "value": "h1",
+              "label": "XX-Large"
+            },
+            {
+              "value": "h2",
+              "label": "X-Large"
+            },
+            {
+              "value": "h3",
+              "label": "Large"
+            },
+            {
+              "value": "h4",
+              "label": "Medium"
+            },
+            {
+              "value": "h5",
+              "label": "Small"
+            },
+            {
+              "value": "h6",
+              "label": "XX-Small"
+            }
+          ],
+          "default": "h4"
+        },
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "t:global.text.button_style",
+          "options": [
+            {
+              "value": "outline",
+              "label": "t:global.text.button_style_options.outline"
+            },
+            {
+              "value": "solid",
+              "label": "t:global.text.button_style_options.solid"
+            },
+            {
+              "value": "link",
+              "label": "t:global.text.button_style_options.link"
+            }
+          ],
+          "default": "solid"
+        },
+        {
+          "type": "checkbox",
+          "id": "autoplay",
+          "label": "Cambiar de pestaña automáticamente",
+          "info": "Se detiene cuando el visitante pasa el cursor por encima o elige una pestaña.",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "autoplay_speed",
+          "label": "Cambiar cada",
+          "min": 3,
+          "max": 15,
+          "step": 1,
+          "unit": "s",
+          "default": 6
+        },
+        {
+          "type": "header",
+          "content": "Pestaña 1"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "tab_1_title",
+          "label": "Título",
+          "default": "Nuestros valores"
+        },
+        {
+          "type": "richtext",
+          "id": "tab_1_text",
+          "label": "Texto",
+          "default": "<p>Cuenta aquí qué hace única a tu marca.</p>"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_1_image",
+          "label": "Imagen"
+        },
+        {
+          "type": "text",
+          "id": "tab_1_link_text",
+          "label": "Texto del botón"
+        },
+        {
+          "type": "url",
+          "id": "tab_1_link_url",
+          "label": "Enlace del botón"
+        },
+        {
+          "type": "header",
+          "content": "Pestaña 2"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "tab_2_title",
+          "label": "Título",
+          "default": "Fórmulas probadas"
+        },
+        {
+          "type": "richtext",
+          "id": "tab_2_text",
+          "label": "Texto",
+          "default": "<p>Explica en pocas líneas este punto.</p>"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_2_image",
+          "label": "Imagen"
+        },
+        {
+          "type": "text",
+          "id": "tab_2_link_text",
+          "label": "Texto del botón"
+        },
+        {
+          "type": "url",
+          "id": "tab_2_link_url",
+          "label": "Enlace del botón"
+        },
+        {
+          "type": "header",
+          "content": "Pestaña 3"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "tab_3_title",
+          "label": "Título",
+          "default": "Mínimo impacto"
+        },
+        {
+          "type": "richtext",
+          "id": "tab_3_text",
+          "label": "Texto",
+          "default": "<p>Explica en pocas líneas este punto.</p>"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_3_image",
+          "label": "Imagen"
+        },
+        {
+          "type": "text",
+          "id": "tab_3_link_text",
+          "label": "Texto del botón"
+        },
+        {
+          "type": "url",
+          "id": "tab_3_link_url",
+          "label": "Enlace del botón"
+        },
+        {
+          "type": "header",
+          "content": "Pestaña 4"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "tab_4_title",
+          "label": "Título"
+        },
+        {
+          "type": "richtext",
+          "id": "tab_4_text",
+          "label": "Texto"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_4_image",
+          "label": "Imagen"
+        },
+        {
+          "type": "text",
+          "id": "tab_4_link_text",
+          "label": "Texto del botón"
+        },
+        {
+          "type": "url",
+          "id": "tab_4_link_url",
+          "label": "Enlace del botón"
         }
       ]
     },
