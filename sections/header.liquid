@@ -54,12 +54,12 @@
 
   {%- if section.settings.floating_header -%}
     {%- comment -%}
-    When the announcement bar is on the page, the gap between it and the header is half of the usual
-    half-section gap (a quarter of the section spacing).
+    When the announcement bar is on the page, the gap between it and the header is half the section spacing (it used to be a quarter;
+    doubled on request).
     {%- endcomment -%}
     :root:has(.shopify-section--announcement-bar .announcement-bar-wrapper) {
-      --header-top-gap: calc(var(--section-vertical-spacing) / 4);
-      --header-top-gap-rest: calc(var(--section-vertical-spacing) / 4);
+      --header-top-gap: calc(var(--section-vertical-spacing) / 2);
+      --header-top-gap-rest: calc(var(--section-vertical-spacing) / 2);
     }
 
     {%- comment -%}
