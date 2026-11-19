@@ -96,7 +96,8 @@
     --header-transparent-header-text-color: {{ section.settings.transparent_header_text_color.rgb }};
     --header-non-transparent-text-color: {{ section.settings.color_scheme.settings.text_color.rgb }};
     --header-menu-gap: {{ section.settings.menu_items_spacing }}px;
-    --header-icons-gap: {{ section.settings.icons_spacing }}px;
+    /* Account, cart and search spacing: its own value on mobile and tablet, the desktop one from 1000px (see the media query right below) */
+    --header-icons-gap: {{ section.settings.mobile_icons_spacing }}px;
     {%- if section.settings.floating_header -%}
       /* The gap above the floating header (--header-top-gap, see :root above) is a margin, not
          padding, so it sits outside the section and the theme editor doesn't highlight it. */
@@ -104,6 +105,12 @@
       position: relative;
     {%- endif -%}
   }
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} {
+      --header-icons-gap: {{ section.settings.icons_spacing }}px;
+    }
+  }
+
 
   {%- comment -%}
   Same lateral bump as footer/reviews/faq - only the sides (header-padding-block is left alone,
@@ -1243,6 +1250,16 @@
       "id": "icons_spacing",
       "label": "t:sections.header.icons_spacing",
       "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "mobile_icons_spacing",
+      "label": "t:sections.header.mobile_icons_spacing",
+      "min": 4,
       "max": 48,
       "step": 2,
       "unit": "px",
