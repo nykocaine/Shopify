@@ -730,6 +730,16 @@
         border-top-left-radius: {{ section.settings.header_border_radius }}px !important;
         border-top-right-radius: {{ section.settings.header_border_radius }}px !important;
       }
+
+      {%- comment -%}
+      The bottom corners too: here the header does not follow the scroll, so the rules that square them (.is-scrolled from the first pixel of
+      scroll, .is-flush when the section below touches it) only took the rounding away where the header meets the card below (eg. the Libro de
+      Reclamaciones card): both now keep their rounded corners. A drawer open on mobile still sets its own corners (its rule is more specific).
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .header--floating {
+        border-bottom-left-radius: {{ section.settings.header_border_radius }}px !important;
+        border-bottom-right-radius: {{ section.settings.header_border_radius }}px !important;
+      }
     {%- endif -%}
   {%- endif -%}
 </style>
