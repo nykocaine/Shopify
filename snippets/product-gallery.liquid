@@ -49,6 +49,29 @@ This component is used to show the product gallery (used in product page and fea
         #shopify-section-{{ section.id }} .product-gallery__carousel > .product-gallery__media {
           scroll-snap-align: start;
         }
+
+        {%- comment -%}
+        Videos take the full width of the carousel (no peek of the next image while a video is showing). A grid gives every slide the same
+        column width, so on phones the carousel is laid out as a flex row instead: images keep the 93% width (the grid value above), videos 100%.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} .product-gallery__carousel {
+          display: flex;
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery__carousel > .product-gallery__media {
+          flex: none;
+          width: 93%;
+        }
+
+        @supports (width: round(down, 50%, 1px)) {
+          #shopify-section-{{ section.id }} .product-gallery__carousel > .product-gallery__media {
+            width: round(down, 93%, 1px);
+          }
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery__carousel > .product-gallery__media:is([data-media-type="video"], [data-media-type="external_video"]) {
+          width: 100%;
+        }
       {%- endunless -%}
     }
 
