@@ -1585,7 +1585,20 @@ var CarouselCaption = class extends HTMLElement {
 _CarouselCaption_instances = new WeakSet();
 updateCaption_fn = function(event) {
   const cell = event.detail.cell;
-  this.textContent = cell?.getAttribute("data-caption") || "";
+  const caption = cell?.getAttribute("data-caption") || "";
+  if (caption === this.textContent) {
+    return;
+  }
+  this.textContent = caption;
+  // A caption that shows up comes in with a soft reveal: it fades in while rising a few pixels and coming into focus (blur to sharp).
+  // Nothing animates when the new slide has no caption (the element is then empty and hidden), or for visitors who prefer reduced motion.
+  if (caption && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    this.getAnimations().forEach((animation) => animation.cancel());
+    this.animate([
+      { opacity: 0, transform: "translateY(6px)", filter: "blur(4px)" },
+      { opacity: 1, transform: "translateY(0)", filter: "blur(0)" }
+    ], { duration: 500, easing: "cubic-bezier(0.22, 1, 0.36, 1)" });
+  }
 };
 var CarouselSegments = class extends HTMLElement {
   connectedCallback() {
