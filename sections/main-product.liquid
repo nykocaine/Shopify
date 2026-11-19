@@ -823,7 +823,7 @@
         setting gives them, the strip (its margins and the thumbnails) is added on top.
         {%- endcomment -%}
         {%- assign mobile_strip_height = '0px' -%}
-        {%- if section.settings.mobile_controls == 'bar' and product.media.size > 1 -%}
+        {%- if section.settings.mobile_controls == 'bar' and product.media.size > 1 and section.settings.hide_mobile_thumbnails == false -%}
           {%- assign mobile_strip_height = 'var(--product-gallery-strip-total)' -%}
         {%- endif -%}
 
@@ -1019,6 +1019,7 @@
           desktop_layout: section.settings.desktop_media_layout,
           desktop_carousel_controls: section.settings.desktop_carousel_controls,
           mobile_controls: section.settings.mobile_controls,
+          hide_mobile_thumbnails: section.settings.hide_mobile_thumbnails,
           enable_media_autoplay: section.settings.enable_media_autoplay,
           enable_video_looping: section.settings.enable_video_looping,
           enable_image_zoom: section.settings.enable_image_zoom,
@@ -1628,6 +1629,14 @@
         }
       ],
       "default": "lines"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_mobile_thumbnails",
+      "label": "Hide thumbnails on mobile",
+      "info": "With the bar controls, hides the strip of thumbnails under the photo on phones and tablets. The caption and the dots stay. Desktop is not affected.",
+      "default": false,
+      "visible_if": "{{ section.settings.mobile_controls == 'bar' }}"
     },
     {
       "type": "checkbox",
