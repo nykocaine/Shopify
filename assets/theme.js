@@ -1020,6 +1020,12 @@ var ScrollCarousel = class extends HTMLElement {
     if (__privateGet(this, _targetIndex) > 0) {
       this.select(__privateGet(this, _targetIndex), { instant: true });
     }
+    // The slide marked to open first is hidden at this screen size (eg. the product's first image on desktop, shown in its own column there): the
+    // carousel opens on the first slide shown, and tells its controls (thumbnails, counter, caption) so they mark that one instead of the hidden one.
+    const initialCell = this.allCells.find((cell) => cell.classList.contains("is-initial"));
+    if (initialCell && this.cells.length > 0 && !this.cells.includes(initialCell)) {
+      requestAnimationFrame(() => this.dispatchEvent(new CustomEvent("carousel:change", { detail: { index: this.selectedIndex, cell: this.selectedCell } })));
+    }
     if (this.adaptiveHeight) {
       __privateMethod(this, _ScrollCarousel_instances, adaptHeight_fn).call(this);
     }
@@ -1311,7 +1317,10 @@ onResize_fn = function() {
   if (this._isScrolling) {
     return;
   }
-  if (this.selectedIndex !== __privateMethod(this, _ScrollCarousel_instances, calculateClosestIndexToAlignment_fn).call(this)) {
+  // Back on the selected slide whenever the carousel is not exactly on it any more - not only when another slide became the closest one: a
+  // change of size (images, fonts or the gallery height settling on load) could otherwise leave it stuck part way, half a slide off.
+  const selectedCell = this.selectedCell;
+  if (this.selectedIndex !== __privateMethod(this, _ScrollCarousel_instances, calculateClosestIndexToAlignment_fn).call(this) || selectedCell && Math.abs(this.scrollLeft - __privateMethod(this, _ScrollCarousel_instances, calculateLeftScroll_fn).call(this, selectedCell)) > 1) {
     this.select(this.selectedIndex, { instant: true });
   }
   if (this.adaptiveHeight) {
