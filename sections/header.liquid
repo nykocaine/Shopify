@@ -111,6 +111,16 @@
     }
   }
 
+  {%- comment -%}
+  Below 1000px the left side of the header (menu button + search) is a row of icons too, not menu links: it uses the same mobile spacing as
+  account and cart instead of "Menu items spacing", which is meant for the desktop menu links.
+  {%- endcomment -%}
+  @media screen and (max-width: 999px) {
+    #shopify-section-{{ section.id }} .header__primary-nav {
+      column-gap: var(--header-icons-gap);
+    }
+  }
+
 
   {%- comment -%}
   Same lateral bump as footer/reviews/faq - only the sides (header-padding-block is left alone,
