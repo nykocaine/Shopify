@@ -166,6 +166,47 @@
   }
 
   {%- comment -%}
+  Transparent -> solid as a paint stroke, not a fade: on pages with the transparent header, the header's own background stays transparent and its
+  solid color is a layer (::before) that unrolls from the top edge down to the bottom, like a roller painting it in one pass (scaleY from the top,
+  with a quick start and a soft landing). Going back to transparent the paint rolls back up and leaves the header from the bottom. The text and the
+  logo keep their delayed swap (--header-content-delay), so they flip about when the paint passes behind them. The layer uses the color scheme's own
+  background (fixed, so it does not vanish while it rolls back up), takes the header's rounded corners and sits behind its content (isolation).
+  Opening a drawer or a menu (the header turns solid then too) paints it the same way.
+  {%- endcomment -%}
+  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} .header {
+    --header-paint-duration: .65s;
+    --header-paint-ease: cubic-bezier(.76, 0, .24, 1);
+    background: transparent;
+    isolation: isolate;
+  }
+
+  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} .header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background-color: rgb({{ section.settings.color_scheme.settings.background.rgb }});
+    {%- if section.settings.color_scheme.settings.background_gradient != blank %}
+    background-image: {{ section.settings.color_scheme.settings.background_gradient }};
+    {%- endif %}
+    transform-origin: top;
+    transform: scaleY(1);
+    transition: transform var(--header-paint-duration) var(--header-paint-ease);
+    pointer-events: none;
+  }
+
+  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} .header:not(.is-solid, :has([open]))::before {
+    transform: scaleY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} .header::before {
+      transition: none;
+    }
+  }
+
+  {%- comment -%}
   Transparent header (over a first section that allows it, until it turns solid): the padding inside the header is the same on all four sides -
   the top and bottom take the side padding (--header-padding-inline), whatever "Header height padding" says. That setting only applies once the
   header turns solid (scrolled, or a drawer open), so changing it never changes the transparent header. The top and bottom padding animate with
@@ -196,8 +237,12 @@
   }
 
   {%- if section.settings.floating_header -%}
-    :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}:has(.header.is-solid)::after,
-    :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}:has(.header [open])::after {
+    {%- comment -%}
+    It is always there and unrolls from the top together with the header's paint layer (same scaleY, timing and curve as .header::before above),
+    instead of appearing at once when the header turns solid: appearing at once it filled the whole header with the page color before the paint
+    had passed, hiding the paint stroke.
+    {%- endcomment -%}
+    :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}::after {
       content: "";
       position: absolute;
       inset-inline: 0;
@@ -206,6 +251,19 @@
       background: rgb(var(--page-background));
       z-index: -1;
       pointer-events: none;
+      transform-origin: top;
+      transform: scaleY(1);
+      transition: transform .65s cubic-bezier(.76, 0, .24, 1);
+    }
+
+    :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}:has(.header:not(.is-solid, :has([open])))::after {
+      transform: scaleY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}::after {
+        transition: none;
+      }
     }
   {%- endif -%}
 
