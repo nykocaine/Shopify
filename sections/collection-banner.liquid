@@ -1,5 +1,12 @@
 {%- liquid
   assign image = section.settings.image | default: collection.image
+
+  # The "all products" collection (/collections/all) has no title of its own: Shopify gives it "Products", which is not shown on the banner.
+  # The heading stays for screen readers and search engines (sr-only), only the text on screen goes.
+  assign title_hidden_class = ''
+  if collection.handle == 'all' and collection.title == 'Products'
+    assign title_hidden_class = ' sr-only'
+  endif
   assign color_scheme = section.settings.color_scheme
 
   if image == blank
@@ -54,7 +61,7 @@
             {% assign text_alignment = section.settings.content_position | split: 'place-self-' | last | split: '-' | last %}
 
             <div class="prose prose-justify-{{ text_alignment }}">
-              <h1 class="{{ section.settings.collection_title_size }}">{{ collection.title }}</h1>
+              <h1 class="{{ section.settings.collection_title_size }}{{ title_hidden_class }}">{{ collection.title }}</h1>
     
               {%- if collection.description != blank and section.settings.show_description -%}
                 <div class="max-w-sm">
@@ -76,7 +83,7 @@
   
         <div class="{{ section.settings.content_position }}">
           <div class="prose prose-justify-{{ section.settings.content_position | split: '-' | last }}">
-            <h1 class="{{ section.settings.collection_title_size }}">{{ collection.title }}</h1>
+            <h1 class="{{ section.settings.collection_title_size }}{{ title_hidden_class }}">{{ collection.title }}</h1>
   
             {%- if collection.description != blank and section.settings.show_description -%}
               <div class="max-w-sm">
@@ -101,7 +108,7 @@
           <div class="content-box min-h-full">
             <div class="span-full {{ section.settings.content_position }}">
               <div class="prose prose-justify-{{ section.settings.content_position | split: '-' | last }} {{ section.settings.content_position }}">
-                <h1 class="{{ section.settings.collection_title_size }}">{{ collection.title }}</h1>
+                <h1 class="{{ section.settings.collection_title_size }}{{ title_hidden_class }}">{{ collection.title }}</h1>
       
                 {%- if collection.description != blank and section.settings.show_description -%}
                   <div class="max-w-sm">
