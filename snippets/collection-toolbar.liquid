@@ -46,7 +46,12 @@ access to filters.
   {%- endif -%}
 
   {%- if show_toolbar_faceting and section.settings.show_sort_by or show_toolbar_faceting and section.settings.show_filters and toolbar_source.filters.size > 0 -%}
-    {%- render 'collection-faceting-button', data_source: toolbar_source, filter_layout: toolbar_filter_layout, show_count: true, class: 'sm:hidden', context: 'mobile' -%}
+    {%- render 'collection-faceting-button', data_source: toolbar_source, filter_layout: toolbar_filter_layout, show_count: true, show_current_sort: true, class: 'sm:hidden', context: 'mobile' -%}
+  {%- endif -%}
+
+  {%- comment -%}Phones: the products count sits on the second row, between the sort and the view selector (main-collection.liquid){%- endcomment -%}
+  {%- if leading_content == blank and toolbar_count != blank -%}
+    <span class="collection__toolbar-count sm:hidden">{{ 'collection.products_count' | t: count: toolbar_count }}</span>
   {%- endif -%}
 
   <div class="vertically-separated-list">
@@ -57,18 +62,18 @@ access to filters.
       {%- endcomment -%}
       <div class="h-stack gap-3.5 sm:hidden">
         <collection-layout-selector-button class="collection__layout-selector">
-          <input type="radio" value="2" class="sr-only" name="mobile-items-per-row" id="mobile-items-per-row-2" {% if mobile_items_per_row != 1 %}checked{% endif %}>
-          <label for="mobile-items-per-row-2">
-            <span class="sr-only">Show two cards per row</span>
-            {%- render 'icon' with 'product-card-2x2' -%}
-          </label>
-        </collection-layout-selector-button>
-
-        <collection-layout-selector-button class="collection__layout-selector">
           <input type="radio" value="1" class="sr-only" name="mobile-items-per-row" id="mobile-items-per-row-1" {% if mobile_items_per_row == 1 %}checked{% endif %}>
           <label for="mobile-items-per-row-1">
             <span class="sr-only">Show one card per row</span>
             {%- render 'icon' with 'product-card-1x1' -%}
+          </label>
+        </collection-layout-selector-button>
+
+        <collection-layout-selector-button class="collection__layout-selector">
+          <input type="radio" value="2" class="sr-only" name="mobile-items-per-row" id="mobile-items-per-row-2" {% if mobile_items_per_row != 1 %}checked{% endif %}>
+          <label for="mobile-items-per-row-2">
+            <span class="sr-only">Show two cards per row</span>
+            {%- render 'icon' with 'product-card-2x2' -%}
           </label>
         </collection-layout-selector-button>
       </div>
