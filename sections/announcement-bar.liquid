@@ -340,7 +340,8 @@
                 {%- assign show_bar_arrows = false -%}
               {%- endif -%}
 
-              {%- if show_bar_arrows or section.settings.autoplay -%}
+              {%- comment -%}"Hide arrows" hides the whole set of controls: the arrows and the pause / play button. Auto-rotation keeps running.{%- endcomment -%}
+              {%- if show_bar_arrows -%}
                 <div class="announcement-bar__controls">
                   {%- if show_bar_arrows -%}
                     <carousel-prev-button aria-controls="{{ carousel_id }}">
@@ -536,7 +537,7 @@
       "type": "checkbox",
       "id": "hide_arrows",
       "label": "t:sections.announcement_bar.hide_arrows",
-      "info": "If you have more than one message and auto-rotate is off, hiding the arrows leaves no visible way to see the other messages (aside from swiping on touch devices).",
+      "info": "Also hides the pause / play button. If you have more than one message and auto-rotate is off, this leaves no visible way to see the other messages (aside from swiping on touch devices).",
       "default": false,
       "visible_if": "{{ section.settings.display_mode == 'original' }}"
     },
