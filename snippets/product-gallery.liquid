@@ -76,8 +76,7 @@ This component is used to show the product gallery (used in product page and fea
     so they share one baseline and font-size, inherited from the body rather than set here. :empty:hidden
     keeps a slide without alt text from leaving a dangling gap after the counter.
 
-    The controls over the photo (this bar, the arrows and the zoom button) are white with mix-blend-mode: difference, so
-    every pixel behind them inverts: they read on light and dark photos alike, with nothing measured or tagged.
+    The controls over the photo (this bar and the zoom button) are black over light photos and white over dark ones (measured, see below).
     {%- endcomment -%}
     {%- comment -%}
     .h-stack (theme.css) defaults align-items to center, which centers the counter against the full
@@ -101,11 +100,13 @@ This component is used to show the product gallery (used in product page and fea
     }
 
     {%- comment -%}
-    The caption bar is one blended group (white, inverted against the photo behind it).
+    The caption over the photo: black over a light photo, white over a dark one (the brightness behind it is measured by <product-gallery>,
+    assets/theme.js, updateContrast). It used to be white with mix-blend-mode: difference, which made the phone recompute the blend on every
+    frame while the photos moved under it, and the swipe stuttered - a plain color costs nothing while scrolling.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .product-gallery__top-bar {
-      color: #fff;
-      mix-blend-mode: difference;
+      color: #000;
+      transition: color .2s ease;
     }
 
     {%- comment -%}
@@ -114,7 +115,7 @@ This component is used to show the product gallery (used in product page and fea
     grey the difference blend gives on mid tones. On light areas the difference blend above stays, which gives black.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .product-gallery__top-bar.is-dark-image {
-      mix-blend-mode: normal;
+      color: #fff;
     }
 
     {%- comment -%}No padding or margin of its own, and the empty space the line height leaves above the first line is trimmed (text-box), so the text itself starts exactly at the inner padding line{%- endcomment -%}
@@ -236,7 +237,6 @@ This component is used to show the product gallery (used in product page and fea
         margin: 0;
         padding-block: var(--container-gutter);
         color: inherit;
-        mix-blend-mode: normal;
       }
 
       {%- comment -%}The caption row carries the .align-self-center utility (it centers it in the bar): under the image it starts at the top, at the padding line{%- endcomment -%}
@@ -287,17 +287,16 @@ This component is used to show the product gallery (used in product page and fea
   (padding-inline: var(--container-gutter), inset-block-start: 1rem, bar_css above) mirrored to the bottom
   corner, instead of theme.css's own 8px/-12px offsets. It keeps the gallery's inner padding (the container gutter) from the bottom and the end edges, like every other element over the photo.
 
-  White with mix-blend-mode: difference, like the bar and the arrows (it blends with the photo behind it).
+  Black over a light photo, white over a dark one, like the caption (no blend mode: it made the swipe stutter on phones, see the caption above).
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .product-zoom-button {
-    color: #fff;
-    mix-blend-mode: difference;
+    color: #000;
     inset-inline-end: var(--container-gutter);
     inset-block-end: var(--container-gutter);
   }
 
   #shopify-section-{{ section.id }} product-gallery.is-dark-image .product-zoom-button {
-    mix-blend-mode: normal;
+    color: #fff;
   }
 
   {%- comment -%}
