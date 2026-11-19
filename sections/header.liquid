@@ -913,7 +913,11 @@
                   {%- render 'header-cart-icon', mobile_width: section.settings.mobile_icon_size, width: section.settings.desktop_icon_size -%}
                 </span>
               {%- else -%}
-                <span class="subheading">{{ section.settings.cart_text }} <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count></span>
+                {%- comment -%}Count as a number: desktop shows "Cart (2)" as text; phones keep the cart icon, as with the dot (the bag fills while the cart has items){%- endcomment -%}
+                <span class="subheading md-max:hidden">{{ section.settings.cart_text }} <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count></span>
+                <span class="md:hidden">
+                  {%- render 'header-cart-icon', mobile_width: section.settings.mobile_icon_size, width: section.settings.desktop_icon_size -%}
+                </span>
               {%- endif -%}
               <span class="sr-only">{{ section.settings.cart_text }}</span>
             {%- else -%}
