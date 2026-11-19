@@ -429,13 +429,36 @@ if (!window.customElements.get('read-more-match-height')) {
               onToggleClick() {
                 var expanding = !this.hasAttribute('data-expanded');
 
+                clearTimeout(this.collapseTimer);
+                if (this.onCollapseEnd) this.content.removeEventListener('transitionend', this.onCollapseEnd);
+
                 if (expanding) {
+                  this.removeAttribute('data-collapsing');
                   this.pinGallery();
                   this.content.style.maxHeight = this.content.scrollHeight + 'px';
                   this.setAttribute('data-expanded', '');
                 } else {
+                  // "Show less": the gallery stays pinned at its closed height (data-collapsing, see the style block of this snippet) while the
+                  // card animates back down. Released at once, the gallery was fitted to the card while the card was still at its open height,
+                  // so it flashed as tall as the whole open card and then shrank with it.
+                  this.setAttribute('data-collapsing', '');
                   this.removeAttribute('data-expanded');
                   this.content.style.maxHeight = this.collapsedHeight + 'px';
+
+                  var release = function () {
+                    clearTimeout(this.collapseTimer);
+                    this.content.removeEventListener('transitionend', this.onCollapseEnd);
+                    this.removeAttribute('data-collapsing');
+                  }.bind(this);
+
+                  this.onCollapseEnd = function (event) {
+                    if (event.target === this.content && event.propertyName === 'max-height') release();
+                  }.bind(this);
+
+                  this.content.addEventListener('transitionend', this.onCollapseEnd);
+                  // Fallback when no transition runs (reduced motion, no change of height...): longer than the FAQ's motion duration
+                  var duration = parseFloat(getComputedStyle(this.content).transitionDuration) || 0;
+                  this.collapseTimer = setTimeout(release, duration * 1000 + 100);
                 }
 
                 this.toggle.setAttribute('aria-expanded', String(expanding));
@@ -864,8 +887,8 @@ if (!window.customElements.get('read-more-match-height')) {
               }
             {%- endif -%}
 
-            {%- comment -%}"Show more" open: the gallery keeps the height it had with the card closed (--faq-gallery-height, set by the script above), only the card grows.{%- endcomment -%}
-            #{{ text_image_id }}:not([data-natural]):has(read-more-match-height[data-expanded]) #{{ media_wrapper_id }} {
+            {%- comment -%}"Show more" open (and while "Show less" animates the card back down, data-collapsing): the gallery keeps the height it had with the card closed (--faq-gallery-height, set by the script above), only the card changes.{%- endcomment -%}
+            #{{ text_image_id }}:not([data-natural]):has(read-more-match-height:is([data-expanded], [data-collapsing])) #{{ media_wrapper_id }} {
               align-self: start;
               height: var(--faq-gallery-height);
             }
