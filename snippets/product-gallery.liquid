@@ -533,7 +533,12 @@ only way to do it on Shopify right now.
   if product != blank
     assign media_count = gallery_media.size
     assign default_media_index = 0
-    assign default_media_caption = effective_default_media.alt | remove: '!dark' | remove: '!light' | split: '#' | first | strip | escape
+    # Shopify falls back to the product title when a photo has no alt text: that is not a caption, so nothing is shown then
+    assign default_media_caption = effective_default_media.alt | remove: '!dark' | remove: '!light' | split: '#' | first | strip
+    if default_media_caption == product.title
+      assign default_media_caption = ''
+    endif
+    assign default_media_caption = default_media_caption | escape
 
     for media in gallery_media
       if filtered_indexes contains media.position
@@ -576,7 +581,14 @@ only way to do it on Shopify right now.
             should never show that raw suffix. Leftover "!dark"/"!light" markers (an old manual tag, no longer used) are
             also stripped.
             {%- endcomment -%}
-            <div class="product-gallery__media snap-center {% if media == effective_default_media %}is-initial{% endif %} {% if enable_image_zoom and desktop_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" data-caption="{{ media.alt | remove: '!dark' | remove: '!light' | split: '#' | first | strip | escape }}" role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: gallery_media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
+            {%- liquid
+              # No caption when the photo has no alt text of its own (Shopify then gives the product title as its alt)
+              assign media_caption = media.alt | remove: '!dark' | remove: '!light' | split: '#' | first | strip
+              if media_caption == product.title
+                assign media_caption = ''
+              endif
+            -%}
+            <div class="product-gallery__media snap-center {% if media == effective_default_media %}is-initial{% endif %} {% if enable_image_zoom and desktop_layout contains 'grid' and media.media_type == 'image' %}relative{% endif %}" data-media-type="{{ media.media_type }}" data-media-id="{{ media.id }}" data-caption="{{ media_caption | escape }}" role="group" aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: gallery_media.size }}" {% if filtered_indexes contains media.position %}hidden{% endif %}>
               {%- if effective_default_media == media -%}
                 {%- assign preload = true -%}
               {%- else -%}
