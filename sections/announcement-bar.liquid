@@ -74,6 +74,19 @@
       }
 
       {%- comment -%}
+      Vertical centering of the text: the font (Swiss) leaves more room under the letters than above them inside its line, so with equal
+      paddings the capitals sat about 4px higher than centered (13px above, 17px below at 15px). The line is trimmed to the capitals
+      (text-box) and the room it took is given back as equal space above and below the capitals ((1lh - 1cap) / 2 each): the capitals are
+      exactly centered and the bar keeps the same height. Only where the browser can trim the line; elsewhere nothing changes.
+      {%- endcomment -%}
+      @supports (text-box: trim-both cap alphabetic) {
+        #shopify-section-{{ section.id }} .announcement-bar .prose > p {
+          text-box: trim-both cap alphabetic;
+          padding-block: calc((1lh - 1cap) / 2);
+        }
+      }
+
+      {%- comment -%}
       The gap above the bar is half of the bar's own height (one text line plus its two vertical paddings, halved). It is a margin
       of the section wrapper, so it sits OUTSIDE the section: the editor's blue outline hugs the bar and no space is left inside it.
       {%- endcomment -%}
