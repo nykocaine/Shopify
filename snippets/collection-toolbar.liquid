@@ -41,17 +41,15 @@ access to filters.
         {%- endfor -%}
       </div>
     </nav>
-  {%- else -%}
-    <span class="subheading sm-max:hidden">{{ 'collection.products_count' | t: count: toolbar_count }}</span>
   {%- endif -%}
 
   {%- if show_toolbar_faceting and section.settings.show_sort_by or show_toolbar_faceting and section.settings.show_filters and toolbar_source.filters.size > 0 -%}
     {%- render 'collection-faceting-button', data_source: toolbar_source, filter_layout: toolbar_filter_layout, show_count: true, show_current_sort: true, class: 'sm:hidden', context: 'mobile' -%}
   {%- endif -%}
 
-  {%- comment -%}Phones: the products count sits on the second row, between the sort and the view selector (main-collection.liquid){%- endcomment -%}
+  {%- comment -%}The products count sits on the second row, between the sort and the view selector (main-collection.liquid){%- endcomment -%}
   {%- if leading_content == blank and toolbar_count != blank -%}
-    <span class="collection__toolbar-count sm:hidden">{{ 'collection.products_count' | t: count: toolbar_count }}</span>
+    <span class="collection__toolbar-count">{{ 'collection.products_count' | t: count: toolbar_count }}</span>
   {%- endif -%}
 
   <div class="vertically-separated-list">
@@ -91,7 +89,7 @@ access to filters.
           <input type="radio" value="thumbnails" class="sr-only" name="desktop-layout" id="desktop-layout-thumbnails" {% if desktop_layout_mode == 'thumbnails' %}checked{% endif %}>
           <label for="desktop-layout-thumbnails">
             <span class="sr-only">Show cards smaller</span>
-            {%- render 'icon' with 'product-card-4x4' -%}
+            {%- render 'icon' with 'product-card-3x2' -%}
           </label>
         </collection-layout-selector-button>
       </div>
@@ -102,7 +100,7 @@ access to filters.
         <hr class="divider sm-max:hidden">
       {%- endif -%}
 
-      {%- render 'collection-faceting-button', data_source: toolbar_source, filter_layout: toolbar_filter_layout, class: 'sm-max:hidden', context: 'desktop' -%}
+      {%- render 'collection-faceting-button', data_source: toolbar_source, filter_layout: toolbar_filter_layout, show_current_sort: true, class: 'sm-max:hidden', context: 'desktop' -%}
     {%- endif -%}
   </div>
 </div>
