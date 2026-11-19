@@ -6,6 +6,7 @@ This component is used to show the product gallery (used in product page and fea
 @param {string} [desktop_layout] - the layout on desktop (can be "grid", "grid_half", "grid_half_highlight_first" or "carousel")
 @param {string} [desktop_carousel_controls] - when desktop layout is set to "carousel", the controls to show (can be "dots", "lines", "numbers", "thumbnails_under", "thumbnails_over", "thumbnails_left" or "bar")
 @param {string} [mobile_controls] - the controls to show on mobile (can be "lines", "numbers", "dots", "thumbnails", "bar" or "none")
+@param {boolean} [hide_mobile_thumbnails] - with "bar" mobile controls, leaves out the thumbnails strip under the photo on phones (the caption and the dots stay)
 @param {boolean} [enable_media_autoplay] - if set to true videos are autoplayed when switched to
 @param {boolean} [enable_video_looping] - if set to true videos automatically loop when finished
 @param {boolean} [enable_image_zoom] - if set to true the gallery allow zoom
@@ -786,7 +787,7 @@ only way to do it on Shopify right now.
         The thumbnails strip is NOT inside the floating-controls wrapper above: the theme pins everything in there over the bottom of the photo (absolute /
         sticky, theme.css "product-gallery__controls-floating"), which put the thumbnails ON the photo. Here it is a plain item of the image list.
         {%- endcomment -%}
-        {%- if mobile_controls == 'bar' -%}
+        {%- if mobile_controls == 'bar' and hide_mobile_thumbnails != true -%}
           <div class="contents md:hidden">
             {{- mobile_thumbs_strip -}}
           </div>
