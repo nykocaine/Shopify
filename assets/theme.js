@@ -1176,6 +1176,7 @@ updateTargetIndex_fn = function(newValue) {
  * -------------------------------------------------------------------------------------------------------------------
  */
 onScroll_fn = function() {
+  this._isScrolling = true;
   if (__privateGet(this, _progressBar)) {
     const progress = this.scrollLeft / (this.scrollWidth - this.clientWidth);
     __privateGet(this, _progressBar).style.width = `${progress * 100}%`;
@@ -1214,6 +1215,7 @@ onScroll_fn = function() {
   __privateMethod(this, _ScrollCarousel_instances, updateTargetIndex_fn).call(this, __privateMethod(this, _ScrollCarousel_instances, calculateClosestIndexToAlignment_fn).call(this));
 };
 onScrollEnd_fn = function() {
+  this._isScrolling = false;
   __privateSet(this, _hasPendingProgrammaticScroll, false);
   if (!__privateGet(this, _isDragging)) {
     this.style.removeProperty("scroll-snap-type");
@@ -1230,9 +1232,13 @@ calculateLeftScroll_fn = function(cell) {
     case "start":
       scrollLeft = document.dir === "ltr" ? cell.offsetLeft - (parseInt(getComputedStyle(this).scrollPaddingInlineStart) || 0) - (parseInt(getComputedStyle(this).marginInlineStart) || 0) - (parseInt(getComputedStyle(this).paddingInlineStart) || 0) : cell.offsetLeft + cell.offsetWidth - this.clientWidth + (parseInt(getComputedStyle(this).scrollPaddingInlineStart) || 0) + (parseInt(getComputedStyle(this).marginInlineStart) || 0) + (parseInt(getComputedStyle(this).paddingInlineStart) || 0);
       break;
-    case "center":
-      scrollLeft = Math.round(cell.offsetLeft - this.clientWidth / 2 + cell.clientWidth / 2);
+    case "center": {
+      // Sub-pixel exact (bounding boxes, not the rounded offsetLeft / clientWidth): cells are rarely a whole number of pixels wide (eg. a
+      // 342.5px wide gallery), and a scroll position rounded to the pixel left a 1px sliver of the next or previous slide showing at the edge.
+      const carouselRect = this.getBoundingClientRect(), cellRect = cell.getBoundingClientRect();
+      scrollLeft = this.scrollLeft + (cellRect.left - carouselRect.left) + cellRect.width / 2 - this.clientWidth / 2;
       break;
+    }
     case "end":
       scrollLeft = document.dir === "ltr" ? cell.offsetLeft + cell.offsetWidth - this.clientWidth + (parseInt(getComputedStyle(this).scrollPaddingInlineEnd) || 0) + (parseInt(getComputedStyle(this).marginInlineEnd) || 0) + (parseInt(getComputedStyle(this).paddingInlineEnd) || 0) : cell.offsetLeft - (parseInt(getComputedStyle(this).scrollPaddingInlineEnd) || 0) - (parseInt(getComputedStyle(this).marginInlineEnd) || 0) - (parseInt(getComputedStyle(this).paddingInlineEnd) || 0);
       break;
@@ -1300,6 +1306,11 @@ onMouseUp_fn = function(event) {
  * -------------------------------------------------------------------------------------------------------------------
  */
 onResize_fn = function() {
+  // Not while the visitor is swiping (or the carousel is still moving): a resize then (on phones the address bar showing / hiding, a font or
+  // image loading) used to snap the carousel back to the slide it started from, which felt like the gallery freezing mid-swipe.
+  if (this._isScrolling) {
+    return;
+  }
   if (this.selectedIndex !== __privateMethod(this, _ScrollCarousel_instances, calculateClosestIndexToAlignment_fn).call(this)) {
     this.select(this.selectedIndex, { instant: true });
   }
@@ -1349,7 +1360,10 @@ var CarouselNavigation = class extends HTMLElement {
     __privateSet(this, _abortController2, new AbortController());
     __privateSet(this, _allItems, Array.from(this.querySelectorAll("button")));
     __privateGet(this, _allItems).forEach((button) => button.addEventListener("click", () => this.onButtonClicked(this.items.indexOf(button)), { signal: __privateGet(this, _abortController2).signal }));
-    this.carousel.addEventListener("carousel:change", (event) => this.onNavigationChange(event.detail.index), { signal: __privateGet(this, _abortController2).signal });
+    this.carousel.addEventListener("carousel:change", (event) => this.onNavigationChange(event.detail.index, { align: false }), { signal: __privateGet(this, _abortController2).signal });
+    // The strip is scrolled to the marked thumbnail once the carousel has stopped moving, not on every change while swiping: two scroll
+    // containers moving at the same time (the photos under the finger and the thumbnails smooth-scrolling) made the swipe stutter on phones.
+    this.carousel.addEventListener("carousel:settle", (event) => this.onNavigationChange(event.detail.index), { signal: __privateGet(this, _abortController2).signal });
     this.carousel.addEventListener("carousel:filter", __privateMethod(this, _CarouselNavigation_instances, onCarouselFilter_fn).bind(this), { signal: __privateGet(this, _abortController2).signal });
     // Crossing a breakpoint can show / hide items with CSS (see items): the marked one is recomputed against the new set.
     window.addEventListener("resize", () => {
@@ -1384,9 +1398,9 @@ var CarouselNavigation = class extends HTMLElement {
       this.onNavigationChange(newIndex);
     }
   }
-  onNavigationChange(newIndex) {
+  onNavigationChange(newIndex, { align = true } = {}) {
     this.items.forEach((button, index) => button.setAttribute("aria-current", newIndex === index ? "true" : "false"));
-    if (this.hasAttribute("align-selected") && (this.scrollWidth !== this.clientWidth || this.scrollHeight !== this.clientHeight)) {
+    if (align && this.items[newIndex] && this.hasAttribute("align-selected") && (this.scrollWidth !== this.clientWidth || this.scrollHeight !== this.clientHeight)) {
       this.scrollTo({
         left: this.items[newIndex].offsetLeft - this.clientWidth / 2 + this.items[newIndex].clientWidth / 2,
         top: this.items[newIndex].offsetTop - this.clientHeight / 2 + this.items[newIndex].clientHeight / 2,
