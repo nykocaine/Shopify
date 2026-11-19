@@ -161,6 +161,46 @@
       margin-inline: calc(-1 * var(--collection-toolbar-padding-inline));
     }
 
+    {%- comment -%}
+    Fixed columns, whatever is shown: sort (or filters) in the first, count in the second, view selector in the last. So with sort turned off, or no
+    view selector, the rest still ends flush with the right edge instead of leaving an empty column and its gap there.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .collection__toolbar > :not(.collection__toolbar-links, .collection__toolbar-count, .vertically-separated-list) {
+      grid-column: 1;
+      justify-self: start;
+    }
+
+    #shopify-section-{{ section.id }} .collection__toolbar-count {
+      grid-column: 2;
+    }
+
+    #shopify-section-{{ section.id }} .collection__toolbar > .vertically-separated-list {
+      grid-column: 3;
+    }
+
+    #shopify-section-{{ section.id }} .collection__toolbar:not(:has(.collection__layout-selector)) {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    #shopify-section-{{ section.id }} .collection__toolbar:not(:has(.collection__layout-selector)) > .vertically-separated-list {
+      display: none;
+    }
+
+    {%- comment -%}
+    Small phones (under 380px, eg. iPhone SE): the products count would squeeze the sort down to a letter or two, so it is left out and the sort
+    keeps its full name.
+    {%- endcomment -%}
+    @media screen and (max-width: 379px) {
+      #shopify-section-{{ section.id }} .collection__toolbar:has(.collection__sort-current) .collection__toolbar-count {
+        display: none;
+      }
+    }
+
+    {%- comment -%}The "Filter (34)" button already shows the products count: no second count next to it.{%- endcomment -%}
+    #shopify-section-{{ section.id }} .collection__toolbar:has(> button[aria-controls="facets-drawer"]) .collection__toolbar-count {
+      display: none;
+    }
+
     #shopify-section-{{ section.id }} .collection__toolbar > :has(.collection__sort-current),
     #shopify-section-{{ section.id }} .collection__toolbar > :has(.collection__sort-current) > button {
       min-width: 0;
