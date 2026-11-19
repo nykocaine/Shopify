@@ -175,6 +175,40 @@
     padding-block: var(--header-padding-inline) !important;
   }
 
+  {%- comment -%}
+  Pages with the transparent header: the header takes no room in the page by having a section of zero height (the header shows on top of it,
+  overflowing), instead of a negative bottom margin as tall as the header (theme.css). That margin followed --header-height, which JavaScript
+  measures one frame late, so while the header changed height (transparent <-> solid, the padding animates) the margin lagged behind it and the
+  section under the header moved back and forth - a flicker. Now nothing below depends on the header's height. The hide-on-scroll slide, which
+  moved the section up by its own height (100%), moves it by the header's height instead. When the header floats, the page background behind it
+  (theme.css paints it on the section, now empty) is drawn by ::after once it is solid, so the corners keep the page color while scrolling.
+  {%- endcomment -%}
+  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} {
+    block-size: 0;
+  }
+
+  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} .header {
+    margin-block-end: 0;
+  }
+
+  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}:has(.header.is-hidden) {
+    transform: translateY(calc(-1 * var(--header-height, 0px) - var(--header-stuck-gap, 0px) - var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px)));
+  }
+
+  {%- if section.settings.floating_header -%}
+    :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}:has(.header.is-solid)::after,
+    :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}:has(.header [open])::after {
+      content: "";
+      position: absolute;
+      inset-inline: 0;
+      inset-block-start: 0;
+      height: var(--header-height, 0px);
+      background: rgb(var(--page-background));
+      z-index: -1;
+      pointer-events: none;
+    }
+  {%- endif -%}
+
   {%- if section.settings.floating_header -%}
     {%- comment -%}
     Floating header corners: at rest (top of the page, not scrolled) the bottom corners are as round as the top ones; once
