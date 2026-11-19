@@ -618,6 +618,14 @@ height-observer {
   justify-self: stretch;
   justify-content: space-between;
 }
+
+/* Product page buy button (snippets/buy-buttons.liquid): label, dash and price centered together as one line, instead of pinned to opposite
+   ends. Before and after the shadow root of button-content is attached (see above), so both the host and its content part. */
+.buy-buttons__cta--centered .button__content,
+.buy-buttons__cta--centered .button__content::part(content) {
+  justify-content: center;
+  column-gap: .5rem;
+}
 .button__content::part(content) {
   align-items: center;
   column-gap: .75rem;
