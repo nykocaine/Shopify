@@ -24,12 +24,12 @@
     --header-is-sticky: {% if section.settings.enable_sticky %}1{% else %}0{% endif %};
     --header-is-visible: 1;
     /* Line thickness (in real pixels) of the header icons: the icon stroke setting scaled by how big the header icons are drawn
-       (16px phones, Desktop icon size from 700px). The control icons (arrows, zoom, close...) draw their line with exactly this, see
+       ("Mobile icon size" on phones, "Desktop icon size" from 700px). The control icons (arrows, zoom, close...) draw their line with exactly this, see
        .icon--control in theme.css, so they have the same thickness as the header icons everywhere. */
-    --header-icon-line-width: {{ settings.icon_stroke_width }}px;
-    /* Width of the header icons (16px on phones, "Desktop icon size" from 700px): other parts of the page that want icons of the same size as the
+    --header-icon-line-width: {{ settings.icon_stroke_width | times: section.settings.mobile_icon_size | divided_by: 16.0 }}px;
+    /* Width of the header icons ("Mobile icon size" on phones, "Desktop icon size" from 700px): other parts of the page that want icons of the same size as the
        header's (eg. the announcement bar's controls) read it from here. */
-    --header-icon-size: 16px;
+    --header-icon-size: {{ section.settings.mobile_icon_size }}px;
     {%- if section.settings.transparent_logo != blank %}
     /* The transparent-header logo, shared with videos (media-zoom-style.liquid draws it in their bottom-left corner). Defined here,
        on :root, because the header is the one place guaranteed to have this setting in scope on every page. */
@@ -508,6 +508,16 @@
   }
 
   {%- comment -%}
+  The menu button's two lines are 1rem wide in theme.css (the old fixed 16px phone icon size): on phones they follow "Mobile icon size", so the menu
+  button keeps the same width as the search, account and cart icons next to it.
+  {%- endcomment -%}
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .header__hamburger > * {
+      width: {{ section.settings.mobile_icon_size }}px;
+    }
+  }
+
+  {%- comment -%}
   Cart count as a number (when "Show cart count as a dot" is off): the icon and the count are laid out as one row,
   vertically centered on each other, with a fixed small gap, instead of a number floating at the icon's baseline. The
   count is smaller than the body text, with a line height of 1 and tabular digits so it neither lifts the row nor
@@ -692,7 +702,7 @@
         {%- if section.settings.mobile_layout == 'logo_center_navigation_split' -%}
           <a href="{{ routes.search_url }}" class="header__search-link tap-area md:hidden" aria-controls="search-drawer">
             <span class="sr-only">{{ 'header.general.search' | t }}</span>
-            {%- render 'icon' with 'search', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+            {%- render 'icon' with 'search', mobile_width: section.settings.mobile_icon_size, width: section.settings.desktop_icon_size -%}
           </a>
         {%- endif -%}
 
@@ -840,12 +850,12 @@
                 {%- if section.settings.show_icons_text -%}
                   <span class="subheading md-max:hidden">{{ section.settings.account_text }}</span>
                   <span class="md:hidden">
-                    {%- render 'icon' with 'account', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+                    {%- render 'icon' with 'account', mobile_width: section.settings.mobile_icon_size, width: section.settings.desktop_icon_size -%}
                   </span>
                   <span class="sr-only">{{ section.settings.account_text }}</span>
                 {%- else -%}
                   <span class="sr-only">{{ 'header.general.login' | t }}</span>
-                  {%- render 'icon' with 'account', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+                  {%- render 'icon' with 'account', mobile_width: section.settings.mobile_icon_size, width: section.settings.desktop_icon_size -%}
                 {%- endif -%}
               </a>
             {%- endif -%}
@@ -856,7 +866,7 @@
           <news-modal-button class="contents">
             <button class="tap-area" aria-controls="news-modal" aria-expanded="false">
               <span class="sr-only">{{ 'header.general.news_modal' | t }}</span>
-              {%- render 'icon' with 'bell', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+              {%- render 'icon' with 'bell', mobile_width: section.settings.mobile_icon_size, width: section.settings.desktop_icon_size -%}
             </button>
           </news-modal-button>
         </li>
@@ -866,12 +876,12 @@
             {%- if section.settings.show_icons_text -%}
               <span class="subheading md-max:hidden">{{ section.settings.search_text }}</span>
                <span class="md:hidden">
-                {%- render 'icon' with 'search', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+                {%- render 'icon' with 'search', mobile_width: section.settings.mobile_icon_size, width: section.settings.desktop_icon_size -%}
               </span>
               <span class="sr-only">{{ section.settings.search_text }}</span>
             {%- else -%}
               <span class="sr-only">{{ 'header.general.search' | t }}</span>
-              {%- render 'icon' with 'search', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+              {%- render 'icon' with 'search', mobile_width: section.settings.mobile_icon_size, width: section.settings.desktop_icon_size -%}
             {%- endif -%}
           </a>
         </li>
@@ -888,7 +898,7 @@
             {%- else -%}
               <a href="{{ routes.account_login_url }}" class="block tap-area">
                 <span class="sr-only">{{ 'header.general.login' | t }}</span>
-                {%- render 'icon' with 'account', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+                {%- render 'icon' with 'account', mobile_width: section.settings.mobile_icon_size, width: section.settings.desktop_icon_size -%}
               </a>
             {%- endif -%}
           </li>
@@ -900,7 +910,7 @@
               {%- if section.settings.show_cart_count_as_dot -%}
                 <span class="subheading md-max:hidden">{{ section.settings.cart_text }}</span>
                 <span class="md:hidden">
-                  {%- render 'header-cart-icon', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+                  {%- render 'header-cart-icon', mobile_width: section.settings.mobile_icon_size, width: section.settings.desktop_icon_size -%}
                 </span>
               {%- else -%}
                 <span class="subheading">{{ section.settings.cart_text }} <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count></span>
@@ -908,7 +918,7 @@
               <span class="sr-only">{{ section.settings.cart_text }}</span>
             {%- else -%}
               <span class="sr-only">{{ 'header.general.cart' | t }}</span>
-              {%- render 'header-cart-icon', mobile_width: 16, width: section.settings.desktop_icon_size -%}
+              {%- render 'header-cart-icon', mobile_width: section.settings.mobile_icon_size, width: section.settings.desktop_icon_size -%}
               {%- unless section.settings.show_cart_count_as_dot -%}
                 <cart-count class="header__cart-count-text">(<span>{{ cart.item_count }}</span>)</cart-count>
               {%- endunless -%}
@@ -1282,6 +1292,16 @@
       "min": 16,
       "max": 28,
       "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "mobile_icon_size",
+      "label": "t:sections.header.mobile_icon_size",
+      "min": 14,
+      "max": 28,
+      "step": 1,
       "unit": "px",
       "default": 16
     },
