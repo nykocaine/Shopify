@@ -141,7 +141,10 @@ Renders a single media. This snippet can be used for product media, but also for
       {%- else -%}
         <template>
           {%- liquid
-            if media.host == 'youtube'
+            # controls: false hides YouTube's controls bar too (eg. product gallery videos); otherwise the player keeps its controls
+            if media.host == 'youtube' and controls == false
+              echo media | external_video_url: enablejsapi: true, loop: loop, mute: autoplay, autoplay: true, controls: 0, playsinline: 1, rel: 0 | external_video_tag
+            elsif media.host == 'youtube'
               echo media | external_video_url: enablejsapi: true, loop: loop, mute: autoplay, autoplay: true | external_video_tag
             elsif media.host == 'vimeo'
               echo media | external_video_url: autopause: true, loop: loop, background: autoplay, muted: autoplay, autoplay: true | external_video_tag

@@ -51,8 +51,10 @@ This component is used to show the product gallery (used in product page and fea
         }
 
         {%- comment -%}
-        Videos take the full width of the carousel (no peek of the next image while a video is showing). A grid gives every slide the same
-        column width, so on phones the carousel is laid out as a flex row instead: images keep the 93% width (the grid value above), videos 100%.
+        Only the first slide peeks: it takes 93% of the gallery width, so the start of the second one shows at the right edge and it reads as
+        something to swipe. Every other slide (and every video, even when it is the first one) takes the full width, so once the visitor
+        has scrolled nothing peeks anymore. A grid gives every slide the same column width, so on phones the carousel is laid out as a flex
+        row instead.
         {%- endcomment -%}
         #shopify-section-{{ section.id }} .product-gallery__carousel {
           display: flex;
@@ -60,11 +62,15 @@ This component is used to show the product gallery (used in product page and fea
 
         #shopify-section-{{ section.id }} .product-gallery__carousel > .product-gallery__media {
           flex: none;
+          width: 100%;
+        }
+
+        #shopify-section-{{ section.id }} .product-gallery__carousel > .product-gallery__media:nth-child(1 of :not([hidden])) {
           width: 93%;
         }
 
         @supports (width: round(down, 50%, 1px)) {
-          #shopify-section-{{ section.id }} .product-gallery__carousel > .product-gallery__media {
+          #shopify-section-{{ section.id }} .product-gallery__carousel > .product-gallery__media:nth-child(1 of :not([hidden])) {
             width: round(down, 93%, 1px);
           }
         }
@@ -74,6 +80,11 @@ This component is used to show the product gallery (used in product page and fea
         }
       {%- endunless -%}
     }
+
+  {%- comment -%}Embedded YouTube/Vimeo players in the gallery can't be touched: no hover overlay or controls show up, and swipes go to the carousel{%- endcomment -%}
+  #shopify-section-{{ section.id }} .product-gallery__media video-media > iframe {
+    pointer-events: none;
+  }
 
   {%- if move_to_second_media_id != blank -%}
     {%- comment -%}
@@ -542,7 +553,7 @@ only way to do it on Shopify right now.
   endif
 %}
 
-<product-gallery id="product-gallery-{{ product_gallery_carousel_id }}" class="product-gallery {{ class }}" form="{{ product_form_id }}" filtered-indexes="{{ filtered_indexes | json }}" {% if enable_media_autoplay %}autoplay-media{% endif %} {% if enable_image_zoom %}allow-zoom="{{ max_image_zoom_level }}" zoom-color-scheme-id="{{ settings.default_color_scheme.id }}"{% endif %}>
+<product-gallery id="product-gallery-{{ product_gallery_carousel_id }}" class="product-gallery {{ class }}" form="{{ product_form_id }}" filtered-indexes="{{ filtered_indexes | json }}" autoplay-media {% if enable_image_zoom %}allow-zoom="{{ max_image_zoom_level }}" zoom-color-scheme-id="{{ settings.default_color_scheme.id }}"{% endif %}>
   <div class="product-gallery__image-list">
     {%- comment -%}
     ----------------------------------------------------------------------------------------------------------------------
@@ -576,7 +587,12 @@ only way to do it on Shopify right now.
               NOTE: for the product gallery, the autoplay does not work in a similar way. It is always false at the product level,
               and the product-gallery component itself will autoplay (if needed)
               {%- endcomment -%}
-              {%- render 'media', product: product, media: media, sizes: sizes, preload: preload, controls: true, playsinline: true, muted: enable_media_autoplay, loop: enable_video_looping, group: 'product' -%}
+              {%- comment -%}
+              Gallery videos (on every device) always play on their own, muted, inline and in a loop, with every control hidden
+              (no native controls, no play button; YouTube without its controls bar, Vimeo in background mode). The gallery's
+              "Autoplay media" / "Loop videos" settings no longer change this.
+              {%- endcomment -%}
+              {%- render 'media', product: product, media: media, sizes: sizes, preload: preload, autoplay: true, controls: false, show_play_button: false, playsinline: true, muted: true, loop: true, group: 'product' -%}
 
               {%- if enable_image_zoom and desktop_layout contains 'grid' and media.media_type == 'image' -%}
                 <open-lightbox-button aria-controls="{{ product_gallery_carousel_id}}" class="block sm-max:hidden" image-index="{{ image_index }}">
