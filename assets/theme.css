@@ -831,7 +831,7 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   --content-box-spacing: max(1.5rem, var(--container-gutter));
   --content-box-enable-transparent-header-compensation: 0;
   --sticky-inset-block-start: calc(var(--sticky-offset) + var(--content-box-spacing-block-start, var(--content-box-spacing)));
-  grid-template-rows: [full-start] calc(var(--content-box-spacing-block-start, var(--content-box-block-spacing, var(--content-box-spacing))) + var(--content-box-enable-transparent-header-compensation) * var(--header-height, 0px)) [inner-start] minmax(0, 1fr) [inner-end] var(--content-box-spacing-block-end, var(--content-box-block-spacing, var(--content-box-spacing))) [full-end];
+  grid-template-rows: [full-start] calc(var(--content-box-spacing-block-start, var(--content-box-block-spacing, var(--content-box-spacing))) + var(--content-box-enable-transparent-header-compensation) * var(--header-height-rest, var(--header-height, 0px))) [inner-start] minmax(0, 1fr) [inner-end] var(--content-box-spacing-block-end, var(--content-box-block-spacing, var(--content-box-spacing))) [full-end];
   grid-template-columns: [full-start] var(--content-box-spacing-inline-start, var(--content-box-inline-spacing, var(--content-box-spacing))) [inner-start] minmax(0, 1fr) [inner-end] var(--content-box-spacing-inline-end, var(--content-box-inline-spacing, var(--content-box-spacing))) [full-end];
   display: grid;
   position: relative;
@@ -2236,7 +2236,7 @@ label:focus-within:has(:focus-visible) {
 }
 
 .shopify-section:first-child:has([allow-transparent-header]) .section-spacing {
-  --section-vertical-spacing-block-start: calc(var(--section-vertical-spacing) + var(--header-height) - 16px);
+  --section-vertical-spacing-block-start: calc(var(--section-vertical-spacing) + var(--header-height-rest, var(--header-height)) - 16px);
 }
 
 /* Top rule: whatever sits first in the page content, right under the header group, has the page's side margin (--container-gutter) as the gap above it,
@@ -6894,7 +6894,7 @@ product-rerender {
 }
 
 .shopify-section--dynamic-grid:first-child:has([allow-transparent-header]) .dynamic-grid {
-  margin-block-start: var(--header-height, 0px);
+  margin-block-start: var(--header-height-rest, var(--header-height, 0px));
 }
 
 .dynamic-grid {
@@ -8621,7 +8621,7 @@ shopify-account::part(signed-out-avatar) {
   }
 
   [allow-transparent-header] .product-info {
-    margin-block-start: calc(var(--header-height) + 4rem);
+    margin-block-start: calc(var(--header-height-rest, var(--header-height)) + 4rem);
   }
 }
 

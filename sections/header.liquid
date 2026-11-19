@@ -162,16 +162,17 @@
 
   #shopify-section-{{ section.id }} .header {
     --header-padding-inline: calc(var(--container-gutter) + 0.5rem);
-    transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), padding-inline var(--header-solid-transition){% if section.settings.floating_header %}, border-bottom-left-radius var(--header-solid-transition), border-bottom-right-radius var(--header-solid-transition){% endif %};
+    transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), padding-block var(--header-solid-transition){% if section.settings.floating_header %}, border-bottom-left-radius var(--header-solid-transition), border-bottom-right-radius var(--header-solid-transition){% endif %};
   }
 
   {%- comment -%}
-  Transparent header (over a first section that allows it, until it turns solid): the padding inside the header is the same on all four sides,
-  the "Header height padding" setting (the top and bottom padding) also on the left and right. Once it turns solid it goes back to the usual side
-  padding, with the same timing as the background. Same condition as the other transparent-header rules.
+  Transparent header (over a first section that allows it, until it turns solid): the padding inside the header is the same on all four sides -
+  the top and bottom take the side padding (--header-padding-inline), whatever "Header height padding" says. That setting only applies once the
+  header turns solid (scrolled, or a drawer open), so changing it never changes the transparent header. The top and bottom padding animate with
+  the same timing as the background. The setting is an inline style on .header, hence !important. Same condition as the other transparent-header rules.
   {%- endcomment -%}
   :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} .header:not(.is-solid) {
-    --header-padding-inline: {{ section.settings.header_height_padding }}px;
+    padding-block: var(--header-padding-inline) !important;
   }
 
   {%- if section.settings.floating_header -%}
@@ -1031,6 +1032,35 @@
     if (header) {
       document.documentElement.style.setProperty('--header-height', Math.round(header.clientHeight) + 'px');
     }
+  })();
+
+  {%- comment -%}
+  --header-height-rest: the header's height while it is NOT solid (at rest, transparent over the first section). The transparent header has its own
+  top and bottom padding (the side padding), the solid one has "Header height padding", so the header changes height when it turns solid. The
+  sections that make room for the transparent header under it (theme.css: content boxes, section spacing, dynamic grid, product info) use this
+  resting height instead of the live --header-height, so their content does not jump when the header turns solid as the page starts scrolling.
+  Measured on load and whenever the header changes size while not solid (eg. a new breakpoint); while solid the last resting value is kept.
+  {%- endcomment -%}
+  (function() {
+    var header = document.querySelector('#shopify-section-{{ section.id }} .header');
+    if (!header) return;
+
+    {%- comment -%}Not while the padding is animating (going back to transparent): only the final height counts, measured when the transition ends{%- endcomment -%}
+    var isAnimatingPadding = function() {
+      return header.getAnimations ? header.getAnimations().some(function(animation) { return /^padding/.test(animation.transitionProperty || ''); }) : false;
+    };
+
+    var update = function() {
+      if (!header.classList.contains('is-solid') && !isAnimatingPadding()) {
+        document.documentElement.style.setProperty('--header-height-rest', Math.round(header.getBoundingClientRect().height) + 'px');
+      }
+    };
+
+    update();
+    if (window.ResizeObserver) new ResizeObserver(update).observe(header);
+    header.addEventListener('transitionend', function(event) {
+      if (event.target === header && /^padding/.test(event.propertyName)) update();
+    });
   })();
 
   {%- comment -%}
