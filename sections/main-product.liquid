@@ -645,6 +645,13 @@
       padding-block-end: 0;
     }
 
+    {%- comment -%}Phones and tablets: the gallery card (with its thumbnails under the photo) and the info card below it sit half as far apart{%- endcomment -%}
+    @media screen and (max-width: 999px) {
+      #shopify-section-{{ section.id }} .product {
+        gap: calc(var(--section-vertical-spacing) / 2);
+      }
+    }
+
     {%- comment -%}
     Skipped when the transparent header is actually going to overlay this section (same condition
     used below for the allow-transparent-header attribute): the header's CSS assumes the gallery
