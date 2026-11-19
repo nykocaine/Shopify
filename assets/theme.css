@@ -10753,12 +10753,14 @@ shopify-account::part(signed-out-avatar) {
   min-height: 100svh;
 }
 
+/* Fill the screen: minus the sticky area, and minus the room a non-sticky announcement bar takes (--announcement-bar-space, header.liquid). Under a
+   transparent header: minus everything above the header (the bar, its gap, the gap above the header) and the countdown, like the slideshow. */
 .min-h-fill {
-  min-height: calc(100svh - var(--sticky-area-height, 0px));
+  min-height: calc(100svh - var(--sticky-area-height, 0px) - (1 - var(--announcement-bar-is-sticky, 0)) * var(--announcement-bar-space, 0px));
 }
 
 .shopify-section:first-child [allow-transparent-header] .min-h-fill {
-  min-height: calc(100svh - var(--announcement-bar-height, 0px) - var(--countdown-condensed-height, 0px));
+  min-height: calc(100svh - var(--announcement-bar-height, 0px) - var(--announcement-bar-gap, 0px) - var(--header-top-gap-rest, var(--header-top-gap, 0px)) - var(--countdown-condensed-height, 0px));
 }
 
 .min-h-xs {
@@ -10821,11 +10823,11 @@ shopify-account::part(signed-out-avatar) {
   }
 
   .sm\:min-h-fill {
-    min-height: calc(100svh - var(--sticky-area-height, 0px));
+    min-height: calc(100svh - var(--sticky-area-height, 0px) - (1 - var(--announcement-bar-is-sticky, 0)) * var(--announcement-bar-space, 0px));
   }
 
   .shopify-section:first-child [allow-transparent-header] .sm\:min-h-fill {
-    min-height: calc(100svh - var(--announcement-bar-height, 0px) - var(--countdown-condensed-height, 0px));
+    min-height: calc(100svh - var(--announcement-bar-height, 0px) - var(--announcement-bar-gap, 0px) - var(--header-top-gap-rest, var(--header-top-gap, 0px)) - var(--countdown-condensed-height, 0px));
   }
 
   .shopify-section:first-child:not(:has([allow-transparent-header])) .sm\:min-h-fill {
@@ -10883,11 +10885,11 @@ shopify-account::part(signed-out-avatar) {
   }
 
   .md\:min-h-fill {
-    min-height: calc(100svh - var(--sticky-area-height, 0px));
+    min-height: calc(100svh - var(--sticky-area-height, 0px) - (1 - var(--announcement-bar-is-sticky, 0)) * var(--announcement-bar-space, 0px));
   }
 
   .shopify-section:first-child [allow-transparent-header] .md\:min-h-fill {
-    min-height: calc(100svh - var(--announcement-bar-height, 0px) - var(--countdown-condensed-height, 0px));
+    min-height: calc(100svh - var(--announcement-bar-height, 0px) - var(--announcement-bar-gap, 0px) - var(--header-top-gap-rest, var(--header-top-gap, 0px)) - var(--countdown-condensed-height, 0px));
   }
 
   .shopify-section:first-child:not(:has([allow-transparent-header])) .md\:min-h-fill {

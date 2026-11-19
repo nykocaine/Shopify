@@ -821,8 +821,9 @@
         {%- endif -%}
 
         #shopify-section-{{ section.id }} .product-gallery-frame {
-          height: calc(max(20rem, {{ section.settings.product_height_mobile }}vh) + {{ mobile_strip_height }});
-          height: calc(max(20rem, {{ section.settings.product_height_mobile }}svh) + {{ mobile_strip_height }});
+          {%- comment -%}Minus the room the announcement bar takes above the header (--announcement-bar-space, header.liquid), so the gallery still fits the screen with the bar{%- endcomment -%}
+          height: calc(max(20rem, {{ section.settings.product_height_mobile }}vh - var(--announcement-bar-space, 0px)) + {{ mobile_strip_height }});
+          height: calc(max(20rem, {{ section.settings.product_height_mobile }}svh - var(--announcement-bar-space, 0px)) + {{ mobile_strip_height }});
           position: relative;
         }
       {%- endif -%}
@@ -904,7 +905,7 @@
           #shopify-section-{{ section.id }} .product-first-image-frame{% endif %} {
             position: sticky !important;
             align-self: start;
-            height: max(28rem, {{ section.settings.product_height_desktop }}vh);
+            height: max(28rem, {{ section.settings.product_height_desktop }}vh - var(--announcement-bar-space, 0px));
             inset-block-start: calc(var(--sticky-area-height) + 20px);
           }
         {%- else -%}
@@ -914,7 +915,7 @@
           crops the photo to that height. The carousel moves between photos - nothing scrolls vertically.
           {%- endcomment -%}
           #shopify-section-{{ section.id }} .product {
-            min-height: max(28rem, {{ section.settings.product_height_desktop }}vh);
+            min-height: max(28rem, {{ section.settings.product_height_desktop }}vh - var(--announcement-bar-space, 0px));
           }
 
           #shopify-section-{{ section.id }} .product-gallery-frame {
