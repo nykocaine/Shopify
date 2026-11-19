@@ -557,7 +557,7 @@ height-observer {
 }
 
 :is(.button, .shopify-challenge__button, .shopify-payment-button__button--unbranded):not(:has(.button__content)) {
-  padding: var(--button-padding-block) var(--button-padding-inline);
+  padding: calc(var(--button-padding-block) + var(--button-text-offset, 0em)) var(--button-padding-inline) calc(var(--button-padding-block) - var(--button-text-offset, 0em));
 }
 
 .button--outline {
@@ -573,16 +573,18 @@ height-observer {
 }
 
 .button__content {
-  padding: var(--button-padding-block) var(--button-padding-inline);
+  padding: calc(var(--button-padding-block) + var(--button-text-offset, 0em)) var(--button-padding-inline) calc(var(--button-padding-block) - var(--button-text-offset, 0em));
   justify-content: safe center;
   align-items: center;
   column-gap: .75rem;
   display: flex;
 }
 
+/* Content centered in a fixed minimum height: the extra top padding (twice the offset, nothing at the bottom) moves the centered label down by
+   the offset (see --button-text-offset in css-variables.liquid) without changing the button's height. */
 .button:not(.button--sm) .button__content {
   min-height: var(--button-min-height);
-  padding-block: 0;
+  padding-block: calc(var(--button-text-offset, 0em) * 2) 0;
 }
 
 /* Buy button (buy-buttons.liquid): label and price are two separate flex children instead of one

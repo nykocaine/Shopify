@@ -393,6 +393,16 @@ note that this may have impact on different places.
     --text-font-bold-weight: {{ text_font_bold.weight | default: 700 }};
     --button-font: {% if settings.button_text_font == 'heading' %}var(--heading-font-style) 500 var(--button-font-size) / normal var(--heading-font-family){% else %}var(--text-font-style) var(--text-font-weight) var(--button-font-size) / normal var(--text-font-family){% endif %};
     --button-text-transform: {{ settings.button_text_transform }};
+    {%- comment -%}
+    Optical centering of short labels (buttons, pills). Swiss 721 (font source "Apple") reserves more room below the letters than above (ascent
+    1575 / descent 473 on a 2048 grid, capitals 1536 tall), so in a box with equal top and bottom padding its capitals sit about 0.1em above the
+    middle and the label looks pushed up. --cap-offset is how far down capitals must move to sit in the middle; --button-text-offset is the share
+    the buttons use: all of it for uppercase labels, less for mixed or lower case (lower case letters sit almost in the middle already). Other
+    fonts: 0. Used as extra top padding taken off the bottom, so a button keeps its height.
+    {%- endcomment -%}
+    {%- if settings.button_text_font == 'heading' -%}{%- assign button_font_source = settings.heading_font_source -%}{%- else -%}{%- assign button_font_source = settings.text_font_source -%}{%- endif %}
+    --cap-offset: {% if settings.text_font_source == 'apple' %}0.1em{% else %}0em{% endif %};
+    --button-text-offset: {% if button_font_source == 'apple' %}{% if settings.button_text_transform == 'uppercase' %}0.12em{% else %}0.05em{% endif %}{% else %}0em{% endif %};
     --button-letter-spacing: {% if language_code == 'ar' %}0{% else %}{{ settings.button_letter_spacing | divided_by: 100.0 }}{% endif %}em;
 
     /* Font sizes */
