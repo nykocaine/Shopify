@@ -152,7 +152,16 @@
 
   #shopify-section-{{ section.id }} .header {
     --header-padding-inline: calc(var(--container-gutter) + 0.5rem);
-    transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition){% if section.settings.floating_header %}, border-bottom-left-radius var(--header-solid-transition), border-bottom-right-radius var(--header-solid-transition){% endif %};
+    transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), padding-inline var(--header-solid-transition){% if section.settings.floating_header %}, border-bottom-left-radius var(--header-solid-transition), border-bottom-right-radius var(--header-solid-transition){% endif %};
+  }
+
+  {%- comment -%}
+  Transparent header (over a first section that allows it, until it turns solid): the padding inside the header is the same on all four sides,
+  the "Header height padding" setting (the top and bottom padding) also on the left and right. Once it turns solid it goes back to the usual side
+  padding, with the same timing as the background. Same condition as the other transparent-header rules.
+  {%- endcomment -%}
+  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} .header:not(.is-solid) {
+    --header-padding-inline: {{ section.settings.header_height_padding }}px;
   }
 
   {%- if section.settings.floating_header -%}
