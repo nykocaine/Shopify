@@ -52,6 +52,16 @@
     {%- endif %}
   }
 
+  {%- comment -%}
+  --announcement-bar-space: how much lower the page content starts because of the announcement bar - the gap above the bar, the bar itself and,
+  with a floating header, the change in the gap above the header (it is smaller with the bar). 0 when there is no bar (or it is hidden on this page).
+  Sections sized on the screen height subtract it so they still fit the real screen with the bar (main-product.liquid, slideshow.liquid,
+  .min-h-fill in theme.css).
+  {%- endcomment -%}
+  :root:has(.shopify-section--announcement-bar .announcement-bar-wrapper) {
+    --announcement-bar-space: calc(var(--announcement-bar-gap, 0px) + var(--announcement-bar-height, 0px){% if section.settings.floating_header %} + var(--section-vertical-spacing) * 0.375 - var(--section-vertical-spacing) / 2{% endif %});
+  }
+
   {%- if section.settings.floating_header -%}
     {%- comment -%}
     When the announcement bar is on the page, the gap between it and the header is 0.375 x the section spacing (half of it, then 25% less,
@@ -594,6 +604,10 @@
        (static) instead of following the scroll. Its top corners keep the header's radius (inline style on .header). */
     .shopify-section--announcement-bar {
       display: none !important;
+    }
+
+    :root {
+      --announcement-bar-space: 0px !important;
     }
 
     #shopify-section-{{ section.id }} {
