@@ -6,6 +6,7 @@ This component is used on collection and search page, and show the button that a
 @param {boolean} [show_count] - if set to true, the results count will be added in parenthesis after the label
 @param {string} [class] - extra class applied on the wrapper element
 @param {string} [context] - allows to differentiate between mobile and desktop.
+@param {boolean} [show_current_sort] - when only sorting is offered, show the current sort after the label ("Sort: Newest first")
 @param {object} [section]
 {%- enddoc -%}
 
@@ -25,7 +26,16 @@ This component is used on collection and search page, and show the button that a
 {%- if only_show_sort -%}
   <div class="relative {{ class }}">
     <button type="button" aria-controls="collection-sort-by-popover-{{ context }}" class="h-stack gap-2 link-faded-reverse">
-      <span class="subheading">{{ button_content }}</span>
+      {%- if show_current_sort -%}
+        {%- liquid
+          assign current_sort_value = data_source.sort_by | default: data_source.default_sort_by
+          assign current_sort_name = data_source.sort_options | where: 'value', current_sort_value | map: 'name' | first
+        -%}
+        <span class="subheading">{{ button_content }}:</span>
+        <span class="collection__sort-current">{{ current_sort_name }}</span>
+      {%- else -%}
+        <span class="subheading">{{ button_content }}</span>
+      {%- endif -%}
       {%- render 'icon' with 'chevron-down' -%}
     </button>
 
