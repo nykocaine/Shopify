@@ -29,12 +29,12 @@ This component is used to show the product gallery (used in product page and fea
         {%- else -%}
           --product-gallery-gap: {% if mobile_controls != 'thumbnails' %}0rem{% else %}0.5rem{% endif %};
           {%- comment -%}
-          Peek: each image takes 86% of the gallery width, so the start of the next one shows at the right edge and it reads as something to swipe.
+          Peek: each image takes 93% of the gallery width, so the start of the next one shows at the right edge and it reads as something to swipe.
           The images line up on the left edge (scroll-snap-align: start, below) with a small gap between them; the last one ends on the right edge,
           with the previous one peeking on the left instead.
           {%- endcomment -%}
-          --product-gallery-carousel-grid: auto / auto-flow 86%;
-          --product-gallery-carousel-gap: 6px;
+          --product-gallery-carousel-grid: auto / auto-flow 93%;
+          --product-gallery-carousel-gap: 4px;
         {%- endif -%}
       }
 
@@ -42,7 +42,7 @@ This component is used to show the product gallery (used in product page and fea
         {%- comment -%}The image width rounded down to a whole pixel, so the images stop exactly on the left edge (no sliver of the previous one){%- endcomment -%}
         @supports (width: round(down, 50%, 1px)) {
           #shopify-section-{{ section.id }} {
-            --product-gallery-carousel-grid: auto / auto-flow round(down, 86%, 1px);
+            --product-gallery-carousel-grid: auto / auto-flow round(down, 93%, 1px);
           }
         }
 
