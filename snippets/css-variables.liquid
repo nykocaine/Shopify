@@ -729,4 +729,29 @@ note that this may have impact on different places.
       navigation: auto;
     }
   {%- endif -%}
+
+  {%- comment -%}
+  The page's side margin rounded to whole pixels (same three sizes as above). From the setting it is rarely a whole number (1.9 x 0.41667rem =
+  12.67px on phones), so everything sized from the screen minus those margins - the product gallery, every carousel - ended up a fraction of a
+  pixel wide (364.66px on a 390px phone). A carousel can only stop on whole pixels, so it always stopped a little off and a sliver of the
+  next or previous slide showed at the edge. Rounded, the slides are whole pixels wide and line up exactly. Browsers without round() keep the
+  unrounded value.
+  {%- endcomment -%}
+  @supports (width: round(nearest, 1.5px, 1px)) {
+    :root {
+      --container-gutter: round(nearest, {{ settings.container_gutter | times: 0.41667 | round: 3 }}rem, 1px);
+    }
+
+    @media screen and (min-width: 700px) {
+      :root {
+        --container-gutter: round(nearest, {{ settings.container_gutter | times: 0.66667 | round: 3 }}rem, 1px);
+      }
+    }
+
+    @media screen and (min-width: 1399px) {
+      :root {
+        --container-gutter: round(nearest, {{ settings.container_gutter }}rem, 1px);
+      }
+    }
+  }
 </style>

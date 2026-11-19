@@ -442,6 +442,20 @@
         {%- endif -%}
       </div>
     </height-observer>
+
+    <script>
+      {%- comment -%}
+      Early, synchronous --announcement-bar-height (the same value <height-observer> sets once theme.js has loaded): sections sized on the screen
+      height subtract the room the bar takes (--announcement-bar-space, header.liquid), so without this they were drawn too tall for a moment and then
+      shrank when the script measured the bar - a flicker on load (eg. the product gallery). Same idea as the header's early --header-height.
+      {%- endcomment -%}
+      (function() {
+        var bar = document.currentScript && document.currentScript.previousElementSibling;
+        if (bar && bar.tagName === 'HEIGHT-OBSERVER') {
+          document.documentElement.style.setProperty('--announcement-bar-height', bar.getBoundingClientRect().height.toFixed(2) + 'px');
+        }
+      })();
+    </script>
   {%- endunless -%}
 {%- endif -%}
 
