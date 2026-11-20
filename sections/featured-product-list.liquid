@@ -92,10 +92,24 @@
   .product-list--carousel.
   {%- endcomment -%}
 
+  {%- comment -%}
+  Dots under the row, centered. No display value on the wrapper itself: it carries the md:hidden / md-max:hidden classes that switch it off per
+  screen size ("Show dots on mobile / desktop"), and a display here would beat them (an id rule is stronger than a class) - that is why the dots
+  showed on desktop with the setting off. The dots row centers itself (justify-self). Nothing to scroll: the dots hide themselves, and the wrapper
+  then goes too, so it leaves no empty margin.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
-    display: grid;
-    justify-items: center;
     margin-top: 1.5rem;
+    text-align: center;
+  }
+
+  #shopify-section-{{ section.id }} .featured-product-list__scroll-controls .carousel-dots {
+    margin-inline: auto;
+    width: max-content;
+  }
+
+  #shopify-section-{{ section.id }} .featured-product-list__scroll-controls:has(> .carousel-dots[hidden]) {
+    display: none;
   }
 
   /*
@@ -132,6 +146,15 @@
     #shopify-section-{{ section.id }} .section-spacing {
       padding-block: 0;
     }
+
+    {%- comment -%}
+    The rounded box has its four corners rounded and ends where the cards end (the dots are under it, outside). Cards scrolled sideways are cut by
+    that same rounded shape, like the Instagram feed. The spacing under the section, which the box used to carry, is on the section itself so it
+    comes after the dots.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} {
+      padding-block-end: var(--section-vertical-spacing);
+    }
   {%- endif -%}
 
   @media screen and (min-width: 700px) {
@@ -147,7 +170,7 @@
   }
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product_list %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_product_list %} style="border-radius: {{ section.settings.product_list_border_radius }}px {{ section.settings.product_list_border_radius }}px 0 0; overflow: hidden;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_product_list %} section-floating{% endif %}"{% if section.settings.floating_product_list %} style="border-radius: {{ section.settings.product_list_border_radius }}px; overflow: hidden;"{% endif %}>
   <div class="container">
     <div class="section-spacing section-spacing--tight{% unless section.settings.floating_product_list %} section-spacing--outside{% endunless %}">
         {%- assign product_list_id = 'product-list-' | append: section.id -%}
@@ -233,14 +256,25 @@
         The round dots of the Instagram feed and the FAQ (snippets/carousel-dots.liquid) instead of the progress bar with arrows: one dot per stop of
         the row, the current one bigger, tap to jump. They hide by themselves when there is nothing to scroll.
         {%- endcomment -%}
-        {%- if show_controls_mobile or show_controls_desktop -%}
-          <div class="featured-product-list__scroll-controls{% unless show_controls_mobile %} md-max:hidden{% endunless %}{% unless show_controls_desktop %} md:hidden{% endunless %}">
-            {%- render 'carousel-dots', target_id: product_list_id, item_selector: '.product-card, .product-list__promo' -%}
-          </div>
-        {%- endif -%}
+        {%- capture dots_html -%}
+          {%- if show_controls_mobile or show_controls_desktop -%}
+            <div class="featured-product-list__scroll-controls{% unless show_controls_mobile %} md-max:hidden{% endunless %}{% unless show_controls_desktop %} md:hidden{% endunless %}">
+              {%- render 'carousel-dots', target_id: product_list_id, item_selector: '.product-card, .product-list__promo' -%}
+            </div>
+          {%- endif -%}
+        {%- endcapture -%}
+
+        {%- unless section.settings.floating_product_list -%}
+          {{- dots_html -}}
+        {%- endunless -%}
     </div>
   </div>
 </div>
+
+{%- comment -%}Floating: the dots go under the rounded box (outside it), so the box ends right where the cards end{%- endcomment -%}
+{%- if section.settings.floating_product_list -%}
+  {{- dots_html -}}
+{%- endif -%}
 
 {% schema %}
 {
