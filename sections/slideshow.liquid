@@ -278,6 +278,12 @@
             window.addEventListener('load', function () { this.measured = false; this.requestUpdate(); }.bind(this), options);
             document.fonts && document.fonts.ready.then(function () { this.measured = false; this.requestUpdate(); }.bind(this));
 
+            // Theme editor: changing a header setting (eg. its layout, logo on the left or in the center) re-renders the header, and the logo
+            // element measured before is thrown away. Everything is measured again from the new header (update() also checks it on every frame).
+            ['shopify:section:load', 'shopify:section:unload', 'shopify:section:reorder'].forEach(function (type) {
+              document.addEventListener(type, function () { this.measured = false; requestAnimationFrame(this.requestUpdate); }.bind(this), { signal: this.abort.signal });
+            }.bind(this));
+
             this.root.setAttribute('data-logo-fly', '');
             this.update();
           }
@@ -332,6 +338,8 @@
           }
 
           update() {
+            // The header logo (or the slide's logo) was replaced (header re-rendered, layout or logo changed): measure the new one
+            if (this.measured && (!this.target.isConnected || !this.logo.isConnected)) this.measured = false;
             if (!this.measured && !this.measure()) return;
 
             var scroll = window.scrollY;
