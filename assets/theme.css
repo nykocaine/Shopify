@@ -4358,6 +4358,26 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   }
 }
 
+/* Collection / search "smaller cards" view (tablet and desktop): the same cards, with all their content (info, badges, quick buy, promos),
+   just more of them per row - like the phones' 1 / 2 per row switch, it only changes the cards' size. */
+@media screen and (min-width: 700px) {
+  .product-list[desktop-layout="compact"] {
+    --product-list-column-count: 4;
+  }
+}
+
+@media screen and (min-width: 1000px) {
+  .product-list[desktop-layout="compact"] {
+    --product-list-column-count: 5;
+  }
+}
+
+@media screen and (min-width: 1150px) {
+  .product-list[desktop-layout="compact"] {
+    --product-list-column-count: 6;
+  }
+}
+
 .product-list__intro-block {
   grid-column: 1 / -1;
   grid-row: span var(--product-card-row-count);
