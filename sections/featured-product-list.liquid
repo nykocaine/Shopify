@@ -93,7 +93,9 @@
   {%- endcomment -%}
 
   #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
-    margin-top: var(--section-vertical-spacing);
+    display: grid;
+    justify-items: center;
+    margin-top: 1.5rem;
   }
 
   /*
@@ -227,7 +229,15 @@
           endif
         -%}
 
-        {%- render 'scroll-controls', target_id: product_list_id, show_mobile: show_controls_mobile, show_desktop: show_controls_desktop, class: 'featured-product-list__scroll-controls' -%}
+        {%- comment -%}
+        The round dots of the Instagram feed and the FAQ (snippets/carousel-dots.liquid) instead of the progress bar with arrows: one dot per stop of
+        the row, the current one bigger, tap to jump. They hide by themselves when there is nothing to scroll.
+        {%- endcomment -%}
+        {%- if show_controls_mobile or show_controls_desktop -%}
+          <div class="featured-product-list__scroll-controls{% unless show_controls_mobile %} md-max:hidden{% endunless %}{% unless show_controls_desktop %} md:hidden{% endunless %}">
+            {%- render 'carousel-dots', target_id: product_list_id, item_selector: '.product-card, .product-list__promo' -%}
+          </div>
+        {%- endif -%}
     </div>
   </div>
 </div>
@@ -290,7 +300,7 @@
     {
       "type": "checkbox",
       "id": "show_progress_bar_mobile",
-      "label": "Show scroll controls on mobile",
+      "label": "Show dots on mobile",
       "info": "Only available in carousel mode (not when products are stacked).",
       "default": true,
       "visible_if": "{{ section.settings.stack_products_mobile == false }}"
@@ -298,7 +308,7 @@
     {
       "type": "checkbox",
       "id": "show_progress_bar_desktop",
-      "label": "Show scroll controls on desktop",
+      "label": "Show dots on desktop",
       "info": "Only available in carousel mode (not when products are stacked).",
       "default": false,
       "visible_if": "{{ section.settings.stack_products_desktop == false }}"

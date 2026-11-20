@@ -8,6 +8,7 @@ jump to an item when tapped, and hide by themselves when there is nothing to scr
 items (the direct children with the .snap-start class) and rebuilt when the screen size changes. Look: assets/theme.css (.carousel-dots).
 
 @param {string} target_id - id of the scrollable carousel the dots follow
+@param {string} [item_selector] - which direct children of the carousel are its items (default: ".snap-start"); eg. ".product-card, .product-list__promo" for a product list
 {%- enddoc -%}
 
 <div id="{{ target_id }}-dots" class="carousel-dots scroll-marker-group scroll-marker-group--dots" hidden></div>
@@ -27,7 +28,8 @@ items (the direct children with the .snap-start class) and rebuilt when the scre
     let buttons = [];
     let queued = false;
 
-    const items = () => [...carousel.querySelectorAll(':scope > .snap-start')];
+    const itemSelector = {{ item_selector | default: '.snap-start' | json }}.split(',').map((selector) => ':scope > ' + selector.trim()).join(', ');
+    const items = () => [...carousel.querySelectorAll(itemSelector)];
     const maxScroll = () => carousel.scrollWidth - carousel.clientWidth;
 
     {%- comment -%}Distance between the start of two neighbouring items (item width plus the gap); RTL rows give a negative distance{%- endcomment -%}
