@@ -74,13 +74,12 @@
 
     {%- comment -%}
     Transparent header over the first section (same condition theme.css uses): at rest it keeps the gap
-    above it (the margin above). While it is scrolled but still transparent, its sticky offset is 0 (see
-    below), so it slides up to the very top instead of hanging at the gap; the gap comes back, as the
-    sticky offset, once the header is solid. The margin never changes, so the page doesn't shift when
-    the header turns solid. The transition animates that sticky offset.
+    above it (the margin above), and once scrolled it sticks at that same gap, transparent or solid (see the
+    sticky rules below): its position never changes when it turns solid. The margin never changes either,
+    so the page doesn't shift.
     {%- endcomment -%}
     :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} {
-      transition: transform var(--header-solid-transition), visibility var(--header-solid-transition), top var(--header-solid-transition), background var(--header-solid-transition);
+      transition: transform var(--header-solid-transition), visibility var(--header-solid-transition), background var(--header-solid-transition);
     }
   {%- endif -%}
 
@@ -404,9 +403,12 @@
       --header-menu-open-radius: {% if section.settings.floating_header %}{{ section.settings.header_border_radius }}px{% else %}var(--drawer-border-radius, 0px){% endif %};
     }
 
-    {%- comment -%}padding-block included, like the base rule: without it the header's height jumped (no animation) on phones when it turned solid on scroll or went back to transparent, while on desktop it animated.{%- endcomment -%}
+    {%- comment -%}
+    No padding animation on phones: the height change between the transparent and the solid header happens at once. Animated, the header was being
+    resized during the scroll, and its logo (centered in it) wobbled while the page moved.
+    {%- endcomment -%}
     #shopify-section-{{ section.id }} .header {
-      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), padding-block var(--header-solid-transition), border-bottom-left-radius .45s cubic-bezier(.33, 0, .2, 1), border-bottom-right-radius .45s cubic-bezier(.33, 0, .2, 1);
+      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius .45s cubic-bezier(.33, 0, .2, 1), border-bottom-right-radius .45s cubic-bezier(.33, 0, .2, 1);
     }
 
     :root:has(header-menu-drawer[open], #search-drawer[open], #cart-drawer[open]) #shopify-section-{{ section.id }} .header {
@@ -512,10 +514,12 @@
         top: calc(var(--header-stuck-gap) + var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px) - var(--header-bar-overlap, 0px));
       }
 
-      :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}:has(.header:not(.is-solid)),
-      :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) .shopify-section--announcement-bar ~ #shopify-section-{{ section.id }}:has(.header:not(.is-solid)) {
-        top: calc(var(--announcement-bar-is-sticky, 0) * var(--announcement-bar-height, 0px));
-      }
+      {%- comment -%}
+      The transparent header sticks at the same place as the solid one (the gap above), instead of at the very top edge: it used to slide down
+      by that gap (animating its sticky offset) right when it turned solid while the page was being scrolled, and back up when it turned
+      transparent again. On phones a sticky offset animated during a scroll shakes (the scroll and the animation run on different threads), and
+      the header and its logo trembled. Now turning solid only changes its color, never its position.
+      {%- endcomment -%}
 
       #shopify-section-{{ section.id }}::before {
         content: "";
