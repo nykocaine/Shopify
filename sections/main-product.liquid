@@ -645,10 +645,26 @@
       padding-block-end: 0;
     }
 
-    {%- comment -%}Phones and tablets: the gallery card (with its thumbnails under the photo) and the info card below it sit half as far apart{%- endcomment -%}
+    {%- comment -%}
+    Phones and tablets: the gallery card and the info card below it are joined into one piece - no space between them, and the corners where
+    they meet are square (the gallery's bottom corners, the info card's top corners); the outer corners keep the section's radius. The gallery's
+    inner frames (product-gallery.liquid: the carousel frame, and the list) carry their own radius in a later <style>, hence !important.
+    {%- endcomment -%}
     @media screen and (max-width: 999px) {
       #shopify-section-{{ section.id }} .product {
-        gap: calc(var(--section-vertical-spacing) / 2);
+        gap: 0;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery-frame,
+      #shopify-section-{{ section.id }} .product-gallery__carousel-frame,
+      #shopify-section-{{ section.id }} .product-gallery__image-list > * {
+        border-end-start-radius: 0 !important;
+        border-end-end-radius: 0 !important;
+      }
+
+      #shopify-section-{{ section.id }} .product-info-frame {
+        border-start-start-radius: 0 !important;
+        border-start-end-radius: 0 !important;
       }
     }
 
