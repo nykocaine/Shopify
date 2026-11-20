@@ -3651,6 +3651,22 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   }
 }
 
+/* Vertical centering: like the announcement bar, the heading font leaves more room under the letters than above them inside its line, so with
+   equal paddings the text sat high in the pill. The line is trimmed to the capitals (text-box) and the room it took is given back equally above and
+   below ((1lh - 1cap) / 2 each): the text is exactly centered and the pill keeps its height. Only where the browser can trim the line. */
+@supports (text-box: trim-both cap alphabetic) {
+  .product-card__meta-badge {
+    text-box: trim-both cap alphabetic;
+    padding-block: calc(.3rem + (1lh - 1cap) / 2);
+  }
+
+  @media screen and (min-width: 700px) {
+    .product-card__meta-badge {
+      padding-block: calc(.375rem + (1lh - 1cap) / 2);
+    }
+  }
+}
+
 .product-card__meta-badge--top-left { inset-block-start: 0; inset-inline-start: 0; }
 .product-card__meta-badge--top-right { inset-block-start: 0; inset-inline-end: 0; }
 .product-card__meta-badge--bottom-left { inset-block-end: 0; inset-inline-start: 0; }
