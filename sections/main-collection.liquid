@@ -131,6 +131,49 @@
     }
   {%- endif -%}
 
+  {%- if settings.show_page_transition -%}
+    {%- comment -%}
+    Page transition between collections (the quick links): the theme's page transition (css-variables.liquid, @view-transition) cross-fades
+    the WHOLE page, so the announcement bar, the header, the banner and the toolbar - the same on both pages - faded out and back in, and the
+    new page was captured before its product photos had loaded: everything blinked. Naming these parts makes the browser keep each one in
+    place as its own layer (same size and position on both pages, so nothing moves and only what really changes, like the title or the
+    current link, swaps), and only the products below cross-fade. The names exist only on collection pages, so other pages keep the usual fade.
+    {%- endcomment -%}
+    .shopify-section--announcement-bar {
+      view-transition-name: collection-announcement-bar;
+    }
+
+    .shopify-section--header {
+      view-transition-name: collection-header;
+    }
+
+    .shopify-section--collection-banner {
+      view-transition-name: collection-banner;
+    }
+
+    #shopify-section-{{ section.id }} .collection__toolbar {
+      view-transition-name: collection-toolbar;
+    }
+
+    {%- comment -%} The bar and the header are identical on both pages: the new one is shown at once, with no fade at all. {%- endcomment -%}
+    ::view-transition-old(collection-announcement-bar),
+    ::view-transition-old(collection-header) {
+      display: none;
+    }
+
+    ::view-transition-new(collection-announcement-bar),
+    ::view-transition-new(collection-header) {
+      animation: none;
+    }
+
+    ::view-transition-group(collection-announcement-bar),
+    ::view-transition-group(collection-header),
+    ::view-transition-group(collection-banner),
+    ::view-transition-group(collection-toolbar) {
+      z-index: 1;
+    }
+  {%- endif -%}
+
   {%- comment -%}
   Toolbar (snippets/collection-toolbar.liquid), same layout on every screen size, in two rows:
   1. the quick links as pills (outlined; the current page filled). Phones: one row that scrolls sideways from edge to edge of the bar.
