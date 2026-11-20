@@ -161,7 +161,7 @@
 
   #shopify-section-{{ section.id }} .header {
     --header-padding-inline: calc(var(--container-gutter) + 0.5rem);
-    transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), padding-block var(--header-solid-transition){% if section.settings.floating_header %}, border-bottom-left-radius var(--header-solid-transition), border-bottom-right-radius var(--header-solid-transition){% endif %};
+    transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition){% if section.settings.floating_header %}, border-bottom-left-radius var(--header-solid-transition), border-bottom-right-radius var(--header-solid-transition){% endif %};
   }
 
   {%- comment -%}
@@ -266,10 +266,14 @@
   }
 
   {%- comment -%}
-  The transparent header has the same height as the solid one: both use "Header height padding" (the inline padding on .header). The transparent
-  header used to take its side padding at the top and bottom too, so turning solid (or back) resized it, and its logo jumped / flickered as it
-  was re-centred in a header of another height. Now turning solid changes only the colors, never the size.
+  Transparent header (over a first section that allows it, until it turns solid): the padding inside the header is the same on all four sides -
+  the top and bottom take the side padding (--header-padding-inline), whatever "Header height padding" says. That setting only applies once the
+  header turns solid (scrolled, or a drawer open), so changing it never changes the transparent header. The height changes in one step
+  and the content glides to its new place (see the "Smooth height change" script at the end of this file). The setting is an inline style on .header, hence !important. Same condition as the other transparent-header rules.
   {%- endcomment -%}
+  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} .header:not(.is-solid) {
+    padding-block: var(--header-padding-inline) !important;
+  }
 
   {%- comment -%}
   Pages with the transparent header: the header takes no room in the page by having a section of zero height (the header shows on top of it,
@@ -426,7 +430,7 @@
     :root:has(header-menu-drawer[open], #search-drawer[open], #cart-drawer[open]) #shopify-section-{{ section.id }} .header {
       border-bottom-left-radius: var(--header-menu-open-radius) !important;
       border-bottom-right-radius: var(--header-menu-open-radius) !important;
-      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), padding-block var(--header-solid-transition), border-bottom-left-radius .7s cubic-bezier(.22, 1, .36, 1), border-bottom-right-radius .7s cubic-bezier(.22, 1, .36, 1);
+      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius .7s cubic-bezier(.22, 1, .36, 1), border-bottom-right-radius .7s cubic-bezier(.22, 1, .36, 1);
     }
   }
 
@@ -1346,6 +1350,57 @@
       // Marks the end of the drawer-driven solid state once the header has unpainted
       setTimeout(function () { root.removeAttribute('data-header-drawer-solid'); }, 450);
     }, true);
+  })();
+</script>
+
+<script>
+  (function () {
+    // Smooth height change between the transparent and the solid header (they have different inner paddings). Animating the padding itself
+    // resized the header on every frame while the page scrolled, and on phones the logo trembled. Now the height changes in one step and the
+    // content (logo, menu, icons) - which is centred in the header and so jumps by half the difference - is moved back to where it was and
+    // glides to its new place with a transform animation (FLIP), which the browser runs on the same thread as the scroll: no trembling.
+    if (window.__headerResizeFlipInit) return;
+    window.__headerResizeFlipInit = true;
+
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function init() {
+      var header = document.querySelector('x-header');
+      if (!header || header.__flipInit) return;
+      header.__flipInit = true;
+
+      var lastHeight = header.offsetHeight;
+      var wasSolid = header.classList.contains('is-solid');
+
+      new MutationObserver(function () {
+        var isSolid = header.classList.contains('is-solid');
+        var height = header.offsetHeight;
+        var delta = height - lastHeight;
+        lastHeight = height;
+        if (isSolid === wasSolid) return;
+        wasSolid = isSolid;
+        if (reduceMotion.matches || Math.abs(delta) < 0.5) return;
+
+        header.querySelectorAll(':scope > .header__logo, :scope > .header__primary-nav, :scope > .header__secondary-nav').forEach(function (item) {
+          item.animate(
+            [{ transform: 'translateY(' + (-delta / 2) + 'px)' }, { transform: 'translateY(0)' }],
+            { duration: isSolid ? 450 : 600, easing: 'cubic-bezier(.4, 0, .2, 1)' }
+          );
+        });
+      }).observe(header, { attributes: true, attributeFilter: ['class'] });
+
+      // Keeps the reference height right when the header changes size for other reasons (fonts, resize, editor)
+      if (window.ResizeObserver) {
+        new ResizeObserver(function () { lastHeight = header.offsetHeight; }).observe(header);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+    document.addEventListener('shopify:section:load', function () { requestAnimationFrame(init); });
   })();
 </script>
 
