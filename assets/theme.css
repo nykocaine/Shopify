@@ -3623,18 +3623,19 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 .product-card__icon--bottom-left { inset-block-end: 0; inset-inline-start: 0; }
 .product-card__icon--bottom-right { inset-block-end: 0; inset-inline-end: 0; }
 
-/* Card badge (snippets/product-card.liquid, "custom.card_badge" metafield): a pill over the photo, in the heading font, written as typed (no
-   uppercase). Colors and radius come inline from the theme settings. Same distance from the photo's edges as the card icon. */
+/* Card badge (snippets/product-card.liquid, "custom.card_badge" metafield): a pill over the photo, with the body text's font, weight, size and
+   letter spacing (Theme settings > Typography > Body), written as typed (no uppercase). Colors and radius come inline from the theme settings. Same distance from the photo's edges as the card icon. */
 .product-card__meta-badge {
   z-index: 2;
   pointer-events: none;
   max-width: calc(100% - 1.5rem);
   margin: .75rem;
   padding: .3rem .75rem;
-  font-family: var(--heading-font-family);
-  font-style: var(--heading-font-style);
-  font-weight: 600;
-  font-size: var(--badge-font-size);
+  font-family: var(--text-font-family);
+  font-style: var(--text-font-style);
+  font-weight: var(--text-font-weight);
+  font-size: var(--text-base);
+  letter-spacing: var(--text-letter-spacing);
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
