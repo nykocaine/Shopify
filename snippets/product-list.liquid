@@ -23,8 +23,8 @@ This component display a list of product that can be used in collection, search.
     assign list_mobile_items_per_row = 2
   endif
 
-  # Tablet and desktop: "grid" (bigger cards) or "compact" (smaller cards, same cards with all their content); a saved "thumbnails" counts as "compact".
-  assign list_desktop_layout = cart.attributes.product_card_desktop_layout | default: 'grid'
+  # Tablet and desktop: "grid" (2 cards per row) or "compact" (3 per row, the default), same cards with all their content; a saved "thumbnails" counts as "compact".
+  assign list_desktop_layout = cart.attributes.product_card_desktop_layout | default: 'compact'
   if list_desktop_layout == 'thumbnails'
     assign list_desktop_layout = 'compact'
   endif

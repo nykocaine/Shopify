@@ -15,8 +15,8 @@ access to filters.
   if mobile_items_per_row != 1
     assign mobile_items_per_row = 2
   endif
-  # Tablet and desktop: bigger cards ("grid") or smaller cards ("compact"); a saved "thumbnails" (the old smaller view) counts as "compact".
-  assign desktop_layout_mode = cart.attributes.product_card_desktop_layout | default: 'grid'
+  # Tablet and desktop: 2 cards per row ("grid") or 3 ("compact", the default); a saved "thumbnails" (the old smaller view) counts as "compact".
+  assign desktop_layout_mode = cart.attributes.product_card_desktop_layout | default: 'compact'
   if desktop_layout_mode == 'thumbnails'
     assign desktop_layout_mode = 'compact'
   endif
@@ -84,7 +84,7 @@ access to filters.
         <collection-layout-selector-button class="collection__layout-selector">
           <input type="radio" value="grid" class="sr-only" name="desktop-layout" id="desktop-layout-grid" {% if desktop_layout_mode == 'grid' %}checked{% endif %}>
           <label for="desktop-layout-grid">
-            <span class="sr-only">Show cards bigger</span>
+            <span class="sr-only">Show two cards per row</span>
             {%- render 'icon' with 'product-card-1x1' -%}
           </label>
         </collection-layout-selector-button>
@@ -92,7 +92,7 @@ access to filters.
         <collection-layout-selector-button class="collection__layout-selector">
           <input type="radio" value="compact" class="sr-only" name="desktop-layout" id="desktop-layout-compact" {% if desktop_layout_mode == 'compact' %}checked{% endif %}>
           <label for="desktop-layout-compact">
-            <span class="sr-only">Show cards smaller</span>
+            <span class="sr-only">Show three cards per row</span>
             {%- render 'icon' with 'product-card-2x2' -%}
           </label>
         </collection-layout-selector-button>
