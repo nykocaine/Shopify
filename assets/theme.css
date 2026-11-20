@@ -4358,23 +4358,15 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   }
 }
 
-/* Collection / search "smaller cards" view (tablet and desktop): the same cards, with all their content (info, badges, quick buy, promos),
-   just more of them per row - like the phones' 1 / 2 per row switch, it only changes the cards' size. */
+/* Collection / search view switch (tablet and desktop), like the phones' 1 / 2 per row switch: the one-square icon ("grid") shows 2 cards
+   per row, the four-squares icon ("compact", the default) 3 per row. Only the cards' size changes: info, badges, quick buy and promos stay. */
 @media screen and (min-width: 700px) {
-  .product-list[desktop-layout="compact"] {
-    --product-list-column-count: 4;
+  .product-list[desktop-layout="grid"] {
+    --product-list-column-count: 2;
   }
-}
 
-@media screen and (min-width: 1000px) {
   .product-list[desktop-layout="compact"] {
-    --product-list-column-count: 5;
-  }
-}
-
-@media screen and (min-width: 1150px) {
-  .product-list[desktop-layout="compact"] {
-    --product-list-column-count: 6;
+    --product-list-column-count: 3;
   }
 }
 
