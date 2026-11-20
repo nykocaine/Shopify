@@ -629,9 +629,14 @@ height-observer {
 /* Product page buy button: current price in bold (the crossed-out compare-at price stays regular weight) */
 .buy-buttons__price {
   font-weight: bold;
+  /* "bold" already resolves to medium (500), the heaviest weight of the font (there is no bold file, and fake bold is off), so a very thin stroke in
+     the text color makes the price a little heavier still */
+  -webkit-text-stroke: .3px currentColor;
+  paint-order: stroke fill;
 }
 .buy-buttons__price s {
   font-weight: normal;
+  -webkit-text-stroke: 0;
 }
 .button__content::part(content) {
   align-items: center;
@@ -3569,7 +3574,8 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
    never bold, and the same color/opacity as .product-subtitle above (.7 alpha), explicitly, rather
    than relying on inheritance for the weight and a dimmer .6 alpha from .text-subdued. */
 .product-card__price {
-  font-weight: var(--text-font-weight);
+  /* A little bolder than the body text: medium (500), the heaviest Swiss weight installed (light 300, regular 400, medium 500) */
+  font-weight: 500;
 }
 
 .product-card__price--subdued,
