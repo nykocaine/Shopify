@@ -215,13 +215,17 @@
     display: flex;
   }
 
+  {%- comment -%}
+  Colors from the toolbar color scheme's button colors: the links are outline buttons in the button background color, the current page
+  a solid button (button background + button text color), like the theme's buttons (assets/theme.css .button).
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .collection__toolbar-links a {
     flex: none;
-    color: inherit;
+    color: rgb(var(--button-background-primary));
     text-decoration: none;
     {%- comment -%} Uppercase capitals need a little more than --cap-offset to sit exactly in the middle (measured with Swiss 721: 1.2x). {%- endcomment -%}
     padding: calc(0.55rem + var(--cap-offset, 0em) * 1.2) 1.15rem calc(0.55rem - var(--cap-offset, 0em) * 1.2);
-    border: 1px solid rgb(var(--text-color) / 0.7);
+    border: 1px solid rgb(var(--button-background-primary) / 0.7);
     border-radius: 999px;
     text-transform: uppercase;
     line-height: 1.2;
@@ -229,13 +233,13 @@
   }
 
   #shopify-section-{{ section.id }} .collection__toolbar-links a:hover {
-    border-color: rgb(var(--text-color));
+    border-color: rgb(var(--button-background-primary));
   }
 
   #shopify-section-{{ section.id }} .collection__toolbar-links a[aria-current="page"] {
-    background: rgb(var(--text-color));
-    border-color: rgb(var(--text-color));
-    color: rgb(var(--background));
+    background: rgb(var(--button-background-primary));
+    border-color: rgb(var(--button-background-primary));
+    color: rgb(var(--button-text-primary));
   }
 
   {%- comment -%}View selector: rounded squares (snippets/icon.liquid), the one not in use in solid light gray{%- endcomment -%}
