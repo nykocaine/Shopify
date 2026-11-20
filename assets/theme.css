@@ -4153,10 +4153,11 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 }
 
 /* Collection page on phones with two cards per row (the toolbar's four-squares view): the cards are too narrow for the name and the price on one
-   line, so the card's own price (next to the name) is hidden; the price stays in the card's "Buy - price" button below. One card per row and
-   tablet / desktop keep the price next to the name. */
+   line, so the card's own price (next to the name) is hidden - the price stays in the card's "Buy - price" button below - and so is the card
+   badge (the enfoque stays alone at the top right of the photo). One card per row and tablet / desktop keep both. */
 @media screen and (max-width: 699px) {
-  .shopify-section--main-collection .product-list[mobile-items-per-row="2"] .product-card__info price-list {
+  .shopify-section--main-collection .product-list[mobile-items-per-row="2"] .product-card__info price-list,
+  .shopify-section--main-collection .product-list[mobile-items-per-row="2"] .product-card__meta-badge {
     display: none;
   }
 }
