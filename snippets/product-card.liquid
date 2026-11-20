@@ -319,13 +319,9 @@ based on your desired layout (and remove most of the settings associated), and t
         assign button_content = '<span>' | append: button_label | append: '</span><span>' | append: button_price | append: '</span>'
         assign button_class = 'buy-buttons__cta'
 
-        # Single card: "Comprar – S/ 139.00", centered, with the price in bold (like the reference), the same on touch screens and with a mouse
         assign single_card = false
         if settings.product_card_info_position == 'card'
           assign single_card = true
-          assign single_label = settings.product_card_buy_button_text | default: button_label | escape
-          assign button_content = '<span>' | append: single_label | append: '</span><span aria-hidden="true">–</span><span class="product-card__buy-price">' | append: button_price | append: '</span>'
-          assign button_class = 'buy-buttons__cta buy-buttons__cta--centered'
         endif
 
         assign quick_buy_desktop = section.settings.show_quick_buy_desktop | default: true, allow_false: true
@@ -523,18 +519,10 @@ based on your desired layout (and remove most of the settings associated), and t
       .product-card__quick-buy-below). Not shown for a product that picks its size on the image (the floating size selector takes that place).
       {%- endcomment -%}
       {%- liquid
+        # Single card: no quick buy button at the bottom (and no cart icon over the image): the card is just the image and the info
         assign show_quick_buy_below = false
         if single_card
-          if quick_buy_desktop or quick_buy_mobile
-            assign show_quick_buy_below = true
-          endif
-          assign quick_buy_below_class = ''
-          unless quick_buy_mobile
-            assign quick_buy_below_class = 'md-max:hidden'
-          endunless
-          unless quick_buy_desktop
-            assign quick_buy_below_class = 'md:hidden'
-          endunless
+          assign show_quick_buy_below = false
         elsif quick_buy_desktop
           assign show_quick_buy_below = true
           assign quick_buy_below_class = 'touch:hidden'
