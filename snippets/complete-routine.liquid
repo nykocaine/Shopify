@@ -5,60 +5,50 @@ When the checkbox is ticked, pressing the main "Add to cart" adds this product t
 (capture phase, before the theme's own product-form handler), this product is added to the cart, and the form is submitted again - so the
 cart drawer / cart page that opens already shows both. The dynamic checkout ("Buy it now") button is not affected.
 
-@param {object} product - the product of the page (the extra product is not shown if it is the same one)
+Which product is shown: the last product the visitor viewed (other than this one, loaded in the browser); when there is none, the best seller -
+the first available product of the "Best sellers" collection that is not this product (so when this product is the best seller, the next one).
+A fixed product can still be set in the block, and then it is always that one.
+
+@param {object} product - the product of the page (the extra product is never the same one)
 @param {object} block - the "complete_routine" block
 @param {string} product_form_id - the id of the main product form
 {%- enddoc -%}
 
-{%- assign extra = block.settings.product -%}
+{%- liquid
+  # Which product: a fixed one when the block has one (and it is not this product), otherwise the best seller - the first available product of
+  # the "Best sellers" collection (sorted by "Best selling" in the admin; the all-products collection when none is chosen) that is not this
+  # product, so when this product is the best seller the next one is taken. In the browser, the last product the visitor viewed (other than
+  # this one) then replaces it, when there is one.
+  assign extra = nil
+  assign is_fixed = false
+  assign subtitle = nil
 
-{%- if extra != blank and extra.id != product.id and extra.available -%}
-  {%- liquid
-    assign extra_variant = extra.selected_or_first_available_variant
-    assign subtitle = block.settings.subtitle | default: extra.metafields.custom.subtitle.value
-    assign card_id = 'complete-routine-' | append: block.id
-  -%}
+  if block.settings.product != blank and block.settings.product.id != product.id and block.settings.product.available
+    assign extra = block.settings.product
+    assign is_fixed = true
+    assign subtitle = block.settings.subtitle
+  else
+    assign source_collection = block.settings.fallback_collection | default: collections.all
+    for candidate in source_collection.products limit: 20
+      if candidate.id != product.id and candidate.available
+        assign extra = candidate
+        break
+      endif
+    endfor
+  endif
 
-  <complete-routine class="complete-routine" form="{{ product_form_id }}" id="{{ card_id }}" {{ block.shopify_attributes }}>
+  assign card_id = 'complete-routine-' | append: block.id
+-%}
+
+{%- if extra != blank -%}
+
+  <complete-routine class="complete-routine" form="{{ product_form_id }}" id="{{ card_id }}" current-product-id="{{ product.id }}" {% unless is_fixed %}use-recently-viewed{% endunless %} {% if block.settings.checked_by_default %}checked-by-default{% endif %} {{ block.shopify_attributes }}>
     {%- if block.settings.heading != blank -%}
       <p class="complete-routine__heading h6">{{ block.settings.heading | escape }}</p>
     {%- endif -%}
 
     <label class="complete-routine__card" style="background: {{ block.settings.card_background }}; border-radius: {{ block.settings.card_radius }}px;">
-      <span class="complete-routine__media">
-        {%- if extra.featured_media != blank -%}
-          {{- extra.featured_media | image_url: width: 240 | image_tag: loading: 'lazy', sizes: '80px', widths: '80,160,240', alt: extra.featured_media.alt | default: extra.title -}}
-        {%- endif -%}
-      </span>
-
-      <span class="complete-routine__info">
-        <span class="complete-routine__title">{{ extra.title | escape }}</span>
-
-        {%- if subtitle != blank -%}
-          <span class="complete-routine__subtitle">{{ subtitle | escape }}</span>
-        {%- endif -%}
-
-        <span class="complete-routine__price" data-complete-routine-price>{{ extra_variant.price | money }}</span>
-      </span>
-
-      <span class="complete-routine__controls">
-        <input type="checkbox" class="complete-routine__checkbox" data-complete-routine-checkbox aria-label="{{ 'product.general.add_to_cart_button' | t | escape }}: {{ extra.title | escape }}" {% if block.settings.checked_by_default %}checked{% endif %}>
-
-        {%- if extra.has_only_default_variant -%}
-          <input type="hidden" data-complete-routine-variant value="{{ extra_variant.id }}">
-        {%- else -%}
-          <span class="complete-routine__select-wrapper">
-            <select class="complete-routine__select" data-complete-routine-variant aria-label="{{ extra.title | escape }}">
-              {%- for variant in extra.variants -%}
-                <option value="{{ variant.id }}" data-price="{{ variant.price | money | escape }}" {% if variant == extra_variant %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>
-                  {{- variant.title | escape -}}
-                </option>
-              {%- endfor -%}
-            </select>
-            <svg class="complete-routine__caret" viewBox="0 0 10 6" aria-hidden="true" focusable="false"><path d="M0 0h10L5 6z" fill="currentColor"/></svg>
-          </span>
-        {%- endif -%}
-      </span>
+      {%- render 'complete-routine-card-content', extra: extra, subtitle: subtitle, checked: block.settings.checked_by_default -%}
     </label>
   </complete-routine>
 
@@ -85,6 +75,20 @@ cart drawer / cart page that opens already shows both. The dynamic checkout ("Bu
       padding: 1rem 1.25rem 1rem 1rem;
       cursor: pointer;
       text-align: start;
+    }
+
+    {%- comment -%}The content wrapper takes no box of its own: photo, text and controls stay the card's three grid columns{%- endcomment -%}
+    #{{ card_id }} .complete-routine__content {
+      display: contents;
+    }
+
+    {%- comment -%}While the last viewed product is being loaded (a moment), the card is hidden instead of showing the best seller and then switching{%- endcomment -%}
+    #{{ card_id }}[loading] .complete-routine__card {
+      opacity: 0;
+    }
+
+    #{{ card_id }} .complete-routine__card {
+      transition: opacity .3s ease;
     }
 
     #{{ card_id }} .complete-routine__media img {
@@ -190,31 +194,75 @@ cart drawer / cart page that opens already shows both. The dynamic checkout ("Bu
     if (!window.customElements.get('complete-routine')) {
       window.customElements.define('complete-routine', class extends HTMLElement {
         connectedCallback() {
-          this.checkbox = this.querySelector('[data-complete-routine-checkbox]');
-          this.variant = this.querySelector('[data-complete-routine-variant]');
-          this.price = this.querySelector('[data-complete-routine-price]');
-
-          // The price follows the chosen variant
-          if (this.variant && this.variant.tagName === 'SELECT') {
-            this.variant.addEventListener('change', () => {
-              var option = this.variant.selectedOptions[0];
-              if (option && this.price) this.price.textContent = option.getAttribute('data-price');
-            });
-          }
+          // The price follows the chosen variant (delegated: the card content can be swapped)
+          this.addEventListener('change', (event) => {
+            var select = event.target.closest && event.target.closest('select[data-complete-routine-variant]');
+            if (!select) return;
+            var option = select.selectedOptions[0];
+            var price = this.querySelector('[data-complete-routine-price]');
+            if (option && price) price.textContent = option.getAttribute('data-price');
+          });
 
           this.onSubmit = this.onSubmit.bind(this);
           document.addEventListener('submit', this.onSubmit, true);
+
+          if (this.hasAttribute('use-recently-viewed')) this.loadRecentlyViewed();
         }
 
         disconnectedCallback() {
           document.removeEventListener('submit', this.onSubmit, true);
         }
 
+        // The last product the visitor viewed, other than this one (the theme keeps the list in localStorage, most recent first)
+        recentlyViewedId() {
+          var current = Number(this.getAttribute('current-product-id'));
+          var list = [];
+          try {
+            list = JSON.parse(localStorage.getItem('theme:recently-viewed-products') || '[]');
+          } catch (error) {}
+          if (!Array.isArray(list)) return null;
+          for (var i = 0; i < list.length; i++) {
+            if (Number(list[i]) !== current) return Number(list[i]);
+          }
+          return null;
+        }
+
+        async loadRecentlyViewed() {
+          var id = this.recentlyViewedId();
+          var shown = this.querySelector('[data-product-id]');
+          if (!id || (shown && Number(shown.getAttribute('data-product-id')) === id)) return;
+
+          this.setAttribute('loading', '');
+          var fallback = setTimeout(() => this.removeAttribute('loading'), 2500);
+
+          try {
+            var url = window.Shopify.routes.root + 'search?type=product&q=id:' + id + '&section_id=complete-routine-card';
+            var response = await fetch(url, { priority: 'low' });
+            var html = new DOMParser().parseFromString(await response.text(), 'text/html');
+            var content = html.querySelector('.complete-routine__content');
+            var current = this.querySelector('.complete-routine__content');
+
+            if (response.ok && content && current) {
+              var checkbox = content.querySelector('[data-complete-routine-checkbox]');
+              if (checkbox) checkbox.checked = this.hasAttribute('checked-by-default');
+              current.replaceWith(document.importNode(content, true));
+            }
+          } catch (error) {
+            // The best seller rendered by the page stays
+          }
+
+          clearTimeout(fallback);
+          this.removeAttribute('loading');
+        }
+
         // Ticked: the extra product is added first, then the main form is submitted again (now let through) and runs as usual
         onSubmit(event) {
           var form = event.target;
+          var checkbox = this.querySelector('[data-complete-routine-checkbox]');
+          var variant = this.querySelector('[data-complete-routine-variant]');
+
           // getAttribute, not form.id: the product form has a field named "id" (the variant), which form.id returns instead
-          if (!form || !form.getAttribute || form.getAttribute('id') !== this.getAttribute('form') || !this.checkbox || !this.checkbox.checked || !this.variant) return;
+          if (!form || !form.getAttribute || form.getAttribute('id') !== this.getAttribute('form') || !checkbox || !checkbox.checked || !variant) return;
           if (form.__completeRoutinePass) {
             form.__completeRoutinePass = false;
             return;
@@ -229,7 +277,7 @@ cart drawer / cart page that opens already shows both. The dynamic checkout ("Bu
           fetch(window.Shopify.routes.root + 'cart/add.js', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-            body: JSON.stringify({ items: [{ id: Number(this.variant.value), quantity: 1 }] })
+            body: JSON.stringify({ items: [{ id: Number(variant.value), quantity: 1 }] })
           }).catch(function () {}).finally(function () {
             if (submitter) submitter.removeAttribute('aria-busy');
             form.__completeRoutinePass = true;
