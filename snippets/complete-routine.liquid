@@ -21,7 +21,7 @@ cart drawer / cart page that opens already shows both. The dynamic checkout ("Bu
 
   <complete-routine class="complete-routine" form="{{ product_form_id }}" id="{{ card_id }}" {{ block.shopify_attributes }}>
     {%- if block.settings.heading != blank -%}
-      <p class="complete-routine__heading">{{ block.settings.heading | escape }}</p>
+      <p class="complete-routine__heading h6">{{ block.settings.heading | escape }}</p>
     {%- endif -%}
 
     <label class="complete-routine__card" style="background: {{ block.settings.card_background }}; border-radius: {{ block.settings.card_radius }}px;">
@@ -68,13 +68,12 @@ cart drawer / cart page that opens already shows both. The dynamic checkout ("Bu
       gap: 1rem;
     }
 
+    {%- comment -%}
+    Everything inherits the theme's typography, nothing is forced: the heading is a theme heading (.h6: heading font, weight, case and spacing from
+    Theme settings > Typography > Headings), and the name, line and price are plain body text (font, weight and case as typed).
+    {%- endcomment -%}
     #{{ card_id }} .complete-routine__heading {
       margin: 0;
-      font-family: var(--heading-font-family);
-      font-weight: var(--heading-font-weight, 600);
-      font-size: var(--text-base);
-      letter-spacing: var(--heading-letter-spacing);
-      text-transform: uppercase;
     }
 
     {%- comment -%}Photo | name, line and price | checkbox on top, variant selector at the bottom{%- endcomment -%}
@@ -102,13 +101,7 @@ cart drawer / cart page that opens already shows both. The dynamic checkout ("Bu
       min-width: 0;
     }
 
-    #{{ card_id }} .complete-routine__title {
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
     #{{ card_id }} .complete-routine__price {
-      font-weight: 600;
       margin-block-start: .25rem;
     }
 
