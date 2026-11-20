@@ -213,9 +213,9 @@
   drawer. Closing, the drawer folds back up first and only then the header unpaints, here with a short soft curve. The page-color layer behind the
   floating header (::after) follows the same timing. The root attribute is set by the script at the end of this file, only for that one change.
 
-  While a drawer keeps the header solid, the header keeps its transparent-state padding (data-header-drawer-solid): turning solid normally
-  changes its height (the "Header height padding" setting applies only once scrolled), and the drawer, measured at the header's bottom edge when it
-  opens, was left at the old edge and jumped once open.
+  Turning solid, the header takes its solid height ("Header height padding", eg. 18px) as always, but when a drawer opens it does so at once
+  instead of animating the padding: the drawer measures the header's bottom edge one frame after it opens (search / cart / menu drawer scripts),
+  so it reads the final edge and does not jump.
   {%- endcomment -%}
   :root[data-header-drawer-paint="opening"] #shopify-section-{{ section.id }} .header::before,
   :root[data-header-drawer-paint="opening"] #shopify-section-{{ section.id }}::after {
@@ -227,8 +227,8 @@
     transition: transform .35s cubic-bezier(.4, 0, .2, 1) !important;
   }
 
-  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group))[data-header-drawer-solid] #shopify-section-{{ section.id }} .header {
-    padding-block: var(--header-padding-inline) !important;
+  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group))[data-header-drawer-paint="opening"] #shopify-section-{{ section.id }} .header {
+    transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius .7s cubic-bezier(.22, 1, .36, 1), border-bottom-right-radius .7s cubic-bezier(.22, 1, .36, 1) !important;
   }
 
   {%- comment -%}
@@ -1307,7 +1307,7 @@
     window.addEventListener('header:allow-transparent-header', function () {
       if (!root.hasAttribute('data-header-drawer-solid')) return;
       if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) setPaint('closing', 0.35);
-      // The padding stays as it is until the header has unpainted (it is transparent then, with the same padding: nothing moves)
+      // Marks the end of the drawer-driven solid state once the header has unpainted
       setTimeout(function () { root.removeAttribute('data-header-drawer-solid'); }, 450);
     }, true);
   })();
