@@ -290,6 +290,15 @@
       transform: scaleY(0);
     }
 
+    {%- comment -%}
+    With a drawer open (menu, search, cart) it covers the whole height again: the drawer's veil starts at the header's bottom edge, so the cut-outs
+    of the bottom rounded corners, above it, showed the picture of the first section raw. Filled with the page color they match the gutters around
+    the header, and the corners read as rounded against the veil.
+    {%- endcomment -%}
+    :root:has(header-menu-drawer[open], #search-drawer[open], #cart-drawer[open]):has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}::after {
+      height: var(--header-height, 0px);
+    }
+
     @media (prefers-reduced-motion: reduce) {
       :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}::after {
         transition: none;
