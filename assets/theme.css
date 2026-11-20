@@ -3597,7 +3597,7 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 /* "Split" info (name on the left, price on the right, snippets/product-card.liquid): the price sits on the SAME line as the product name, on its
    baseline, instead of at the bottom of the info (level with the last line). The info becomes a two-column grid: its nested stacks are flattened
    (display: contents) so the enfoque line, the name, the sistema line and the rating are rows of the first column, and the price is placed in the
-   second column on the name's row (--product-card-title-row: one row further down for each line above the name). The lines keep the same small
+   second column on the name's row (the price-list sits inside the same .contents wrapper as the text in the markup; --product-card-title-row: one row further down for each line above the name). The lines keep the same small
    gap as before; the "+" margins between them (.product-subtitle + .product-title) still apply. */
 .product-card__info > .h-stack.justify-between {
   --product-card-title-row: 1;
@@ -3624,7 +3624,7 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   display: contents;
 }
 
-.product-card__info > .h-stack.justify-between > .contents * {
+.product-card__info > .h-stack.justify-between > .contents > .v-stack * {
   grid-column: 1;
 }
 
@@ -3632,7 +3632,7 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   align-self: baseline;
 }
 
-.product-card__info > .h-stack.justify-between > price-list {
+.product-card__info > .h-stack.justify-between price-list {
   grid-column: 2;
   grid-row: var(--product-card-title-row);
   align-self: baseline;
@@ -3651,7 +3651,7 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   flex-wrap: nowrap;
 }
 
-.product-card__info > .h-stack.justify-between > price-list {
+.product-card__info > .h-stack.justify-between price-list {
   flex: none;
   flex-wrap: nowrap;
   white-space: nowrap;
