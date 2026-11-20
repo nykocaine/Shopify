@@ -1,5 +1,24 @@
 {%- if section.blocks.size > 0 -%}
   <style>
+    {%- if section.settings.overlay_gradient -%}
+      {%- comment -%}
+      Overlay as a gradient instead of a solid veil: the slide's overlay color (and its opacity setting, which still sets the strength) is full
+      at the top and at the bottom edges and fades out towards the middle, which stays almost clear. Eased stops (100% - 70% - 35% - 0) so the
+      fade has no visible edge. The theme's .with-overlay (theme.css) already paints --gradient-overlay when it is set.
+      {%- endcomment -%}
+      #shopify-section-{{ section.id }} .with-overlay {
+        --gradient-overlay: linear-gradient(to bottom,
+          rgb(var(--overlay)) 0%,
+          color-mix(in srgb, rgb(var(--overlay)) 70%, transparent) 12%,
+          color-mix(in srgb, rgb(var(--overlay)) 35%, transparent) 25%,
+          transparent 40%,
+          transparent 60%,
+          color-mix(in srgb, rgb(var(--overlay)) 35%, transparent) 75%,
+          color-mix(in srgb, rgb(var(--overlay)) 70%, transparent) 88%,
+          rgb(var(--overlay)) 100%);
+      }
+    {%- endif -%}
+
     #shopify-section-{{ section.id }} {
       {%- unless section.settings.allow_transparent_header -%}
         margin-block-start: calc(var(--section-vertical-spacing) / 2);
@@ -500,6 +519,13 @@
       "unit": "px",
       "label": "t:sections.slideshow.border_radius",
       "default": 0
+    },
+    {
+      "type": "checkbox",
+      "id": "overlay_gradient",
+      "label": "Overlay en degradado (arriba y abajo)",
+      "info": "El overlay de cada slide se oscurece desde arriba y desde abajo y se desvanece hacia el centro, que queda casi limpio. Su color y su opacidad (en cada slide) siguen controlando el tono y la intensidad. Desactivado: color sólido en toda la imagen.",
+      "default": true
     },
     {
       "type": "range",
