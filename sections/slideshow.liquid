@@ -51,13 +51,18 @@
 
     {%- if section.settings.hide_header_logo -%}
       {%- comment -%}
-      "Hide the header logo": whenever this slideshow is on the page, the logo in the header is not shown, in any header state (transparent over
-      the slideshow, solid, scrolled, floating or not). It is only made invisible and unclickable - not removed - so the header's layout
-      (menu centering, icons) stays exactly where it is and screen readers still get the store name.
+      "Hide the header logo": the logo in the header is hidden only while the header is transparent (over this slideshow, before scrolling).
+      Once the header turns solid (scrolled, or a menu / search / cart drawer open) the logo comes back, with the same timing as the header's
+      own text and logo swap; scrolling back to the top hides it again. It is only made invisible and unclickable - not removed - so the
+      header's layout (menu centering, icons) stays where it is and screen readers still get the store name.
       {%- endcomment -%}
       .header__logo {
-        opacity: 0 !important;
-        pointer-events: none !important;
+        transition: opacity var(--header-solid-transition, .45s cubic-bezier(.4, 0, .2, 1)) var(--header-content-delay, 0s);
+      }
+
+      .header:not(.is-solid, :has([open])) .header__logo {
+        opacity: 0;
+        pointer-events: none;
       }
     {%- endif -%}
 
@@ -249,7 +254,7 @@
       "type": "checkbox",
       "id": "hide_header_logo",
       "label": "Hide the header logo",
-      "info": "Hides the logo at the top of the header whenever this slideshow is on the page, whether the header is transparent or not.",
+      "info": "Hides the logo at the top of the header while the header is transparent over this slideshow. It shows again once the header turns solid on scroll.",
       "default": false
     },
     {
