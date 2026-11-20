@@ -3765,9 +3765,11 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 }
 
 @media screen and (pointer: fine) {
+  /* No mix-blend-mode here: "plus-lighter" (to add the two photos' light during the cross-fade) is composited badly by Safari and some GPUs, which
+     drew a light / white box around the image as soon as the second image was turned on. A plain cross-fade instead: the second image fades in on
+     top, and the first one only fades out once the second covers it (see the hover rule further down), so nothing shows through in between. */
   .product-card__image--secondary {
     opacity: 0;
-    mix-blend-mode: plus-lighter;
     display: block;
   }
 }
@@ -3983,6 +3985,8 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   .product-card__figure:hover:has(.product-card__image--secondary) .product-card__image--primary {
     opacity: 0;
     transform: scale(1.05);
+    /* Hidden only once the second image (on top) is fully in; coming back it shows again at once, under the second image fading out */
+    transition-delay: .5s, 0s;
   }
 
   .product-card__figure:hover:has(.product-card__image--secondary) .product-card__image--secondary {
