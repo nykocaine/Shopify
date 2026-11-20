@@ -185,6 +185,47 @@
         min-height: calc({{ section.settings.desktop_height }}svh - var(--announcement-bar-height, 0px) - var(--announcement-bar-gap, 0px) - var(--header-top-gap-rest, var(--header-top-gap, 0px)) - var(--countdown-condensed-height, 0px));
       }
     }
+
+    {%- if section.settings.logo_scroll_effect == 'fly' -%}
+      {%- comment -%}
+      "Logo scroll effect: Fly to the header" (driven by <slideshow-logo-flight> below). While the effect runs, the root carries:
+      - data-logo-fly: the effect is on. The header's own logo is hidden until the flying logo reaches it.
+      - data-logo-arrived: the slide's logo has reached the header logo: the two cross-fade in place (same spot, same size).
+      - data-logo-flight: the logo is still on its way (or just arrived): the header stays on screen even if "hide on scroll" would slide it away,
+        so the logo always has somewhere to land. Released a little after the arrival; hide on scroll then works as usual.
+      Visitors who prefer reduced motion get no flight: the header logo is just hidden while the header is transparent (same as "Hide the header logo").
+      {%- endcomment -%}
+      :root[data-logo-fly] .header__logo {
+        transition: opacity .35s ease;
+      }
+
+      :root[data-logo-fly]:not([data-logo-arrived]) .header__logo {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #shopify-section-{{ section.id }} .slideshow__logo img {
+        transform-origin: center;
+        transition: opacity .35s ease;
+      }
+
+      :root[data-logo-arrived] #shopify-section-{{ section.id }} .slideshow__logo img {
+        opacity: 0;
+      }
+
+      :root[data-logo-flight] .shopify-section--header,
+      :root[data-logo-flight] .shopify-section--header .header {
+        transform: none !important;
+        visibility: visible !important;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .header:not(.is-solid, :has([open])) .header__logo {
+          opacity: 0;
+          pointer-events: none;
+        }
+      }
+    {%- endif -%}
   </style>
 
   <div class="slideshow-wrapper {% if section.settings.floating_slideshow %}container{% endif %}">
@@ -196,6 +237,125 @@
       {%- endif -%}
     </slideshow-carousel>
   </div>
+
+  {%- if section.settings.logo_scroll_effect == 'fly' -%}
+    <slideshow-logo-flight section-id="{{ section.id }}" hidden></slideshow-logo-flight>
+
+    <script>
+      {%- comment -%}
+      Fly to the header: while the page scrolls, the logo of the slideshow travels to the exact spot of the logo in the header, shrinking to its
+      size, tied to the scroll (half way down, half way there; scrolling back up brings it back, growing again). It flies over the transparent
+      header; when it lands the header turns solid (the #header-scroll-tracker of layout/theme.liquid, which sets .is-solid, is moved to the landing distance, so the
+      header's own paint transition starts exactly then) and the two logos cross-fade in place.
+
+      The distance of the flight is the vertical distance between the two logos at the top of the page (D). The logo already rises with the page at
+      the scroll speed, so it reaches the header's height after exactly D pixels of scroll: on the way only a small vertical correction is needed
+      (the header can move a little - the announcement bar scrolls away, the header padding changes), plus the sideways move and the shrink.
+      {%- endcomment -%}
+      if (!window.customElements.get('slideshow-logo-flight')) {
+        window.customElements.define('slideshow-logo-flight', class extends HTMLElement {
+          connectedCallback() {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+            this.section = document.getElementById('shopify-section-' + this.getAttribute('section-id'));
+            this.tracker = document.getElementById('header-scroll-tracker');
+            this.root = document.documentElement;
+
+            // Only when the header is transparent over this slideshow: the slideshow is the first section of the page and allows it
+            var firstSection = document.querySelector('main > .shopify-section');
+            if (!this.section || firstSection !== this.section || !this.section.querySelector('[allow-transparent-header]')) return;
+
+            this.abort = new AbortController();
+            var options = { signal: this.abort.signal, passive: true };
+            this.update = this.update.bind(this);
+            this.requestUpdate = function () {
+              if (this.frame) return;
+              this.frame = requestAnimationFrame(function () { this.frame = null; this.update(); }.bind(this));
+            }.bind(this);
+
+            window.addEventListener('scroll', this.requestUpdate, options);
+            window.addEventListener('resize', function () { this.measured = false; this.requestUpdate(); }.bind(this), options);
+            window.addEventListener('load', function () { this.measured = false; this.requestUpdate(); }.bind(this), options);
+            document.fonts && document.fonts.ready.then(function () { this.measured = false; this.requestUpdate(); }.bind(this));
+
+            this.root.setAttribute('data-logo-fly', '');
+            this.update();
+          }
+
+          disconnectedCallback() {
+            if (this.abort) this.abort.abort();
+            if (this.frame) cancelAnimationFrame(this.frame);
+            this.root && ['data-logo-fly', 'data-logo-arrived', 'data-logo-flight'].forEach(function (name) { this.root.removeAttribute(name); }.bind(this));
+            if (this.tracker) this.tracker.style.top = '0px';
+            if (this.logo) this.logo.style.transform = '';
+          }
+
+          // The logo of the slide on screen (the first one with a logo when no slide is marked as selected)
+          findLogo() {
+            return this.section.querySelector('.is-selected .slideshow__logo img, [aria-current="true"] .slideshow__logo img') || this.section.querySelector('.slideshow__logo img');
+          }
+
+          findTarget() {
+            return document.querySelector('.header__logo-image:not(.header__logo-image--transparent)') || document.querySelector('.header__logo');
+          }
+
+          // Where the slide's logo sits in the page without any flight (its own transform taken off for the measure), and the flight distance
+          measure() {
+            var logo = this.findLogo();
+            var target = this.findTarget();
+            if (this.logo && this.logo !== logo) this.logo.style.transform = '';
+            this.logo = logo;
+            this.target = target;
+            if (!logo || !target) return false;
+
+            var transform = logo.style.transform;
+            logo.style.transform = 'none';
+            var rect = logo.getBoundingClientRect();
+            logo.style.transform = transform;
+
+            this.start = {
+              x: rect.left + rect.width / 2 + window.scrollX,
+              y: rect.top + rect.height / 2 + window.scrollY,
+              width: rect.width
+            };
+
+            // The header's logo at the top of the page: its position now, minus how far the header has moved since (it is sticky, so it
+            // does not move with the scroll once stuck - at the top of the page both are the same)
+            var targetRect = target.getBoundingClientRect();
+            var targetY = window.scrollY < 1 ? targetRect.top + targetRect.height / 2 : (this.targetY0 || targetRect.top + targetRect.height / 2);
+            this.targetY0 = targetY;
+
+            this.distance = Math.max(0, this.start.y - targetY);
+            if (this.tracker) this.tracker.style.top = Math.round(this.distance) + 'px';
+            this.measured = this.distance > 0 && rect.width > 0;
+            return this.measured;
+          }
+
+          update() {
+            if (!this.measured && !this.measure()) return;
+
+            var scroll = window.scrollY;
+            var progress = Math.min(1, Math.max(0, scroll / this.distance));
+            var targetRect = this.target.getBoundingClientRect();
+            var targetX = targetRect.left + targetRect.width / 2;
+            var targetY = targetRect.top + targetRect.height / 2;
+
+            // Where the logo is without any transform (it rises with the page), and where it should be at this point of the flight
+            var naturalX = this.start.x - window.scrollX;
+            var naturalY = this.start.y - scroll;
+            var x = naturalX + (targetX - naturalX) * progress;
+            var y = progress < 1 ? naturalY + (targetY - naturalY) * progress * progress : targetY;
+            var scale = 1 + (targetRect.width / this.start.width - 1) * progress;
+
+            this.logo.style.transform = 'translate3d(' + (x - naturalX) + 'px, ' + (y - naturalY) + 'px, 0) scale(' + scale + ')';
+
+            this.root.toggleAttribute('data-logo-arrived', progress >= 1);
+            this.root.toggleAttribute('data-logo-flight', scroll < this.distance + 200);
+          }
+        });
+      }
+    </script>
+  {%- endif -%}
 {%- endif -%}
 
 {% schema %}
@@ -256,6 +416,17 @@
       "label": "Hide the header logo",
       "info": "Hides the logo at the top of the header while the header is transparent over this slideshow. It shows again once the header turns solid on scroll.",
       "default": false
+    },
+    {
+      "type": "select",
+      "id": "logo_scroll_effect",
+      "label": "Logo scroll effect",
+      "info": "Fly to the header: on scroll, the logo of the slide shrinks and travels to the logo of the header, then the header turns solid. Use the same logo design in the slide and in the header. Works when this slideshow is the first section, with the transparent header.",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "fly", "label": "Fly to the header" }
+      ],
+      "default": "none"
     },
     {
       "type": "range",
