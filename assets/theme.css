@@ -3673,6 +3673,12 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 .product-card__meta-badge.product-card__meta-badge--plain {
   padding: 0;
   border-width: 0 !important;
+  /* Exactly the body text size (the pill is 1px smaller), with the body line height */
+  font-size: var(--text-base);
+  line-height: var(--text-line-height);
+  /* No trimming of the line here: the trim (used to center the text in the pill) cuts the line at the baseline, and with no padding left below
+     it the tails of letters like p, g or y were cut off by the overflow that makes long text end in "...". */
+  text-box: normal;
 }
 
 .product-card__meta-badge--top-left { inset-block-start: 0; inset-inline-start: 0; }
