@@ -1,0 +1,52 @@
+{%- doc -%}
+Inside of the "Complete your routine" card (snippets/complete-routine.liquid): photo, name, line, price, checkbox and variant selector of one
+product. Rendered by the block itself (the best-selling / fixed product) and by sections/complete-routine-card.liquid, which the block fetches to
+swap in the last product the visitor viewed.
+
+@param {object} extra - the product to show
+@param {string} [subtitle] - the short line under the name (falls back to the product's custom.subtitle metafield)
+@param {boolean} [checked] - whether the checkbox starts ticked
+{%- enddoc -%}
+
+{%- liquid
+  assign extra_variant = extra.selected_or_first_available_variant
+  assign subtitle = subtitle | default: extra.metafields.custom.subtitle.value
+  assign block_checked = checked
+-%}
+
+<span class="complete-routine__content" data-product-id="{{ extra.id }}">
+      <span class="complete-routine__media">
+        {%- if extra.featured_media != blank -%}
+          {{- extra.featured_media | image_url: width: 240 | image_tag: loading: 'lazy', sizes: '80px', widths: '80,160,240', alt: extra.featured_media.alt | default: extra.title -}}
+        {%- endif -%}
+      </span>
+
+      <span class="complete-routine__info">
+        <span class="complete-routine__title">{{ extra.title | escape }}</span>
+
+        {%- if subtitle != blank -%}
+          <span class="complete-routine__subtitle">{{ subtitle | escape }}</span>
+        {%- endif -%}
+
+        <span class="complete-routine__price" data-complete-routine-price>{{ extra_variant.price | money }}</span>
+      </span>
+
+      <span class="complete-routine__controls">
+        <input type="checkbox" class="complete-routine__checkbox" data-complete-routine-checkbox aria-label="{{ 'product.general.add_to_cart_button' | t | escape }}: {{ extra.title | escape }}" {% if block_checked %}checked{% endif %}>
+
+        {%- if extra.has_only_default_variant -%}
+          <input type="hidden" data-complete-routine-variant value="{{ extra_variant.id }}">
+        {%- else -%}
+          <span class="complete-routine__select-wrapper">
+            <select class="complete-routine__select" data-complete-routine-variant aria-label="{{ extra.title | escape }}">
+              {%- for variant in extra.variants -%}
+                <option value="{{ variant.id }}" data-price="{{ variant.price | money | escape }}" {% if variant == extra_variant %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>
+                  {{- variant.title | escape -}}
+                </option>
+              {%- endfor -%}
+            </select>
+            <svg class="complete-routine__caret" viewBox="0 0 10 6" aria-hidden="true" focusable="false"><path d="M0 0h10L5 6z" fill="currentColor"/></svg>
+          </span>
+        {%- endif -%}
+      </span>
+</span>

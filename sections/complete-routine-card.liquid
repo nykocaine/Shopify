@@ -1,0 +1,19 @@
+{%- comment -%}
+Not a section to add in the editor: it is fetched by the "Complete your routine" block of the main product (snippets/complete-routine.liquid) through
+the search page - /search?type=product&q=id:<id>&section_id=complete-routine-card - to get the card content of the last product the visitor viewed,
+the same way the theme's "Recently viewed products" section loads its products. Renders nothing when that product is not available.
+{%- endcomment -%}
+{%- for item in search.results -%}
+  {%- if item.object_type == 'product' and item.available -%}
+    {%- render 'complete-routine-card-content', extra: item -%}
+    {%- break -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{% schema %}
+{
+  "name": "Complete routine card",
+  "tag": "div",
+  "settings": []
+}
+{% endschema %}
