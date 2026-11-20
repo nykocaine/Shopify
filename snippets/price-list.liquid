@@ -47,9 +47,9 @@ Render a list of price for a product, variant or line item.
       <span class="sr-only">{{ 'product.price.sale_price' | t }}</span>
 
       {%- if settings.currency_code_enabled -%}
-        {{- variant.price | money_with_currency -}}
+        {{- variant.price | money_with_currency | replace: 'S/', 'S<span class="price-slash">/</span>' -}}
       {%- else -%}
-        {{- variant.price | money -}}
+        {{- variant.price | money | replace: 'S/', 'S<span class="price-slash">/</span>' -}}
       {%- endif -%}
     </sale-price>
 
@@ -58,9 +58,9 @@ Render a list of price for a product, variant or line item.
         <span class="sr-only">{{ 'product.price.regular_price' | t }}</span>
 
         {%- if settings.currency_code_enabled -%}
-          {{- variant.compare_at_price | money_with_currency -}}
+          {{- variant.compare_at_price | money_with_currency | replace: 'S/', 'S<span class="price-slash">/</span>' -}}
         {%- else -%}
-          {{- variant.compare_at_price | money -}}
+          {{- variant.compare_at_price | money | replace: 'S/', 'S<span class="price-slash">/</span>' -}}
         {%- endif -%}
       </compare-at-price>
     {%- endif -%}
@@ -112,6 +112,10 @@ Render a list of price for a product, variant or line item.
         assign variant_price = variant.price | money
         assign variant_compare_at_price = variant.compare_at_price | money
       endif
+
+      # The slash of the sol sign ("S/.") is a hairline in Swiss 721 at every weight: it is wrapped so it can be drawn as heavy as the digits (theme.css .price-slash)
+      assign variant_price = variant_price | replace: 'S/', 'S<span class="price-slash">/</span>'
+      assign variant_compare_at_price = variant_compare_at_price | replace: 'S/', 'S<span class="price-slash">/</span>'
 
       assign is_variant_on_sale = false
 

@@ -3585,6 +3585,14 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   -webkit-text-stroke: 0;
 }
 
+/* The slash of the sol sign ("S/.", snippets/price-list.liquid and the card's button): in Swiss 721 it is a hairline at every weight (about 125 units
+   thick against the 230 of a medium stem, on a 2048 grid), so next to the medium digits it looked light. A stroke of .05em around it (half outside
+   the outline on each side, the fill painted on top) brings it to the digits' thickness. Added to the price's own thin stroke. */
+.price-slash {
+  -webkit-text-stroke: calc(.05em + .3px) currentColor;
+  paint-order: stroke fill;
+}
+
 /* Product name in the card: the same weight as the card price above (medium 500 plus the same very thin stroke), whatever the
    title's typography setting (body text, heading or subheading). */
 .product-card .product-title {
