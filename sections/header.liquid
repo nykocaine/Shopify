@@ -266,14 +266,10 @@
   }
 
   {%- comment -%}
-  Transparent header (over a first section that allows it, until it turns solid): the padding inside the header is the same on all four sides -
-  the top and bottom take the side padding (--header-padding-inline), whatever "Header height padding" says. That setting only applies once the
-  header turns solid (scrolled, or a drawer open), so changing it never changes the transparent header. The top and bottom padding animate with
-  the same timing as the background. The setting is an inline style on .header, hence !important. Same condition as the other transparent-header rules.
+  The transparent header has the same height as the solid one: both use "Header height padding" (the inline padding on .header). The transparent
+  header used to take its side padding at the top and bottom too, so turning solid (or back) resized it, and its logo jumped / flickered as it
+  was re-centred in a header of another height. Now turning solid changes only the colors, never the size.
   {%- endcomment -%}
-  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} .header:not(.is-solid) {
-    padding-block: var(--header-padding-inline) !important;
-  }
 
   {%- comment -%}
   Pages with the transparent header: the header takes no room in the page by having a section of zero height (the header shows on top of it,
