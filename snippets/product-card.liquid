@@ -358,7 +358,8 @@ based on your desired layout (and remove most of the settings associated), and t
       {%- endif -%}
 
       {%- comment -%}The modal sits outside the touch-only icon wrapper above: that wrapper is not displayed with a mouse, and the button under the info opens this same modal{%- endcomment -%}
-      {%- unless quick_buy_single -%}
+      {%- comment -%}Not in the single card, which has no quick buy at all (nothing would open it){%- endcomment -%}
+      {%- unless quick_buy_single or single_card -%}
         <quick-buy-modal id="{{ quick_buy_id }}" product-url="{{ product.url }}" class="modal modal--quick-buy color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
           {%- comment -%}The content will be dynamically filled in JS{%- endcomment -%}
         </quick-buy-modal>
@@ -521,9 +522,7 @@ based on your desired layout (and remove most of the settings associated), and t
       {%- liquid
         # Single card: no quick buy button at the bottom (and no cart icon over the image): the card is just the image and the info
         assign show_quick_buy_below = false
-        if single_card
-          assign show_quick_buy_below = false
-        elsif quick_buy_desktop
+        if single_card == false and quick_buy_desktop
           assign show_quick_buy_below = true
           assign quick_buy_below_class = 'touch:hidden'
         endif
