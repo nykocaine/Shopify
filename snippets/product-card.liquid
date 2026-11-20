@@ -70,6 +70,10 @@ based on your desired layout (and remove most of the settings associated), and t
 
   if settings.product_card_info_position == 'outside'
     assign product_card_classes = product_card_classes | append: ' product-card--info-outside'
+  elsif settings.product_card_info_position == 'card'
+    # Single card: laid out like "outside" (image, then the info under it), but the whole card is one box with the card's color scheme and
+    # radius (theme.css, .product-card--single)
+    assign product_card_classes = product_card_classes | append: ' product-card--info-outside product-card--single'
   else
     assign product_card_classes = product_card_classes | append: ' product-card--info-inside'
   endif
@@ -313,12 +317,23 @@ based on your desired layout (and remove most of the settings associated), and t
         endif
 
         assign button_content = '<span>' | append: button_label | append: '</span><span>' | append: button_price | append: '</span>'
+        assign button_class = 'buy-buttons__cta'
+
+        # Single card: "Comprar – S/ 139.00", centered, with the price in bold (like the reference), the same on touch screens and with a mouse
+        assign single_card = false
+        if settings.product_card_info_position == 'card'
+          assign single_card = true
+          assign single_label = settings.product_card_buy_button_text | default: button_label | escape
+          assign button_content = '<span>' | append: single_label | append: '</span><span aria-hidden="true">–</span><span class="product-card__buy-price">' | append: button_price | append: '</span>'
+          assign button_class = 'buy-buttons__cta buy-buttons__cta--centered'
+        endif
 
         assign quick_buy_desktop = section.settings.show_quick_buy_desktop | default: true, allow_false: true
         assign quick_buy_mobile = section.settings.show_quick_buy_mobile | default: true, allow_false: true
       -%}
 
-      {%- if quick_buy_mobile -%}
+      {%- comment -%}Single card: no cart icon over the image, the button at the bottom of the card is the quick buy on every screen{%- endcomment -%}
+      {%- if quick_buy_mobile and single_card == false -%}
       <div class="product-card__quick-buy {% if settings.product_card_info_position == 'inside' and settings.product_card_info_vertical_alignment == 'end' %}product-card__quick-buy--top-mobile{% endif %} no-touch:hidden">
         {%- if quick_buy_single -%}
           <product-form>
@@ -507,18 +522,37 @@ based on your desired layout (and remove most of the settings associated), and t
       Quick buy with a mouse: an outline button under the product info, as wide as the card, in the text color of the card's own color scheme (theme.css,
       .product-card__quick-buy-below). Not shown for a product that picks its size on the image (the floating size selector takes that place).
       {%- endcomment -%}
-      {%- if show_quick_buy and product.available and show_product_size_selector == false and quick_buy_desktop -%}
-        <div class="product-card__quick-buy-below touch:hidden">
+      {%- liquid
+        assign show_quick_buy_below = false
+        if single_card
+          if quick_buy_desktop or quick_buy_mobile
+            assign show_quick_buy_below = true
+          endif
+          assign quick_buy_below_class = ''
+          unless quick_buy_mobile
+            assign quick_buy_below_class = 'md-max:hidden'
+          endunless
+          unless quick_buy_desktop
+            assign quick_buy_below_class = 'md:hidden'
+          endunless
+        elsif quick_buy_desktop
+          assign show_quick_buy_below = true
+          assign quick_buy_below_class = 'touch:hidden'
+        endif
+      -%}
+
+      {%- if show_quick_buy and product.available and show_product_size_selector == false and show_quick_buy_below -%}
+        <div class="product-card__quick-buy-below {{ quick_buy_below_class }}">
           {%- if quick_buy_single -%}
             <product-form>
               {%- form 'product', product -%}
                 <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
 
-                {%- render 'button', content: button_content, type: 'submit', style: 'outline', stretch: true, class: 'buy-buttons__cta' -%}
+                {%- render 'button', content: button_content, type: 'submit', style: 'outline', stretch: true, class: button_class -%}
               {%- endform -%}
             </product-form>
           {%- else -%}
-            {%- render 'button', content: button_content, aria_controls: quick_buy_id, style: 'outline', stretch: true, class: 'buy-buttons__cta' -%}
+            {%- render 'button', content: button_content, aria_controls: quick_buy_id, style: 'outline', stretch: true, class: button_class -%}
           {%- endif -%}
         </div>
       {%- endif -%}

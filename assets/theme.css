@@ -3840,6 +3840,50 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   border-radius: var(--product-card-border-radius, 0);
 }
 
+/* Single card ("Content position: Single card"): one box - the card's color scheme behind the image AND the info, the card radius on its four
+   corners (the image keeps only its top corners round, its bottom edge joins the info). The info has the same padding on every side, its content is
+   spread over the row's height (product lists share the row height between cards), so the quick buy button always sits at the bottom of the card,
+   level with its neighbours. The button: the whole width inside the padding, a pill, "Comprar – S/ 139.00" centered with the price in bold. */
+.product-card--single {
+  background-color: rgb(var(--background));
+  background-image: var(--background-gradient);
+  border-radius: var(--product-card-border-radius, 0);
+  overflow: hidden;
+}
+
+.product-card--single .product-card__figure {
+  border-radius: var(--product-card-border-radius, 0) var(--product-card-border-radius, 0) 0 0;
+}
+
+.product-card--single .product-card__media {
+  border-end-start-radius: 0 !important;
+  border-end-end-radius: 0 !important;
+}
+
+.product-card--single .product-card__info {
+  padding: var(--product-card-info-padding);
+  display: grid;
+}
+
+.product-card--single .product-card__info > div {
+  height: 100%;
+  align-content: space-between;
+}
+
+.product-card--single .product-card__quick-buy-below {
+  width: 100%;
+  margin-inline: 0;
+  margin-block-start: 1rem;
+}
+
+.product-card--single .product-card__quick-buy-below .button {
+  border-radius: 999px;
+}
+
+.product-card__buy-price {
+  font-weight: bold;
+}
+
 .product-card__info .product-card__swatch-list {
   grid-area: auto;
   margin: 0;

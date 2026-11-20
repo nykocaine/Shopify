@@ -1371,9 +1371,22 @@
           {
             "value": "outside",
             "label": "t:theme_settings.product_card.content_position_options.outside"
+          },
+          {
+            "value": "card",
+            "label": "Single card (image + info)"
           }
         ],
-        "default": "outside"
+        "default": "outside",
+        "info": "Single card: the image on top and the info under it in one card with the card's color scheme and rounded corners; the quick buy button sits at the bottom of the card on every screen."
+      },
+      {
+        "type": "text",
+        "id": "product_card_buy_button_text",
+        "label": "Quick buy button text (single card)",
+        "info": "Shown before the price, eg. \"Comprar – S/ 139.00\".",
+        "default": "Comprar",
+        "visible_if": "{{ settings.product_card_info_position == 'card' }}"
       },
       {
         "type": "select",
