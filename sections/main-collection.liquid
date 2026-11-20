@@ -122,12 +122,11 @@
     }
 
     {%- comment -%}
-    With the collection banner hidden (its "keep for SEO" setting), this card is the first thing under the header: it joins the header with square
-    top corners, like the banner did, instead of rounded corners against it.
+    With the collection banner hidden (its "keep for SEO" setting), this card is the first thing under the header: it gets the gap every first
+    section has under the header (theme.css, "Top rule": the page's side margin, --container-gutter), with its four corners rounded.
     {%- endcomment -%}
     .shopify-section--collection-banner:has(> .collection-banner--seo-only) + #shopify-section-{{ section.id }} > .color-scheme {
-      border-start-start-radius: 0 !important;
-      border-start-end-radius: 0 !important;
+      margin-block-start: var(--container-gutter);
     }
 
     {%- comment -%}
