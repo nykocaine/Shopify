@@ -206,6 +206,7 @@
 
       #shopify-section-{{ section.id }} .slideshow__logo img {
         transform-origin: center;
+        will-change: transform;
         transition: opacity .35s ease;
       }
 
@@ -274,7 +275,15 @@
             }.bind(this);
 
             window.addEventListener('scroll', this.requestUpdate, options);
-            window.addEventListener('resize', function () { this.measured = false; this.requestUpdate(); }.bind(this), options);
+            // Phones: the browser bar showing / hiding while scrolling fires resize events with only the height changed. Measuring again then (in
+            // the middle of a scroll) made the logo jump, so only a real width change (rotation, window resize) measures again.
+            this.lastWidth = window.innerWidth;
+            window.addEventListener('resize', function () {
+              if (window.innerWidth === this.lastWidth) return;
+              this.lastWidth = window.innerWidth;
+              this.measured = false;
+              this.requestUpdate();
+            }.bind(this), options);
             window.addEventListener('load', function () { this.measured = false; this.requestUpdate(); }.bind(this), options);
             document.fonts && document.fonts.ready.then(function () { this.measured = false; this.requestUpdate(); }.bind(this));
 
@@ -351,14 +360,22 @@
             // Where the logo is without any transform (it rises with the page), and where it should be at this point of the flight
             var naturalX = this.start.x - window.scrollX;
             var naturalY = this.start.y - scroll;
-            var x = naturalX + (targetX - naturalX) * progress;
-            var y = progress < 1 ? naturalY + (targetY - naturalY) * progress * progress : targetY;
-            var scale = 1 + (targetRect.width / this.start.width - 1) * progress;
+            // Eased (smooth start and soft landing) instead of linear: the shrink and the sideways move were even all the way, and on phones,
+            // where the flight is short and fast, the logo reached the header with a sudden stop. The vertical correction uses the same curve.
+            // The shrink and the sideways move run ahead of the rise (ease-out): the logo is already small and lined up with the header logo
+            // when it gets near the header, instead of crossing the header's icons (menu, search, cart) still big - most visible on phones.
+            var eased = progress * progress * (3 - 2 * progress);
+            var early = 1 - Math.pow(1 - progress, 3);
+            var x = naturalX + (targetX - naturalX) * early;
+            var y = progress < 1 ? naturalY + (targetY - naturalY) * eased : targetY;
+            var scale = 1 + (targetRect.width / this.start.width - 1) * early;
 
             this.logo.style.transform = 'translate3d(' + (x - naturalX) + 'px, ' + (y - naturalY) + 'px, 0) scale(' + scale + ')';
 
             this.root.toggleAttribute('data-logo-arrived', progress >= 1);
-            this.root.toggleAttribute('data-logo-flight', scroll < this.distance + 200);
+            // The header stays on screen for half a screen more after the landing (it used to be 200px): on phones it slid away right after the
+            // logo had landed in it, which looked like the logo was thrown off the screen.
+            this.root.toggleAttribute('data-logo-flight', scroll < this.distance + window.innerHeight / 2);
           }
         });
       }
