@@ -3599,58 +3599,9 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   font-size: calc(var(--text-base) + 2px);
 }
 
-/* "Split" info (name on the left, price on the right, snippets/product-card.liquid): the price sits on the SAME line as the product name, on its
-   baseline, instead of at the bottom of the info (level with the last line). The info becomes a two-column grid: its nested stacks are flattened
-   (display: contents) so the enfoque line, the name, the sistema line and the rating are rows of the first column, and the price is placed in the
-   second column on the name's row (--product-card-title-row: one row further down for each line above the name). The lines keep the same small
-   gap as before; the "+" margins between them (.product-subtitle + .product-title) still apply. */
-.product-card__info > .h-stack.justify-between {
-  --product-card-title-row: 1;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-  align-content: start;
-  column-gap: .625rem;
-  row-gap: .125rem;
-  display: grid;
-}
-
-.product-card__info:has(.badge-list) > .h-stack.justify-between,
-.product-card__info:has(.product-subtitle--enfoque) > .h-stack.justify-between {
-  --product-card-title-row: 2;
-}
-
-.product-card__info:has(.badge-list):has(.product-subtitle--enfoque) > .h-stack.justify-between {
-  --product-card-title-row: 3;
-}
-
-.product-card__info > .h-stack.justify-between > .contents > .v-stack,
-.product-card__info > .h-stack.justify-between > .contents > .v-stack > .v-stack,
-.product-card__info > .h-stack.justify-between > .contents > .v-stack > .v-stack > .v-stack {
-  display: contents;
-}
-
-.product-card__info > .h-stack.justify-between > .contents * {
-  grid-column: 1;
-}
-
-.product-card__info > .h-stack.justify-between .product-title {
-  align-self: baseline;
-}
-
-.product-card__info > .h-stack.justify-between > price-list {
-  grid-column: 2;
-  grid-row: var(--product-card-title-row);
-  align-self: baseline;
-}
-
-/* The card price has the same color as the product name (the full text color); only the crossed-out compare-at price and the unit price
-   stay soft (.7). A sale price keeps the sale color. */
-.product-card__price--subdued {
+.product-card__price--subdued,
+.product-card__price:not(.text-on-sale) {
   color: rgb(var(--text-color) / .7);
-}
-
-.product-card__price:not(.text-on-sale, .product-card__price--subdued) {
-  color: rgb(var(--text-color));
 }
 
 /* Product cards should only ever inherit the Body Text typeface, never Heading/Subheading - the
