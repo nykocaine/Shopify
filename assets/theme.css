@@ -4152,6 +4152,14 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   font-weight: 500;
 }
 
+/* Collection page on phones with two cards per row (the toolbar's four-squares view): the cards are too narrow for "Buy - S/. 139.00", so the button
+   says just "Buy" (the price is right above it, next to the name). One card per row and tablet / desktop keep the price in the button. */
+@media screen and (max-width: 699px) {
+  .shopify-section--main-collection .product-list[mobile-items-per-row="2"] :is(.product-card__quick-buy-dash, .product-card__quick-buy-price) {
+    display: none;
+  }
+}
+
 .product-card__quick-buy {
   padding: max(1rem, var(--product-card-inner-padding));
   z-index: 2;
