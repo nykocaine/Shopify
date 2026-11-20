@@ -212,7 +212,11 @@
         transition: opacity .35s ease;
       }
 
-      :root[data-logo-fly]:not([data-logo-arrived]) .header__logo {
+      {%- comment -%}
+      Hidden only while the header is transparent: a drawer opened at the top of the page (menu, search, cart) turns the header solid, and the
+      header then shows its logo like everywhere else (it used to stay hidden, leaving a solid header with no logo above the open drawer).
+      {%- endcomment -%}
+      :root[data-logo-fly]:not([data-logo-arrived]) .header:not(.is-solid, :has([open])) .header__logo {
         opacity: 0;
         pointer-events: none;
       }
