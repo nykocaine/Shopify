@@ -97,6 +97,42 @@
     {%- endif -%}
   {%- endif -%}
 
+  {%- if section.settings.floating_collection -%}
+    {%- comment -%}
+    Floating collection: the whole section becomes its own rounded card (same pattern as sections/main-search.liquid's floating
+    search). The side margins come from the theme's .section-floating rule (theme.css) and the gap below it from
+    .section-floating--block-end; inside, everything gets the same calc(var(--container-gutter) + 0.5rem) inset every floating
+    card uses. The toolbar is the card's top edge, the results and pagination keep that inset on the sides and at the bottom.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .collection__toolbar,
+    #shopify-section-{{ section.id }} .collection__results {
+      padding-inline: calc(var(--container-gutter) + 0.5rem);
+    }
+
+    #shopify-section-{{ section.id }} .collection {
+      padding-block-end: calc(var(--container-gutter) + 0.5rem);
+    }
+
+    {%- comment -%} Empty collection: .container insets itself with a margin; inside the card it has to be padding. {%- endcomment -%}
+    #shopify-section-{{ section.id }} .container {
+      margin-inline: 0;
+      padding-inline: calc(var(--container-gutter) + 0.5rem);
+    }
+
+    {%- comment -%}
+    A floating toolbar inside the floating card must not add its own side margin (it would be indented twice) nor round its
+    corners (the card already does); the card's own margin below replaces the toolbar's.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .collection__toolbar.section-floating {
+      margin-inline: 0;
+      border-radius: 0 !important;
+    }
+
+    #shopify-section-{{ section.id }} > .color-scheme {
+      margin-block-end: var(--section-vertical-spacing);
+    }
+  {%- endif -%}
+
   {%- comment -%}
   Toolbar (snippets/collection-toolbar.liquid), same layout on every screen size, in two rows:
   1. the quick links as pills (outlined; the current page filled). Phones: one row that scrolls sideways from edge to edge of the bar.
@@ -109,7 +145,7 @@
   start of the second row.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .collection__toolbar {
-    --collection-toolbar-padding-inline: {% if section.settings.floating_toolbar %}calc(var(--container-gutter) + 0.5rem){% else %}var(--container-gutter){% endif %};
+    --collection-toolbar-padding-inline: {% if section.settings.floating_toolbar or section.settings.floating_collection %}calc(var(--container-gutter) + 0.5rem){% else %}var(--container-gutter){% endif %};
     grid-template-columns: minmax(0, 1fr) auto auto;
     grid-auto-flow: row dense;
     align-items: center;
@@ -418,7 +454,7 @@
   }
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_collection %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_collection %} style="border-radius: {{ section.settings.collection_border_radius }}px; overflow: clip;"{% endif %}>
   {%- if collection.all_products_count == 0 -%}
     <div class="container">
       <div class="empty-state">
@@ -540,6 +576,24 @@ on desktop based on the settings
       "id": "toolbar_color_scheme",
       "label": "Esquema de color de la barra de herramientas",
       "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_collection",
+      "label": "Colección flotante",
+      "info": "Convierte toda la sección en una tarjeta: agrega márgenes a los lados y abajo (margen lateral global y espaciado entre secciones) y padding interior.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "collection_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Radio de esquina de la colección",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_collection }}"
     },
     {
       "type": "checkbox",
