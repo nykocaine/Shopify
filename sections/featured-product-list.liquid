@@ -157,6 +157,17 @@
     }
   {%- endif -%}
 
+  {%- comment -%}
+  Phones, carousel: a bigger card, so the next one peeks out half as much as before. The theme's carousel card is 65% of the row (max 300px), which
+  left (35% - gap) of the next card showing; half of that is (35% - gap) / 2, so the card is 100% - gap - (35% - gap) / 2 = 82.5% - gap / 2.
+  {%- endcomment -%}
+  @media screen and (max-width: 699px) {
+    #shopify-section-{{ section.id }} .product-list--carousel,
+    #shopify-section-{{ section.id }} .md-max\:product-list--carousel {
+      --product-list-card-width: calc(82.5% - var(--product-list-column-gap) / 2);
+    }
+  }
+
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} {
       --product-list-column-count: 2;
