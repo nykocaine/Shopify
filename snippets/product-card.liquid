@@ -117,8 +117,16 @@ based on your desired layout (and remove most of the settings associated), and t
   # effect (see .product-card__figure:hover in theme.css) work without collapsing/flickering when
   # this card is the only one occupying its row (eg. a lone card wrapped onto its own last row).
   # Skipped for highlighted cards, since those rely on their own taller grid-row span instead.
+  # Phones can have their own image size ("Product image size (mobile)"; "same" = the desktop one). Both ratios are written as CSS variables on the
+  # figure (--product-card-figure-ratio / -mobile, see .product-card__figure in theme.css), and the image gets its size / crop per breakpoint.
+  assign image_ratio_desktop = settings.product_card_image_aspect_ratio
+  assign image_ratio_mobile = settings.product_card_image_aspect_ratio_mobile | default: 'same'
+  if image_ratio_mobile == 'same'
+    assign image_ratio_mobile = image_ratio_desktop
+  endif
+
   unless highlight_card
-    case settings.product_card_image_aspect_ratio
+    case image_ratio_desktop
       when 'natural'
         assign figure_aspect_ratio = product.featured_media.aspect_ratio | default: 1
       when 'short', 'short_crop'
@@ -130,6 +138,19 @@ based on your desired layout (and remove most of the settings associated), and t
       else
         assign figure_aspect_ratio = '1'
     endcase
+
+    case image_ratio_mobile
+      when 'natural'
+        assign figure_aspect_ratio_mobile = product.featured_media.aspect_ratio | default: 1
+      when 'short', 'short_crop'
+        assign figure_aspect_ratio_mobile = '4 / 3'
+      when 'portrait', 'portrait_crop'
+        assign figure_aspect_ratio_mobile = '4 / 5'
+      when 'tall', 'tall_crop'
+        assign figure_aspect_ratio_mobile = '2 / 3'
+      else
+        assign figure_aspect_ratio_mobile = '1'
+    endcase
   endunless
 -%}
 
@@ -140,7 +161,7 @@ based on your desired layout (and remove most of the settings associated), and t
   --------------------------------------------------------------------------------------------------------------------
   {%- endcomment -%}
 
-  <div class="product-card__figure" {% if figure_aspect_ratio %}style="aspect-ratio: {{ figure_aspect_ratio }};"{% endif %}>
+  <div class="product-card__figure" {% if figure_aspect_ratio %}style="--product-card-figure-ratio: {{ figure_aspect_ratio }}; --product-card-figure-ratio-mobile: {{ figure_aspect_ratio_mobile }};"{% endif %}>
     {%- if show_badges and show_badges_along_info != true -%}
       {%- render 'product-badges',
         product: product,
@@ -227,7 +248,7 @@ based on your desired layout (and remove most of the settings associated), and t
           endif
         -%}
 
-        {%- capture main_image_classes -%}product-card__image product-card__image--primary {% if settings.product_card_image_aspect_ratio contains 'crop' %}size-full object-cover{% endif %} aspect-{{ settings.product_card_image_aspect_ratio | split: '_' | first }}{%- endcapture -%}
+        {%- capture main_image_classes -%}product-card__image product-card__image--primary aspect-{{ image_ratio_mobile | split: '_' | first }} sm:aspect-{{ image_ratio_desktop | split: '_' | first }}{% if image_ratio_mobile contains 'crop' %} product-card__image--crop-mobile{% endif %}{% if image_ratio_desktop contains 'crop' %} product-card__image--crop-desktop{% endif %}{%- endcapture -%}
         {{- product.featured_media | image_url: width: product.featured_media.width | image_tag: loading: main_media_loading_strategy, sizes: sizes, widths: '200,300,400,500,600,700,800,900,1000,1200,1400,1600,1800', class: main_image_classes, alt: product.featured_media.alt | default: product.title -}}
 
         {%- liquid

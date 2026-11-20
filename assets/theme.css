@@ -3596,6 +3596,43 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   position: relative;
 }
 
+/* Card image size: desktop / tablet ratio and its own phone ratio (snippets/product-card.liquid, "Product image size" and "Product image size
+   (mobile)" theme settings), plus the crop per breakpoint (the "... (crop)" options fill the ratio, the others fit the image inside it). The image
+   rules are doubled with .product-card__image so they win over its own object-fit and over the generic .aspect-* utilities further down. */
+.product-card__figure {
+  aspect-ratio: var(--product-card-figure-ratio, auto);
+}
+
+@media screen and (max-width: 699px) {
+  .product-card__figure {
+    aspect-ratio: var(--product-card-figure-ratio-mobile, var(--product-card-figure-ratio, auto));
+  }
+
+  .product-card__image.product-card__image--crop-mobile {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .product-card__image.aspect-natural {
+    aspect-ratio: auto;
+  }
+}
+
+@media screen and (min-width: 700px) {
+  .product-card__image.product-card__image--crop-desktop {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .product-card__image.sm\:aspect-natural {
+    aspect-ratio: auto;
+  }
+}
+
 .product-card__figure .badge-list {
   z-index: 1;
   padding: 0;
