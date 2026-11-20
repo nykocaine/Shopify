@@ -82,6 +82,7 @@
   <div
     data-section-id="{{ section.id }}"
     data-appear-delay="{{ section.settings.appear_delay }}"
+    {% if request.page_type == 'index' and section.settings.home_after_first_section %}data-show-after-first-section{% endif %}
     class="vc-whatsapp-button-wrapper
       {% if is_docked %}vc-whatsapp-button-wrapper--dock vc-whatsapp-button-wrapper--dock-{{ side }}{% endif %}
       {% unless show_on_mobile %}hide-on-mobile{% endunless %}
@@ -459,12 +460,43 @@
       // cambiar de página). En el editor del tema se muestra de inmediato para poder editarlo.
       var appearDelay = parseFloat(wrapper.dataset.appearDelay);
 
+      // En la home (opción "En la home, aparecer después del slider"): además del tiempo, el botón espera a que se haya bajado más allá
+      // de la primera sección (el slider), cuando esta ya salió por completo de la pantalla. Al volver a subir hasta el slider se oculta otra vez.
+      var afterFirstSection = wrapper.hasAttribute('data-show-after-first-section');
+      var delayDone = false;
+
+      function scrolledPastFirstSection() {
+        var firstSection = document.querySelector('main > .shopify-section');
+        return !firstSection || firstSection.getBoundingClientRect().bottom <= 0;
+      }
+
+      function updateVisibility() {
+        wrapper.classList.toggle('is-visible', delayDone && (!afterFirstSection || scrolledPastFirstSection()));
+      }
+
       if ((window.Shopify && window.Shopify.designMode) || !(appearDelay > 0)) {
-        wrapper.classList.add('is-visible');
+        delayDone = true;
       } else {
         setTimeout(function() {
-          wrapper.classList.add('is-visible');
+          delayDone = true;
+          updateVisibility();
         }, appearDelay * 1000);
+      }
+
+      if (window.Shopify && window.Shopify.designMode) {
+        wrapper.classList.add('is-visible');
+      } else {
+        updateVisibility();
+        if (afterFirstSection) {
+          var scrollFrame = null;
+          window.addEventListener('scroll', function() {
+            if (scrollFrame) return;
+            scrollFrame = requestAnimationFrame(function() {
+              scrollFrame = null;
+              updateVisibility();
+            });
+          }, { passive: true });
+        }
       }
 
       if (wrapper.querySelector('.vc-whatsapp-button-text')) {
@@ -565,6 +597,7 @@
     { "type": "header", "content": "Estilo de visualización" },
     { "type": "select", "id": "display_style", "label": "Display Style", "options": [{ "value": "floating", "label": "Floating" }, { "value": "docked_tab", "label": "Docked Tab" }], "default": "floating" },
     { "type": "range", "id": "appear_delay", "label": "Aparece después de", "min": 1, "max": 60, "step": 1, "unit": "s", "default": 5, "info": "Segundos que pasan desde que se carga cada página hasta que aparece el botón (también al actualizarla). En el editor del tema siempre se ve." },
+    { "type": "checkbox", "id": "home_after_first_section", "label": "En la home, aparecer después del slider", "default": true, "info": "En la página de inicio el botón aparece solo cuando ya se bajó más allá de la primera sección (el slider) y se oculta al volver a subir hasta ella. En el editor del tema siempre se ve." },
     { "type": "header", "content": "Contenido" },
     { "type": "text", "id": "phone_number", "label": "Número de teléfono principal", "info": "Incluye el código de país (ej. 51987654321 para Perú). Es el número de todos: cada agente puede tener el suyo; si no lo tiene, usa este." },
     { "type": "textarea", "id": "default_message", "label": "Mensaje predeterminado", "default": "Hola, estoy interesado en tus productos." },
