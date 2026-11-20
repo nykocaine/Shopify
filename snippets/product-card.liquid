@@ -191,7 +191,18 @@ based on your desired layout (and remove most of the settings associated), and t
     {%- if settings.product_card_show_meta_badge -%}
       {%- assign card_badge_text = product.metafields.custom.card_badge.value | strip -%}
       {%- if card_badge_text != blank -%}
-        <span class="product-card__meta-badge product-card__meta-badge--{{ settings.product_card_meta_badge_position }}" style="background: {% if settings.product_card_meta_badge_background != blank and settings.product_card_meta_badge_background.alpha != 0 %}{{ settings.product_card_meta_badge_background }}{% else %}transparent{% endif %}; color: {{ settings.product_card_meta_badge_text_color }}; border: 1px solid {% if settings.product_card_meta_badge_border_color != blank and settings.product_card_meta_badge_border_color.alpha != 0 %}{{ settings.product_card_meta_badge_border_color }}{% else %}transparent{% endif %}; border-radius: {{ settings.product_card_meta_badge_radius }}px;">
+        {%- liquid
+          # No background and no border: just text. It then loses the pill's padding and sits right at the badge position (same distance from the
+          # photo's edges as a pill would have), instead of keeping an invisible pill around it.
+          assign meta_badge_plain = true
+          if settings.product_card_meta_badge_background != blank and settings.product_card_meta_badge_background.alpha != 0
+            assign meta_badge_plain = false
+          endif
+          if settings.product_card_meta_badge_border_color != blank and settings.product_card_meta_badge_border_color.alpha != 0
+            assign meta_badge_plain = false
+          endif
+        -%}
+        <span class="product-card__meta-badge product-card__meta-badge--{{ settings.product_card_meta_badge_position }}{% if meta_badge_plain %} product-card__meta-badge--plain{% endif %}" style="background: {% if settings.product_card_meta_badge_background != blank and settings.product_card_meta_badge_background.alpha != 0 %}{{ settings.product_card_meta_badge_background }}{% else %}transparent{% endif %}; color: {{ settings.product_card_meta_badge_text_color }}; border: 1px solid {% if settings.product_card_meta_badge_border_color != blank and settings.product_card_meta_badge_border_color.alpha != 0 %}{{ settings.product_card_meta_badge_border_color }}{% else %}transparent{% endif %}; border-radius: {{ settings.product_card_meta_badge_radius }}px;">
           {{- card_badge_text | escape -}}
         </span>
       {%- endif -%}
