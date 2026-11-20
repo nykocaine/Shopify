@@ -207,6 +207,31 @@
   }
 
   {%- comment -%}
+  A drawer opened over the transparent header (menu, search, cart): ONE continuous stroke instead of two at once. The header paints quickly, speeding
+  up as it goes (.3s, ease-in), and the drawer starts unfolding exactly when the paint reaches the header's bottom edge (theme.js
+  createUnfoldAnimationControls waits for it: window.__themeUnfoldLead), at the drawer's own fast start - so the paint flows from the header into the
+  drawer. Closing, the drawer folds back up first and only then the header unpaints, here with a short soft curve. The page-color layer behind the
+  floating header (::after) follows the same timing. The root attribute is set by the script at the end of this file, only for that one change.
+
+  While a drawer keeps the header solid, the header keeps its transparent-state padding (data-header-drawer-solid): turning solid normally
+  changes its height (the "Header height padding" setting applies only once scrolled), and the drawer, measured at the header's bottom edge when it
+  opens, was left at the old edge and jumped once open.
+  {%- endcomment -%}
+  :root[data-header-drawer-paint="opening"] #shopify-section-{{ section.id }} .header::before,
+  :root[data-header-drawer-paint="opening"] #shopify-section-{{ section.id }}::after {
+    transition: transform .3s cubic-bezier(.55, 0, 1, .45) !important;
+  }
+
+  :root[data-header-drawer-paint="closing"] #shopify-section-{{ section.id }} .header::before,
+  :root[data-header-drawer-paint="closing"] #shopify-section-{{ section.id }}::after {
+    transition: transform .35s cubic-bezier(.4, 0, .2, 1) !important;
+  }
+
+  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group))[data-header-drawer-solid] #shopify-section-{{ section.id }} .header {
+    padding-block: var(--header-padding-inline) !important;
+  }
+
+  {%- comment -%}
   Transparent header (over a first section that allows it, until it turns solid): the padding inside the header is the same on all four sides -
   the top and bottom take the side padding (--header-padding-inline), whatever "Header height padding" says. That setting only applies once the
   header turns solid (scrolled, or a drawer open), so changing it never changes the transparent header. The top and bottom padding animate with
@@ -247,7 +272,12 @@
       position: absolute;
       inset-inline: 0;
       inset-block-start: 0;
-      height: var(--header-height, 0px);
+      {%- comment -%}
+      Only behind the top half of the header: what it is for is the page color in the cut-outs of the TOP rounded corners while the page scrolls
+      under the header. Over the full height it also filled the cut-outs of the BOTTOM corners with a square block whenever those are rounded
+      (at the top of the page, or with the menu / search / cart drawer open), so they looked square.
+      {%- endcomment -%}
+      height: calc(var(--header-height, 0px) / 2);
       background: rgb(var(--page-background));
       z-index: -1;
       pointer-events: none;
@@ -338,6 +368,22 @@
       border-bottom-left-radius: var(--header-menu-open-radius) !important;
       border-bottom-right-radius: var(--header-menu-open-radius) !important;
       transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius .7s cubic-bezier(.22, 1, .36, 1), border-bottom-right-radius .7s cubic-bezier(.22, 1, .36, 1);
+    }
+  }
+
+  {%- comment -%}
+  Desktop (1000px and up): the search drawer opens under the header there too (sections/search-drawer.liquid), so the header's bottom corners round
+  off while it is open, exactly like on phones and with the same timing (the drawer's own unfold timing: .7s decelerating while it opens).
+  {%- endcomment -%}
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} {
+      --header-menu-open-radius: {% if section.settings.floating_header %}{{ section.settings.header_border_radius }}px{% else %}var(--drawer-border-radius, 0px){% endif %};
+    }
+
+    :root:has(header-menu-drawer[open], #search-drawer[open], #cart-drawer[open]) #shopify-section-{{ section.id }} .header {
+      border-bottom-left-radius: var(--header-menu-open-radius) !important;
+      border-bottom-right-radius: var(--header-menu-open-radius) !important;
+      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), padding-block var(--header-solid-transition), border-bottom-left-radius .7s cubic-bezier(.22, 1, .36, 1), border-bottom-right-radius .7s cubic-bezier(.22, 1, .36, 1);
     }
   }
 
@@ -1208,6 +1254,53 @@
         if (latest !== null) setFilled(latest);
       }, 2200);
     });
+  })();
+</script>
+
+<script>
+  (function () {
+    // Drawer over the transparent header (see the "A drawer opened over the transparent header" rules above). The drawers (menu, search, cart)
+    // ask the header to turn solid with header:disable-transparent-header right before they start unfolding, and to turn transparent again with
+    // header:allow-transparent-header once they are fully closed. Listened to on window in the capture phase, so this runs before the header
+    // itself reacts: it can still tell whether the header WAS transparent, which is the only case that gets the quick paint and the lead.
+    if (window.__headerDrawerPaintInit) return;
+    window.__headerDrawerPaintInit = true;
+
+    var root = document.documentElement;
+    var timer = null;
+    var PAINT = 0.3;
+
+    function header() {
+      return document.querySelector('x-header');
+    }
+
+    function transparentPage() {
+      return !!document.querySelector('.shopify-section:first-child [allow-transparent-header]') && !document.querySelector('.shopify-section--header ~ .shopify-section-group-header-group');
+    }
+
+    function setPaint(state, duration) {
+      clearTimeout(timer);
+      root.setAttribute('data-header-drawer-paint', state);
+      timer = setTimeout(function () { root.removeAttribute('data-header-drawer-paint'); }, duration * 1000 + 80);
+    }
+
+    window.addEventListener('header:disable-transparent-header', function () {
+      var el = header();
+      if (!el || el.classList.contains('is-solid') || !transparentPage()) return;
+      root.setAttribute('data-header-drawer-solid', '');
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      setPaint('opening', PAINT);
+      // The drawer's unfold (created right after this event) waits for the paint to reach the header's bottom edge
+      window.__themeUnfoldLead = PAINT;
+      requestAnimationFrame(function () { window.__themeUnfoldLead = 0; });
+    }, true);
+
+    window.addEventListener('header:allow-transparent-header', function () {
+      if (!root.hasAttribute('data-header-drawer-solid')) return;
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) setPaint('closing', 0.35);
+      // The padding stays as it is until the header has unpainted (it is transparent then, with the same padding: nothing moves)
+      setTimeout(function () { root.removeAttribute('data-header-drawer-solid'); }, 450);
+    }, true);
   })();
 </script>
 

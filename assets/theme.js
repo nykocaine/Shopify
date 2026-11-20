@@ -2735,8 +2735,16 @@ function createUnfoldAnimationControls(animateSequence, overlay, content, openin
   // unfolding it: the overlay's top-to-bottom front and the dialog's own front are at different heights, so the
   // two would not look in sync.
   const overlayKeyframes = fadeOverlay ? { opacity: opening ? [0, 1] : [1, 0] } : keyframes;
+  // Opening over a transparent header that is being painted (sections/header.liquid sets window.__themeUnfoldLead right before): the unfold
+  // waits until the paint reaches the header's bottom edge, so the two read as one stroke. Both layers stay clipped (hidden) while they wait.
+  const lead = opening && !reduceMotion ? Number(window.__themeUnfoldLead) || 0 : 0;
+  if (lead > 0) {
+    window.__themeUnfoldLead = 0;
+    if (!fadeOverlay) overlay.style.clipPath = hidden;
+    content.style.clipPath = hidden;
+  }
   const controls = animateSequence([
-    [overlay, overlayKeyframes, options],
+    [overlay, overlayKeyframes, lead > 0 ? { ...options, at: lead } : options],
     [content, keyframes, { ...options, at: "<" }]
   ]);
   controls.then(() => {
