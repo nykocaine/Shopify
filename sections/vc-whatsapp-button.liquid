@@ -65,6 +65,44 @@
     hidden
   ></div>
 
+  {%- if request.page_type == 'index' and section.settings.home_after_first_section -%}
+    <style>
+      /* Home ("En la home, aparecer después del slider"): hidden, whatever else says, until the first section (the slider) has been scrolled
+         past (.is-past-first-section, set by the script below). Stronger than .is-visible, so the appearance delay alone never shows it at the
+         top of the page. Inline (not in the section's bundled stylesheet) so it always comes with the page. */
+      .vc-whatsapp-button-wrapper[data-show-after-first-section]:not(.is-past-first-section) {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        translate: 0 12px;
+      }
+    </style>
+
+    <script>
+      // Home: the button waits until the first section (the slider) has completely left the screen, and hides again when the slider comes
+      // back. Inline here (not in the section's bundled script) so it always runs with the page. The theme editor always shows the button.
+      (function () {
+        function update() {
+          var firstSection = document.querySelector('main > .shopify-section');
+          var past = !firstSection || firstSection.getBoundingClientRect().bottom <= 0 || (window.Shopify && window.Shopify.designMode);
+          document.querySelectorAll('.vc-whatsapp-button-wrapper[data-show-after-first-section]').forEach(function (wrapper) {
+            wrapper.classList.toggle('is-past-first-section', !!past);
+          });
+        }
+
+        var frame = null;
+        window.addEventListener('scroll', function () {
+          if (frame) return;
+          frame = requestAnimationFrame(function () { frame = null; update(); });
+        }, { passive: true });
+        window.addEventListener('resize', update, { passive: true });
+        document.addEventListener('DOMContentLoaded', update);
+        document.addEventListener('shopify:section:load', update);
+        update();
+      })();
+    </script>
+  {%- endif -%}
+
   {% comment %}
     Aparece tras "appear_delay" segundos (ver el script): hasta entonces el botón está oculto. Sin JavaScript no habría
     quien lo muestre, por eso el <noscript> lo deja visible desde el principio.
@@ -460,43 +498,12 @@
       // cambiar de página). En el editor del tema se muestra de inmediato para poder editarlo.
       var appearDelay = parseFloat(wrapper.dataset.appearDelay);
 
-      // En la home (opción "En la home, aparecer después del slider"): además del tiempo, el botón espera a que se haya bajado más allá
-      // de la primera sección (el slider), cuando esta ya salió por completo de la pantalla. Al volver a subir hasta el slider se oculta otra vez.
-      var afterFirstSection = wrapper.hasAttribute('data-show-after-first-section');
-      var delayDone = false;
-
-      function scrolledPastFirstSection() {
-        var firstSection = document.querySelector('main > .shopify-section');
-        return !firstSection || firstSection.getBoundingClientRect().bottom <= 0;
-      }
-
-      function updateVisibility() {
-        wrapper.classList.toggle('is-visible', delayDone && (!afterFirstSection || scrolledPastFirstSection()));
-      }
-
       if ((window.Shopify && window.Shopify.designMode) || !(appearDelay > 0)) {
-        delayDone = true;
-      } else {
-        setTimeout(function() {
-          delayDone = true;
-          updateVisibility();
-        }, appearDelay * 1000);
-      }
-
-      if (window.Shopify && window.Shopify.designMode) {
         wrapper.classList.add('is-visible');
       } else {
-        updateVisibility();
-        if (afterFirstSection) {
-          var scrollFrame = null;
-          window.addEventListener('scroll', function() {
-            if (scrollFrame) return;
-            scrollFrame = requestAnimationFrame(function() {
-              scrollFrame = null;
-              updateVisibility();
-            });
-          }, { passive: true });
-        }
+        setTimeout(function() {
+          wrapper.classList.add('is-visible');
+        }, appearDelay * 1000);
       }
 
       if (wrapper.querySelector('.vc-whatsapp-button-text')) {
