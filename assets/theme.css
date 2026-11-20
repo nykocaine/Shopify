@@ -3593,11 +3593,6 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   paint-order: stroke fill;
 }
 
-/* Product name in the card (body text style): 2px larger than the body text (eg. 15px -> 17px), on phones and desktop; only the name, the
-   price and the other lines keep the body text size. */
-.product-card .product-title.text-base {
-  font-size: calc(var(--text-base) + 2px);
-}
 
 /* "Split" info (name on the left, price on the right, snippets/product-card.liquid): the price sits on the SAME line as the product name, on its
    baseline, instead of at the bottom of the info (level with the last line). The info becomes a two-column grid: its nested stacks are flattened
@@ -3643,11 +3638,28 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   align-self: baseline;
 }
 
-/* The price looks like the name (reference: the name on the left, the price on the right, the same text): same size (the body text + 2px), same
-   weight (medium 500 + the thin stroke) and same color. More specific than the "split" rule in css-variables.liquid, which set the price to the
-   plain body text size and weight. The crossed-out compare-at price keeps its soft color. */
+/* The price looks like the name (reference: the name on the left, the price on the right, the same text): the body text size, same weight
+   (medium 500 + the thin stroke) and same color. More specific than the "split" rule in css-variables.liquid, which set the price to the
+   plain body text weight. The crossed-out compare-at price keeps its soft color. */
 .product-card__info price-list .product-card__price {
-  font-size: calc(var(--text-base) + 2px);
+  font-size: var(--text-base);
+}
+
+/* Responsive: the price never breaks or drops below the name. It keeps its own width on one line (with a compare-at price next to it), and it is
+   the name that wraps onto more lines when the card is narrow. Also without grid support the row does not wrap (flex fallback). */
+.product-card__info > .h-stack.justify-between {
+  flex-wrap: nowrap;
+}
+
+.product-card__info > .h-stack.justify-between > price-list {
+  flex: none;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.product-card__info > .h-stack.justify-between .product-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .product-card__info price-list .product-card__price:not(.product-card__price--subdued) {
