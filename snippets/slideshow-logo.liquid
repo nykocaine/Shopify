@@ -11,6 +11,17 @@ are always in front of it. Styles are in sections/slideshow.liquid.
 
 {%- if logo != blank -%}
   <div class="slideshow__logo slideshow__logo--{{ position | default: 'center' }}{% if full %} slideshow__logo--full{% endif %}" style="--slideshow-logo-width: {{ mobile_width | default: 300 }}px; --slideshow-logo-width-desktop: {{ desktop_width | default: 500 }}px;">
-    {{- logo | image_url: width: 1600 | image_tag: sizes: '(max-width: 699px) 90vw, 60vw', widths: '200,300,400,600,800,1200,1600', alt: shop.name, loading: 'eager', decoding: 'sync', fetchpriority: 'low' -}}
+    {%- comment -%}
+    When the slideshow's logo stands in for the header logo (the header logo is hidden while the header is transparent: "Hide the header logo",
+    or "Logo scroll effect: Fly to the header"), it is a link to the same place as the header logo (the home page), so clicking it does what
+    clicking the header logo did. Only the picture itself is clickable (the rest of the slide still swipes and clicks as before).
+    {%- endcomment -%}
+    {%- if section.settings.hide_header_logo or section.settings.logo_scroll_effect == 'fly' -%}
+      <a href="{{ routes.root_url }}" class="slideshow__logo-link" aria-label="{{ shop.name | escape }}">
+        {{- logo | image_url: width: 1600 | image_tag: sizes: '(max-width: 699px) 90vw, 60vw', widths: '200,300,400,600,800,1200,1600', alt: shop.name, loading: 'eager', decoding: 'sync', fetchpriority: 'low', draggable: 'false' -}}
+      </a>
+    {%- else -%}
+      {{- logo | image_url: width: 1600 | image_tag: sizes: '(max-width: 699px) 90vw, 60vw', widths: '200,300,400,600,800,1200,1600', alt: shop.name, loading: 'eager', decoding: 'sync', fetchpriority: 'low' -}}
+    {%- endif -%}
   </div>
 {%- endif -%}
