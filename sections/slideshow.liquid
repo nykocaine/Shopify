@@ -246,12 +246,19 @@
       {%- comment -%}
       Fly to the header: while the page scrolls, the logo of the slideshow travels to the exact spot of the logo in the header, shrinking to its
       size, tied to the scroll (half way down, half way there; scrolling back up brings it back, growing again). It flies over the transparent
-      header; when it lands the header turns solid (the #header-scroll-tracker of layout/theme.liquid, which sets .is-solid, is moved to the landing distance, so the
-      header's own paint transition starts exactly then) and the two logos cross-fade in place.
+      header; when it lands the header turns solid (the #header-scroll-tracker of layout/theme.liquid, which sets .is-solid, is moved to the
+      landing distance, so the header's own paint transition starts exactly then) and the two logos cross-fade in place.
 
-      The distance of the flight is the vertical distance between the two logos at the top of the page (D). The logo already rises with the page at
-      the scroll speed, so it reaches the header's height after exactly D pixels of scroll: on the way only a small vertical correction is needed
-      (the header can move a little - the announcement bar scrolls away, the header padding changes), plus the sideways move and the shrink.
+      Smoothness: the movement is a scroll-driven CSS animation (animation-timeline: scroll()), run by the browser on the same thread that scrolls
+      the page, so the logo and the page move together on every frame. Moving it from a scroll listener (JS) always came one frame after the page
+      had scrolled: on phones, where the scroll runs on its own thread, the logo kept catching up with the page and moved by jerks / trembled.
+      The script only measures the flight (on load, on a width change, when the editor re-renders the header) and writes it as keyframes. Browsers
+      without scroll-driven animations get the JS fallback (same path, moved on each scroll frame).
+
+      The path: D is the distance between the slide's logo and the spot where the header logo will be once the header is stuck. The logo rises with
+      the page, so after D pixels of scroll it is at the header's height by itself; the keyframes add the sideways move and the shrink (both ahead
+      of the rise, so it is small and lined up before it gets near the header's icons) and a small vertical correction with a soft landing. After
+      the landing it stays pinned on the header logo (it fades out there) for one more screen of scroll.
       {%- endcomment -%}
       if (!window.customElements.get('slideshow-logo-flight')) {
         window.customElements.define('slideshow-logo-flight', class extends HTMLElement {
@@ -266,31 +273,34 @@
             var firstSection = document.querySelector('main > .shopify-section');
             if (!this.section || firstSection !== this.section || !this.section.querySelector('[allow-transparent-header]')) return;
 
+            this.useTimeline = window.CSS && CSS.supports('animation-timeline: scroll()');
+            this.animationName = 'slideshow-logo-flight-' + this.getAttribute('section-id');
+
             this.abort = new AbortController();
             var options = { signal: this.abort.signal, passive: true };
-            this.update = this.update.bind(this);
             this.requestUpdate = function () {
               if (this.frame) return;
               this.frame = requestAnimationFrame(function () { this.frame = null; this.update(); }.bind(this));
             }.bind(this);
+            var remeasure = function () { this.measured = false; this.requestUpdate(); }.bind(this);
 
             window.addEventListener('scroll', this.requestUpdate, options);
+
             // Phones: the browser bar showing / hiding while scrolling fires resize events with only the height changed. Measuring again then (in
             // the middle of a scroll) made the logo jump, so only a real width change (rotation, window resize) measures again.
             this.lastWidth = window.innerWidth;
             window.addEventListener('resize', function () {
               if (window.innerWidth === this.lastWidth) return;
               this.lastWidth = window.innerWidth;
-              this.measured = false;
-              this.requestUpdate();
+              remeasure();
             }.bind(this), options);
-            window.addEventListener('load', function () { this.measured = false; this.requestUpdate(); }.bind(this), options);
-            document.fonts && document.fonts.ready.then(function () { this.measured = false; this.requestUpdate(); }.bind(this));
+            window.addEventListener('load', remeasure, options);
+            document.fonts && document.fonts.ready.then(remeasure);
 
             // Theme editor: changing a header setting (eg. its layout, logo on the left or in the center) re-renders the header, and the logo
             // element measured before is thrown away. Everything is measured again from the new header (update() also checks it on every frame).
             ['shopify:section:load', 'shopify:section:unload', 'shopify:section:reorder'].forEach(function (type) {
-              document.addEventListener(type, function () { this.measured = false; requestAnimationFrame(this.requestUpdate); }.bind(this), { signal: this.abort.signal });
+              document.addEventListener(type, function () { requestAnimationFrame(remeasure); }, { signal: this.abort.signal });
             }.bind(this));
 
             this.root.setAttribute('data-logo-fly', '');
@@ -302,7 +312,12 @@
             if (this.frame) cancelAnimationFrame(this.frame);
             this.root && ['data-logo-fly', 'data-logo-arrived', 'data-logo-flight'].forEach(function (name) { this.root.removeAttribute(name); }.bind(this));
             if (this.tracker) this.tracker.style.top = '0px';
-            if (this.logo) this.logo.style.transform = '';
+            if (this.logo) this.clearLogo(this.logo);
+            if (this.keyframesStyle) this.keyframesStyle.remove();
+          }
+
+          clearLogo(logo) {
+            ['transform', 'animation', 'animation-timeline', 'animation-range'].forEach(function (property) { logo.style.removeProperty(property); });
           }
 
           // The logo of the slide on screen (the first one with a logo when no slide is marked as selected)
@@ -314,36 +329,97 @@
             return document.querySelector('.header__logo-image:not(.header__logo-image--transparent)') || document.querySelector('.header__logo');
           }
 
-          // Where the slide's logo sits in the page without any flight (its own transform taken off for the measure), and the flight distance
+          // Position (page coordinates) of the slide's logo without any flight, and of the header logo once the header is stuck at the top
           measure() {
             var logo = this.findLogo();
             var target = this.findTarget();
-            if (this.logo && this.logo !== logo) this.logo.style.transform = '';
+            if (this.logo && this.logo !== logo) this.clearLogo(this.logo);
             this.logo = logo;
             this.target = target;
+            this.measured = false;
             if (!logo || !target) return false;
 
-            var transform = logo.style.transform;
+            // Measured with the flight switched off (no animation, no transform), then switched back on
+            logo.style.animation = 'none';
             logo.style.transform = 'none';
             var rect = logo.getBoundingClientRect();
-            logo.style.transform = transform;
+            logo.style.removeProperty('animation');
+            logo.style.removeProperty('transform');
 
-            this.start = {
+            var scroll = window.scrollY;
+            var start = {
               x: rect.left + rect.width / 2 + window.scrollX,
-              y: rect.top + rect.height / 2 + window.scrollY,
+              y: rect.top + rect.height / 2 + scroll,
               width: rect.width
             };
 
-            // The header's logo at the top of the page: its position now, minus how far the header has moved since (it is sticky, so it
-            // does not move with the scroll once stuck - at the top of the page both are the same)
+            // The header logo where it will be at the landing, when the header is stuck: its position now, moved by however far its sticky section
+            // still has to go up to reach its sticky top (0 when it is already stuck). Any transform on the section moves both, so it cancels out.
             var targetRect = target.getBoundingClientRect();
-            var targetY = window.scrollY < 1 ? targetRect.top + targetRect.height / 2 : (this.targetY0 || targetRect.top + targetRect.height / 2);
-            this.targetY0 = targetY;
+            var headerSection = target.closest('.shopify-section');
+            var stickyShift = 0;
+            if (headerSection) {
+              var headerStyle = getComputedStyle(headerSection);
+              if (headerStyle.position === 'sticky' || headerStyle.position === 'fixed') {
+                stickyShift = Math.max(0, headerSection.getBoundingClientRect().top - (parseFloat(headerStyle.top) || 0));
+              }
+            }
 
-            this.distance = Math.max(0, this.start.y - targetY);
+            this.start = start;
+            this.end = {
+              x: targetRect.left + targetRect.width / 2 + window.scrollX,
+              y: targetRect.top + targetRect.height / 2 - stickyShift,
+              width: targetRect.width
+            };
+            this.distance = start.y - this.end.y;
+            if (!(this.distance > 0) || !(rect.width > 0)) return false;
+
             if (this.tracker) this.tracker.style.top = Math.round(this.distance) + 'px';
-            this.measured = this.distance > 0 && rect.width > 0;
-            return this.measured;
+            if (this.useTimeline) this.writeKeyframes();
+            this.measured = true;
+            return true;
+          }
+
+          // Where the logo is at a point of the flight, as a transform from its own place in the slide (progress: 0 = start, 1 = landed)
+          frameAt(progress) {
+            var eased = progress * progress * (3 - 2 * progress);
+            var early = 1 - Math.pow(1 - progress, 3);
+            var scroll = progress * this.distance;
+            var naturalY = this.start.y - scroll;
+            return {
+              x: (this.end.x - this.start.x) * early,
+              y: (this.end.y - naturalY) * eased,
+              scale: 1 + (this.end.width / this.start.width - 1) * early
+            };
+          }
+
+          transformOf(frame, extraY) {
+            return 'translate3d(' + frame.x.toFixed(2) + 'px, ' + (frame.y + (extraY || 0)).toFixed(2) + 'px, 0) scale(' + frame.scale.toFixed(4) + ')';
+          }
+
+          writeKeyframes() {
+            var steps = 40;
+            var pin = Math.max(window.innerHeight, 600);
+            var total = this.distance + pin;
+            var frames = [];
+            for (var i = 0; i <= steps; i++) {
+              var progress = i / steps;
+              var offset = (progress * this.distance / total) * 100;
+              frames.push(offset.toFixed(3) + '% { transform: ' + this.transformOf(this.frameAt(progress)) + '; }');
+            }
+            // Pinned on the header logo for one more screen of scroll (it rises with the page; the same distance is added back)
+            frames.push('100% { transform: ' + this.transformOf(this.frameAt(1), pin) + '; }');
+
+            if (!this.keyframesStyle) {
+              this.keyframesStyle = document.createElement('style');
+              document.head.appendChild(this.keyframesStyle);
+            }
+            this.keyframesStyle.textContent = '@keyframes ' + this.animationName + ' { ' + frames.join(' ') + ' }';
+
+            var logo = this.logo;
+            logo.style.animation = this.animationName + ' linear both';
+            logo.style.animationTimeline = 'scroll(root block)';
+            logo.style.animationRange = '0px ' + Math.round(total) + 'px';
           }
 
           update() {
@@ -353,28 +429,16 @@
 
             var scroll = window.scrollY;
             var progress = Math.min(1, Math.max(0, scroll / this.distance));
-            var targetRect = this.target.getBoundingClientRect();
-            var targetX = targetRect.left + targetRect.width / 2;
-            var targetY = targetRect.top + targetRect.height / 2;
 
-            // Where the logo is without any transform (it rises with the page), and where it should be at this point of the flight
-            var naturalX = this.start.x - window.scrollX;
-            var naturalY = this.start.y - scroll;
-            // Eased (smooth start and soft landing) instead of linear: the shrink and the sideways move were even all the way, and on phones,
-            // where the flight is short and fast, the logo reached the header with a sudden stop. The vertical correction uses the same curve.
-            // The shrink and the sideways move run ahead of the rise (ease-out): the logo is already small and lined up with the header logo
-            // when it gets near the header, instead of crossing the header's icons (menu, search, cart) still big - most visible on phones.
-            var eased = progress * progress * (3 - 2 * progress);
-            var early = 1 - Math.pow(1 - progress, 3);
-            var x = naturalX + (targetX - naturalX) * early;
-            var y = progress < 1 ? naturalY + (targetY - naturalY) * eased : targetY;
-            var scale = 1 + (targetRect.width / this.start.width - 1) * early;
-
-            this.logo.style.transform = 'translate3d(' + (x - naturalX) + 'px, ' + (y - naturalY) + 'px, 0) scale(' + scale + ')';
+            // Fallback for browsers without scroll-driven animations: the same path, applied on each scroll frame
+            if (!this.useTimeline) {
+              var extra = Math.max(0, scroll - this.distance);
+              this.logo.style.transform = this.transformOf(this.frameAt(progress), extra);
+            }
 
             this.root.toggleAttribute('data-logo-arrived', progress >= 1);
-            // The header stays on screen for half a screen more after the landing (it used to be 200px): on phones it slid away right after the
-            // logo had landed in it, which looked like the logo was thrown off the screen.
+            // The header stays on screen for half a screen more after the landing: on phones it slid away right after the logo had landed
+            // in it, which looked like the logo was thrown off the screen.
             this.root.toggleAttribute('data-logo-flight', scroll < this.distance + window.innerHeight / 2);
           }
         });
