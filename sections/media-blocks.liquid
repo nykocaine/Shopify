@@ -827,7 +827,7 @@
                 {%- liquid
                   assign tabs_media_id = 'media-tabs-media-' | append: block.id
                   assign tabs_count = 0
-                  for i in (1..4)
+                  for i in (1..6)
                     capture tab_title_key
                       echo 'tab_'
                       echo i
@@ -849,7 +849,7 @@
                   >
                     <div class="media-tabs__panels">
                       {%- assign tab_position = 0 -%}
-                      {%- for i in (1..4) -%}
+                      {%- for i in (1..6) -%}
                         {%- liquid
                           capture tab_title_key
                             echo 'tab_'
@@ -899,7 +899,7 @@
                     {%- if tabs_count > 1 -%}
                       <div class="media-tabs__list" role="tablist" aria-orientation="vertical">
                         {%- assign tab_position = 0 -%}
-                        {%- for i in (1..4) -%}
+                        {%- for i in (1..6) -%}
                           {%- capture tab_title_key -%}tab_{{ i }}_title{%- endcapture -%}
 
                           {%- if block.settings[tab_title_key] != blank -%}
@@ -926,7 +926,7 @@
                   <div id="{{ tabs_media_id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} media-tabs-media min-h-{{ section.settings.mobile_block_size }} md:min-h-{% if section.settings.block_size == 'auto' %}md{% else %}{{ section.settings.block_size }}{% endif %}" aria-hidden="true">
                     <div class="media-tabs-media__track">
                       {%- assign tab_position = 0 -%}
-                      {%- for i in (1..4) -%}
+                      {%- for i in (1..6) -%}
                         {%- liquid
                           capture tab_title_key
                             echo 'tab_'
@@ -3328,6 +3328,64 @@
         {
           "type": "url",
           "id": "tab_4_link_url",
+          "label": "Enlace del botón"
+        },
+        {
+          "type": "header",
+          "content": "Pestaña 5"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "tab_5_title",
+          "label": "Título"
+        },
+        {
+          "type": "richtext",
+          "id": "tab_5_text",
+          "label": "Texto"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_5_image",
+          "label": "Imagen"
+        },
+        {
+          "type": "text",
+          "id": "tab_5_link_text",
+          "label": "Texto del botón"
+        },
+        {
+          "type": "url",
+          "id": "tab_5_link_url",
+          "label": "Enlace del botón"
+        },
+        {
+          "type": "header",
+          "content": "Pestaña 6"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "tab_6_title",
+          "label": "Título"
+        },
+        {
+          "type": "richtext",
+          "id": "tab_6_text",
+          "label": "Texto"
+        },
+        {
+          "type": "image_picker",
+          "id": "tab_6_image",
+          "label": "Imagen"
+        },
+        {
+          "type": "text",
+          "id": "tab_6_link_text",
+          "label": "Texto del botón"
+        },
+        {
+          "type": "url",
+          "id": "tab_6_link_url",
           "label": "Enlace del botón"
         }
       ]
