@@ -102,6 +102,19 @@
       display: flex;
     }
 
+    {%- comment -%}
+    The logo as a link (snippets/slideshow-logo.liquid, when it stands in for the header logo): the link takes no box of its own (display:
+    contents), so the picture keeps its exact layout; only the picture catches clicks, the rest of the logo's box still lets them through.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .slideshow__logo-link {
+      display: contents;
+    }
+
+    #shopify-section-{{ section.id }} .slideshow__logo-link img {
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
     #shopify-section-{{ section.id }} .slideshow__logo--top {
       align-items: flex-start;
     }
