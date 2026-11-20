@@ -614,6 +614,11 @@ if (!window.customElements.get('read-more-text')) {
                 below_button_text: block.settings.below_button_text
             -%}
 
+          {%- when 'complete_routine' -%}
+            {%- if product != blank -%}
+              {%- render 'complete-routine', product: product, block: block, product_form_id: product_form_id -%}
+            {%- endif -%}
+
           {%- when 'whatsapp_button' -%}
             {%- render 'whatsapp-buy-button',
                 product: product,
