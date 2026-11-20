@@ -3829,6 +3829,60 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   text-box: normal;
 }
 
+/* Top line over the photo (snippets/product-card.liquid): the card badge on the left, the enfoque on the right, on one line, at the badge's
+   distance from the photo's edges. Inside it the badge is no longer positioned on its own and keeps its full width. The enfoque is set like a
+   plain text badge (body font, size and line height) in the badge's text color, and takes the room left (two lines at most), never overlapping. */
+.product-card__meta-row {
+  z-index: 2;
+  pointer-events: none;
+  justify-content: space-between;
+  align-items: start;
+  gap: .75rem;
+  margin: .75rem;
+  display: flex;
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+}
+
+@media screen and (min-width: 700px) {
+  .product-card__meta-row {
+    margin: 1rem;
+  }
+}
+
+.product-card--single .product-card__meta-row {
+  margin: var(--product-card-inner-padding);
+}
+
+.product-card__meta-row > .product-card__meta-badge {
+  position: static;
+  flex: none;
+  min-width: 0;
+  max-width: none;
+  margin: 0 !important;
+}
+
+.product-card__meta-enfoque {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-inline-start: auto;
+  font-family: var(--text-font-family);
+  font-style: var(--text-font-style);
+  font-weight: var(--text-font-weight);
+  font-size: var(--text-base);
+  line-height: var(--text-line-height);
+  letter-spacing: var(--text-letter-spacing);
+  text-align: end;
+  text-wrap: balance;
+  /* A long enfoque on a narrow card goes onto a second line (right aligned) instead of being cut; never more than two */
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
 .product-card__meta-badge--top-left { inset-block-start: 0; inset-inline-start: 0; }
 .product-card__meta-badge--top-right { inset-block-start: 0; inset-inline-end: 0; }
 .product-card__meta-badge--bottom-left { inset-block-end: 0; inset-inline-start: 0; }
