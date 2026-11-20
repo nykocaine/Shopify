@@ -227,8 +227,43 @@
     transition: transform .35s cubic-bezier(.4, 0, .2, 1) !important;
   }
 
+  {%- comment -%}
+  The bottom corners round off together with the drawer: the drawer starts unfolding .3s later (after the quick paint), so the radius waits
+  the same .3s and then uses the drawer's own .7s decelerating curve. They used to round off while the header was still being painted, before
+  the drawer had started.
+  {%- endcomment -%}
   :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group))[data-header-drawer-paint="opening"] #shopify-section-{{ section.id }} .header {
-    transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius .7s cubic-bezier(.22, 1, .36, 1), border-bottom-right-radius .7s cubic-bezier(.22, 1, .36, 1) !important;
+    transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius .7s cubic-bezier(.22, 1, .36, 1) .3s, border-bottom-right-radius .7s cubic-bezier(.22, 1, .36, 1) .3s !important;
+  }
+
+  {%- comment -%}
+  The text, icons and logo follow the quick paint: with the normal timing (.18s delay, then .45s) they were still light, in their transparent
+  colors, over the freshly painted header for a moment (light on light), because the paint now takes only .3s. Closing, they go back to their
+  transparent colors while the paint rolls up (.35s), not long after it.
+  {%- endcomment -%}
+  :root[data-header-drawer-paint="opening"] #shopify-section-{{ section.id }} {
+    --header-solid-transition: .25s cubic-bezier(.4, 0, .2, 1);
+    --header-content-delay: .1s;
+  }
+
+  :root[data-header-drawer-paint="closing"] #shopify-section-{{ section.id }} {
+    --header-solid-transition: .35s cubic-bezier(.4, 0, .2, 1);
+    --header-content-delay: .05s;
+  }
+
+  {%- comment -%}
+  Desktop dropdown / mega menu opened over the transparent header (menu "open on hover"): the header paints with the same quick stroke (.3s)
+  instead of the slow scroll one (.65s), so it is painted by the time the menu has faded in (.2s fade), and its text, icons and logo follow
+  quickly too. Closing keeps the gentle return used when scrolling back to the top.
+  {%- endcomment -%}
+  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} .header:not(.is-solid):has(:is(header-dropdown-menu, header-mega-menu)[open])::before,
+  :root:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }}:has(.header:not(.is-solid) :is(header-dropdown-menu, header-mega-menu)[open])::after {
+    transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+  }
+
+  #shopify-section-{{ section.id }}:has(.header:not(.is-solid) :is(header-dropdown-menu, header-mega-menu)[open]) {
+    --header-solid-transition: .25s cubic-bezier(.4, 0, .2, 1);
+    --header-content-delay: .05s;
   }
 
   {%- comment -%}
@@ -369,8 +404,9 @@
       --header-menu-open-radius: {% if section.settings.floating_header %}{{ section.settings.header_border_radius }}px{% else %}var(--drawer-border-radius, 0px){% endif %};
     }
 
+    {%- comment -%}padding-block included, like the base rule: without it the header's height jumped (no animation) on phones when it turned solid on scroll or went back to transparent, while on desktop it animated.{%- endcomment -%}
     #shopify-section-{{ section.id }} .header {
-      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), border-bottom-left-radius .45s cubic-bezier(.33, 0, .2, 1), border-bottom-right-radius .45s cubic-bezier(.33, 0, .2, 1);
+      transition: background var(--header-solid-transition), color var(--header-solid-transition) var(--header-content-delay), border-color var(--header-solid-transition), padding-block var(--header-solid-transition), border-bottom-left-radius .45s cubic-bezier(.33, 0, .2, 1), border-bottom-right-radius .45s cubic-bezier(.33, 0, .2, 1);
     }
 
     :root:has(header-menu-drawer[open], #search-drawer[open], #cart-drawer[open]) #shopify-section-{{ section.id }} .header {
