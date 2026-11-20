@@ -4041,6 +4041,45 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   --button-text-color: rgb(var(--text-color)) !important;
 }
 
+/* Single card, phones only (snippets/product-card.liquid, "sm:hidden"): the quick buy button at the bottom of the card, inside the card's own
+   padding (the single card's info has the same padding on every side, so no bleed), as wide as the info, with "label - price" centered on one
+   line and the price in medium weight. The info is a grid whose first row (the text) takes the room left, the button row keeps its height. */
+.product-card--single .product-card__info {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-auto-rows: auto;
+}
+
+.product-card--single .product-card__info > .product-card__quick-buy-below--card {
+  height: auto;
+  width: 100%;
+  margin-inline: 0;
+  margin-block-start: var(--product-card-info-padding);
+}
+
+.product-card__quick-buy-below--card .button {
+  --button-padding-inline: .75rem;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  text-wrap: balance;
+}
+
+/* The label, the dash and the price flow as one line of text (not the button's usual flex row, which split each word apart), centered; on a very
+   narrow card it wraps between "Comprar -" and the price instead of being cut. */
+.product-card__quick-buy-below--card .button__content {
+  display: block;
+  text-align: center;
+}
+
+.product-card__quick-buy-below--card .button__content > span {
+  white-space: nowrap;
+}
+
+.product-card__quick-buy-price {
+  font-weight: 500;
+}
+
 .product-card__quick-buy {
   padding: max(1rem, var(--product-card-inner-padding));
   z-index: 2;

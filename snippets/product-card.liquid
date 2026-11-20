@@ -326,6 +326,10 @@ based on your desired layout (and remove most of the settings associated), and t
 
         assign quick_buy_desktop = section.settings.show_quick_buy_desktop | default: true, allow_false: true
         assign quick_buy_mobile = section.settings.show_quick_buy_mobile | default: true, allow_false: true
+
+        # Single card on phones: one centered line "Comprar - price" (the price medium weight), like an outline "Sold out - $16.00" pill. A short label,
+        # so it fits the narrow cards of two per row (the long "Agregar al Carrito" did not); several variants open the quick buy modal from the same button.
+        assign card_button_content = '<span>Comprar</span> - <span class="product-card__quick-buy-price">' | append: button_price | append: '</span>'
       -%}
 
       {%- comment -%}Single card: no cart icon over the image, the button at the bottom of the card is the quick buy on every screen{%- endcomment -%}
@@ -358,12 +362,16 @@ based on your desired layout (and remove most of the settings associated), and t
       {%- endif -%}
 
       {%- comment -%}The modal sits outside the touch-only icon wrapper above: that wrapper is not displayed with a mouse, and the button under the info opens this same modal{%- endcomment -%}
-      {%- comment -%}Not in the single card, which has no quick buy at all (nothing would open it){%- endcomment -%}
-      {%- unless quick_buy_single or single_card -%}
+      {%- comment -%}In the single card it is opened by the phones' button at the bottom of the card (only when that button is on){%- endcomment -%}
+      {%- assign render_quick_buy_modal = true -%}
+      {%- if quick_buy_single or single_card and quick_buy_mobile == false -%}
+        {%- assign render_quick_buy_modal = false -%}
+      {%- endif -%}
+      {%- if render_quick_buy_modal -%}
         <quick-buy-modal id="{{ quick_buy_id }}" product-url="{{ product.url }}" class="modal modal--quick-buy color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
           {%- comment -%}The content will be dynamically filled in JS{%- endcomment -%}
         </quick-buy-modal>
-      {%- endunless -%}
+      {%- endif -%}
     {%- endif -%}
 
     {%- if show_product_size_selector -%}
@@ -520,14 +528,25 @@ based on your desired layout (and remove most of the settings associated), and t
       .product-card__quick-buy-below). Not shown for a product that picks its size on the image (the floating size selector takes that place).
       {%- endcomment -%}
       {%- liquid
-        # Single card: no quick buy button at the bottom (and no cart icon over the image): the card is just the image and the info
+        # Single card: no cart icon over the image; on phones only (under 700px) an outline button at the bottom of the card, as wide as the card,
+        # "label - price" centered (card_button_content). Tablet and desktop: no button, the card is just the image and the info.
         assign show_quick_buy_below = false
-        if single_card == false and quick_buy_desktop
+        assign below_button_content = button_content
+        assign below_button_class = button_class
+        if single_card
+          if quick_buy_mobile
+            assign show_quick_buy_below = true
+            assign quick_buy_below_class = 'product-card__quick-buy-below--card sm:hidden'
+            assign below_button_content = card_button_content
+            assign below_button_class = ''
+          endif
+        elsif quick_buy_desktop
           assign show_quick_buy_below = true
           assign quick_buy_below_class = 'touch:hidden'
         endif
       -%}
 
+      {%- capture quick_buy_below_html -%}
       {%- if show_quick_buy and product.available and show_product_size_selector == false and show_quick_buy_below -%}
         <div class="product-card__quick-buy-below {{ quick_buy_below_class }}">
           {%- if quick_buy_single -%}
@@ -535,15 +554,21 @@ based on your desired layout (and remove most of the settings associated), and t
               {%- form 'product', product -%}
                 <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
 
-                {%- render 'button', content: button_content, type: 'submit', style: 'outline', stretch: true, class: button_class -%}
+                {%- render 'button', content: below_button_content, type: 'submit', style: 'outline', stretch: true, class: below_button_class -%}
               {%- endform -%}
             </product-form>
           {%- else -%}
-            {%- render 'button', content: button_content, aria_controls: quick_buy_id, style: 'outline', stretch: true, class: button_class -%}
+            {%- render 'button', content: below_button_content, aria_controls: quick_buy_id, style: 'outline', stretch: true, class: below_button_class -%}
           {%- endif -%}
         </div>
       {%- endif -%}
+      {%- endcapture -%}
+
+      {%- comment -%}Single card: the button is a row of its own at the bottom of the card, after the info (below), not one of the info's items{%- endcomment -%}
+      {%- unless single_card -%}{{ quick_buy_below_html }}{%- endunless -%}
     </div>
+
+    {%- if single_card -%}{{ quick_buy_below_html }}{%- endif -%}
   </div>
 
   {%- if swatches != blank and settings.product_card_swatches_position == 'inside' and show_swatches_along_info == false -%}
