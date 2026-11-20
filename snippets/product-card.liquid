@@ -182,6 +182,20 @@ based on your desired layout (and remove most of the settings associated), and t
     {%- endif -%}
 
     {%- comment -%}
+    Card badge: the text of the product's "custom.card_badge" metafield (single line text, eg. "only at soen") as a pill over the photo. Its
+    position, background, text color and corner radius are theme settings (Product card > Card badge), the same for every product. Purely
+    informative and non-interactive, so the whole card stays one clickable link.
+    {%- endcomment -%}
+    {%- if settings.product_card_show_meta_badge -%}
+      {%- assign card_badge_text = product.metafields.custom.card_badge.value | strip -%}
+      {%- if card_badge_text != blank -%}
+        <span class="product-card__meta-badge product-card__meta-badge--{{ settings.product_card_meta_badge_position }}" style="background: {{ settings.product_card_meta_badge_background }}; color: {{ settings.product_card_meta_badge_text_color }}; border-radius: {{ settings.product_card_meta_badge_radius }}px;">
+          {{- card_badge_text | escape -}}
+        </span>
+      {%- endif -%}
+    {%- endif -%}
+
+    {%- comment -%}
     Only the image is rounded, not the whole card - .product-card__media already has overflow:
     hidden, so giving it its own radius is enough. Falls back to 0 when no radius is configured.
     {%- endcomment -%}

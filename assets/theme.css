@@ -3623,6 +3623,39 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 .product-card__icon--bottom-left { inset-block-end: 0; inset-inline-start: 0; }
 .product-card__icon--bottom-right { inset-block-end: 0; inset-inline-end: 0; }
 
+/* Card badge (snippets/product-card.liquid, "custom.card_badge" metafield): a pill over the photo, in the heading font, written as typed (no
+   uppercase). Colors and radius come inline from the theme settings. Same distance from the photo's edges as the card icon. */
+.product-card__meta-badge {
+  z-index: 2;
+  pointer-events: none;
+  max-width: calc(100% - 1.5rem);
+  margin: .75rem;
+  padding: .3rem .75rem;
+  font-family: var(--heading-font-family);
+  font-style: var(--heading-font-style);
+  font-weight: 600;
+  font-size: var(--badge-font-size);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-font-smoothing: antialiased;
+  position: absolute;
+}
+
+@media screen and (min-width: 700px) {
+  .product-card__meta-badge {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+    padding: .375rem .875rem;
+  }
+}
+
+.product-card__meta-badge--top-left { inset-block-start: 0; inset-inline-start: 0; }
+.product-card__meta-badge--top-right { inset-block-start: 0; inset-inline-end: 0; }
+.product-card__meta-badge--bottom-left { inset-block-end: 0; inset-inline-start: 0; }
+.product-card__meta-badge--bottom-right { inset-block-end: 0; inset-inline-end: 0; }
+
 .product-card__media {
   isolation: isolate;
   min-height: 100%;
