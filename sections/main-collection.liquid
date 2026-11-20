@@ -100,8 +100,8 @@
   {%- if section.settings.floating_collection -%}
     {%- comment -%}
     Floating collection: the whole section becomes a rounded card that keeps only the page's side margins (theme.css
-    .section-floating). No outer spacing above or below it and no inner padding on any side: the products run to the card's
-    edges and its bottom edge is the end of the grid / pagination. The toolbar keeps its own padding (it is the bar's content inset).
+    .section-floating) and the usual spacing between sections above and below it, with no inner padding on any side: the products
+    run to the card's edges and its bottom edge is the end of the grid / pagination. The toolbar keeps its own padding (it is the bar's content inset).
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .collection__results {
       padding-inline: 0;
@@ -116,14 +116,9 @@
       padding-inline: 0;
     }
 
-    {%- comment -%} Outer spacing: none below the card, none above it (the gap a floating collection banner leaves above the collection). {%- endcomment -%}
-    #shopify-section-{{ section.id }},
+    {%- comment -%} Outer spacing: a full section spacing below the card (the gap above it is the one the section above leaves). {%- endcomment -%}
     #shopify-section-{{ section.id }} > .color-scheme {
-      margin-block: 0;
-    }
-
-    .shopify-section--collection-banner:has(+ #shopify-section-{{ section.id }}) .section-floating--block-end {
-      margin-block-end: 0 !important;
+      margin-block-end: var(--section-vertical-spacing);
     }
 
     {%- comment -%}
@@ -457,7 +452,7 @@
   }
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_collection %} section-floating{% endif %}"{% if section.settings.floating_collection %} style="border-radius: {{ section.settings.collection_border_radius }}px; overflow: clip;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_collection %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_collection %} style="border-radius: {{ section.settings.collection_border_radius }}px; overflow: clip;"{% endif %}>
   {%- if collection.all_products_count == 0 -%}
     <div class="container">
       <div class="empty-state">
@@ -584,7 +579,7 @@ on desktop based on the settings
       "type": "checkbox",
       "id": "floating_collection",
       "label": "Colección flotante",
-      "info": "Convierte toda la sección en una tarjeta con el margen lateral global de la tienda, sin espaciado arriba ni abajo y sin padding interior.",
+      "info": "Convierte toda la sección en una tarjeta con el margen lateral global de la tienda, con espaciado entre secciones arriba y abajo y sin padding interior.",
       "default": false
     },
     {
