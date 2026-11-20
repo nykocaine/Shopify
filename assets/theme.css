@@ -3861,6 +3861,11 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
    spread over the row's height (product lists share the row height between cards), so the last line (the price) sits level with the neighbours'.
    No quick buy in this mode. */
 .product-card--single {
+  /* One inner padding for everything in the card, the same one the theme's other containers use (FAQ, reviews, footer, product info box:
+     the side margin + .5rem): the badges over the image, the card icon, the swatches and the info under the image all sit that far from the card's
+     edges, on every side, so they line up with each other. */
+  --product-card-inner-padding: calc(var(--container-gutter) + .5rem);
+  --product-card-info-padding: calc(var(--container-gutter) + .5rem);
   background-color: rgb(var(--background));
   background-image: var(--background-gradient);
   border-radius: var(--product-card-border-radius, 0);
@@ -3879,6 +3884,16 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 .product-card--single .product-card__info {
   padding: var(--product-card-info-padding);
   display: grid;
+}
+
+.product-card--single .product-card__meta-badge,
+.product-card--single .product-card__icon,
+.product-card--single .product-card__figure .badge-list {
+  margin: var(--product-card-inner-padding);
+}
+
+.product-card--single .product-card__meta-badge {
+  max-width: calc(100% - 2 * var(--product-card-inner-padding));
 }
 
 .product-card--single .product-card__info > div {
