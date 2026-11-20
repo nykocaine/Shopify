@@ -327,9 +327,9 @@ based on your desired layout (and remove most of the settings associated), and t
         assign quick_buy_desktop = section.settings.show_quick_buy_desktop | default: true, allow_false: true
         assign quick_buy_mobile = section.settings.show_quick_buy_mobile | default: true, allow_false: true
 
-        # Single card on phones: one centered line "Comprar - price" (the price medium weight), like an outline "Sold out - $16.00" pill. A short label,
+        # Single card on phones: one centered line "Buy - price" (the price medium weight), like an outline "Sold out - $16.00" pill. A short label,
         # so it fits the narrow cards of two per row (the long "Agregar al Carrito" did not); several variants open the quick buy modal from the same button.
-        assign card_button_content = '<span>Comprar</span> - <span class="product-card__quick-buy-price">' | append: button_price | append: '</span>'
+        assign card_button_content = '<span>Buy</span><span>-</span><span class="product-card__quick-buy-price">' | append: button_price | append: '</span>'
       -%}
 
       {%- comment -%}Single card: no cart icon over the image, the button at the bottom of the card is the quick buy on every screen{%- endcomment -%}
