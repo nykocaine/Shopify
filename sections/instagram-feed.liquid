@@ -1111,7 +1111,8 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
       {%- comment -%}
       "Attach to footer": only when this section is the last one of the page content, so the footer comes right after it
       (the footer lives in its own section group, right below <main>). The two join with no gap: this section loses its
-      bottom margin and its bottom corners, keeping only the top ones, and the footer loses all its rounded corners.
+      bottom margin and its bottom corners, keeping only the top ones, and the footer loses all its rounded corners; a divider line
+      like the footer's own separates them.
       Side margins stay (both are floating). The footer's own rules are scoped through :root:has(), because it is a
       different section.
       {%- endcomment -%}
@@ -1124,8 +1125,13 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
         margin-block-start: 0;
       }
 
+      {%- comment -%}
+      Where the two meet: a thin divider line, the same as the footer's own dividers (1px, the theme's border color of the footer's color
+      scheme), across the whole width of the footer card, on top of it. It is the footer's top border, so it takes no extra room.
+      {%- endcomment -%}
       :root:has(main > #shopify-section-{{ section.id }}:last-child) .shopify-section--footer .footer {
         border-radius: 0 !important;
+        border-block-start: 1px solid rgb(var(--border-color));
       }
     {%- endif -%}
   {%- endif -%}
@@ -1572,7 +1578,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
       "type": "checkbox",
       "id": "attach_to_footer",
       "label": "Attach to footer",
-      "info": "Only works when this section is the last one on the page, right above the footer: the two join with no gap, the footer's rounded corners and this section's bottom corners are removed.",
+      "info": "Only works when this section is the last one on the page, right above the footer: the two join with no gap, separated by a thin divider line like the footer's own; the footer's rounded corners and this section's bottom corners are removed.",
       "default": false,
       "visible_if": "{{ section.settings.floating_instagram_feed }}"
     },
