@@ -14,8 +14,49 @@
   }
 </style>
 
+{%- liquid
+  # Height: one for tablet / desktop ("Image size") and one for phones ("Image size (mobile)", "Same as desktop" by default)
+  assign desktop_image_size = section.settings.image_size
+  assign mobile_image_size = section.settings.mobile_image_size | default: 'same'
+  if mobile_image_size == 'same'
+    assign mobile_image_size = desktop_image_size
+  endif
+
+  if mobile_image_size == desktop_image_size
+    assign content_box_height_class = 'min-h-' | append: desktop_image_size
+  else
+    assign content_box_height_class = 'min-h-' | append: mobile_image_size | append: ' sm:min-h-' | append: desktop_image_size
+  endif
+-%}
+
+{%- if mobile_image_size != desktop_image_size -%}
+  <style>
+    {%- comment -%}
+    Different heights on phones and on tablet / desktop. "Original image ratio" (auto) lets the picture set the height (in the flow); every other
+    size is a minimum height with the picture filling it behind the text (absolutely positioned) - so from 700px the picture switches between the two.
+    {%- endcomment -%}
+    @media screen and (min-width: 700px) {
+      {%- if desktop_image_size == 'auto' -%}
+        #shopify-section-{{ section.id }} .content-box {
+          min-height: 0;
+        }
+
+        #shopify-section-{{ section.id }} .content-box .content-box__background-media {
+          position: static;
+          inset: auto;
+        }
+      {%- elsif mobile_image_size == 'auto' -%}
+        #shopify-section-{{ section.id }} .content-box .content-box__background-media {
+          position: absolute;
+          inset: 0;
+        }
+      {%- endif -%}
+    }
+  </style>
+{%- endif -%}
+
 <div {% if section.settings.allow_transparent_header %}allow-transparent-header{% endif %} class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_image_overlay %} section-floating section-floating--block-end{% endif %}"{% if section.settings.add_spacing_above %} style="margin-block-start: var(--section-vertical-spacing);"{% endif %}>
-  <div class="content-box min-h-{{ section.settings.image_size }}">
+  <div class="content-box {{ content_box_height_class }}">
     <div class="content-box__background-media with-overlay" style="--overlay: {{ section.settings.overlay_color.rgb }} / {{ section.settings.overlay_opacity | divided_by: 100.0 }};{% if section.settings.floating_image_overlay %} border-radius: {{ section.settings.image_overlay_border_radius }}px; overflow: hidden;{% endif %}">
       {%- liquid
         if section.settings.image != blank
@@ -135,6 +176,22 @@
       ],
       "info": "t:global.image.ratio_avoid_cropping_info",
       "default": "auto"
+    },
+    {
+      "type": "select",
+      "id": "mobile_image_size",
+      "label": "Image size (mobile)",
+      "info": "Phones only (up to 699px). \"Same as desktop\" uses the size above.",
+      "options": [
+        { "value": "same", "label": "Same as desktop" },
+        { "value": "auto", "label": "t:global.sizes.original_image_ratio" },
+        { "value": "xs", "label": "t:global.sizes.x_small" },
+        { "value": "sm", "label": "t:global.sizes.small" },
+        { "value": "md", "label": "t:global.sizes.medium" },
+        { "value": "lg", "label": "t:global.sizes.large" },
+        { "value": "fill", "label": "t:global.sizes.fit_screen" }
+      ],
+      "default": "same"
     },
     {
       "type": "image_picker",
