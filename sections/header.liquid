@@ -1308,6 +1308,76 @@
 
 <script>
   (function () {
+    // Drawers hanging from the header (menu, search, cart): they are placed at the header's bottom edge (--menu-offset-top), measured by their own
+    // scripts when they open. But the header can move right after that - the page locks its scroll as the drawer opens, the announcement bar above
+    // can show again or change height (eg. its text wrapping on another line) - and the drawer stayed at the old edge, covering the bottom of the
+    // header. While a drawer is open its edge is kept in sync with the header's real bottom: on every frame of the opening (about a second), and
+    // whenever the header or the announcement bar change size while it is open.
+    if (window.__drawerHeaderSyncInit) return;
+    window.__drawerHeaderSyncInit = true;
+
+    var DRAWERS = 'header-menu-drawer, #search-drawer, #cart-drawer';
+    var frame = null;
+    var until = 0;
+
+    function openDrawers() {
+      return document.querySelectorAll('header-menu-drawer[open], #search-drawer[open], #cart-drawer[open]');
+    }
+
+    function sync() {
+      var header = document.querySelector('x-header');
+      var drawers = openDrawers();
+      if (!header || drawers.length === 0) return false;
+      var dpr = window.devicePixelRatio || 1;
+      var offset = Math.max(Math.round(header.getBoundingClientRect().bottom * dpr) / dpr, 0) + 'px';
+      drawers.forEach(function (drawer) {
+        if (drawer.style.getPropertyValue('--menu-offset-top') !== offset) drawer.style.setProperty('--menu-offset-top', offset);
+      });
+      return true;
+    }
+
+    function follow(duration) {
+      until = Math.max(until, performance.now() + duration);
+      if (frame) return;
+      var tick = function () {
+        frame = null;
+        if (!sync() || performance.now() > until) return;
+        frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    }
+
+    // A drawer opening (its [open] attribute appears): follow the header for the length of the opening
+    new MutationObserver(function (records) {
+      for (var i = 0; i < records.length; i++) {
+        var target = records[i].target;
+        if (target.matches && target.matches(DRAWERS) && target.hasAttribute('open')) {
+          follow(1200);
+          return;
+        }
+      }
+    }).observe(document.body, { attributes: true, attributeFilter: ['open'], subtree: true });
+
+    // The header or the announcement bar changing size while a drawer is open
+    if (window.ResizeObserver) {
+      var resizeObserver = new ResizeObserver(function () {
+        if (openDrawers().length) follow(300);
+      });
+      var watch = function () {
+        document.querySelectorAll('x-header, .shopify-section--announcement-bar').forEach(function (el) { resizeObserver.observe(el); });
+      };
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', watch);
+      } else {
+        watch();
+      }
+      document.addEventListener('shopify:section:load', watch);
+    }
+  })();
+</script>
+
+<script>
+  (function () {
     // Drawer over the transparent header (see the "A drawer opened over the transparent header" rules above). The drawers (menu, search, cart)
     // ask the header to turn solid with header:disable-transparent-header right before they start unfolding, and to turn transparent again with
     // header:allow-transparent-header once they are fully closed. Listened to on window in the capture phase, so this runs before the header
