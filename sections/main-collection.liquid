@@ -10,6 +10,8 @@
   case settings.product_card_image_aspect_ratio
     when 'short', 'short_crop'
       assign promo_card_aspect_ratio = '4 / 3'
+    when 'medium', 'medium_crop'
+      assign promo_card_aspect_ratio = '8 / 7'
     when 'portrait', 'portrait_crop', 'natural'
       assign promo_card_aspect_ratio = '4 / 5'
     when 'tall', 'tall_crop'
@@ -97,6 +99,91 @@
     {%- endif -%}
   {%- endif -%}
 
+  {%- if section.settings.floating_collection -%}
+    {%- comment -%}
+    Floating collection: the whole section becomes a rounded card that keeps only the page's side margins (theme.css
+    .section-floating) and the usual spacing between sections above and below it, with no inner padding on any side: the products
+    run to the card's edges and its bottom edge is the end of the grid / pagination. The toolbar keeps its own padding (it is the bar's content inset).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .collection__results {
+      padding-inline: 0;
+    }
+
+    #shopify-section-{{ section.id }} .collection {
+      padding-block: 0;
+    }
+
+    #shopify-section-{{ section.id }} .container {
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+
+    {%- comment -%} Outer spacing: a full section spacing below the card (the gap above it is the one the section above leaves). {%- endcomment -%}
+    #shopify-section-{{ section.id }} > .color-scheme {
+      margin-block-end: var(--section-vertical-spacing);
+    }
+
+    {%- comment -%}
+    With the collection banner hidden (its "keep for SEO" setting), this card is the first thing under the header: it gets the gap every first
+    section has under the header (theme.css, "Top rule": the page's side margin, --container-gutter), with its four corners rounded.
+    {%- endcomment -%}
+    .shopify-section--collection-banner:has(> .collection-banner--seo-only) + #shopify-section-{{ section.id }} > .color-scheme {
+      margin-block-start: var(--container-gutter);
+    }
+
+    {%- comment -%}
+    A floating toolbar inside the floating card must not add its own side margin (it would be indented twice) nor round its
+    corners (the card already does).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .collection__toolbar.section-floating {
+      margin-inline: 0;
+      border-radius: 0 !important;
+    }
+  {%- endif -%}
+
+  {%- if settings.show_page_transition -%}
+    {%- comment -%}
+    Page transition between collections (the quick links): the theme's page transition (css-variables.liquid, @view-transition) cross-fades
+    the WHOLE page, so the announcement bar, the header, the banner and the toolbar - the same on both pages - faded out and back in, and the
+    new page was captured before its product photos had loaded: everything blinked. Naming these parts makes the browser keep each one in
+    place as its own layer (same size and position on both pages, so nothing moves and only what really changes, like the title or the
+    current link, swaps), and only the products below cross-fade. The names exist only on collection pages, so other pages keep the usual fade.
+    {%- endcomment -%}
+    .shopify-section--announcement-bar {
+      view-transition-name: collection-announcement-bar;
+    }
+
+    .shopify-section--header {
+      view-transition-name: collection-header;
+    }
+
+    .shopify-section--collection-banner {
+      view-transition-name: collection-banner;
+    }
+
+    #shopify-section-{{ section.id }} .collection__toolbar {
+      view-transition-name: collection-toolbar;
+    }
+
+    {%- comment -%} The bar and the header are identical on both pages: the new one is shown at once, with no fade at all. {%- endcomment -%}
+    ::view-transition-old(collection-announcement-bar),
+    ::view-transition-old(collection-header) {
+      display: none;
+    }
+
+    ::view-transition-new(collection-announcement-bar),
+    ::view-transition-new(collection-header) {
+      animation: none;
+    }
+
+    ::view-transition-group(collection-announcement-bar),
+    ::view-transition-group(collection-header),
+    ::view-transition-group(collection-banner),
+    ::view-transition-group(collection-toolbar) {
+      z-index: 1;
+    }
+  {%- endif -%}
+
   {%- comment -%}
   Toolbar (snippets/collection-toolbar.liquid), same layout on every screen size, in two rows:
   1. the quick links as pills (outlined; the current page filled). Phones: one row that scrolls sideways from edge to edge of the bar.
@@ -109,7 +196,7 @@
   start of the second row.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .collection__toolbar {
-    --collection-toolbar-padding-inline: {% if section.settings.floating_toolbar %}calc(var(--container-gutter) + 0.5rem){% else %}var(--container-gutter){% endif %};
+    --collection-toolbar-padding-inline: {% if section.settings.floating_toolbar or section.settings.floating_collection %}calc(var(--container-gutter) + 0.5rem){% else %}var(--container-gutter){% endif %};
     grid-template-columns: minmax(0, 1fr) auto auto;
     grid-auto-flow: row dense;
     align-items: center;
@@ -181,12 +268,17 @@
     display: flex;
   }
 
+  {%- comment -%}
+  Colors from the toolbar color scheme's button colors: the links are outline buttons in the button background color, the current page
+  a solid button (button background + button text color), like the theme's buttons (assets/theme.css .button).
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .collection__toolbar-links a {
     flex: none;
-    color: inherit;
+    color: rgb(var(--button-background-primary));
     text-decoration: none;
-    padding: calc(0.55rem + var(--cap-offset, 0em)) 1.15rem calc(0.55rem - var(--cap-offset, 0em));
-    border: 1px solid rgb(var(--text-color) / 0.7);
+    {%- comment -%} Uppercase capitals need a little more than --cap-offset to sit exactly in the middle (measured with Swiss 721: 1.2x). {%- endcomment -%}
+    padding: calc(0.55rem + var(--cap-offset, 0em) * 1.2) 1.15rem calc(0.55rem - var(--cap-offset, 0em) * 1.2);
+    border: 1px solid rgb(var(--button-background-primary) / 0.7);
     border-radius: 999px;
     text-transform: uppercase;
     line-height: 1.2;
@@ -194,13 +286,13 @@
   }
 
   #shopify-section-{{ section.id }} .collection__toolbar-links a:hover {
-    border-color: rgb(var(--text-color));
+    border-color: rgb(var(--button-background-primary));
   }
 
   #shopify-section-{{ section.id }} .collection__toolbar-links a[aria-current="page"] {
-    background: rgb(var(--text-color));
-    border-color: rgb(var(--text-color));
-    color: rgb(var(--background));
+    background: rgb(var(--button-background-primary));
+    border-color: rgb(var(--button-background-primary));
+    color: rgb(var(--button-text-primary));
   }
 
   {%- comment -%}View selector: rounded squares (snippets/icon.liquid), the one not in use in solid light gray{%- endcomment -%}
@@ -237,6 +329,18 @@
 
     #shopify-section-{{ section.id }} .collection__toolbar-links-list::-webkit-scrollbar {
       display: none;
+    }
+
+    {%- comment -%}
+    Centered when the links fit on the screen; when they don't, the auto margins collapse to 0 and the row scrolls from its start as before
+    (justify-content: center would cut off the first links in a scrolling row).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .collection__toolbar-links a:first-child {
+      margin-inline-start: auto;
+    }
+
+    #shopify-section-{{ section.id }} .collection__toolbar-links a:last-child {
+      margin-inline-end: auto;
     }
 
     #shopify-section-{{ section.id }} .collection__layout-selector svg {
@@ -416,9 +520,18 @@
       padding-inline: .5rem;
     }
   }
+
+  {%- comment -%}
+  Toolbar without inner side padding, on every screen size: the sort, the count, the view icons and the quick links start and end exactly at the
+  toolbar's edges (the quick links row on phones scrolls edge to edge of it too). Top and bottom padding unchanged.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .collection__toolbar {
+    --collection-toolbar-padding-inline: 0px !important;
+    padding-inline: 0 !important;
+  }
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}">
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_collection %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_collection %} style="border-radius: {{ section.settings.collection_border_radius }}px; overflow: clip;"{% endif %}>
   {%- if collection.all_products_count == 0 -%}
     <div class="container">
       <div class="empty-state">
@@ -540,6 +653,24 @@ on desktop based on the settings
       "id": "toolbar_color_scheme",
       "label": "Esquema de color de la barra de herramientas",
       "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "floating_collection",
+      "label": "Colección flotante",
+      "info": "Convierte toda la sección en una tarjeta con el margen lateral global de la tienda, con espaciado entre secciones arriba y abajo y sin padding interior.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "collection_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Radio de esquina de la colección",
+      "default": 0,
+      "visible_if": "{{ section.settings.floating_collection }}"
     },
     {
       "type": "checkbox",

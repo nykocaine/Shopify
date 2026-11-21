@@ -20,6 +20,20 @@
   endif
 -%}
 
+{%- if section.settings.hide_banner -%}
+  {%- comment -%}
+  "Hide the banner (keep it for SEO)": nothing is shown and the banner takes no room, but the collection title stays on the page as its main
+  heading (h1), and the description too when "Show description" is on, visually hidden (sr-only, the same technique the theme uses for the
+  "all products" title above): search engines and screen readers still read them. The rest of the banner (image, quick navigation) is not output.
+  {%- endcomment -%}
+  <div class="collection-banner--seo-only sr-only">
+    <h1>{{ collection.title }}</h1>
+
+    {%- if collection.description != blank and section.settings.show_description -%}
+      <div>{{- collection.description -}}</div>
+    {%- endif -%}
+  </div>
+{%- else -%}
 <div {% if section.settings.allow_transparent_header and layout != 'plain' %}allow-transparent-header{% endif %} class="color-scheme color-scheme--{{ color_scheme.id }}{% if section.settings.floating_collection_banner %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_collection_banner %} style="border-end-start-radius: {{ section.settings.collection_banner_border_radius }}px; border-end-end-radius: {{ section.settings.collection_banner_border_radius }}px; overflow: hidden;"{% endif %}>
   {%- capture quick_navigation -%}
     {%- if section.settings.quick_navigation_menu.links.size > 0 -%}
@@ -126,12 +140,20 @@
       </div>
   {%- endcase -%}
 </div>
+{%- endif -%}
 
 {% schema %}
 {
   "name": "t:sections.collection_banner.name",
   "class": "shopify-section--collection-banner",
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "hide_banner",
+      "label": "Ocultar el banner (mantener para SEO)",
+      "info": "No se ve ni ocupa espacio, pero el título de la colección sigue en la página como título principal (h1), oculto a la vista, para Google y los lectores de pantalla. La descripción también, si \"Mostrar descripción\" está activado.",
+      "default": false
+    },
     {
       "type": "color_scheme",
       "id": "color_scheme",
@@ -195,6 +217,10 @@
       "id": "collection_title_size",
       "label": "t:global.text.heading_size",
       "options": [
+        {
+          "value": "heading text-base",
+          "label": "Tamaño del texto (body)"
+        },
         {
           "value": "display-xl",
           "label": "Display XL"

@@ -1,0 +1,117 @@
+{%- doc -%}
+Placement of an image slide's logo and content (heading, text, buttons) in the slide's column (.slideshow__stack, sections/slideshow.liquid),
+for ONE screen size. The two never overlap: they are stacked one after the other with a fixed gap, in the order of their vertical positions,
+and auto margins share the free room so each one still sits where its setting puts it (top, middle or bottom).
+
+Outputs CSS custom properties for an inline style: --{prefix}-logo-order, --{prefix}-logo-mt, --{prefix}-logo-mb and the same for "content",
+plus --{prefix}-content-align (horizontal place of the content).
+
+@param {string} prefix - "m" (phones) or "d" (tablet and desktop)
+@param {string} position - the slide's content position setting for that size, eg. "place-self-start-center" or "sm:place-self-end"
+@param {string} [logo_position] - "top", "center" or "bottom" when the slide has a logo; blank when it has none
+{%- enddoc -%}
+
+{%- liquid
+  assign position_parts = position | remove: 'sm:' | remove: 'place-self-' | split: '-'
+  assign content_v = position_parts[0]
+  assign content_h = position_parts[1] | default: position_parts[0]
+
+  case content_h
+    when 'start'
+      assign content_align = 'flex-start'
+    when 'end'
+      assign content_align = 'flex-end'
+    else
+      assign content_align = 'center'
+  endcase
+
+  case content_v
+    when 'start'
+      assign content_rank = 0
+    when 'end'
+      assign content_rank = 2
+    else
+      assign content_v = 'center'
+      assign content_rank = 1
+  endcase
+
+  if logo_position == blank
+    assign content_order = 0
+    assign content_mt = 'auto'
+    assign content_mb = 'auto'
+    if content_v == 'start'
+      assign content_mt = '0px'
+    elsif content_v == 'end'
+      assign content_mb = '0px'
+    endif
+    assign logo_order = 1
+    assign logo_mt = '0px'
+    assign logo_mb = '0px'
+  else
+    case logo_position
+      when 'top'
+        assign logo_v = 'start'
+        assign logo_rank = 0
+      when 'bottom'
+        assign logo_v = 'end'
+        assign logo_rank = 2
+      else
+        assign logo_v = 'center'
+        assign logo_rank = 1
+    endcase
+
+    # The logo comes first when it sits higher, or at the same height unless both are at the bottom (then the logo keeps the very bottom).
+    assign logo_first = false
+    if logo_rank < content_rank
+      assign logo_first = true
+    elsif logo_rank == content_rank and logo_v != 'end'
+      assign logo_first = true
+    endif
+
+    if logo_first
+      assign first_v = logo_v
+      assign last_v = content_v
+    else
+      assign first_v = content_v
+      assign last_v = logo_v
+    endif
+
+    assign first_mt = '0px'
+    assign first_mb = '0px'
+    assign last_mt = '0px'
+    assign last_mb = '0px'
+
+    if first_v != 'start'
+      assign first_mt = 'auto'
+    endif
+    if first_v == 'center' and last_v != 'center'
+      assign first_mb = 'auto'
+    endif
+    if last_v == 'end' and first_v == 'start'
+      assign last_mt = 'auto'
+    endif
+    if last_v == 'center' and first_v != 'center'
+      assign last_mt = 'auto'
+    endif
+    if last_v == 'center'
+      assign last_mb = 'auto'
+    endif
+
+    if logo_first
+      assign logo_order = 0
+      assign logo_mt = first_mt
+      assign logo_mb = first_mb
+      assign content_order = 1
+      assign content_mt = last_mt
+      assign content_mb = last_mb
+    else
+      assign content_order = 0
+      assign content_mt = first_mt
+      assign content_mb = first_mb
+      assign logo_order = 1
+      assign logo_mt = last_mt
+      assign logo_mb = last_mb
+    endif
+  endif
+-%}
+--{{ prefix }}-logo-order: {{ logo_order }}; --{{ prefix }}-logo-mt: {{ logo_mt }}; --{{ prefix }}-logo-mb: {{ logo_mb }}; --{{ prefix }}-content-order: {{ content_order }}; --{{ prefix }}-content-mt: {{ content_mt }}; --{{ prefix }}-content-mb: {{ content_mb }}; --{{ prefix }}-content-align: {{ content_align }};

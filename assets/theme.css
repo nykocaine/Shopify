@@ -3542,13 +3542,15 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 
 /* Product card colors, the same as the product page (rating row in snippets/product-info.liquid): the enfoque line (custom.enfoque,
    above the title) in the full text color, like the title; the sistema line (custom.sistema, .product-subtitle-2, below the title)
-   keeps the soft 70% gray of .product-subtitle. */
+   too (see below). */
 .product-card .product-subtitle--enfoque {
   color: rgb(var(--text-color));
 }
 
-/* Second subtitle (metafield custom.sistema): one line only, tightened under the title like the subtitle. */
+/* Second subtitle (metafield custom.sistema): one line only, tightened under the title like the subtitle; in the full text color (not the
+   soft 70% of .product-subtitle), like the name. */
 .product-card .product-subtitle-2 {
+  color: rgb(var(--text-color));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3574,20 +3576,122 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
    never bold, and the same color/opacity as .product-subtitle above (.7 alpha), explicitly, rather
    than relying on inheritance for the weight and a dimmer .6 alpha from .text-subdued. */
 .product-card__price {
-  /* A little bolder than the body text: medium (500), the heaviest Swiss weight installed (light 300, regular 400, medium 500), plus the same very
-     thin stroke as the buy button's price, which makes it a little heavier still */
+  /* A little bolder than the body text: medium (500), the heaviest Swiss weight installed (light 300, regular 400, medium 500), with no extra
+     stroke (it was a little too heavy) */
   font-weight: 500;
-  -webkit-text-stroke: .3px currentColor;
-  paint-order: stroke fill;
 }
 
 .product-card__price s {
   -webkit-text-stroke: 0;
 }
 
-.product-card__price--subdued,
-.product-card__price:not(.text-on-sale) {
+/* The slash of the sol sign ("S/.", snippets/price-list.liquid and the card's button): in Swiss 721 it is a hairline at every weight (about 125 units
+   thick against the 230 of a medium stem, on a 2048 grid), so next to the medium digits it looked light. A stroke of .05em around it (half outside
+   the outline on each side, the fill painted on top) brings it to the digits' thickness. Added to the price's own thin stroke. */
+.price-slash {
+  -webkit-text-stroke: calc(.05em + .3px) currentColor;
+  paint-order: stroke fill;
+}
+
+/* Product name in the card: the same weight as the card price above (medium 500, without the extra thin stroke - a little lighter), whatever
+   the title's typography setting (body text, heading or subheading). */
+.product-card .product-title {
+  font-weight: 500;
+}
+
+
+/* "Split" info (name on the left, price on the right, snippets/product-card.liquid). The info's nested stacks are flattened (display: contents)
+   so the enfoque line, the name, the price, the sistema line and the rating are the items of ONE wrapping flex row, in that order (order):
+   - the enfoque, sistema and rating lines take a whole line each (flex-basis 100%);
+   - the name and the price share a line, on the same baseline, the price at the right end;
+   - all the lines are the same distance apart (row-gap, --product-card-line-gap), the text block reads as one group; the "+" margins the
+     theme sets between a subtitle and the title elsewhere are cancelled here so they do not add to it.
+   Without a compare-at price the price never drops: the name shrinks (and is cut / wraps) to leave it room. With a compare-at price (two
+   prices, longer), the name keeps its own width and, only when both do not fit on the line, the prices go down to their own line under it. */
+.product-card__info > .h-stack.justify-between {
+  --product-card-line-gap: .05rem;
+  align-items: baseline;
+  align-content: start;
+  column-gap: .625rem;
+  row-gap: var(--product-card-line-gap);
+  flex-wrap: wrap;
+  display: flex;
+}
+
+.product-card__info > .h-stack.justify-between > .contents > .v-stack,
+.product-card__info > .h-stack.justify-between > .contents > .v-stack > .v-stack,
+.product-card__info > .h-stack.justify-between > .contents > .v-stack > .v-stack > .v-stack {
+  display: contents;
+}
+
+.product-card__info > .h-stack.justify-between .badge-list {
+  order: 0;
+  flex-basis: 100%;
+}
+
+.product-card__info > .h-stack.justify-between .product-subtitle--enfoque {
+  order: 1;
+  flex-basis: 100%;
+}
+
+.product-card__info > .h-stack.justify-between .product-title {
+  /* It grows into the free room, so the price ends at the right edge on the name's line, and starts at the left when it drops to its own line */
+  order: 2;
+  flex: 1 1 0;
+  min-width: 0;
+  margin-block-start: 0;
+  overflow-wrap: anywhere;
+}
+
+.product-card__info > .h-stack.justify-between price-list {
+  order: 3;
+  flex: none;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.product-card__info > .h-stack.justify-between .product-subtitle-2 {
+  order: 4;
+  flex-basis: 100%;
+  margin-block-start: 0;
+}
+
+.product-card__info > .h-stack.justify-between .rating,
+.product-card__info > .h-stack.justify-between > .contents > .v-stack > .v-stack > :not(.v-stack) {
+  order: 5;
+  flex-basis: 100%;
+}
+
+/* With a compare-at price: the name takes its natural width (up to the whole line), so the prices wrap below it when they do not fit next to it. */
+.product-card__info > .h-stack.justify-between:has(compare-at-price) .product-title {
+  flex: 1 1 auto;
+  max-width: 100%;
+}
+
+/* The price looks like the name (reference: the name on the left, the price on the right, the same text): the body text size, same weight
+   (medium 500 + the thin stroke) and same color. More specific than the "split" rule in css-variables.liquid, which set the price to the
+   plain body text weight. The crossed-out compare-at price keeps its soft color. */
+.product-card__info price-list .product-card__price {
+  font-size: var(--text-base);
+}
+
+.product-card__info price-list .product-card__price:not(.product-card__price--subdued) {
+  font-weight: 500;
+}
+
+/* In the card the price has no extra stroke any more, so its slash only gets the part that matches the digits */
+.product-card__price .price-slash {
+  -webkit-text-stroke-width: .05em;
+}
+
+/* The card price has the same color as the product name (the full text color); only the crossed-out compare-at price and the unit price
+   stay soft (.7). A sale price keeps the sale color. */
+.product-card__price--subdued {
   color: rgb(var(--text-color) / .7);
+}
+
+.product-card__price:not(.text-on-sale, .product-card__price--subdued) {
+  color: rgb(var(--text-color));
 }
 
 /* Product cards should only ever inherit the Body Text typeface, never Heading/Subheading - the
@@ -3732,6 +3836,60 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   /* No trimming of the line here: the trim (used to center the text in the pill) cuts the line at the baseline, and with no padding left below
      it the tails of letters like p, g or y were cut off by the overflow that makes long text end in "...". */
   text-box: normal;
+}
+
+/* Top line over the photo (snippets/product-card.liquid): the card badge on the left, the enfoque on the right, on one line, at the badge's
+   distance from the photo's edges. Inside it the badge is no longer positioned on its own and keeps its full width. The enfoque is set like a
+   plain text badge (body font, size and line height) in the badge's text color, and takes the room left (two lines at most), never overlapping. */
+.product-card__meta-row {
+  z-index: 2;
+  pointer-events: none;
+  justify-content: space-between;
+  align-items: start;
+  gap: .75rem;
+  margin: .75rem;
+  display: flex;
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+}
+
+@media screen and (min-width: 700px) {
+  .product-card__meta-row {
+    margin: 1rem;
+  }
+}
+
+.product-card--single .product-card__meta-row {
+  margin: var(--product-card-inner-padding);
+}
+
+.product-card__meta-row > .product-card__meta-badge {
+  position: static;
+  flex: none;
+  min-width: 0;
+  max-width: none;
+  margin: 0 !important;
+}
+
+.product-card__meta-enfoque {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-inline-start: auto;
+  font-family: var(--text-font-family);
+  font-style: var(--text-font-style);
+  font-weight: var(--text-font-weight);
+  font-size: var(--text-base);
+  line-height: var(--text-line-height);
+  letter-spacing: var(--text-letter-spacing);
+  text-align: end;
+  text-wrap: balance;
+  /* A long enfoque on a narrow card goes onto a second line (right aligned) instead of being cut; never more than two */
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 .product-card__meta-badge--top-left { inset-block-start: 0; inset-inline-start: 0; }
@@ -3945,12 +4103,98 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
      inset by half the info padding on each side, so the wrapper stretches itself and bleeds out over that padding. */
   justify-self: stretch;
   width: calc(100% + var(--product-card-info-padding));
-  margin-block-start: .75rem;
+  margin-block-start: .5rem;
   margin-inline: calc(-1 * var(--product-card-info-padding) / 2);
 }
 
 .product-card__quick-buy-below .button--outline {
   --button-text-color: rgb(var(--text-color)) !important;
+}
+
+/* Single card, phones only (snippets/product-card.liquid, "sm:hidden"): the quick buy button at the bottom of the card, inside the card's own
+   padding (the single card's info has the same padding on every side, so no bleed), as wide as the info, with "label - price" centered on one
+   line and the price in medium weight. The info is a grid whose first row (the text) takes the room left, the button row keeps its height. */
+.product-card--single .product-card__info {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-auto-rows: auto;
+}
+
+.product-card--single .product-card__info > .product-card__quick-buy-below--card {
+  height: auto;
+  width: 100%;
+  margin-inline: 0;
+  /* A little more air above the button than between the text lines: the text (name, price, sistema) reads as one group, the button as another */
+  margin-block-start: calc(var(--product-card-info-padding) * .75);
+}
+
+.product-card__quick-buy-below--card .button {
+  --button-padding-inline: .75rem;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  text-wrap: balance;
+}
+
+/* "Buy", the dash and the price: the button's own flex row (so they stay vertically centered in the button like every other button of the theme),
+   centered, a small gap between the three; on a very narrow card the price wraps to a second centered line instead of being cut. */
+.product-card__quick-buy-below--card .button__content {
+  justify-content: center;
+  flex-wrap: wrap;
+  column-gap: .35em;
+  text-align: center;
+}
+
+.product-card__quick-buy-below--card .button__content > span {
+  white-space: nowrap;
+}
+
+.product-card__quick-buy-price {
+  font-weight: 500;
+}
+
+/* "Buy now" when the button has room for "Buy now - S/. 139.00" on one line, just "Buy" when it does not (eg. two narrow cards per row): the
+   button wrapper is measured as a container and the " now" is only shown from 13rem (208px) wide. */
+.product-card__quick-buy-below--card {
+  container-type: inline-size;
+}
+
+.product-card__quick-buy-now {
+  display: none;
+}
+
+@container (min-width: 13rem) {
+  .product-card__quick-buy-now {
+    display: inline;
+    white-space: pre;
+  }
+}
+
+/* Narrow cards, wherever they are (collection, search results, featured products, related products...: about two cards per row on a phone): the
+   name and the price do not fit on one line and the enfoque crowds the badge, so the card's own price (next to the name) and the enfoque (top right
+   of the photo) are hidden; the price stays in the card's "Buy - price" button. It follows the card's real width (container queries on the photo
+   and on the info, not on the card itself, which is a subgrid), so wider cards - one per row on a phone, tablet, desktop - keep both. */
+.product-card__figure {
+  container: product-card-figure / inline-size;
+}
+
+.product-card__info {
+  container: product-card-info / inline-size;
+}
+
+@container product-card-figure (max-width: 13rem) {
+  .product-card__meta-enfoque {
+    display: none;
+  }
+}
+
+/* The price only goes when the card shows it in its "Buy - price" button (phones, sections with quick buy on): a card without that button keeps it. */
+@media screen and (max-width: 699px) {
+  @container product-card-info (max-width: 11rem) {
+    .product-card__info:has(> .product-card__quick-buy-below--card) price-list {
+      display: none;
+    }
+  }
 }
 
 .product-card__quick-buy {
@@ -4358,6 +4602,18 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   }
 }
 
+/* Collection / search view switch (tablet and desktop), like the phones' 1 / 2 per row switch: the one-square icon ("grid") shows 2 cards
+   per row, the four-squares icon ("compact", the default) 3 per row. Only the cards' size changes: info, badges, quick buy and promos stay. */
+@media screen and (min-width: 700px) {
+  .product-list[desktop-layout="grid"] {
+    --product-list-column-count: 2;
+  }
+
+  .product-list[desktop-layout="compact"] {
+    --product-list-column-count: 3;
+  }
+}
+
 .product-list__intro-block {
   grid-column: 1 / -1;
   grid-row: span var(--product-card-row-count);
@@ -4411,13 +4667,14 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 .prose {
   --prose-default-spacing: 1.5rem;
   --prose-heading-spacing: clamp(0px, 1.2em, 2.75rem);
-  --prose-subheading-spacing: 2.5rem;
+  --prose-subheading-spacing: 1.5rem; /* a subheading under another element (eg. a heading) gets the same space as a button (was 2.5rem) */
   --prose-button-spacing: 1.5rem;
   --prose-media-spacing: 1.75rem;
   --prose-blockquote-spacing: calc(var(--prose-default-spacing) * 3.5) calc(var(--prose-default-spacing) * 2);
   --prose-adjacent-heading-spacing: 1em;
   --prose-combination-display-heading-paragraph-spacing: 1.5rem;
-  --prose-combination-subheading-heading-spacing: 1.75rem;
+  /* Subheading right above a heading: tighter, so the two read as one title block (was 1.75rem; 2rem from 1000px) */
+  --prose-combination-subheading-heading-spacing: .75rem;
   --prose-combination-subheading-paragraph-spacing: 1.5rem;
 }
 
@@ -4425,12 +4682,12 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   .prose {
     --prose-default-spacing: 2rem;
     --prose-heading-spacing: clamp(0px, 1em, 3.5rem);
-    --prose-subheading-spacing: 2.5rem;
+    --prose-subheading-spacing: 2rem;
     --prose-button-spacing: 2rem;
     --prose-media-spacing: 2.5rem;
     --prose-adjacent-heading-spacing: 1em;
     --prose-combination-display-heading-paragraph-spacing: 2rem;
-    --prose-combination-subheading-heading-spacing: 2rem;
+    --prose-combination-subheading-heading-spacing: 1rem;
     --prose-combination-subheading-paragraph-spacing: 1.5rem;
   }
 }
@@ -4443,7 +4700,7 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   --prose-media-spacing: 1.25rem;
   --prose-adjacent-heading-spacing: .5em;
   --prose-combination-display-heading-paragraph-spacing: 1rem;
-  --prose-combination-subheading-heading-spacing: 1rem;
+  --prose-combination-subheading-heading-spacing: .5rem;
   --prose-combination-subheading-paragraph-spacing: 1rem;
 }
 
@@ -4451,12 +4708,12 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   .prose--compact {
     --prose-default-spacing: 1.25rem;
     --prose-heading-spacing: 1.5rem;
-    --prose-subheading-spacing: 1.5rem;
+    --prose-subheading-spacing: 1.25rem;
     --prose-button-spacing: 1.25rem;
     --prose-media-spacing: 1.5rem;
     --prose-adjacent-heading-spacing: .5em;
     --prose-combination-display-heading-paragraph-spacing: 1.75rem;
-    --prose-combination-subheading-heading-spacing: 1.25rem;
+    --prose-combination-subheading-heading-spacing: .75rem;
     --prose-combination-subheading-paragraph-spacing: 1rem;
   }
 }
@@ -11145,6 +11402,11 @@ shopify-account::part(signed-out-avatar) {
   aspect-ratio: 4 / 3;
 }
 
+/* Between short (4:3) and square (1:1): the product card's "Between short and square" image size */
+.aspect-medium {
+  aspect-ratio: 8 / 7;
+}
+
 .aspect-tall {
   aspect-ratio: 2 / 3;
 }
@@ -11168,6 +11430,10 @@ shopify-account::part(signed-out-avatar) {
 
   .sm\:aspect-short {
     aspect-ratio: 4 / 3;
+  }
+
+  .sm\:aspect-medium {
+    aspect-ratio: 8 / 7;
   }
 
   .sm\:aspect-tall {

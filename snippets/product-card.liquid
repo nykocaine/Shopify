@@ -135,6 +135,8 @@ based on your desired layout (and remove most of the settings associated), and t
         assign figure_aspect_ratio = product.featured_media.aspect_ratio | default: 1
       when 'short', 'short_crop'
         assign figure_aspect_ratio = '4 / 3'
+      when 'medium', 'medium_crop'
+        assign figure_aspect_ratio = '8 / 7'
       when 'portrait', 'portrait_crop'
         assign figure_aspect_ratio = '4 / 5'
       when 'tall', 'tall_crop'
@@ -148,6 +150,8 @@ based on your desired layout (and remove most of the settings associated), and t
         assign figure_aspect_ratio_mobile = product.featured_media.aspect_ratio | default: 1
       when 'short', 'short_crop'
         assign figure_aspect_ratio_mobile = '4 / 3'
+      when 'medium', 'medium_crop'
+        assign figure_aspect_ratio_mobile = '8 / 7'
       when 'portrait', 'portrait_crop'
         assign figure_aspect_ratio_mobile = '4 / 5'
       when 'tall', 'tall_crop'
@@ -213,8 +217,19 @@ based on your desired layout (and remove most of the settings associated), and t
     without it. Purely
     informative and non-interactive, so the whole card stays one clickable link.
     {%- endcomment -%}
-    {%- if settings.product_card_show_meta_badge -%}
-      {%- assign card_badge_text = product.metafields.custom.card_badge.value | strip -%}
+    {%- liquid
+      assign card_badge_text = ''
+      if settings.product_card_show_meta_badge
+        assign card_badge_text = product.metafields.custom.card_badge.value | strip
+      endif
+      assign card_enfoque_text = product.metafields.custom.enfoque.value | default: product.metafields.custom.enfoque | strip
+      assign meta_badge_on_top = false
+      if settings.product_card_meta_badge_position contains 'top'
+        assign meta_badge_on_top = true
+      endif
+    -%}
+
+    {%- capture card_badge_html -%}
       {%- if card_badge_text != blank -%}
         {%- liquid
           # No background and no border: just text. It then loses the pill's padding and sits right at the badge position (same distance from the
@@ -231,7 +246,24 @@ based on your desired layout (and remove most of the settings associated), and t
           {{- card_badge_text | escape -}}
         </span>
       {%- endif -%}
+    {%- endcapture -%}
+
+    {%- comment -%}
+    Top line over the photo: the card badge on the left and the enfoque (custom.enfoque, eg. "Textura / Acné") on the right, on the same line,
+    like the name and the price under the photo. The enfoque has the badge's text color and the plain badge's text (theme.css,
+    .product-card__meta-row). A badge set to a bottom corner stays there on its own, and the enfoque is then alone at the top right.
+    {%- endcomment -%}
+    {%- if card_enfoque_text != blank or meta_badge_on_top and card_badge_text != blank -%}
+      <div class="product-card__meta-row">
+        {%- if meta_badge_on_top -%}{{ card_badge_html }}{%- endif -%}
+
+        {%- if card_enfoque_text != blank -%}
+          <span class="product-card__meta-enfoque" style="color: {{ settings.product_card_meta_badge_text_color }};">{{ card_enfoque_text | escape }}</span>
+        {%- endif -%}
+      </div>
     {%- endif -%}
+
+    {%- unless meta_badge_on_top -%}{{ card_badge_html }}{%- endunless -%}
 
     {%- comment -%}
     Only the image is rounded, not the whole card - .product-card__media already has overflow:
@@ -326,6 +358,11 @@ based on your desired layout (and remove most of the settings associated), and t
 
         assign quick_buy_desktop = section.settings.show_quick_buy_desktop | default: true, allow_false: true
         assign quick_buy_mobile = section.settings.show_quick_buy_mobile | default: true, allow_false: true
+
+        # Single card on phones: one centered line "Buy now - price" ("Buy - price" when the button is too narrow, theme.css) (the price medium weight), like an outline "Sold out - $16.00" pill. A short label,
+        # so it fits the narrow cards of two per row (the long "Agregar al Carrito" did not); several variants open the quick buy modal from the same button.
+        assign button_price = button_price | replace: 'S/', 'S<span class="price-slash">/</span>'
+        assign card_button_content = '<span>Buy<span class="product-card__quick-buy-now"> now</span></span><span class="product-card__quick-buy-dash">-</span><span class="product-card__quick-buy-price">' | append: button_price | append: '</span>'
       -%}
 
       {%- comment -%}Single card: no cart icon over the image, the button at the bottom of the card is the quick buy on every screen{%- endcomment -%}
@@ -358,12 +395,16 @@ based on your desired layout (and remove most of the settings associated), and t
       {%- endif -%}
 
       {%- comment -%}The modal sits outside the touch-only icon wrapper above: that wrapper is not displayed with a mouse, and the button under the info opens this same modal{%- endcomment -%}
-      {%- comment -%}Not in the single card, which has no quick buy at all (nothing would open it){%- endcomment -%}
-      {%- unless quick_buy_single or single_card -%}
+      {%- comment -%}In the single card it is opened by the phones' button at the bottom of the card (only when that button is on){%- endcomment -%}
+      {%- assign render_quick_buy_modal = true -%}
+      {%- if quick_buy_single or single_card and quick_buy_mobile == false -%}
+        {%- assign render_quick_buy_modal = false -%}
+      {%- endif -%}
+      {%- if render_quick_buy_modal -%}
         <quick-buy-modal id="{{ quick_buy_id }}" product-url="{{ product.url }}" class="modal modal--quick-buy color-scheme color-scheme--{{ settings.default_color_scheme.id }}">
           {%- comment -%}The content will be dynamically filled in JS{%- endcomment -%}
         </quick-buy-modal>
-      {%- endunless -%}
+      {%- endif -%}
     {%- endif -%}
 
     {%- if show_product_size_selector -%}
@@ -477,11 +518,7 @@ based on your desired layout (and remove most of the settings associated), and t
                 {%- render 'vendor' with product.vendor, class: vendor_class -%}
               {%- endif -%}
 
-              {%- if product.metafields.custom.enfoque -%}
-                {%- comment -%} First supporting line, above the title (custom.enfoque: what the product is for). Full text color (.product-subtitle--enfoque), like on the product page {%- endcomment -%}
-                <div class="product-subtitle product-subtitle--enfoque text-base">{{ product.metafields.custom.enfoque }}</div>
-              {%- endif -%}
-
+              {%- comment -%}The enfoque (custom.enfoque) is not repeated here: it sits over the photo, at the right of the card badge (.product-card__meta-row){%- endcomment -%}
               <a href="{{ product.url }}" class="product-title {{ title_class }} {% if settings.product_card_title_max_lines > 0 %}line-clamp{% else %}{% if show_vendor == false %}trim-start{% endif %}{% endif %}" {% if settings.product_card_title_max_lines > 0 %}style="--line-clamp-count: {{ settings.product_card_title_max_lines }}"{% endif %}>
                 {{- product.title -}}
               </a>
@@ -520,14 +557,25 @@ based on your desired layout (and remove most of the settings associated), and t
       .product-card__quick-buy-below). Not shown for a product that picks its size on the image (the floating size selector takes that place).
       {%- endcomment -%}
       {%- liquid
-        # Single card: no quick buy button at the bottom (and no cart icon over the image): the card is just the image and the info
+        # Single card: no cart icon over the image; on phones only (under 700px) an outline button at the bottom of the card, as wide as the card,
+        # "label - price" centered (card_button_content). Tablet and desktop: no button, the card is just the image and the info.
         assign show_quick_buy_below = false
-        if single_card == false and quick_buy_desktop
+        assign below_button_content = button_content
+        assign below_button_class = button_class
+        if single_card
+          if quick_buy_mobile
+            assign show_quick_buy_below = true
+            assign quick_buy_below_class = 'product-card__quick-buy-below--card sm:hidden'
+            assign below_button_content = card_button_content
+            assign below_button_class = ''
+          endif
+        elsif quick_buy_desktop
           assign show_quick_buy_below = true
           assign quick_buy_below_class = 'touch:hidden'
         endif
       -%}
 
+      {%- capture quick_buy_below_html -%}
       {%- if show_quick_buy and product.available and show_product_size_selector == false and show_quick_buy_below -%}
         <div class="product-card__quick-buy-below {{ quick_buy_below_class }}">
           {%- if quick_buy_single -%}
@@ -535,15 +583,21 @@ based on your desired layout (and remove most of the settings associated), and t
               {%- form 'product', product -%}
                 <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
 
-                {%- render 'button', content: button_content, type: 'submit', style: 'outline', stretch: true, class: button_class -%}
+                {%- render 'button', content: below_button_content, type: 'submit', style: 'outline', stretch: true, class: below_button_class -%}
               {%- endform -%}
             </product-form>
           {%- else -%}
-            {%- render 'button', content: button_content, aria_controls: quick_buy_id, style: 'outline', stretch: true, class: button_class -%}
+            {%- render 'button', content: below_button_content, aria_controls: quick_buy_id, style: 'outline', stretch: true, class: below_button_class -%}
           {%- endif -%}
         </div>
       {%- endif -%}
+      {%- endcapture -%}
+
+      {%- comment -%}Single card: the button is a row of its own at the bottom of the card, after the info (below), not one of the info's items{%- endcomment -%}
+      {%- unless single_card -%}{{ quick_buy_below_html }}{%- endunless -%}
     </div>
+
+    {%- if single_card -%}{{ quick_buy_below_html }}{%- endif -%}
   </div>
 
   {%- if swatches != blank and settings.product_card_swatches_position == 'inside' and show_swatches_along_info == false -%}

@@ -336,14 +336,15 @@
     display: flex;
   }
 
-  #shopify-section-{{ section.id }} .product-rating-row__text {
-    color: rgb(var(--text-color) / 0.7);
-  }
-
-  /* The second line and the rating number of that row (they share the same row) read at the normal text color, with no reduced opacity. */
-  #shopify-section-{{ section.id }} .product-rating-row__text--second,
+  /* The first line (in the product template: the sistema, custom.sistema) and the rating number of that row read at the normal text color, with no
+     reduced opacity; the second line (the enfoque, custom.enfoque) is the soft one (70%). */
+  #shopify-section-{{ section.id }} .product-rating-row__text,
   #shopify-section-{{ section.id }} .product-rating-row .rating-badge__value {
     color: rgb(var(--text-color));
+  }
+
+  #shopify-section-{{ section.id }} .product-rating-row__text--second {
+    color: rgb(var(--text-color) / 0.7);
   }
 
   /* Rating block: the rating number (not the stars) uses the same muted color as the

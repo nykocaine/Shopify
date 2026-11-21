@@ -31,11 +31,24 @@
 
     {%- render 'slideshow-blur', intensity: section.settings.blur_intensity -%}
 
-    {%- render 'slideshow-logo', logo: block.settings.logo, position: block.settings.logo_position, full: block.settings.logo_full_size, mobile_width: block.settings.logo_mobile_width, desktop_width: block.settings.logo_desktop_width -%}
+    {%- comment -%}
+    The logo and the content (heading, text, buttons) share one column inside the slide's padding (.slideshow__stack, sections/slideshow.liquid):
+    they are laid out one after the other with a gap, never on top of each other, at every screen size. Their order and the free room around them
+    come from their position settings (snippets/slideshow-stack-vars.liquid), so each still sits at the top, middle or bottom it is set to.
+    {%- endcomment -%}
+    {%- liquid
+      assign stack_logo_position = ''
+      if block.settings.logo != blank
+        assign stack_logo_position = block.settings.logo_position | default: 'center'
+      endif
+    -%}
+    <div class="slideshow__stack" style="{% render 'slideshow-stack-vars', prefix: 'm', position: block.settings.mobile_content_position, logo_position: stack_logo_position %} {% render 'slideshow-stack-vars', prefix: 'd', position: block.settings.desktop_content_position, logo_position: stack_logo_position %}">
+      {%- render 'slideshow-logo', logo: block.settings.logo, position: block.settings.logo_position, full: block.settings.logo_full_size, mobile_width: block.settings.logo_mobile_width, desktop_width: block.settings.logo_desktop_width -%}
 
-    <div class="{{ block.settings.mobile_content_position }} {{ block.settings.desktop_content_position }}" style="max-width: {{ block.settings.content_max_width }}px">
-      <div class="prose prose-justify-{{ block.settings.mobile_content_position | split: '-' | last }} sm:prose-justify-{{ block.settings.desktop_content_position | split: '-' | last }}">
-        {%- content_for 'blocks' -%}
+      <div class="slideshow__content" style="max-width: min({{ block.settings.content_max_width }}px, 100%)">
+        <div class="prose prose-justify-{{ block.settings.mobile_content_position | split: '-' | last }} sm:prose-justify-{{ block.settings.desktop_content_position | split: '-' | last }}">
+          {%- content_for 'blocks' -%}
+        </div>
       </div>
     </div>
   </div>
@@ -88,7 +101,7 @@
       "type": "image_picker",
       "id": "logo",
       "label": "Logo",
-      "info": "Shown over the image with the text in front of it. It goes right to the edge, with no padding. Transparent PNG or SVG works best."
+      "info": "Shown on the image, inside the slide's padding, with its own space: the text and buttons go above or below it, never on top of it. Transparent PNG or SVG works best."
     },
     {
       "type": "select",
@@ -115,7 +128,7 @@
       "type": "checkbox",
       "id": "logo_full_size",
       "label": "Logo: full width",
-      "info": "The logo spreads from one side of the slide to the other, on mobile and desktop. The width settings below are not used.",
+      "info": "The logo is as wide as the slide's content area (inside its padding), on mobile and desktop. The width settings below are not used.",
       "default": false,
       "visible_if": "{{ block.settings.logo != blank }}"
     },
