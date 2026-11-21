@@ -274,6 +274,12 @@
       Hidden only while the header is transparent: a drawer opened at the top of the page (menu, search, cart) turns the header solid, and the
       header then shows its logo like everywhere else (it used to stay hidden, leaving a solid header with no logo above the open drawer).
       {%- endcomment -%}
+      {%- comment -%}
+      Same hiding, but known from the very first paint: data-logo-fly is only set by <slideshow-logo-flight> once its script runs (after the page is
+      parsed), so until then the header logo was shown and then faded out: a flash of the logo on every first visit / reload. The same condition the
+      script checks (this slideshow is the first section and allows the transparent header) is matched here in CSS, so the logo is never shown.
+      {%- endcomment -%}
+      :root:not([data-logo-arrived]):has(main > #shopify-section-{{ section.id }}:first-child [allow-transparent-header]) .header:not(.is-solid, :has([open])) .header__logo,
       :root[data-logo-fly]:not([data-logo-arrived]) .header:not(.is-solid, :has([open])) .header__logo {
         opacity: 0;
         pointer-events: none;
