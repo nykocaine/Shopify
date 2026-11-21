@@ -36,13 +36,36 @@
       <link rel="apple-touch-icon" href="{{ settings.favicon | image_url: width: 180 }}">
     {%- endif -%}
 
-    {%- unless settings.heading_font.system? -%}
-      <link rel="preload" href="{{ settings.heading_font | font_url }}" as="font" type="font/woff2" crossorigin>
-    {%- endunless -%}
+    {%- comment -%}
+    Preload the fonts that are really used, so the first paint already has them. The Shopify library fonts are only preloaded when their source is
+    "shopify" (otherwise they are not used at all and were downloaded for nothing), and the theme's own fonts (Swiss, Satoshi, Apercu; Pros has no file in the theme) are
+    preloaded when a source uses them. Without that, the page was drawn with a fallback font first and re-measured when the real one arrived: the
+    announcement bar changed height (its text took more or less room, sometimes another line) and everything below it jumped.
+    {%- endcomment -%}
+    {%- if settings.heading_font_source == 'shopify' -%}
+      {%- unless settings.heading_font.system? -%}
+        <link rel="preload" href="{{ settings.heading_font | font_url }}" as="font" type="font/woff2" crossorigin>
+      {%- endunless -%}
+    {%- endif -%}
 
-    {%- unless settings.text_font.system? -%}
-      <link rel="preload" href="{{ settings.text_font | font_url }}" as="font" type="font/woff2" crossorigin>
-    {%- endunless -%}
+    {%- if settings.text_font_source == 'shopify' -%}
+      {%- unless settings.text_font.system? -%}
+        <link rel="preload" href="{{ settings.text_font | font_url }}" as="font" type="font/woff2" crossorigin>
+      {%- endunless -%}
+    {%- endif -%}
+
+    {%- if settings.text_font_source == 'apple' or settings.heading_font_source == 'apple' or settings.subheading_font_source == 'apple' -%}
+      <link rel="preload" href="{{ 'swiss-721-regular.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+      <link rel="preload" href="{{ 'swiss-721-medium.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    {%- endif -%}
+
+    {%- if settings.text_font_source == 'satoshi' or settings.heading_font_source == 'satoshi' or settings.subheading_font_source == 'satoshi' -%}
+      <link rel="preload" href="{{ 'satoshi-variable.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    {%- endif -%}
+
+    {%- if settings.text_font_source == 'apercu' or settings.heading_font_source == 'apercu' or settings.subheading_font_source == 'apercu' -%}
+      <link rel="preload" href="{{ 'apercu-regular.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    {%- endif -%}
 
     {%- render 'social-meta-tags' -%}
     {%- render 'microdata-schema', reviews_ld: reviews_ld -%}
