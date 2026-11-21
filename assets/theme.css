@@ -3576,11 +3576,9 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
    never bold, and the same color/opacity as .product-subtitle above (.7 alpha), explicitly, rather
    than relying on inheritance for the weight and a dimmer .6 alpha from .text-subdued. */
 .product-card__price {
-  /* A little bolder than the body text: medium (500), the heaviest Swiss weight installed (light 300, regular 400, medium 500), plus the same very
-     thin stroke as the buy button's price, which makes it a little heavier still */
+  /* A little bolder than the body text: medium (500), the heaviest Swiss weight installed (light 300, regular 400, medium 500), with no extra
+     stroke (it was a little too heavy) */
   font-weight: 500;
-  -webkit-text-stroke: .3px currentColor;
-  paint-order: stroke fill;
 }
 
 .product-card__price s {
@@ -3595,12 +3593,10 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   paint-order: stroke fill;
 }
 
-/* Product name in the card: the same weight as the card price above (medium 500 plus the same very thin stroke), whatever the
-   title's typography setting (body text, heading or subheading). */
+/* Product name in the card: the same weight as the card price above (medium 500, without the extra thin stroke - a little lighter), whatever
+   the title's typography setting (body text, heading or subheading). */
 .product-card .product-title {
   font-weight: 500;
-  -webkit-text-stroke: .3px currentColor;
-  paint-order: stroke fill;
 }
 
 
@@ -3681,8 +3677,11 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 
 .product-card__info price-list .product-card__price:not(.product-card__price--subdued) {
   font-weight: 500;
-  -webkit-text-stroke: .3px currentColor;
-  paint-order: stroke fill;
+}
+
+/* In the card the price has no extra stroke any more, so its slash only gets the part that matches the digits */
+.product-card__price .price-slash {
+  -webkit-text-stroke-width: .05em;
 }
 
 /* The card price has the same color as the product name (the full text color); only the crossed-out compare-at price and the unit price
