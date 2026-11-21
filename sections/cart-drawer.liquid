@@ -433,11 +433,9 @@
 
           <div class="cart-drawer__footer-inner">
             <div class="v-stack gap-4">
-              {%- comment -%}Same order as the cart page's order summary: item count and free shipping bar, then the DNI field, discount, totals and checkout{%- endcomment -%}
+              {%- comment -%}Same order as the cart page's order summary: free shipping bar, then the DNI field, discount, totals and checkout{%- endcomment -%}
               {%- if settings.cart_show_free_shipping_bar -%}
                 <div class="v-stack gap-2">
-                  <span class="subheading">{{ 'cart.general.item_count' | t: count: cart.item_count }}</span>
-
                   {%- render 'free-shipping-bar' -%}
                 </div>
               {%- endif -%}
