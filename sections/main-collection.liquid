@@ -520,6 +520,15 @@
       padding-inline: .5rem;
     }
   }
+
+  {%- comment -%}
+  Toolbar without inner side padding, on every screen size: the sort, the count, the view icons and the quick links start and end exactly at the
+  toolbar's edges (the quick links row on phones scrolls edge to edge of it too). Top and bottom padding unchanged.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .collection__toolbar {
+    --collection-toolbar-padding-inline: 0px !important;
+    padding-inline: 0 !important;
+  }
 </style>
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_collection %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_collection %} style="border-radius: {{ section.settings.collection_border_radius }}px; overflow: clip;"{% endif %}>
