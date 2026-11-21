@@ -6209,6 +6209,15 @@ product-rerender {
   }
 }
 
+/* Mobile: while any drawer / modal is open (the dialog code puts the "lock" class on <html>), the announcement bar is hidden. It keeps its
+   space (visibility, not display), so the header and the drawers hanging from it do not jump. */
+@media screen and (max-width: 999px) {
+  html.lock .shopify-section--announcement-bar {
+    visibility: hidden !important;
+    opacity: 0;
+  }
+}
+
 .announcement-bar-wrapper {
   overflow: hidden;
   -webkit-mask-image: -webkit-radial-gradient(white, black);
