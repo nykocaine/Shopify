@@ -839,6 +839,51 @@
   {%- endif -%}
 </style>
 
+{%- comment -%}
+Load guard (first paint / reload at the top of the page): while the page is settling, the header must not animate anything. Several things
+change right after load (the header element is upgraded, the scroll tracker is measured, the slideshow script moves it and hides the logo,
+fonts and the height measure arrive) and any of them toggling .is-solid / the logo / the colors played a slow transition: the header seemed to
+appear and then go away. data-header-boot is set here, before the header is painted, and removed shortly after the load event: during it every
+transition in the header is off, the transparent header's paint layer stays rolled up, and the header's height-change glide is skipped. Not
+used when the page loads already scrolled (the header is meant to be solid then).
+{%- endcomment -%}
+<style>
+  :root[data-header-boot] #shopify-section-{{ section.id }},
+  :root[data-header-boot] #shopify-section-{{ section.id }} .header,
+  :root[data-header-boot] #shopify-section-{{ section.id }} .header *,
+  :root[data-header-boot] #shopify-section-{{ section.id }} .header::before,
+  :root[data-header-boot] #shopify-section-{{ section.id }}::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  :root[data-header-boot]:has(.shopify-section:first-child [allow-transparent-header]):not(:has(.shopify-section--header ~ .shopify-section-group-header-group)) #shopify-section-{{ section.id }} .header:not(:has([open]))::before {
+    transform: scaleY(0) !important;
+  }
+</style>
+<script>
+  (function () {
+    var root = document.documentElement;
+    if (window.scrollY > 1 || root.hasAttribute('data-header-boot')) return;
+    root.setAttribute('data-header-boot', '');
+    var ended = false;
+    function end() {
+      if (ended) return;
+      ended = true;
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          setTimeout(function () { root.removeAttribute('data-header-boot'); }, 350);
+        });
+      });
+    }
+    if (document.readyState === 'complete') end();
+    else window.addEventListener('load', end);
+    setTimeout(end, 4000);
+    // Scrolling or opening something ends it at once: from then on the header animates as usual
+    window.addEventListener('scroll', function () { root.removeAttribute('data-header-boot'); }, { once: true, passive: true });
+  })();
+</script>
+
 <height-observer variable="header">
   <x-header class="header {% if section.settings.floating_header %}header--floating{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.hide_on_scroll and header_logo_only == false %}hide-on-scroll{% endif %} style="padding-block: {{ section.settings.header_height_padding }}px; {% if section.settings.floating_header %}border-top-left-radius: {{ section.settings.header_border_radius }}px; border-top-right-radius: {{ section.settings.header_border_radius }}px;{% endif %}">
     {%- comment -%}
@@ -1449,7 +1494,7 @@
         lastHeight = height;
         if (isSolid === wasSolid) return;
         wasSolid = isSolid;
-        if (reduceMotion.matches || Math.abs(delta) < 0.5) return;
+        if (reduceMotion.matches || Math.abs(delta) < 0.5 || document.documentElement.hasAttribute('data-header-boot')) return;
 
         header.querySelectorAll(':scope > .header__logo, :scope > .header__primary-nav, :scope > .header__secondary-nav').forEach(function (item) {
           item.animate(
