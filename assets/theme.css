@@ -4171,13 +4171,30 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   }
 }
 
-/* Collection page on phones with two cards per row (the toolbar's four-squares view): the cards are too narrow for the name and the price on one
-   line, so the card's own price (next to the name) is hidden - the price stays in the card's "Buy - price" button below - and so is the
-   enfoque at the top right of the photo (the card badge stays at the left). One card per row and tablet / desktop keep both. */
-@media screen and (max-width: 699px) {
-  .shopify-section--main-collection .product-list[mobile-items-per-row="2"] .product-card__info price-list,
-  .shopify-section--main-collection .product-list[mobile-items-per-row="2"] .product-card__meta-enfoque {
+/* Narrow cards, wherever they are (collection, search results, featured products, related products...: about two cards per row on a phone): the
+   name and the price do not fit on one line and the enfoque crowds the badge, so the card's own price (next to the name) and the enfoque (top right
+   of the photo) are hidden; the price stays in the card's "Buy - price" button. It follows the card's real width (container queries on the photo
+   and on the info, not on the card itself, which is a subgrid), so wider cards - one per row on a phone, tablet, desktop - keep both. */
+.product-card__figure {
+  container: product-card-figure / inline-size;
+}
+
+.product-card__info {
+  container: product-card-info / inline-size;
+}
+
+@container product-card-figure (max-width: 13rem) {
+  .product-card__meta-enfoque {
     display: none;
+  }
+}
+
+/* The price only goes when the card shows it in its "Buy - price" button (phones, sections with quick buy on): a card without that button keeps it. */
+@media screen and (max-width: 699px) {
+  @container product-card-info (max-width: 11rem) {
+    .product-card__info:has(> .product-card__quick-buy-below--card) price-list {
+      display: none;
+    }
   }
 }
 
