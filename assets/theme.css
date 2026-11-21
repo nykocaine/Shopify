@@ -6209,12 +6209,33 @@ product-rerender {
   }
 }
 
-/* Mobile: while any drawer / modal is open (the dialog code puts the "lock" class on <html>), the announcement bar is hidden. It keeps its
-   space (visibility, not display), so the header and the drawers hanging from it do not jump. */
+/* Mobile: while any drawer / modal is open (the dialog code puts the "lock" class on <html>), the announcement bar folds away and what is
+   below it (the header) slides up into its place, with the header's own easing. --ab-collapse goes 0 -> 1 (registered, so it animates) and
+   drives the bar's margins (its gap above and its own height are given back), its fade, and the sticky offset of the header
+   (sections/header.liquid). Closing the drawer plays it backwards. */
+@property --ab-collapse {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
 @media screen and (max-width: 999px) {
+  :root {
+    transition: --ab-collapse var(--header-solid-transition, .45s cubic-bezier(.4, 0, .2, 1));
+  }
+
+  html.lock {
+    --ab-collapse: 1;
+  }
+
+  .shopify-section--announcement-bar {
+    margin-block-start: calc(var(--announcement-bar-gap, 0px) * (1 - var(--ab-collapse))) !important;
+    margin-block-end: calc(-1 * var(--announcement-bar-height, 0px) * var(--ab-collapse));
+    opacity: calc(1 - var(--ab-collapse));
+  }
+
   html.lock .shopify-section--announcement-bar {
-    visibility: hidden !important;
-    opacity: 0;
+    pointer-events: none;
   }
 }
 
