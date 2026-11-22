@@ -118,6 +118,18 @@
         object-fit: cover;
       }
 
+      {%- comment -%}
+      Phones: the content is never squeezed into a scroll area. The modal limits its card to 70vh and scrolls the body inside it, so adding more
+      text made a scroll bar appear; here the card grows with its content instead (up to the screen) and the body does not scroll.
+      {%- endcomment -%}
+      .modal--newsletter::part(content) {
+        max-height: calc(100svh - 2 * var(--modal-content-margin));
+      }
+
+      .modal--newsletter::part(body) {
+        overflow: visible;
+      }
+
       .newsletter-popup__content {
         text-align: var(--newsletter-align);
       }
@@ -197,7 +209,18 @@
           align-self: stretch;
         }
 
+        {%- comment -%}
+        Desktop: the photo is exactly as tall as the text content next to it. It is taken out of the flow (absolute inside its box) so its own
+        size can never make the popup taller; the row height comes from the content only and the photo fills it, cropped, never distorted.
+        {%- endcomment -%}
+        .newsletter-popup__image {
+          position: relative;
+          min-height: 0;
+        }
+
         .newsletter-popup__image img {
+          position: absolute;
+          inset: 0;
           height: 100%;
           max-height: none;
         }
