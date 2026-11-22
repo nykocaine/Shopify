@@ -7436,8 +7436,9 @@ import { Delegate as Delegate11 } from "vendor";
     table.outerHTML = '<div class="table-scroller">' + table.outerHTML + "</div>";
   });
 })();
-// Outline buttons: the side the pointer came in (or was pressed) / went out, so the hover fill (theme.css, .button--outline::before) starts from that side.
+// Outline buttons: the side the pointer came in (or was pressed) / went out (also on the collection's quick links), so the hover fill (theme.css, .button--outline::before) starts from that side.
 (function () {
+  const FILL_SELECTOR = '.button--outline, .collection__toolbar-links a:not([aria-current="page"])';
   function nearestSide(button, event) {
     const rect = button.getBoundingClientRect();
     const distances = {
@@ -7477,7 +7478,7 @@ import { Delegate as Delegate11 } from "vendor";
       return null;
     }
     // enter / leave are dispatched to the button itself (not to its children), so moving between its children does not move the origin
-    return closest ? event.target.closest(".button--outline") : event.target.matches(".button--outline") ? event.target : null;
+    return closest ? event.target.closest(FILL_SELECTOR) : event.target.matches(FILL_SELECTOR) ? event.target : null;
   }
   document.addEventListener("pointerenter", (event) => {
     const button = buttonOf(event, false);
