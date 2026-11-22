@@ -566,6 +566,21 @@ height-observer {
   background: none;
 }
 
+/* Outline buttons, hover and click (:active also covers touch screens): the button fills with the scheme's "Hover background" and its text takes the
+   scheme's primary button text color. The border is not touched: it stays the color it has from the outline's own text color
+   (--button-text-color), so only the inside changes. */
+@media screen and (pointer: fine) {
+  .button--outline:not([disabled], [aria-disabled="true"]):hover {
+    background: rgb(var(--button-hover-background));
+    color: rgb(var(--button-text-primary));
+  }
+}
+
+.button--outline:not([disabled], [aria-disabled="true"]):active {
+  background: rgb(var(--button-hover-background));
+  color: rgb(var(--button-text-primary));
+}
+
 .button--sm {
   --button-padding-block: .625rem;
   --button-padding-inline: 1.25rem;
