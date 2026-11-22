@@ -7499,9 +7499,9 @@ import { Delegate as Delegate11 } from "vendor";
   }, true);
   ["pointerup", "pointercancel"].forEach((type) => document.addEventListener(type, (event) => {
     const button = buttonOf(event, true);
-    // A touch has no hover: the fill of the press lingers a moment and goes
+    // A touch has no hover: the fill of the press lingers (1s, long enough to see the sweep complete) and goes
     if (button && event.pointerType === "touch") {
-      unfill(button, event, 250);
+      unfill(button, event, 1000);
     }
   }, true));
 })();
