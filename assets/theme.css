@@ -9719,6 +9719,11 @@ shopify-account::part(signed-out-avatar) {
   display: none;
 }
 
+/* The search fields (the search drawer and the search page) get the same outline as the newsletter field: 1px in the input border color. */
+:is(.search-drawer__input, .search-form__input) {
+  border: 1px solid var(--input-border-color, rgb(var(--input-text-color) / calc(var(--has-transparent-background, 0) * .85 + .15)));
+}
+
 /* The header's side padding (1.25rem) was narrower than the body's (2rem), so the close button sat closer to
    the edge than the search field and the content below it - nothing lined up on a common margin. Using the
    body's inline padding for the header too puts the X on the same edge as the content (the pickup
