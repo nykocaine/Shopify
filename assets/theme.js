@@ -6852,12 +6852,23 @@ var NewsletterPopup = class extends Modal {
   get unlocksAfterHide() {
     return true;
   }
-  // Same top-to-bottom unfold as the drawers (see createUnfoldAnimationControls)
+  // Its own motion (not the drawers' unfold): the popup pops in, rising a little while it grows from 92% to full size and fades in, with the veil
+  // fading behind it. It leaves the other way, shrinking a little and fading out, shorter than the arrival. Reduced motion: a plain fade.
   createEnterAnimationControls() {
-    return createUnfoldAnimationControls(animateSequence4, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), true, { fadeOverlay: true });
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const content = this.getShadowPartByName("content");
+    return animateSequence4([
+      [this.getShadowPartByName("overlay"), { opacity: [0, 1] }, { duration: MOTION.fade, ease: "easeInOut" }],
+      [content, reduceMotion ? { opacity: [0, 1] } : { opacity: [0, 1], transform: ["translateY(28px) scale(0.92)", "translateY(0) scale(1)"] }, { duration: reduceMotion ? 0.2 : 0.55, at: "-0.1", ease: [0.34, 1.3, 0.64, 1] }]
+    ]);
   }
   createLeaveAnimationControls() {
-    return createUnfoldAnimationControls(animateSequence4, this.getShadowPartByName("overlay"), this.getShadowPartByName("content"), false, { fadeOverlay: true });
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const content = this.getShadowPartByName("content");
+    return animateSequence4([
+      [this.getShadowPartByName("overlay"), { opacity: [1, 0] }, { duration: MOTION.smallExit, ease: "easeInOut" }],
+      [content, reduceMotion ? { opacity: [1, 0] } : { opacity: [1, 0], transform: ["translateY(0) scale(1)", "translateY(12px) scale(0.96)"] }, { duration: reduceMotion ? 0.2 : MOTION.smallExit, at: "<", ease: MOTION.exitEase }]
+    ]);
   }
   get shouldAppearAutomatically() {
     return !(localStorage.getItem("theme:popup-filled") === "true" || this.hasAttribute("only-once") && localStorage.getItem("theme:popup-appeared") === "true");
