@@ -5414,6 +5414,15 @@ table caption {
   color: rgb(var(--button-text-primary));
 }
 
+/* The popup's and the password page's button is a solid button: it keeps its own colors on hover and click (the hover fill below is only for the
+   footer's merged pill, whose button is transparent). */
+@media screen and (pointer: fine) {
+  :is(.modal--newsletter, .password-content-row) .newsletter-input-group .link:hover {
+    background-color: rgb(var(--button-background-primary));
+    color: rgb(var(--button-text-primary));
+  }
+}
+
 /* Newsletter button hover: the button fills with the color scheme's own Button colors (theme settings > Colors >
    Primary button: "Hover background" --button-hover-background and "Text" --button-text-primary, the same
    variables every solid .button uses), so it follows the scheme instead of a color set here. The fill covers the
