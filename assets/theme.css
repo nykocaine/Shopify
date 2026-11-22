@@ -5363,6 +5363,37 @@ table caption {
   outline-offset: -2px;
 }
 
+/* Newsletter popup and password page: the field and the button are two separate controls, one under the other. The field keeps its own rounded
+   outline; the button is a full-width solid pill (the scheme's primary button colors) below it, with a small gap. No divider line. The footer
+   keeps the merged pill. */
+:is(.modal--newsletter, .password-content-row) .newsletter-input-group {
+  flex-direction: column;
+  align-items: stretch;
+  row-gap: .75rem;
+  background: none;
+  overflow: visible;
+}
+
+:is(.modal--newsletter, .password-content-row) .newsletter-input-group hr {
+  display: none;
+}
+
+:is(.modal--newsletter, .password-content-row) .newsletter-input-group .form-control {
+  flex: none;
+  border: 1px solid var(--input-border-color, rgb(var(--input-text-color) / calc(var(--has-transparent-background, 0) * .85 + .15)));
+  border-radius: var(--input-border-radius);
+  background: rgb(var(--input-background));
+}
+
+:is(.modal--newsletter, .password-content-row) .newsletter-input-group .link {
+  align-self: stretch;
+  justify-content: center;
+  padding-block: 1.1rem;
+  border-radius: 999px;
+  background: rgb(var(--button-background-primary));
+  color: rgb(var(--button-text-primary));
+}
+
 /* Newsletter button hover: the button fills with the color scheme's own Button colors (theme settings > Colors >
    Primary button: "Hover background" --button-hover-background and "Text" --button-text-primary, the same
    variables every solid .button uses), so it follows the scheme instead of a color set here. The fill covers the
