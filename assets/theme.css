@@ -588,10 +588,10 @@ height-observer {
   pointer-events: none;
 }
 
-/* Phones and tablets: slower (1.1s) so the sweep can be seen on a touch */
+/* Phones and tablets: no sweep. The press paints the whole button with the hover color at once, and assets/theme.js keeps it for about 1 second. */
 @media screen and (max-width: 999px) {
   .button--outline::before {
-    transition-duration: 1.1s;
+    transition: none;
   }
 }
 
