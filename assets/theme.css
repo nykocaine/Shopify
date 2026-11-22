@@ -566,72 +566,59 @@ height-observer {
   background: none;
 }
 
-/* Outline buttons, hover and click (:active also covers touch screens): the scheme's "Hover background" fills the button starting from the side
-   where the pointer came in (or was pressed) and sweeping to the opposite side: from the right to the left if it came from the right, from the
-   bottom up if it came from below, and so on. On leaving, the fill withdraws toward the side where the pointer went out. The text takes the
-   scheme's "Hover text". The border is not touched: it stays the color it has from the outline's own text color (--button-text-color).
-   assets/theme.js (outline button fill direction) sets data-fill-from (left, right, top or bottom; left when it is not set) and the is-filled class. The fill
-   is a layer (::before), used by the outline buttons and by the collection's quick links (the pills that are not the current page) under the label, inside the border. */
+/* Outline buttons (and the collection's quick links, the pills that are not the current page), hover and click: the scheme's "Hover background" fills
+   the button starting from the side where the pointer came in (or was pressed) and sweeping to the opposite side: from the right to the left if it
+   came from the right, from the bottom up if it came from below, and so on. On leaving, the fill withdraws toward the side where the pointer went
+   out. The text takes the scheme's "Hover text". The border is not touched.
+   The fill is the button's own background image (a flat color sized from 0 to 100% on one axis), measured from the outer edge of the border
+   (background-origin: border-box) and drawn UNDER the border: the previous version was a layer inside the border, and its edge never matched the
+   border's rounded, sub-pixel edge, leaving unpainted pixels around the button. assets/theme.js (outline button fill direction) sets data-fill-from
+   (left, right, top or bottom; left when it is not set) and the is-filled class. */
 :is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])) {
-  isolation: isolate;
+  background-image: linear-gradient(rgb(var(--button-hover-background)), rgb(var(--button-hover-background)));
+  background-repeat: no-repeat;
+  background-origin: border-box;
+  background-position: left center;
+  background-size: 0% 100%;
+  transition: background-size .6s cubic-bezier(.65, 0, .35, 1), color .2s ease-in-out !important;
 }
 
-.collection__toolbar-links a:not([aria-current="page"]) {
-  position: relative;
-  overflow: hidden;
+:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))[data-fill-from="right"] {
+  background-position: right center;
+  background-size: 0% 100%;
 }
 
-:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: rgb(var(--button-hover-background));
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform .6s cubic-bezier(.65, 0, .35, 1);
-  pointer-events: none;
+:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))[data-fill-from="top"] {
+  background-position: center top;
+  background-size: 100% 0%;
+}
+
+:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))[data-fill-from="bottom"] {
+  background-position: center bottom;
+  background-size: 100% 0%;
 }
 
 /* Phones and tablets: no sweep. The press paints the whole button with the hover color at once, and assets/theme.js keeps it for about 10 seconds. */
 @media screen and (max-width: 999px) {
-  :is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))::before {
-    transition: none;
+  :is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])) {
+    transition: color .2s ease-in-out !important;
   }
-}
-
-:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))[data-fill-from="right"]::before {
-  transform: scaleX(0);
-  transform-origin: right center;
-}
-
-:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))[data-fill-from="top"]::before {
-  transform: scaleY(0);
-  transform-origin: center top;
-}
-
-:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))[data-fill-from="bottom"]::before {
-  transform: scaleY(0);
-  transform-origin: center bottom;
 }
 
 /* The filled state is a class (is-filled) set by assets/theme.js (so it can restart from the right side each time, which a :hover transition cannot
    do when the side changes); the reset class cuts the transition for the frame in which the new starting side is applied. */
-:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])).fill-reset::before {
-  transition: none;
+:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])).fill-reset {
+  transition: none !important;
 }
 
 :is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])).is-filled:not([disabled], [aria-disabled="true"]) {
+  background-size: 100% 100%;
   color: rgb(var(--button-hover-text, var(--button-text-primary))) !important;
 }
 
-:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])).is-filled:not([disabled], [aria-disabled="true"])::before {
-  transform: scale(1);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  :is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))::before {
-    transition: none;
+  :is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])) {
+    transition: color .2s ease-in-out !important;
   }
 }
 
