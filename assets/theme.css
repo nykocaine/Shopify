@@ -560,19 +560,6 @@ height-observer {
   padding: calc(var(--button-padding-block) + var(--button-text-offset, 0em)) var(--button-padding-inline) calc(var(--button-padding-block) - var(--button-text-offset, 0em));
 }
 
-/* Hover and click: every solid button fills with the color scheme's "Hover background" (theme settings > Colors > Primary button), both while the
-   pointer is over it and while it is pressed (:active, which also covers touch screens, where there is no hover). Buttons that carry their own
-   custom background (snippets/button.liquid) pin --button-hover-background to it, so they keep their color. */
-@media screen and (pointer: fine) {
-  :is(.button:not(.button--outline), .shopify-challenge__button):not([disabled], [aria-disabled="true"]):hover {
-    --button-background: var(--button-hover-background);
-  }
-}
-
-:is(.button:not(.button--outline), .shopify-challenge__button):not([disabled], [aria-disabled="true"]):active {
-  --button-background: var(--button-hover-background);
-}
-
 .button--outline {
   color: rgb(var(--button-text-color));
   border-color: rgb(var(--button-text-color));
