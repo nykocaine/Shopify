@@ -223,6 +223,11 @@
   Also, on every screen size: the vertical divider between the email field and the SUBSCRIBE button of the
   newsletter form, which the theme's form snippet renders (an <hr>) but hides by default.
   {%- endcomment -%}
+  {%- comment -%}The merged pill (field + button) gets one outline around both, the same border as the newsletter popup's field.{%- endcomment -%}
+  #shopify-section-{{ section.id }} .newsletter-input-group {
+    border: 1px solid var(--input-border-color, rgb(var(--input-text-color) / calc(var(--has-transparent-background, 0) * .85 + .15)));
+  }
+
   #shopify-section-{{ section.id }} .newsletter-input-group hr {
     display: block;
     align-self: stretch;
