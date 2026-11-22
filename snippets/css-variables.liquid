@@ -634,6 +634,7 @@ note that this may have impact on different places.
         {%- assign button_hover_background = color_scheme.settings.primary_button_background | color_darken: 12 -%}
       {%- endif -%}
       --button-hover-background: {{ button_hover_background.rgb }};
+      --button-hover-text: {% if color_scheme.settings.primary_button_hover_text_color != blank and color_scheme.settings.primary_button_hover_text_color != 'rgba(0,0,0,0)' %}{{ color_scheme.settings.primary_button_hover_text_color.rgb }}{% else %}{{ color_scheme.settings.primary_button_text_color.rgb }}{% endif %};
 
       /* Form inputs */
       --input-background: {% if color_scheme.settings.input_background == 'rgba(0,0,0,0)' %}0 0 0 / 0{% else %}{{ color_scheme.settings.input_background.rgb }}{% endif %};
