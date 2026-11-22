@@ -212,6 +212,11 @@
 {%- endcapture -%}
 
 <style>
+  {%- comment -%}The form's fields (inputs, selects and text areas) get the same outline as the newsletter field: 1px in the input border color.{%- endcomment -%}
+  #shopify-section-{{ section.id }} :is(.input, .select, .textarea) {
+    border: 1px solid var(--input-border-color, rgb(var(--input-text-color) / calc(var(--has-transparent-background, 0) * .85 + .15)));
+  }
+
   {%- comment -%}
   Same padding as sections/reviews.liquid - container-gutter + 0.5rem on all four sides, same on
   mobile and desktop - instead of the global "Section spacing" setting this section normally uses.
