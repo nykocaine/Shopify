@@ -566,19 +566,61 @@ height-observer {
   background: none;
 }
 
-/* Outline buttons, hover and click (:active also covers touch screens): the button fills with the scheme's "Hover background" and its text takes the
-   scheme's primary button text color. The border is not touched: it stays the color it has from the outline's own text color
-   (--button-text-color), so only the inside changes. */
-@media screen and (pointer: fine) {
-  .button--outline:not([disabled], [aria-disabled="true"]):hover {
-    background: rgb(var(--button-hover-background));
-    color: rgb(var(--button-hover-text, var(--button-text-primary)));
-  }
+/* Outline buttons, hover and click (:active also covers touch screens): the scheme's "Hover background" fills the button starting from the side
+   where the pointer came in (or was pressed) and sweeping to the opposite side: from the right to the left if it came from the right, from the
+   bottom up if it came from below, and so on. On leaving, the fill withdraws toward the side where the pointer went out. The text takes the
+   scheme's "Hover text". The border is not touched: it stays the color it has from the outline's own text color (--button-text-color).
+   assets/theme.js (outline button fill direction) sets data-fill-from (left, right, top or bottom; left when it is not set) and the is-filled class. The fill
+   is a layer (::before) under the label, inside the border. */
+.button--outline {
+  isolation: isolate;
 }
 
-.button--outline:not([disabled], [aria-disabled="true"]):active {
+.button--outline::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   background: rgb(var(--button-hover-background));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .45s cubic-bezier(.22, 1, .36, 1);
+  pointer-events: none;
+}
+
+.button--outline[data-fill-from="right"]::before {
+  transform: scaleX(0);
+  transform-origin: right center;
+}
+
+.button--outline[data-fill-from="top"]::before {
+  transform: scaleY(0);
+  transform-origin: center top;
+}
+
+.button--outline[data-fill-from="bottom"]::before {
+  transform: scaleY(0);
+  transform-origin: center bottom;
+}
+
+/* The filled state is a class (is-filled) set by assets/theme.js (so it can restart from the right side each time, which a :hover transition cannot
+   do when the side changes); the reset class cuts the transition for the frame in which the new starting side is applied. */
+.button--outline.fill-reset::before {
+  transition: none;
+}
+
+.button--outline.is-filled:not([disabled], [aria-disabled="true"]) {
   color: rgb(var(--button-hover-text, var(--button-text-primary)));
+}
+
+.button--outline.is-filled:not([disabled], [aria-disabled="true"])::before {
+  transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button--outline::before {
+    transition: none;
+  }
 }
 
 .button--sm {

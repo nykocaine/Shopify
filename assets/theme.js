@@ -7436,6 +7436,76 @@ import { Delegate as Delegate11 } from "vendor";
     table.outerHTML = '<div class="table-scroller">' + table.outerHTML + "</div>";
   });
 })();
+// Outline buttons: the side the pointer came in (or was pressed) / went out, so the hover fill (theme.css, .button--outline::before) starts from that side.
+(function () {
+  function nearestSide(button, event) {
+    const rect = button.getBoundingClientRect();
+    const distances = {
+      left: event.clientX - rect.left,
+      right: rect.right - event.clientX,
+      top: event.clientY - rect.top,
+      bottom: rect.bottom - event.clientY
+    };
+    return Object.keys(distances).reduce((best, side) => distances[side] < distances[best] ? side : best, "left");
+  }
+  function isDisabled(button) {
+    return button.hasAttribute("disabled") || button.getAttribute("aria-disabled") === "true";
+  }
+  function fill(button, event) {
+    if (isDisabled(button)) {
+      return;
+    }
+    clearTimeout(button._unfillTimer);
+    // Starts again from the collapsed state of the new side without animating that step, then fills
+    button.classList.remove("is-filled");
+    button.classList.add("fill-reset");
+    button.setAttribute("data-fill-from", nearestSide(button, event));
+    getComputedStyle(button, "::before").transform;
+    button.classList.remove("fill-reset");
+    button.classList.add("is-filled");
+  }
+  function unfill(button, event, delay) {
+    clearTimeout(button._unfillTimer);
+    button._unfillTimer = setTimeout(() => {
+      // Withdraws toward the side where the pointer went out
+      button.setAttribute("data-fill-from", nearestSide(button, event));
+      button.classList.remove("is-filled");
+    }, delay);
+  }
+  function buttonOf(event, closest) {
+    if (!(event.target instanceof Element)) {
+      return null;
+    }
+    // enter / leave are dispatched to the button itself (not to its children), so moving between its children does not move the origin
+    return closest ? event.target.closest(".button--outline") : event.target.matches(".button--outline") ? event.target : null;
+  }
+  document.addEventListener("pointerenter", (event) => {
+    const button = buttonOf(event, false);
+    if (button && event.pointerType !== "touch") {
+      fill(button, event);
+    }
+  }, true);
+  document.addEventListener("pointerleave", (event) => {
+    const button = buttonOf(event, false);
+    if (button) {
+      unfill(button, event, 0);
+    }
+  }, true);
+  document.addEventListener("pointerdown", (event) => {
+    const button = buttonOf(event, true);
+    if (button && !button.classList.contains("is-filled")) {
+      fill(button, event);
+    }
+  }, true);
+  ["pointerup", "pointercancel"].forEach((type) => document.addEventListener(type, (event) => {
+    const button = buttonOf(event, true);
+    // A touch has no hover: the fill of the press lingers a moment and goes
+    if (button && event.pointerType === "touch") {
+      unfill(button, event, 250);
+    }
+  }, true));
+})();
+
 export {
   AccordionDisclosure,
   AccountLogin,
