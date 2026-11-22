@@ -9,6 +9,12 @@
   that section wrapper, where a section-scoped rule no longer matches (the radius and the square never applied).
   {%- endcomment -%}
   <style>
+  {%- comment -%}The fields (the DNI / RUC / CE field, the discount code and the order note) get the same outline as the newsletter field: 1px in the input border color. Scoped by the drawer's id (it is moved out of its section wrapper when it opens).{%- endcomment -%}
+  #cart-drawer :is(.input, .textarea, .select) {
+    border: 1px solid var(--input-border-color, rgb(var(--input-text-color) / calc(var(--has-transparent-background, 0) * .85 + .15)));
+  }
+  
+
     {%- comment -%}
     Phones: same behavior as the menu drawer and the search drawer - it unfolds from right below the header (header
     and anything above it stay visible and un-blurred), with the side gutters, the gap at the bottom and the rounded

@@ -52,6 +52,12 @@
 {%- assign mobile_border_color = mobile_border_color | strip -%}
 
 <style>
+  {%- comment -%}The fields (the DNI / RUC / CE field, the discount code and the order note) get the same outline as the newsletter field: 1px in the input border color.{%- endcomment -%}
+  #shopify-section-{{ section.id }} :is(.input, .textarea, .select) {
+    border: 1px solid var(--input-border-color, rgb(var(--input-text-color) / calc(var(--has-transparent-background, 0) * .85 + .15)));
+  }
+  
+
   {%- comment -%}
   Matches the header's own lateral inset exactly: --header-padding-inline (sections/header.liquid)
   is calc(var(--container-gutter) + 0.5rem), applied unconditionally there (not gated behind
