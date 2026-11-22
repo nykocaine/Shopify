@@ -584,8 +584,15 @@ height-observer {
   background: rgb(var(--button-hover-background));
   transform: scaleX(0);
   transform-origin: left center;
-  transition: transform .45s cubic-bezier(.22, 1, .36, 1);
+  transition: transform .6s cubic-bezier(.22, 1, .36, 1);
   pointer-events: none;
+}
+
+/* Phones and tablets: a bit slower (.7s) so the sweep can be seen on a touch */
+@media screen and (max-width: 999px) {
+  .button--outline::before {
+    transition-duration: .7s;
+  }
 }
 
 .button--outline[data-fill-from="right"]::before {
