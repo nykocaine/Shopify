@@ -290,6 +290,24 @@
           --content-box-spacing-block-start: 0px;
           min-height: 0 !important;
         }
+
+        {%- comment -%}
+          The glued text block is exactly as tall as its content, never a percentage of its parent: a fixed height smaller than the text squeezes the
+          content row of the card and the text runs over its bottom padding (it touched the bottom edge).
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} media-block:has(> .media-blocks__item--glued) {
+          display: block;
+          height: auto !important;
+        }
+
+        #shopify-section-{{ section.id }} .media-blocks__item--glued,
+        #shopify-section-{{ section.id }} .media-blocks__item--glued .content-box {
+          height: auto !important;
+        }
+
+        #shopify-section-{{ section.id }} .media-blocks__item--glued .content-box {
+          grid-template-rows: [full-start] var(--content-box-spacing-block-start, 0px) [inner-start] auto [inner-end] var(--content-box-spacing-block-end, var(--content-box-block-spacing, var(--content-box-spacing))) [full-end];
+        }
       }
     {%- endif -%}
 
