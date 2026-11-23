@@ -7541,6 +7541,69 @@ import { Delegate as Delegate11 } from "vendor";
   window.addEventListener("scroll", restore, { passive: true });
 })();
 
+// Section image scroll zoom (theme.css, img.scroll-zoom): each image of a section card grows slightly inside its frame as the page is scrolled up and
+// shrinks as it is scrolled down: 20% bigger when it comes in at the bottom of the screen, its normal size when it has gone out at the top.
+(function () {
+  const MAX_ZOOM = 0.2;
+  const SELECTOR = ".content-box__background-media img";
+  const EXCLUDED = '.product-card, .product-list, .product-list__promo, .menu-promo, [class*="drawer"], [class*="modal"], [class*="zoom"], [class*="lightbox"], video-media';
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+  const images = new Set();
+  let ticking = false;
+  function collect() {
+    document.querySelectorAll(SELECTOR).forEach((img) => {
+      if (!images.has(img) && !img.closest(EXCLUDED)) {
+        img.classList.add("scroll-zoom");
+        images.add(img);
+      }
+    });
+    images.forEach((img) => {
+      if (!img.isConnected) {
+        images.delete(img);
+      }
+    });
+  }
+  function update() {
+    ticking = false;
+    const viewport = window.innerHeight;
+    images.forEach((img) => {
+      const frame = img.parentElement && img.parentElement.closest(".content-box__background-media") || img.parentElement;
+      const rect = frame.getBoundingClientRect();
+      if (rect.bottom < -50 || rect.top > viewport + 50 || rect.height === 0) {
+        return;
+      }
+      // 0 when the frame is entering at the bottom of the screen, 1 when it has left at the top
+      const progress = Math.min(1, Math.max(0, (viewport - rect.top) / (viewport + rect.height)));
+      img.style.transform = `scale(${(1 + MAX_ZOOM * (1 - progress)).toFixed(4)})`;
+    });
+  }
+  function requestUpdate() {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  }
+  function start() {
+    collect();
+    update();
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+  window.addEventListener("load", start);
+  window.addEventListener("scroll", requestUpdate, { passive: true });
+  window.addEventListener("resize", requestUpdate);
+  // Sections added or re-rendered later (theme editor, filters...)
+  new MutationObserver(() => {
+    collect();
+    requestUpdate();
+  }).observe(document.documentElement, { childList: true, subtree: true });
+})();
+
 export {
   AccordionDisclosure,
   AccountLogin,

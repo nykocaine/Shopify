@@ -12326,32 +12326,18 @@ figcaption {
 }
 
 /* Scroll zoom of the section images: the picture grows slightly inside its own frame as the page is scrolled up and shrinks again as it is scrolled down
-   (no movement, only the size: no parallax). It follows the scroll position, driven by the browser (scroll-driven animation on the image's own position
-   in the screen: 20% bigger when it comes in at the bottom, normal size when it has gone out at the top), so it is smooth in both directions. It applies to
-   the images that sit as the background of a section card (.content-box__background-media: slideshow, banners, media blocks, image with text, ...); the
-   card clips the extra size. Not touched: logos, icons, the product cards, the promo blocks inside a product list, the product gallery, and anything in a drawer, a modal or the image zoom. Browsers without scroll-driven animations, and people
-   who ask for reduced motion, see the images as they are. */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .content-box__background-media:not(:is(.product-card, .product-list, .product-list__promo, .menu-promo, [class*="drawer"], [class*="modal"], [class*="zoom"], [class*="lightbox"]) *) {
-      overflow: hidden;
-    }
+   (no movement, only the size: no parallax). It follows the image's position on the screen: 20% bigger when it comes in at the bottom, normal size
+   when it has gone out at the top. The size is set by assets/theme.js (section image scroll zoom), which adds the scroll-zoom class to each image; the
+   frame clips the extra size. It is done in JavaScript, not with a CSS scroll animation, because that one follows the nearest frame that clips its
+   content (these cards all do), which never scrolls, and so it never moved; JavaScript also works in every browser. Applies to the images that sit as
+   the background of a section card (.content-box__background-media: slideshow, banners, media blocks, image with text, ...). Not touched: logos, icons,
+   the product cards, the promo blocks inside a product list, the product gallery, and anything in a drawer, a modal or the image zoom. */
+.content-box__background-media:has(> img.scroll-zoom, > picture > img.scroll-zoom) {
+  overflow: hidden;
+}
 
-    .content-box__background-media:not(:is(.product-card, .product-list, .product-list__promo, .menu-promo, [class*="drawer"], [class*="modal"], [class*="zoom"], [class*="lightbox"]) *) img:not(video-media img) {
-      transform-origin: center;
-      animation: section-image-scroll-zoom linear both;
-      animation-timeline: view();
-      animation-range: cover 0% cover 100%;
-    }
-
-    @keyframes section-image-scroll-zoom {
-      from {
-        transform: scale(1.2);
-      }
-
-      to {
-        transform: scale(1);
-      }
-    }
-  }
+img.scroll-zoom {
+  transform-origin: center;
+  transition: none !important;
+  will-change: transform;
 }
