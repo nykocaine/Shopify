@@ -3599,13 +3599,13 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   color: rgb(var(--text-color));
 }
 
-/* Second subtitle (metafield custom.sistema): one line only, tightened under the title like the subtitle; in the full text color (not the
+/* Second subtitle (metafield custom.sistema): wraps onto more lines when it does not fit, tightened under the title like the subtitle; in the full text color (not the
    soft 70% of .product-subtitle), like the name. */
 .product-card .product-subtitle-2 {
   color: rgb(var(--text-color));
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Whatever does not fit goes onto the next line, word by word, instead of being cut with "..." */
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .product-card .product-title + .product-subtitle-2 {
@@ -4198,7 +4198,17 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 }
 
 .product-card__quick-buy-below--card .button__content > span {
+  white-space: normal;
+}
+
+/* The amount and the crossed-out compare-at price never split inside themselves; when they do not fit side by side, the compare-at price goes
+   to the next line as a whole. */
+.product-card__quick-buy-below--card .pcb-amount {
   white-space: nowrap;
+}
+
+.product-card__quick-buy-below--card s.pcb-amount {
+  display: inline-block;
 }
 
 .product-card__quick-buy-price {
