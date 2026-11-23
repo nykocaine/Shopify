@@ -299,6 +299,43 @@
     {%- endif -%}
 
     {%- comment -%}
+      "Statistics" block: the figures one under the other with space between them, the big number tight over its description, and the small note
+      at the end: 1.5px smaller than the body text. The description in bold capitals is optional (checkbox in the block).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .media-stats {
+      display: grid;
+      row-gap: 1.75rem;
+    }
+
+    #shopify-section-{{ section.id }} .media-stats__item {
+      display: grid;
+      row-gap: .25rem;
+    }
+
+    #shopify-section-{{ section.id }} .media-stats__number,
+    #shopify-section-{{ section.id }} .media-stats__label,
+    #shopify-section-{{ section.id }} .media-stats__note {
+      margin: 0;
+    }
+
+    #shopify-section-{{ section.id }} .media-stats__number {
+      color: var(--media-stats-number-color, inherit);
+      line-height: 1.05;
+    }
+
+    #shopify-section-{{ section.id }} .media-stats__label--uppercase {
+      font-weight: 700;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+
+    #shopify-section-{{ section.id }} .media-stats__note {
+      font-size: calc(var(--text-base) - 1.5px);
+      line-height: 1.5;
+      opacity: .8;
+    }
+
+    {%- comment -%}
       Top section spacing as margin instead of padding, so it reads the same way as the other
       converted sections. display: flow-root on the outer wrapper contains that margin (stops it
       collapsing through the wrapper's own top edge), so the color-scheme background still starts
@@ -905,6 +942,43 @@
                       </div>
                     </div>
                   {%- endfor -%}
+                </div>
+
+              {%- when 'stats' -%}
+                {%- comment -%}
+                Statistics card: each figure is a big number (or percentage) with its description under it, each in its own field, and a small note at
+                the bottom. The big number is a paragraph styled like a heading (the size is picked in the block: XX-Large to XX-Small), not a real heading
+                tag, so the page's heading structure (SEO) is untouched.
+                {%- endcomment -%}
+                <div id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {{ block.shopify_attributes }}>
+                  <div class="content-box h-full">
+                    <div class="media-stats" {% if block.settings.number_color != blank and block.settings.number_color != 'rgba(0,0,0,0)' %}style="--media-stats-number-color: {{ block.settings.number_color }};"{% endif %}>
+                      {%- for i in (1..4) -%}
+                        {%- liquid
+                          assign number_key = 'stat_' | append: i | append: '_number'
+                          assign label_key = 'stat_' | append: i | append: '_label'
+                          assign stat_number = block.settings[number_key]
+                          assign stat_label = block.settings[label_key]
+                        -%}
+
+                        {%- if stat_number != blank or stat_label != blank -%}
+                          <div class="media-stats__item">
+                            {%- if stat_number != blank -%}
+                              <p class="media-stats__number {{ block.settings.number_size }}">{{ stat_number }}</p>
+                            {%- endif -%}
+
+                            {%- if stat_label != blank -%}
+                              <p class="media-stats__label{% if block.settings.label_uppercase %} media-stats__label--uppercase{% endif %}">{{ stat_label }}</p>
+                            {%- endif -%}
+                          </div>
+                        {%- endif -%}
+                      {%- endfor -%}
+
+                      {%- if block.settings.note != blank -%}
+                        <p class="media-stats__note">{{ block.settings.note }}</p>
+                      {%- endif -%}
+                    </div>
+                  </div>
                 </div>
 
               {%- when 'info_panel' -%}
@@ -3367,6 +3441,141 @@
             }
           ],
           "default": "bottom_left"
+        }
+      ]
+    },
+    {
+      "type": "stats",
+      "name": "Estadísticas",
+      "settings": [
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-3"
+        },
+        {
+          "type": "select",
+          "id": "number_size",
+          "label": "Tamaño del número grande",
+          "info": "Es un párrafo con el estilo de un título (no un título real), así que no afecta al SEO de la página.",
+          "options": [
+            {
+              "value": "h1",
+              "label": "XX-Large"
+            },
+            {
+              "value": "h2",
+              "label": "X-Large"
+            },
+            {
+              "value": "h3",
+              "label": "Large"
+            },
+            {
+              "value": "h4",
+              "label": "Medium"
+            },
+            {
+              "value": "h5",
+              "label": "Small"
+            },
+            {
+              "value": "h6",
+              "label": "X-Small"
+            },
+            {
+              "value": "h7",
+              "label": "XX-Small"
+            }
+          ],
+          "default": "h2"
+        },
+        {
+          "type": "color",
+          "id": "number_color",
+          "label": "Color del número grande",
+          "info": "Vacío usa el color del texto del esquema."
+        },
+        {
+          "type": "checkbox",
+          "id": "label_uppercase",
+          "label": "Descripción en mayúsculas y negrita",
+          "default": true
+        },
+        {
+          "type": "header",
+          "content": "Dato 1"
+        },
+        {
+          "type": "text",
+          "id": "stat_1_number",
+          "label": "Número grande",
+          "info": "Por ejemplo: 97%"
+        },
+        {
+          "type": "text",
+          "id": "stat_1_label",
+          "label": "Texto debajo",
+          "info": "Por ejemplo: estuvo de acuerdo en que los labios se ven suaves"
+        },
+        {
+          "type": "header",
+          "content": "Dato 2"
+        },
+        {
+          "type": "text",
+          "id": "stat_2_number",
+          "label": "Número grande",
+          "info": "Por ejemplo: 97%"
+        },
+        {
+          "type": "text",
+          "id": "stat_2_label",
+          "label": "Texto debajo",
+          "info": "Por ejemplo: estuvo de acuerdo en que los labios se ven suaves"
+        },
+        {
+          "type": "header",
+          "content": "Dato 3"
+        },
+        {
+          "type": "text",
+          "id": "stat_3_number",
+          "label": "Número grande",
+          "info": "Por ejemplo: 97%"
+        },
+        {
+          "type": "text",
+          "id": "stat_3_label",
+          "label": "Texto debajo",
+          "info": "Por ejemplo: estuvo de acuerdo en que los labios se ven suaves"
+        },
+        {
+          "type": "header",
+          "content": "Dato 4"
+        },
+        {
+          "type": "text",
+          "id": "stat_4_number",
+          "label": "Número grande",
+          "info": "Por ejemplo: 97%"
+        },
+        {
+          "type": "text",
+          "id": "stat_4_label",
+          "label": "Texto debajo",
+          "info": "Por ejemplo: estuvo de acuerdo en que los labios se ven suaves"
+        },
+        {
+          "type": "header",
+          "content": "Nota"
+        },
+        {
+          "type": "textarea",
+          "id": "note",
+          "label": "Texto pequeño",
+          "info": "Se muestra 1,5 px más pequeño que el texto del cuerpo."
         }
       ]
     },
