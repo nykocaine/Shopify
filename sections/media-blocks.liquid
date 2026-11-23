@@ -264,6 +264,36 @@
       gap: var(--media-blocks-split-gap);
     }
 
+    {%- if section.settings.stack_on_mobile -%}
+      {%- comment -%}
+        Phones (blocks stacked): a divided block followed by a text-only block is one piece. The lower image touches the text block (the gap between
+        blocks is taken away) and neither has a rounded corner where they meet; the text block has no space above or below its text (only its side
+        padding stays) and no minimum height, so it is exactly as tall as the text needs.
+      {%- endcomment -%}
+      @media screen and (max-width: 699px) {
+        #shopify-section-{{ section.id }} .media-blocks__split--glue-next {
+          margin-block-end: calc(-1 * {% if section.settings.column_spacing == 'none' %}0px{% else %}var(--horizontal-gap){% endif %});
+        }
+
+        #shopify-section-{{ section.id }} .media-blocks__split--glue-next > :last-child {
+          border-end-start-radius: 0 !important;
+          border-end-end-radius: 0 !important;
+        }
+
+        #shopify-section-{{ section.id }} .media-blocks__item--glued,
+        #shopify-section-{{ section.id }} .media-blocks__item--glued > .content-box {
+          border-start-start-radius: 0 !important;
+          border-start-end-radius: 0 !important;
+        }
+
+        #shopify-section-{{ section.id }} .media-blocks__item--glued .content-box {
+          --content-box-spacing-block-start: 0px;
+          --content-box-spacing-block-end: 0px;
+          min-height: 0 !important;
+        }
+      }
+    {%- endif -%}
+
     {%- comment -%}
       The divided block is as tall as a single block, or as the block beside it in the row if that one is taller (the wrapper stretches to the
       row, its own minimum is the usual block size), and the two cards share that height in halves: they no longer ask for a block height each.
@@ -559,6 +589,27 @@
 
                   assign can_make_block_clickable = true
 
+                  # Divided block (second image) followed by a block that is only text, in the same section: on phones, where the blocks are stacked, the
+                  # lower image and that text block are glued together as one piece (no gap, square meeting corners, the text block without top / bottom space)
+                  assign glue_next = false
+                  assign glued_class = ''
+                  assign next_block = section.blocks[forloop.index]
+
+                  if section.settings.stack_on_mobile and block.type == 'image_with_text' and block.settings.second_image != blank
+                    if next_block.type == 'image_with_text' and next_block.settings.image == blank and next_block.settings.second_image == blank
+                      assign glue_next = true
+                    endif
+                  endif
+
+                  if section.settings.stack_on_mobile and block.type == 'image_with_text' and block.settings.image == blank and block.settings.second_image == blank and forloop.index0 > 0
+                    assign prev_index = forloop.index0 | minus: 1
+                    assign prev_block = section.blocks[prev_index]
+
+                    if prev_block.type == 'image_with_text' and prev_block.settings.second_image != blank
+                      assign glued_class = 'media-blocks__item--glued'
+                    endif
+                  endif
+
                   if block.settings.subheading contains '</a>' or block.settings.text contains '</a>' or block.settings.title contains '</a>'
                     assign can_make_block_clickable = false
                   endif
@@ -771,11 +822,11 @@
                 {%- capture media_block_html -%}
                 <media-block class="h-full">
                   {%- if can_make_block_clickable and block.settings.link_url != blank -%}
-                    <a href="{{ block.settings.link_url }}" id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} @container/content-box color-scheme color-scheme--{{ color_scheme.id }}" {{ block.shopify_attributes }}>
+                    <a href="{{ block.settings.link_url }}" id="block-{{ block.id }}" class="media-blocks__item {{ glued_class }} {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} @container/content-box color-scheme color-scheme--{{ color_scheme.id }}" {{ block.shopify_attributes }}>
                       {{- block_content -}}
                     </a>
                   {%- else -%}
-                    <div id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} @container/content-box color-scheme color-scheme--{{ color_scheme.id }}" {{ block.shopify_attributes }}>
+                    <div id="block-{{ block.id }}" class="media-blocks__item {{ glued_class }} {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} @container/content-box color-scheme color-scheme--{{ color_scheme.id }}" {{ block.shopify_attributes }}>
                       {{- block_content -}}
                     </div>
                   {%- endif -%}
@@ -788,7 +839,48 @@
                   with its four corners rounded (the section's own corner radius) and the section's own spacing between them (--media-blocks-gap, from
                   "Column spacing"; with "no spacing" the theme's usual gap between columns is used, so the two always stay apart).
                   {%- endcomment -%}
-                  <div class="media-blocks__split h-full min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
+                  {%- liquid
+                    # The second card's text (optional, same pieces as the first one): all placed at one position
+                    assign second_position = block.settings.second_content_position | default: 'bottom_left'
+                    assign second_vertical = second_position | split: '_' | first
+                    assign second_horizontal = second_position | split: '_' | last
+
+                    assign second_align_self = 'end'
+                    if second_vertical == 'top'
+                      assign second_align_self = 'start'
+                    elsif second_vertical == 'middle'
+                      assign second_align_self = 'center'
+                    endif
+
+                    assign second_justify = 'start'
+                    if second_horizontal == 'center'
+                      assign second_justify = 'center'
+                    elsif second_horizontal == 'right'
+                      assign second_justify = 'end'
+                    endif
+                  -%}
+
+                  {%- capture second_content -%}
+                    {%- if block.settings.second_subheading != blank -%}
+                      {%- render 'subheading', content: block.settings.second_subheading -%}
+                    {%- endif -%}
+
+                    {%- if block.settings.second_title != blank -%}
+                      {%- render 'heading', content: block.settings.second_title, style: block.settings.second_heading_tag -%}
+                    {%- endif -%}
+
+                    {%- if block.settings.second_text != blank -%}
+                      <div class="max-w-sm">
+                        {{- block.settings.second_text -}}
+                      </div>
+                    {%- endif -%}
+
+                    {%- if block.settings.second_link_text != blank -%}
+                      {%- render 'button', content: block.settings.second_link_text, href: block.settings.second_link_url, style: block.settings.second_button_style -%}
+                    {%- endif -%}
+                  {%- endcapture -%}
+
+                  <div class="media-blocks__split h-full min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}{% if glue_next %} media-blocks__split--glue-next{% endif %}">
                     {{- media_block_html -}}
 
                     <div class="media-blocks__item media-blocks__item--second {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ color_scheme.id }}">
@@ -796,6 +888,16 @@
                         <div class="content-box__background-media">
                           {{- block.settings.second_image | image_url: width: block.settings.second_image.width | image_tag: loading: 'lazy', sizes: sizes_attribute, widths: '300,400,500,600,800,1000,1200,1400,1600,1800', class: 'size-full' -}}
                         </div>
+
+                        {%- if second_content != blank -%}
+                          <div class="placement-grid">
+                            <div class="align-self-{{ second_align_self }}">
+                              <div class="prose prose-justify-{{ second_justify }}">
+                                {{- second_content -}}
+                              </div>
+                            </div>
+                          </div>
+                        {%- endif -%}
                       </div>
                     </div>
                   </div>
@@ -1419,6 +1521,78 @@
           "id": "second_image",
           "label": "Segunda imagen (debajo)",
           "info": "Si la agregas, el bloque se divide en dos tarjetas, una sobre otra: la de arriba con esta imagen y el texto, la de abajo con la segunda imagen. Cada una con sus cuatro esquinas redondeadas y la separación de la sección entre ellas."
+        },
+        {
+          "type": "header",
+          "content": "Segunda imagen: texto (opcional)"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "second_subheading",
+          "label": "Subtítulo"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "second_title",
+          "label": "Título"
+        },
+        {
+          "type": "select",
+          "id": "second_heading_tag",
+          "label": "Tamaño del título",
+          "options": [
+            { "value": "h1", "label": "XX-Large" },
+            { "value": "h2", "label": "X-Large" },
+            { "value": "h3", "label": "Large" },
+            { "value": "h4", "label": "Medium" },
+            { "value": "h5", "label": "Small" },
+            { "value": "h6", "label": "X-Small" },
+            { "value": "h7", "label": "XX-Small" }
+          ],
+          "default": "h4"
+        },
+        {
+          "type": "richtext",
+          "id": "second_text",
+          "label": "Contenido"
+        },
+        {
+          "type": "text",
+          "id": "second_link_text",
+          "label": "Texto del botón"
+        },
+        {
+          "type": "url",
+          "id": "second_link_url",
+          "label": "Enlace del botón"
+        },
+        {
+          "type": "select",
+          "id": "second_button_style",
+          "label": "Estilo del botón",
+          "options": [
+            { "value": "outline", "label": "Contorno" },
+            { "value": "solid", "label": "Sólido" },
+            { "value": "link", "label": "Enlace" }
+          ],
+          "default": "solid"
+        },
+        {
+          "type": "select",
+          "id": "second_content_position",
+          "label": "Posición del texto",
+          "options": [
+            { "value": "top_left", "label": "Arriba a la izquierda" },
+            { "value": "top_center", "label": "Arriba al centro" },
+            { "value": "top_right", "label": "Arriba a la derecha" },
+            { "value": "middle_left", "label": "Centro a la izquierda" },
+            { "value": "middle_center", "label": "Centro" },
+            { "value": "middle_right", "label": "Centro a la derecha" },
+            { "value": "bottom_left", "label": "Abajo a la izquierda" },
+            { "value": "bottom_center", "label": "Abajo al centro" },
+            { "value": "bottom_right", "label": "Abajo a la derecha" }
+          ],
+          "default": "bottom_left"
         },
         {
           "type": "header",
