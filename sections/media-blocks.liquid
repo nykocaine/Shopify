@@ -254,7 +254,7 @@
     {%- endif -%}
 
     {%- comment -%}
-      Divided "image with text" block (second image set): two cards one over the other, the section's spacing between them, every corner rounded.
+      Divided "image with text" block (second image set): two cards one over the other, the section's spacing between them, every corner rounded, and the height of the block beside it.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .media-blocks__split {
       --media-blocks-split-gap: {% if section.settings.column_spacing == 'none' %}var(--horizontal-gap){% else %}var(--media-blocks-gap){% endif %};
@@ -262,6 +262,14 @@
       grid-template-columns: minmax(0, 1fr);
       grid-auto-rows: minmax(0, 1fr);
       gap: var(--media-blocks-split-gap);
+    }
+
+    {%- comment -%}
+      The divided block is as tall as a single block, or as the block beside it in the row if that one is taller (the wrapper stretches to the
+      row, its own minimum is the usual block size), and the two cards share that height in halves: they no longer ask for a block height each.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .media-blocks__split .content-box {
+      min-height: 0 !important;
     }
 
     #shopify-section-{{ section.id }} .media-blocks__split > *,
@@ -780,7 +788,7 @@
                   with its four corners rounded (the section's own corner radius) and the section's own spacing between them (--media-blocks-gap, from
                   "Column spacing"; with "no spacing" the theme's usual gap between columns is used, so the two always stay apart).
                   {%- endcomment -%}
-                  <div class="media-blocks__split h-full">
+                  <div class="media-blocks__split h-full min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
                     {{- media_block_html -}}
 
                     <div class="media-blocks__item media-blocks__item--second {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ color_scheme.id }}">
