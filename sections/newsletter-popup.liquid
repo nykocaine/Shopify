@@ -244,6 +244,20 @@
           }
         }
       {%- endif -%}
+
+      {%- comment -%}
+      Desktop width (1000px and up): 0 keeps the automatic width. Otherwise the card is that wide (never wider than the screen minus its margins), and
+      its columns share it in the same proportion as the automatic ones (photo 24, text 26; one column without a photo or with the image as background).
+      {%- endcomment -%}
+      {%- if section.settings.desktop_popup_width > 0 -%}
+        @media screen and (min-width: 1000px) {
+          .modal--newsletter::part(content) {
+            width: min({{ section.settings.desktop_popup_width }}px, calc(100% - 2 * var(--modal-content-margin)));
+            justify-self: center;
+            grid-template-columns: {% if has_desktop_image and image_as_background == false %}minmax(0, 24fr) minmax(0, 26fr){% else %}minmax(0, 1fr){% endif %} !important;
+          }
+        }
+      {%- endif -%}
     </style>
     <newsletter-popup class="modal modal--newsletter color-scheme color-scheme--{{ section.settings.color_scheme.id }}" {% if section.settings.show_only_once %}only-once{% endif %} apparition-delay="{{ section.settings.apparition_delay }}" {% if posted_successfully %}open{% endif %} role="dialog" aria-label="{{ 'sections.newsletter_popup.accessibility_title' | t | escape }}" handle-editor-events>
       {%- if has_desktop_image -%}
@@ -348,6 +362,17 @@
       "label": "Ancho en móvil",
       "info": "100% mantiene el ancho completo actual.",
       "default": 100
+    },
+    {
+      "type": "range",
+      "id": "desktop_popup_width",
+      "min": 0,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "label": "Ancho en escritorio",
+      "info": "0 mantiene el ancho automático actual.",
+      "default": 0
     },
     {
       "type": "range",
