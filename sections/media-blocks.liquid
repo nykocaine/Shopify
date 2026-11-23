@@ -267,8 +267,8 @@
     {%- if section.settings.stack_on_mobile -%}
       {%- comment -%}
         Phones (blocks stacked): a divided block followed by a text-only block is one piece. The lower image touches the text block (the gap between
-        blocks is taken away) and neither has a rounded corner where they meet; the text block has no space above its text (its side and bottom
-        padding stay) and no minimum height, so it is only as tall as the text needs.
+        blocks is taken away) and neither has a rounded corner where they meet. Nothing else of the text block changes (its padding and height stay
+        as they are).
       {%- endcomment -%}
       @media screen and (max-width: 699px) {
         #shopify-section-{{ section.id }} .media-blocks__split--glue-next {
@@ -284,29 +284,6 @@
         #shopify-section-{{ section.id }} .media-blocks__item--glued > .content-box {
           border-start-start-radius: 0 !important;
           border-start-end-radius: 0 !important;
-        }
-
-        #shopify-section-{{ section.id }} .media-blocks__item--glued .content-box {
-          --content-box-spacing-block-start: 0px;
-          min-height: 0 !important;
-        }
-
-        {%- comment -%}
-          The glued text block is exactly as tall as its content, never a percentage of its parent: a fixed height smaller than the text squeezes the
-          content row of the card and the text runs over its bottom padding (it touched the bottom edge).
-        {%- endcomment -%}
-        #shopify-section-{{ section.id }} media-block:has(> .media-blocks__item--glued) {
-          display: block;
-          height: auto !important;
-        }
-
-        #shopify-section-{{ section.id }} .media-blocks__item--glued,
-        #shopify-section-{{ section.id }} .media-blocks__item--glued .content-box {
-          height: auto !important;
-        }
-
-        #shopify-section-{{ section.id }} .media-blocks__item--glued .content-box {
-          grid-template-rows: [full-start] var(--content-box-spacing-block-start, 0px) [inner-start] auto [inner-end] var(--content-box-spacing-block-end, var(--content-box-block-spacing, var(--content-box-spacing))) [full-end];
         }
       }
     {%- endif -%}
