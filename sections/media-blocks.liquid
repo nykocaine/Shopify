@@ -856,6 +856,8 @@
 
                   if section.settings.stack_on_mobile and next_block.type == 'image_with_text' and next_block.settings.image == blank
                     assign glue_next = true
+                  elsif section.settings.stack_on_mobile and next_block.type == 'stats'
+                    assign glue_next = true
                   endif
 
                   assign two_cards = 'first,second' | split: ','
@@ -939,12 +941,26 @@
                 </div>
 
               {%- when 'stats' -%}
+                {%- liquid
+                  # Right after a "Two images with text" block, on phones (blocks stacked), the card is glued to it (see .media-blocks__item--glued)
+                  assign glued_class = ''
+
+                  if section.settings.stack_on_mobile and forloop.index0 > 0
+                    assign prev_index = forloop.index0 | minus: 1
+                    assign prev_block = section.blocks[prev_index]
+
+                    if prev_block.type == 'two_images_with_text'
+                      assign glued_class = 'media-blocks__item--glued'
+                    endif
+                  endif
+                -%}
+
                 {%- comment -%}
                 Statistics card: each figure is a big number (or percentage) with its description under it, each in its own field, and a small note at
                 the bottom. The big number is a paragraph styled like a heading (the size is picked in the block: XX-Large to XX-Small), not a real heading
                 tag, so the page's heading structure (SEO) is untouched.
                 {%- endcomment -%}
-                <div id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {{ block.shopify_attributes }}>
+                <div id="block-{{ block.id }}" class="media-blocks__item {{ glued_class }} {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" {{ block.shopify_attributes }}>
                   <div class="content-box h-full">
                     <div class="media-stats" {% if block.settings.number_color != blank and block.settings.number_color != 'rgba(0,0,0,0)' %}style="--media-stats-number-color: {{ block.settings.number_color }};"{% endif %}>
                       {%- for i in (1..4) -%}
