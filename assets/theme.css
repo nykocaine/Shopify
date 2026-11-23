@@ -12329,15 +12329,15 @@ figcaption {
    (no movement, only the size: no parallax). It follows the scroll position, driven by the browser (scroll-driven animation on the image's own position
    in the screen: 6% bigger when it comes in at the bottom, normal size when it has gone out at the top), so it is smooth in both directions. It applies to
    the images that sit as the background of a section card (.content-box__background-media: slideshow, banners, media blocks, image with text, ...); the
-   card clips the extra size. Logos, icons, product cards and the product gallery are not touched. Browsers without scroll-driven animations, and people
+   card clips the extra size. Not touched: logos, icons, the product cards, the promo blocks inside a product list, the product gallery, and anything in a drawer, a modal or the image zoom. Browsers without scroll-driven animations, and people
    who ask for reduced motion, see the images as they are. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .content-box__background-media {
+    .content-box__background-media:not(:is(.product-card, .product-list, .product-list__promo, .menu-promo, [class*="drawer"], [class*="modal"], [class*="zoom"], [class*="lightbox"]) *) {
       overflow: hidden;
     }
 
-    .content-box__background-media img:not(video-media img) {
+    .content-box__background-media:not(:is(.product-card, .product-list, .product-list__promo, .menu-promo, [class*="drawer"], [class*="modal"], [class*="zoom"], [class*="lightbox"]) *) img:not(video-media img) {
       transform-origin: center;
       animation: section-image-scroll-zoom linear both;
       animation-timeline: view();
