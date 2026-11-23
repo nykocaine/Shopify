@@ -254,6 +254,23 @@
     {%- endif -%}
 
     {%- comment -%}
+      Divided "image with text" block (second image set): two cards one over the other, the section's spacing between them, every corner rounded.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .media-blocks__split {
+      --media-blocks-split-gap: {% if section.settings.column_spacing == 'none' %}var(--horizontal-gap){% else %}var(--media-blocks-gap){% endif %};
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      grid-auto-rows: minmax(0, 1fr);
+      gap: var(--media-blocks-split-gap);
+    }
+
+    #shopify-section-{{ section.id }} .media-blocks__split > *,
+    #shopify-section-{{ section.id }} .media-blocks__split > media-block > .media-blocks__item {
+      border-radius: var(--media-blocks-corner-radius) !important;
+      overflow: hidden;
+    }
+
+    {%- comment -%}
       Top section spacing as margin instead of padding, so it reads the same way as the other
       converted sections. display: flow-root on the outer wrapper contains that margin (stops it
       collapsing through the wrapper's own top edge), so the color-scheme background still starts
@@ -743,6 +760,7 @@
                   </div>
                 {%- endcapture -%}
 
+                {%- capture media_block_html -%}
                 <media-block class="h-full">
                   {%- if can_make_block_clickable and block.settings.link_url != blank -%}
                     <a href="{{ block.settings.link_url }}" id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} @container/content-box color-scheme color-scheme--{{ color_scheme.id }}" {{ block.shopify_attributes }}>
@@ -754,6 +772,28 @@
                     </div>
                   {%- endif -%}
                 </media-block>
+                {%- endcapture -%}
+
+                {%- if block.type == 'image_with_text' and block.settings.second_image != blank -%}
+                  {%- comment -%}
+                  Divided block: the block above (its image with the text) and a second image under it, as two separate cards one over the other, each
+                  with its four corners rounded (the section's own corner radius) and the section's own spacing between them (--media-blocks-gap, from
+                  "Column spacing"; with "no spacing" the theme's usual gap between columns is used, so the two always stay apart).
+                  {%- endcomment -%}
+                  <div class="media-blocks__split h-full">
+                    {{- media_block_html -}}
+
+                    <div class="media-blocks__item media-blocks__item--second {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ color_scheme.id }}">
+                      <div class="content-box h-full min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
+                        <div class="content-box__background-media">
+                          {{- block.settings.second_image | image_url: width: block.settings.second_image.width | image_tag: loading: 'lazy', sizes: sizes_attribute, widths: '300,400,500,600,800,1000,1200,1400,1600,1800', class: 'size-full' -}}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                {%- else -%}
+                  {{- media_block_html -}}
+                {%- endif -%}
 
               {%- when 'info_panel' -%}
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {{ block.shopify_attributes }}>
@@ -1365,6 +1405,12 @@
           "id": "image",
           "label": "t:global.image.image",
           "info": "t:sections.media_blocks.blocks.image_with_text.image_size_recommendation"
+        },
+        {
+          "type": "image_picker",
+          "id": "second_image",
+          "label": "Segunda imagen (debajo)",
+          "info": "Si la agregas, el bloque se divide en dos tarjetas, una sobre otra: la de arriba con esta imagen y el texto, la de abajo con la segunda imagen. Cada una con sus cuatro esquinas redondeadas y la separación de la sección entre ellas."
         },
         {
           "type": "header",
