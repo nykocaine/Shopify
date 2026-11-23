@@ -326,6 +326,12 @@
       -webkit-text-stroke: .02em currentColor;
     }
 
+    @media screen and (max-width: 699px) {
+      #shopify-section-{{ section.id }} .media-stats__number {
+        font-size: var(--media-stats-number-size-mobile);
+      }
+    }
+
     #shopify-section-{{ section.id }} .media-stats__note {
       font-size: calc(var(--text-base) - 1.5px);
       line-height: 1.5;
@@ -977,7 +983,7 @@
                         {%- if stat_number != blank or stat_label != blank -%}
                           <div class="media-stats__item">
                             {%- if stat_number != blank -%}
-                              <p class="media-stats__number {{ block.settings.number_size }}">{{ stat_number }}</p>
+                              <p class="media-stats__number {{ block.settings.number_size }}" style="--media-stats-number-size-mobile: var(--text-{{ block.settings.number_size_mobile | default: block.settings.number_size }});">{{ stat_number }}</p>
                             {%- endif -%}
 
                             {%- if stat_label != blank -%}
@@ -3470,8 +3476,44 @@
         {
           "type": "select",
           "id": "number_size",
-          "label": "Tamaño del número grande",
+          "label": "Tamaño del número grande en escritorio",
           "info": "Es un párrafo con el estilo de un título (no un título real), así que no afecta al SEO de la página.",
+          "options": [
+            {
+              "value": "h1",
+              "label": "XX-Large"
+            },
+            {
+              "value": "h2",
+              "label": "X-Large"
+            },
+            {
+              "value": "h3",
+              "label": "Large"
+            },
+            {
+              "value": "h4",
+              "label": "Medium"
+            },
+            {
+              "value": "h5",
+              "label": "Small"
+            },
+            {
+              "value": "h6",
+              "label": "X-Small"
+            },
+            {
+              "value": "h7",
+              "label": "XX-Small"
+            }
+          ],
+          "default": "h2"
+        },
+        {
+          "type": "select",
+          "id": "number_size_mobile",
+          "label": "Tamaño del número grande en móvil",
           "options": [
             {
               "value": "h1",
