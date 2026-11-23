@@ -7507,6 +7507,40 @@ import { Delegate as Delegate11 } from "vendor";
   }, true));
 })();
 
+// Keyboard inside an open drawer / modal (phones): the page is locked (html.lock), but iOS still scrolls the page behind it a few pixels to bring the
+// focused field into view, so the header slid up under the drawer and the drawer covered it. While the keyboard is open the page is put back
+// where it was when the field was focused.
+(function () {
+  let lockedY = null;
+  const isField = (el) => el instanceof Element && el.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]), textarea, select');
+  document.addEventListener("focusin", (event) => {
+    if (isField(event.target) && document.documentElement.classList.contains("lock")) {
+      lockedY = window.scrollY;
+    }
+  });
+  document.addEventListener("focusout", () => {
+    setTimeout(() => {
+      if (!isField(document.activeElement)) {
+        lockedY = null;
+      }
+    }, 100);
+  });
+  function restore() {
+    if (lockedY === null || !document.documentElement.classList.contains("lock")) {
+      lockedY = null;
+      return;
+    }
+    if (Math.abs(window.scrollY - lockedY) > 0.5) {
+      window.scrollTo(0, lockedY);
+    }
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", restore);
+    window.visualViewport.addEventListener("scroll", restore);
+  }
+  window.addEventListener("scroll", restore, { passive: true });
+})();
+
 export {
   AccordionDisclosure,
   AccountLogin,
