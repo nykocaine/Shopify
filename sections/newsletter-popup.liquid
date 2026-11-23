@@ -246,15 +246,47 @@
       {%- endif -%}
 
       {%- comment -%}
-      Desktop width (1000px and up): 0 keeps the automatic width. Otherwise the card is that wide (never wider than the screen minus its margins), and
-      its columns share it in the same proportion as the automatic ones (photo 24, text 26; one column without a photo or with the image as background).
+      Desktop layout (1000px and up). Image position "top": a single column, the photo over the text (full width of the card, its height capped, cropped
+      and never distorted); with "left" the photo is beside the text as before. Width: 0 keeps the automatic width; otherwise the card is that percentage
+      of the screen (never wider than the screen minus its margins), and with the photo on the left the two columns share it in the same proportion as the
+      automatic ones (photo 24, text 26).
       {%- endcomment -%}
+      {%- assign image_on_top = false -%}
+      {%- if section.settings.desktop_image_position == 'top' and has_desktop_image and image_as_background == false -%}
+        {%- assign image_on_top = true -%}
+      {%- endif -%}
+
+      {%- if image_on_top -%}
+        @media screen and (min-width: 1000px) {
+          .modal--newsletter::part(content) {
+            grid-template-columns: minmax(0, 1fr) !important;
+            grid-auto-flow: row;
+            grid-auto-rows: auto;
+          }
+
+          .newsletter-popup__image {
+            position: static;
+            align-self: auto;
+          }
+
+          .newsletter-popup__image img {
+            position: static;
+            width: 100%;
+            height: auto;
+            max-height: min(40svh, 24rem);
+          }
+        }
+      {%- endif -%}
+
       {%- if section.settings.desktop_popup_width > 0 -%}
         @media screen and (min-width: 1000px) {
           .modal--newsletter::part(content) {
-            width: min({{ section.settings.desktop_popup_width }}px, calc(100% - 2 * var(--modal-content-margin)));
+            width: {{ section.settings.desktop_popup_width }}%;
+            max-width: calc(100% - 2 * var(--modal-content-margin));
             justify-self: center;
-            grid-template-columns: {% if has_desktop_image and image_as_background == false %}minmax(0, 24fr) minmax(0, 26fr){% else %}minmax(0, 1fr){% endif %} !important;
+            {%- if image_on_top == false -%}
+              grid-template-columns: {% if has_desktop_image and image_as_background == false %}minmax(0, 24fr) minmax(0, 26fr){% else %}minmax(0, 1fr){% endif %} !important;
+            {%- endif -%}
           }
         }
       {%- endif -%}
@@ -367,12 +399,22 @@
       "type": "range",
       "id": "desktop_popup_width",
       "min": 0,
-      "max": 1200,
-      "step": 20,
-      "unit": "px",
+      "max": 100,
+      "step": 5,
+      "unit": "%",
       "label": "Ancho en escritorio",
       "info": "0 mantiene el ancho automático actual.",
       "default": 0
+    },
+    {
+      "type": "select",
+      "id": "desktop_image_position",
+      "label": "Posición de la imagen en escritorio",
+      "options": [
+        { "value": "left", "label": "Al lado del texto" },
+        { "value": "top", "label": "Arriba" }
+      ],
+      "default": "left"
     },
     {
       "type": "range",
