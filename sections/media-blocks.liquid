@@ -267,8 +267,8 @@
     {%- if section.settings.stack_on_mobile -%}
       {%- comment -%}
         Phones (blocks stacked): a divided block followed by a text-only block is one piece. The lower image touches the text block (the gap between
-        blocks is taken away) and neither has a rounded corner where they meet; the text block has no space above its text (its side and bottom
-        padding stay) and no minimum height, so it is only as tall as the text needs.
+        blocks is taken away) and neither has a rounded corner where they meet; the text block has no space above or below its text (only its side
+        padding stays) and no minimum height, so it is exactly as tall as the text needs.
       {%- endcomment -%}
       @media screen and (max-width: 699px) {
         #shopify-section-{{ section.id }} .media-blocks__split--glue-next {
@@ -288,6 +288,7 @@
 
         #shopify-section-{{ section.id }} .media-blocks__item--glued .content-box {
           --content-box-spacing-block-start: 0px;
+          --content-box-spacing-block-end: 0px;
           min-height: 0 !important;
         }
 
