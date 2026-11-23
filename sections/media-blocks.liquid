@@ -300,7 +300,7 @@
 
     {%- comment -%}
       "Statistics" block: the figures one under the other with space between them, the big number tight over its description, and the small note
-      at the end: 1.5px smaller than the body text. The description in bold capitals is optional (checkbox in the block).
+      at the end: 1.5px smaller than the body text. The description under the number is plain body text: the body's size, no capitals.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .media-stats {
       display: grid;
@@ -321,12 +321,6 @@
     #shopify-section-{{ section.id }} .media-stats__number {
       color: var(--media-stats-number-color, inherit);
       line-height: 1.05;
-    }
-
-    #shopify-section-{{ section.id }} .media-stats__label--uppercase {
-      font-weight: 700;
-      letter-spacing: .02em;
-      text-transform: uppercase;
     }
 
     #shopify-section-{{ section.id }} .media-stats__note {
@@ -968,7 +962,7 @@
                             {%- endif -%}
 
                             {%- if stat_label != blank -%}
-                              <p class="media-stats__label{% if block.settings.label_uppercase %} media-stats__label--uppercase{% endif %}">{{ stat_label }}</p>
+                              <p class="media-stats__label">{{ stat_label }}</p>
                             {%- endif -%}
                           </div>
                         {%- endif -%}
@@ -3496,12 +3490,6 @@
           "id": "number_color",
           "label": "Color del número grande",
           "info": "Vacío usa el color del texto del esquema."
-        },
-        {
-          "type": "checkbox",
-          "id": "label_uppercase",
-          "label": "Descripción en mayúsculas y negrita",
-          "default": true
         },
         {
           "type": "header",
