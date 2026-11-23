@@ -19,6 +19,24 @@
   </style>
 {%- endif -%}
 
+<style>
+  .blog-post-banner__images {
+    display: grid;
+    gap: var(--container-gutter);
+  }
+
+  .blog-post-banner__images--inset {
+    padding: var(--container-gutter);
+  }
+
+  .blog-post-banner__images img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--blog-post-banner-image-radius, 12px);
+  }
+</style>
+
 <div {% if use_color_scheme %}class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}"{% else %}style="{% render 'surface', background: section.settings.background, text_color: section.settings.text_color %}"{% endif %} {% if section.settings.allow_transparent_header %}allow-transparent-header{% endif %}>
   {%- capture article_meta -%}
     {%- if section.settings.show_category and article.tags.size > 0 -%}
@@ -38,7 +56,19 @@
   {%- if article.image != blank and section.settings.image_layout == 'split' -%}
     <div class="section-split">
       <div class="section-split__column section-split__column--image {% unless section.settings.add_image_spacing %}section-split__column--flushed{% endunless %}">
-        {{- article.image | image_url: width: article.image.width | image_tag: sizes: '(max-width: 699px) 100vw, 50vw', widths: '300,400,500,600,800,1000,1200,1400,1600,1800,2000', class: 'size-full' -}}
+        {%- if section.settings.second_image != blank -%}
+          {%- comment -%}
+          Two images, one over the other: the article's own image on top and the second image below it, each one with its four corners rounded
+          and the section's own spacing (--container-gutter, the same used around the columns) between them. When the column has no spacing of its
+          own, the pair gets that same spacing around it so the rounded corners are not cut by the screen's edges.
+          {%- endcomment -%}
+          <div class="blog-post-banner__images{% unless section.settings.add_image_spacing %} blog-post-banner__images--inset{% endunless %}" style="--blog-post-banner-image-radius: {{ section.settings.image_border_radius }}px;">
+            {{- article.image | image_url: width: article.image.width | image_tag: sizes: '(max-width: 699px) 100vw, 50vw', widths: '300,400,500,600,800,1000,1200,1400,1600,1800,2000' -}}
+            {{- section.settings.second_image | image_url: width: section.settings.second_image.width | image_tag: sizes: '(max-width: 699px) 100vw, 50vw', widths: '300,400,500,600,800,1000,1200,1400,1600,1800,2000' -}}
+          </div>
+        {%- else -%}
+          {{- article.image | image_url: width: article.image.width | image_tag: sizes: '(max-width: 699px) 100vw, 50vw', widths: '300,400,500,600,800,1000,1200,1400,1600,1800,2000', class: 'size-full' -}}
+        {%- endif -%}
       </div>
 
       <div class="content-box align-self-center">
@@ -121,6 +151,24 @@
         }
       ],
       "default": "split"
+    },
+    {
+      "type": "image_picker",
+      "id": "second_image",
+      "label": "Segunda imagen (debajo de la imagen del artículo)",
+      "info": "Si la agregas, las dos imágenes quedan una sobre otra, cada una con sus cuatro esquinas redondeadas y una separación entre ellas. Solo con la disposición dividida.",
+      "visible_if": "{{ section.settings.image_layout == 'split' }}"
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Radio de esquina de las imágenes",
+      "default": 12,
+      "visible_if": "{{ section.settings.image_layout == 'split' and section.settings.second_image != blank }}"
     },
     {
       "type": "checkbox",
