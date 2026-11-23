@@ -134,13 +134,24 @@
     .collection's padding-block-end is a generic page rhythm value, not a card inset, so the grid
     and pagination run into the card's rounded bottom edge.
     {%- endcomment -%}
-    #shopify-section-{{ section.id }} .collection__toolbar,
-    #shopify-section-{{ section.id }} .collection__results {
+    #shopify-section-{{ section.id }} .collection__toolbar {
       padding-inline: calc(var(--container-gutter) + 0.5rem);
     }
 
+    {%- comment -%}
+    The results look exactly like the floating collection page (sections/main-collection.liquid): a rounded card whose products run to its edges
+    (no inner padding on the grid, none above or below it), with a full section spacing below the card.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .collection__results {
+      padding-inline: 0;
+    }
+
     #shopify-section-{{ section.id }} .collection {
-      padding-block-end: calc(var(--container-gutter) + 0.5rem);
+      padding-block: 0;
+    }
+
+    #shopify-section-{{ section.id }} > .color-scheme {
+      margin-block-end: var(--section-vertical-spacing);
     }
   {%- endif -%}
 
@@ -293,8 +304,7 @@
   }
 
   {%- comment -%}
-  Filter bar: same look and options as the collection page's toolbar (its own color scheme, optional floating and
-  sticky-to-header modes), ported from sections/main-collection.liquid.
+  Filter bar: same look as the collection page's toolbar (its own color scheme).
   {%- endcomment -%}
   {%- comment -%}
   Entirely skipped when the icon is off - the row is then just a transparent wrapper around the
@@ -343,7 +353,7 @@
   {%- endif -%}
 </style>
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_search %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_search %} style="border-end-start-radius: {{ section.settings.search_border_radius }}px; border-end-end-radius: {{ section.settings.search_border_radius }}px; overflow: hidden;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_search %} section-floating section-floating--block-end{% endif %}"{% if section.settings.floating_search %} style="border-radius: {{ section.settings.search_border_radius }}px; overflow: clip;"{% endif %}>
   {%- if search.performed == false or search.performed and search.results_count == 0 and has_active_filters == false -%}
     <div class="container">
       <div class="empty-state">
