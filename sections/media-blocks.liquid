@@ -321,8 +321,9 @@
     #shopify-section-{{ section.id }} .media-stats__number {
       color: var(--media-stats-number-color, inherit);
       line-height: 1.05;
-      /* Three times the heading font weight of the theme, up to the heaviest weight (900) */
-      font-weight: min(900, calc(var(--heading-font-weight, 400) * 3));
+      /* Heavier than the heaviest weight: CSS stops at 1000, so the last bit up to "1100" is a thin outline of the same color around the letters */
+      font-weight: 1000;
+      -webkit-text-stroke: .02em currentColor;
     }
 
     #shopify-section-{{ section.id }} .media-stats__note {
