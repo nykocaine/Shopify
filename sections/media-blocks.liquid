@@ -254,7 +254,9 @@
     {%- endif -%}
 
     {%- comment -%}
-      Divided "image with text" block (second image set): two cards one over the other, the section's spacing between them, every corner rounded, and the height of the block beside it.
+      "Two images with text" block: two cards one over the other, the section's spacing between them (--media-blocks-gap, from "Column spacing"; with
+      "no spacing" the theme's usual gap between columns is used so the two always stay apart), every corner rounded. They share the height of the
+      block (the usual block size, or the block beside it if that one is taller) in halves, so neither asks for a block height of its own.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .media-blocks__split {
       --media-blocks-split-gap: {% if section.settings.column_spacing == 'none' %}var(--horizontal-gap){% else %}var(--media-blocks-gap){% endif %};
@@ -264,11 +266,19 @@
       gap: var(--media-blocks-split-gap);
     }
 
+    #shopify-section-{{ section.id }} .media-blocks__split .content-box {
+      min-height: 0 !important;
+    }
+
+    #shopify-section-{{ section.id }} .media-blocks__split > .media-blocks__item {
+      border-radius: var(--media-blocks-corner-radius) !important;
+      overflow: hidden;
+    }
+
     {%- if section.settings.stack_on_mobile -%}
       {%- comment -%}
-        Phones (blocks stacked): a divided block followed by a text-only block is one piece. The lower image touches the text block (the gap between
-        blocks is taken away) and neither has a rounded corner where they meet. Nothing else of the text block changes (its padding and height stay
-        as they are).
+        Phones (blocks stacked): a "Two images with text" block followed by a text-only block is one piece. The lower image touches the text block
+        (the gap between blocks is taken away) and neither has a rounded corner where they meet. Nothing else of the text block changes.
       {%- endcomment -%}
       @media screen and (max-width: 699px) {
         #shopify-section-{{ section.id }} .media-blocks__split--glue-next {
@@ -287,20 +297,6 @@
         }
       }
     {%- endif -%}
-
-    {%- comment -%}
-      The divided block is as tall as a single block, or as the block beside it in the row if that one is taller (the wrapper stretches to the
-      row, its own minimum is the usual block size), and the two cards share that height in halves: they no longer ask for a block height each.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .media-blocks__split .content-box {
-      min-height: 0 !important;
-    }
-
-    #shopify-section-{{ section.id }} .media-blocks__split > *,
-    #shopify-section-{{ section.id }} .media-blocks__split > media-block > .media-blocks__item {
-      border-radius: var(--media-blocks-corner-radius) !important;
-      overflow: hidden;
-    }
 
     {%- comment -%}
       Top section spacing as margin instead of padding, so it reads the same way as the other
@@ -583,23 +579,14 @@
 
                   assign can_make_block_clickable = true
 
-                  # Divided block (second image) followed by a block that is only text, in the same section: on phones, where the blocks are stacked, the
-                  # lower image and that text block are glued together as one piece (no gap, square meeting corners, the text block without top / bottom space)
-                  assign glue_next = false
+                  # A text-only block that comes right after a "Two images with text" block: on phones (blocks stacked) it is glued to it
                   assign glued_class = ''
-                  assign next_block = section.blocks[forloop.index]
 
-                  if section.settings.stack_on_mobile and block.type == 'image_with_text' and block.settings.second_image != blank
-                    if next_block.type == 'image_with_text' and next_block.settings.image == blank and next_block.settings.second_image == blank
-                      assign glue_next = true
-                    endif
-                  endif
-
-                  if section.settings.stack_on_mobile and block.type == 'image_with_text' and block.settings.image == blank and block.settings.second_image == blank and forloop.index0 > 0
+                  if section.settings.stack_on_mobile and block.type == 'image_with_text' and block.settings.image == blank and forloop.index0 > 0
                     assign prev_index = forloop.index0 | minus: 1
                     assign prev_block = section.blocks[prev_index]
 
-                    if prev_block.type == 'image_with_text' and prev_block.settings.second_image != blank
+                    if prev_block.type == 'two_images_with_text'
                       assign glued_class = 'media-blocks__item--glued'
                     endif
                   endif
@@ -813,7 +800,6 @@
                   </div>
                 {%- endcapture -%}
 
-                {%- capture media_block_html -%}
                 <media-block class="h-full">
                   {%- if can_make_block_clickable and block.settings.link_url != blank -%}
                     <a href="{{ block.settings.link_url }}" id="block-{{ block.id }}" class="media-blocks__item {{ glued_class }} {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} @container/content-box color-scheme color-scheme--{{ color_scheme.id }}" {{ block.shopify_attributes }}>
@@ -825,79 +811,101 @@
                     </div>
                   {%- endif -%}
                 </media-block>
-                {%- endcapture -%}
 
-                {%- if block.type == 'image_with_text' and block.settings.second_image != blank -%}
-                  {%- comment -%}
-                  Divided block: the block above (its image with the text) and a second image under it, as two separate cards one over the other, each
-                  with its four corners rounded (the section's own corner radius) and the section's own spacing between them (--media-blocks-gap, from
-                  "Column spacing"; with "no spacing" the theme's usual gap between columns is used, so the two always stay apart).
-                  {%- endcomment -%}
-                  {%- liquid
-                    # The second card's text (optional, same pieces as the first one): all placed at one position
-                    assign second_position = block.settings.second_content_position | default: 'bottom_left'
-                    assign second_vertical = second_position | split: '_' | first
-                    assign second_horizontal = second_position | split: '_' | last
+              {%- when 'two_images_with_text' -%}
+                {%- comment -%}
+                Two cards one over the other, each one an image with its own optional text. Every corner of each card is rounded (the section's corner
+                radius) and the section's spacing sits between them (see .media-blocks__split in the CSS above). The block is as tall as a single block, or
+                as the block beside it in the row if that one is taller; the two cards share that height in halves. On phones, a block that is only text
+                right after it is glued to the lower card.
+                {%- endcomment -%}
+                {%- liquid
+                  assign glue_next = false
+                  assign next_block = section.blocks[forloop.index]
 
-                    assign second_align_self = 'end'
-                    if second_vertical == 'top'
-                      assign second_align_self = 'start'
-                    elsif second_vertical == 'middle'
-                      assign second_align_self = 'center'
-                    endif
+                  if section.settings.stack_on_mobile and next_block.type == 'image_with_text' and next_block.settings.image == blank
+                    assign glue_next = true
+                  endif
 
-                    assign second_justify = 'start'
-                    if second_horizontal == 'center'
-                      assign second_justify = 'center'
-                    elsif second_horizontal == 'right'
-                      assign second_justify = 'end'
-                    endif
-                  -%}
+                  assign two_cards = 'first,second' | split: ','
+                -%}
 
-                  {%- capture second_content -%}
-                    {%- if block.settings.second_subheading != blank -%}
-                      {%- render 'subheading', content: block.settings.second_subheading -%}
-                    {%- endif -%}
+                {%- capture two_sizes -%}(max-width: 699px) 100vw, (max-width: 999px) 50vw, {{ 100.0 | divided_by: section.settings.items_per_row | round }}vw{%- endcapture -%}
 
-                    {%- if block.settings.second_title != blank -%}
-                      {%- render 'heading', content: block.settings.second_title, style: block.settings.second_heading_tag -%}
-                    {%- endif -%}
+                <div id="block-{{ block.id }}" class="media-blocks__split h-full min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}{% if glue_next %} media-blocks__split--glue-next{% endif %}" {{ block.shopify_attributes }}>
+                  {%- for card in two_cards -%}
+                    {%- liquid
+                      assign image_key = card | append: '_image'
+                      assign subheading_key = card | append: '_subheading'
+                      assign title_key = card | append: '_title'
+                      assign tag_key = card | append: '_heading_tag'
+                      assign text_key = card | append: '_text'
+                      assign link_text_key = card | append: '_link_text'
+                      assign link_url_key = card | append: '_link_url'
+                      assign style_key = card | append: '_button_style'
+                      assign position_key = card | append: '_content_position'
 
-                    {%- if block.settings.second_text != blank -%}
-                      <div class="max-w-sm">
-                        {{- block.settings.second_text -}}
-                      </div>
-                    {%- endif -%}
+                      assign card_image = block.settings[image_key]
+                      assign card_position = block.settings[position_key] | default: 'bottom_left'
+                      assign card_vertical = card_position | split: '_' | first
+                      assign card_horizontal = card_position | split: '_' | last
 
-                    {%- if block.settings.second_link_text != blank -%}
-                      {%- render 'button', content: block.settings.second_link_text, href: block.settings.second_link_url, style: block.settings.second_button_style -%}
-                    {%- endif -%}
-                  {%- endcapture -%}
+                      assign card_align_self = 'end'
+                      if card_vertical == 'top'
+                        assign card_align_self = 'start'
+                      elsif card_vertical == 'middle'
+                        assign card_align_self = 'center'
+                      endif
 
-                  <div class="media-blocks__split h-full min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}{% if glue_next %} media-blocks__split--glue-next{% endif %}">
-                    {{- media_block_html -}}
+                      assign card_justify = 'start'
+                      if card_horizontal == 'center'
+                        assign card_justify = 'center'
+                      elsif card_horizontal == 'right'
+                        assign card_justify = 'end'
+                      endif
+                    -%}
 
-                    <div class="media-blocks__item media-blocks__item--second {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ color_scheme.id }}">
-                      <div class="content-box h-full min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
-                        <div class="content-box__background-media">
-                          {{- block.settings.second_image | image_url: width: block.settings.second_image.width | image_tag: loading: 'lazy', sizes: sizes_attribute, widths: '300,400,500,600,800,1000,1200,1400,1600,1800', class: 'size-full' -}}
+                    {%- capture card_content -%}
+                      {%- if block.settings[subheading_key] != blank -%}
+                        {%- render 'subheading', content: block.settings[subheading_key] -%}
+                      {%- endif -%}
+
+                      {%- if block.settings[title_key] != blank -%}
+                        {%- render 'heading', content: block.settings[title_key], style: block.settings[tag_key] -%}
+                      {%- endif -%}
+
+                      {%- if block.settings[text_key] != blank -%}
+                        <div class="max-w-sm">
+                          {{- block.settings[text_key] -}}
                         </div>
+                      {%- endif -%}
 
-                        {%- if second_content != blank -%}
+                      {%- if block.settings[link_text_key] != blank -%}
+                        {%- render 'button', content: block.settings[link_text_key], href: block.settings[link_url_key], style: block.settings[style_key] -%}
+                      {%- endif -%}
+                    {%- endcapture -%}
+
+                    <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} @container/content-box color-scheme color-scheme--{{ block.settings.color_scheme.id }}">
+                      <div class="content-box h-full min-h-{{ section.settings.mobile_block_size }} md:min-h-{{ section.settings.block_size }}">
+                        {%- if card_image != blank -%}
+                          <div class="content-box__background-media">
+                            {{- card_image | image_url: width: card_image.width | image_tag: loading: 'lazy', sizes: two_sizes, widths: '300,400,500,600,800,1000,1200,1400,1600,1800', class: 'size-full' -}}
+                          </div>
+                        {%- endif -%}
+
+                        {%- if card_content != blank -%}
                           <div class="placement-grid">
-                            <div class="align-self-{{ second_align_self }}">
-                              <div class="prose prose-justify-{{ second_justify }}">
-                                {{- second_content -}}
+                            <div class="align-self-{{ card_align_self }}">
+                              <div class="prose prose-justify-{{ card_justify }}">
+                                {{- card_content -}}
                               </div>
                             </div>
                           </div>
                         {%- endif -%}
                       </div>
                     </div>
-                  </div>
-                {%- else -%}
-                  {{- media_block_html -}}
-                {%- endif -%}
+                  {%- endfor -%}
+                </div>
 
               {%- when 'info_panel' -%}
                 <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {{ block.shopify_attributes }}>
@@ -1509,84 +1517,6 @@
           "id": "image",
           "label": "t:global.image.image",
           "info": "t:sections.media_blocks.blocks.image_with_text.image_size_recommendation"
-        },
-        {
-          "type": "image_picker",
-          "id": "second_image",
-          "label": "Segunda imagen (debajo)",
-          "info": "Si la agregas, el bloque se divide en dos tarjetas, una sobre otra: la de arriba con esta imagen y el texto, la de abajo con la segunda imagen. Cada una con sus cuatro esquinas redondeadas y la separación de la sección entre ellas."
-        },
-        {
-          "type": "header",
-          "content": "Segunda imagen: texto (opcional)"
-        },
-        {
-          "type": "inline_richtext",
-          "id": "second_subheading",
-          "label": "Subtítulo"
-        },
-        {
-          "type": "inline_richtext",
-          "id": "second_title",
-          "label": "Título"
-        },
-        {
-          "type": "select",
-          "id": "second_heading_tag",
-          "label": "Tamaño del título",
-          "options": [
-            { "value": "h1", "label": "XX-Large" },
-            { "value": "h2", "label": "X-Large" },
-            { "value": "h3", "label": "Large" },
-            { "value": "h4", "label": "Medium" },
-            { "value": "h5", "label": "Small" },
-            { "value": "h6", "label": "X-Small" },
-            { "value": "h7", "label": "XX-Small" }
-          ],
-          "default": "h4"
-        },
-        {
-          "type": "richtext",
-          "id": "second_text",
-          "label": "Contenido"
-        },
-        {
-          "type": "text",
-          "id": "second_link_text",
-          "label": "Texto del botón"
-        },
-        {
-          "type": "url",
-          "id": "second_link_url",
-          "label": "Enlace del botón"
-        },
-        {
-          "type": "select",
-          "id": "second_button_style",
-          "label": "Estilo del botón",
-          "options": [
-            { "value": "outline", "label": "Contorno" },
-            { "value": "solid", "label": "Sólido" },
-            { "value": "link", "label": "Enlace" }
-          ],
-          "default": "solid"
-        },
-        {
-          "type": "select",
-          "id": "second_content_position",
-          "label": "Posición del texto",
-          "options": [
-            { "value": "top_left", "label": "Arriba a la izquierda" },
-            { "value": "top_center", "label": "Arriba al centro" },
-            { "value": "top_right", "label": "Arriba a la derecha" },
-            { "value": "middle_left", "label": "Centro a la izquierda" },
-            { "value": "middle_center", "label": "Centro" },
-            { "value": "middle_right", "label": "Centro a la derecha" },
-            { "value": "bottom_left", "label": "Abajo a la izquierda" },
-            { "value": "bottom_center", "label": "Abajo al centro" },
-            { "value": "bottom_right", "label": "Abajo a la derecha" }
-          ],
-          "default": "bottom_left"
         },
         {
           "type": "header",
@@ -3157,6 +3087,286 @@
             }
           ],
           "default": "middle_center"
+        }
+      ]
+    },
+    {
+      "type": "two_images_with_text",
+      "name": "Dos imágenes con texto",
+      "settings": [
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-3"
+        },
+        {
+          "type": "header",
+          "content": "Imagen de arriba"
+        },
+        {
+          "type": "image_picker",
+          "id": "first_image",
+          "label": "Imagen"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "first_subheading",
+          "label": "Subtítulo"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "first_title",
+          "label": "Título"
+        },
+        {
+          "type": "select",
+          "id": "first_heading_tag",
+          "label": "Tamaño del título",
+          "options": [
+            {
+              "value": "h1",
+              "label": "XX-Large"
+            },
+            {
+              "value": "h2",
+              "label": "X-Large"
+            },
+            {
+              "value": "h3",
+              "label": "Large"
+            },
+            {
+              "value": "h4",
+              "label": "Medium"
+            },
+            {
+              "value": "h5",
+              "label": "Small"
+            },
+            {
+              "value": "h6",
+              "label": "X-Small"
+            },
+            {
+              "value": "h7",
+              "label": "XX-Small"
+            }
+          ],
+          "default": "h4"
+        },
+        {
+          "type": "richtext",
+          "id": "first_text",
+          "label": "Contenido"
+        },
+        {
+          "type": "text",
+          "id": "first_link_text",
+          "label": "Texto del botón"
+        },
+        {
+          "type": "url",
+          "id": "first_link_url",
+          "label": "Enlace del botón"
+        },
+        {
+          "type": "select",
+          "id": "first_button_style",
+          "label": "Estilo del botón",
+          "options": [
+            {
+              "value": "outline",
+              "label": "Contorno"
+            },
+            {
+              "value": "solid",
+              "label": "Sólido"
+            },
+            {
+              "value": "link",
+              "label": "Enlace"
+            }
+          ],
+          "default": "solid"
+        },
+        {
+          "type": "select",
+          "id": "first_content_position",
+          "label": "Posición del texto",
+          "options": [
+            {
+              "value": "top_left",
+              "label": "Arriba a la izquierda"
+            },
+            {
+              "value": "top_center",
+              "label": "Arriba al centro"
+            },
+            {
+              "value": "top_right",
+              "label": "Arriba a la derecha"
+            },
+            {
+              "value": "middle_left",
+              "label": "Centro a la izquierda"
+            },
+            {
+              "value": "middle_center",
+              "label": "Centro"
+            },
+            {
+              "value": "middle_right",
+              "label": "Centro a la derecha"
+            },
+            {
+              "value": "bottom_left",
+              "label": "Abajo a la izquierda"
+            },
+            {
+              "value": "bottom_center",
+              "label": "Abajo al centro"
+            },
+            {
+              "value": "bottom_right",
+              "label": "Abajo a la derecha"
+            }
+          ],
+          "default": "bottom_left"
+        },
+        {
+          "type": "header",
+          "content": "Imagen de abajo"
+        },
+        {
+          "type": "image_picker",
+          "id": "second_image",
+          "label": "Imagen"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "second_subheading",
+          "label": "Subtítulo"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "second_title",
+          "label": "Título"
+        },
+        {
+          "type": "select",
+          "id": "second_heading_tag",
+          "label": "Tamaño del título",
+          "options": [
+            {
+              "value": "h1",
+              "label": "XX-Large"
+            },
+            {
+              "value": "h2",
+              "label": "X-Large"
+            },
+            {
+              "value": "h3",
+              "label": "Large"
+            },
+            {
+              "value": "h4",
+              "label": "Medium"
+            },
+            {
+              "value": "h5",
+              "label": "Small"
+            },
+            {
+              "value": "h6",
+              "label": "X-Small"
+            },
+            {
+              "value": "h7",
+              "label": "XX-Small"
+            }
+          ],
+          "default": "h4"
+        },
+        {
+          "type": "richtext",
+          "id": "second_text",
+          "label": "Contenido"
+        },
+        {
+          "type": "text",
+          "id": "second_link_text",
+          "label": "Texto del botón"
+        },
+        {
+          "type": "url",
+          "id": "second_link_url",
+          "label": "Enlace del botón"
+        },
+        {
+          "type": "select",
+          "id": "second_button_style",
+          "label": "Estilo del botón",
+          "options": [
+            {
+              "value": "outline",
+              "label": "Contorno"
+            },
+            {
+              "value": "solid",
+              "label": "Sólido"
+            },
+            {
+              "value": "link",
+              "label": "Enlace"
+            }
+          ],
+          "default": "solid"
+        },
+        {
+          "type": "select",
+          "id": "second_content_position",
+          "label": "Posición del texto",
+          "options": [
+            {
+              "value": "top_left",
+              "label": "Arriba a la izquierda"
+            },
+            {
+              "value": "top_center",
+              "label": "Arriba al centro"
+            },
+            {
+              "value": "top_right",
+              "label": "Arriba a la derecha"
+            },
+            {
+              "value": "middle_left",
+              "label": "Centro a la izquierda"
+            },
+            {
+              "value": "middle_center",
+              "label": "Centro"
+            },
+            {
+              "value": "middle_right",
+              "label": "Centro a la derecha"
+            },
+            {
+              "value": "bottom_left",
+              "label": "Abajo a la izquierda"
+            },
+            {
+              "value": "bottom_center",
+              "label": "Abajo al centro"
+            },
+            {
+              "value": "bottom_right",
+              "label": "Abajo a la derecha"
+            }
+          ],
+          "default": "bottom_left"
         }
       ]
     },
