@@ -7546,7 +7546,8 @@ import { Delegate as Delegate11 } from "vendor";
 (function () {
   const MAX_ZOOM = 0.2;
   const SELECTOR = ".content-box__background-media img";
-  const EXCLUDED = '.product-card, .product-list, .product-list__promo, .menu-promo, [class*="drawer"], [class*="modal"], [class*="zoom"], [class*="lightbox"], video-media';
+  // (not [class*="zoom"] / [class*="drawer"] on their own: the <body> carries classes like features--zoom-image and drawer-mobile-centered, which would exclude every image)
+  const EXCLUDED = '.product-card, .product-list, .product-list__promo, .menu-promo, .drawer, [class*="-drawer"], [class*="drawer--"], .modal, [class*="-modal"], .popover, [class*="lightbox"], [class*="media-zoom"], video-media';
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     return;
   }
