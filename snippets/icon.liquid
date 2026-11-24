@@ -101,8 +101,9 @@ The control icon set (media/lightbox/bar controls) has no size of its own: .icon
 
     {%- when 'accordion-plus' -%}
       <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 20 }}" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" fill="none" viewBox="0 0 20 20">
-        <path class="step-control-line" stroke-width="2.2" stroke-linecap="round" d="M6 10h8"/>
-        <path class="accordion-plus-bar step-control-line" stroke-width="2.2" stroke-linecap="round" d="M10 6v8"/>
+        {%- comment -%}Stroke 2 on a 20px icon, centered on whole numbers (y = 10, x = 10): the straight edges fall exactly on the pixel grid, so they are sharp (a 2.2 stroke ended on half pixels and showed blurry, jagged pixels where the two bars meet or overlap){%- endcomment -%}
+        <path class="step-control-line" stroke-width="2" stroke-linecap="round" d="M6 10h8"/>
+        <path class="accordion-plus-bar step-control-line" stroke-width="2" stroke-linecap="round" d="M10 6v8"/>
       </svg>
 
     {%- when 'play-triangle' -%}
