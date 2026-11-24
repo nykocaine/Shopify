@@ -511,6 +511,11 @@
       height: 100%;
     }
 
+    {%- comment -%}A FAQ card that is alone in its section takes the whole width (Media Blocks always has at least 2 columns on desktop){%- endcomment -%}
+    #shopify-section-{{ section.id }} .media-blocks > .media-blocks__item:has(.media-faq):only-child {
+      grid-column: 1 / -1;
+    }
+
     #shopify-section-{{ section.id }} .media-faq__title,
     #shopify-section-{{ section.id }} .media-faq__subtitle {
       margin: 0;
@@ -1336,7 +1341,7 @@
                 -%}
 
                 {%- comment -%}
-                FAQ card: title + subtitle + up to 6 questions, each an accordion (snippets/accordion.liquid, the same component the FAQ section uses,
+                FAQ card: title + subtitle + up to 12 questions, each an accordion (snippets/accordion.liquid, the same component the FAQ section uses,
                 with the "+" icon). Questions and answers are each in their own field; a question left empty is skipped. See .media-faq in the CSS above.
                 {%- endcomment -%}
                 <div id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="--media-faq-position: {{ faq_position }};" {{ block.shopify_attributes }}>
@@ -1353,7 +1358,7 @@
                       {%- endif -%}
 
                       <div class="media-faq__list">
-                        {%- for i in (1..6) -%}
+                        {%- for i in (1..12) -%}
                           {%- liquid
                             assign question_key = 'question_' | append: i
                             assign answer_key = 'answer_' | append: i
@@ -4148,7 +4153,7 @@
       "settings": [
         {
           "type": "paragraph",
-          "content": "Una tarjeta con título, subtítulo y hasta 6 preguntas en acordeón (con el ícono +), como las de la sección FAQ pero con las preguntas en texto normal, sin mayúsculas. Una pregunta necesita su respuesta para mostrarse."
+          "content": "Una tarjeta con título, subtítulo y hasta 12 preguntas en acordeón (con el ícono +), como las de la sección FAQ pero con las preguntas en texto normal, sin mayúsculas. Una pregunta necesita su respuesta para mostrarse."
         },
         {
           "type": "color_scheme",
@@ -4223,7 +4228,43 @@
           "content": "Pregunta 6"
         },
         { "type": "text", "id": "question_6", "label": "Pregunta",  "info": "Si la dejas vacía, esta pregunta no se muestra." },
-        { "type": "richtext", "id": "answer_6", "label": "Respuesta" }
+        { "type": "richtext", "id": "answer_6", "label": "Respuesta" },
+        {
+          "type": "header",
+          "content": "Pregunta 7"
+        },
+        { "type": "text", "id": "question_7", "label": "Pregunta", "info": "Si la dejas vacía, esta pregunta no se muestra." },
+        { "type": "richtext", "id": "answer_7", "label": "Respuesta" },
+        {
+          "type": "header",
+          "content": "Pregunta 8"
+        },
+        { "type": "text", "id": "question_8", "label": "Pregunta", "info": "Si la dejas vacía, esta pregunta no se muestra." },
+        { "type": "richtext", "id": "answer_8", "label": "Respuesta" },
+        {
+          "type": "header",
+          "content": "Pregunta 9"
+        },
+        { "type": "text", "id": "question_9", "label": "Pregunta", "info": "Si la dejas vacía, esta pregunta no se muestra." },
+        { "type": "richtext", "id": "answer_9", "label": "Respuesta" },
+        {
+          "type": "header",
+          "content": "Pregunta 10"
+        },
+        { "type": "text", "id": "question_10", "label": "Pregunta", "info": "Si la dejas vacía, esta pregunta no se muestra." },
+        { "type": "richtext", "id": "answer_10", "label": "Respuesta" },
+        {
+          "type": "header",
+          "content": "Pregunta 11"
+        },
+        { "type": "text", "id": "question_11", "label": "Pregunta", "info": "Si la dejas vacía, esta pregunta no se muestra." },
+        { "type": "richtext", "id": "answer_11", "label": "Respuesta" },
+        {
+          "type": "header",
+          "content": "Pregunta 12"
+        },
+        { "type": "text", "id": "question_12", "label": "Pregunta", "info": "Si la dejas vacía, esta pregunta no se muestra." },
+        { "type": "richtext", "id": "answer_12", "label": "Respuesta" }
       ]
     },
     {
