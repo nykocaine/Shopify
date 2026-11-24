@@ -1227,10 +1227,19 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
   {%- endcomment -%}
   {%- comment -%}
   Desktop only: the gap between photos/videos is the theme's shared carousel gap (--horizontal-gap, css-variables.liquid), and the
-  items are square again (the aspect-ratio rules below, at the same breakpoint). The row shows "Items per row (desktop)" slots, the last of them cut in half at the right edge (so the others are a little wider than a plain
-  split): (N - 1) full items + half an item + (N - 1) gaps = 100%. The doubled gap goes in its own variable: a custom
+  items are square again (the aspect-ratio rules below, at the same breakpoint). The row shows "Items per row (desktop)" slots, the last of them only peeking in at the right edge (so the others are a little wider than a plain
+  split): (N - 1) full items + the sliver + (N - 1) gaps = 100%. The sliver is half as wide as it used to be: with X = 100% minus the gaps,
+  it was X / (2N - 1) (half an item), now it is X / (4N - 2), so item = X / divisor with divisor = (4N - 2) * (N - 1) / (4N - 3)
+  (4.235 for the default 5 per row; it was 4.5). The doubled gap goes in its own variable: a custom
   property can't be redefined from itself, and the item width has to subtract the same gap the flex row uses.
   {%- endcomment -%}
+  {%- liquid
+    assign ipr_n = section.settings.items_per_row_desktop
+    assign ipr_a = ipr_n | times: 4 | minus: 2
+    assign ipr_b = ipr_n | minus: 1
+    assign ipr_c = ipr_n | times: 4 | minus: 3
+    assign ipr_divisor = ipr_a | times: ipr_b | times: 1.0 | divided_by: ipr_c | round: 4
+  -%}
   @media screen and (min-width: 1000px) {
     #shopify-section-{{ section.id }} .instagram-feed__carousel {
       --instagram-feed-gap: var(--horizontal-gap);
@@ -1238,7 +1247,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
     }
 
     #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
-      flex: 0 0 calc((100% - {{ section.settings.items_per_row_desktop | minus: 1 }} * var(--instagram-feed-gap)) / {{ section.settings.items_per_row_desktop | minus: 0.5 }});
+      flex: 0 0 calc((100% - {{ section.settings.items_per_row_desktop | minus: 1 }} * var(--instagram-feed-gap)) / {{ ipr_divisor }});
     }
   }
 
