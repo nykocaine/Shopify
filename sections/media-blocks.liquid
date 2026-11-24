@@ -319,7 +319,7 @@
         -%}
         {%- if mobile_swap_index >= 0 -%}
           {%- for order_block in section.blocks -%}
-            {%- if order_block.type == 'image_with_text' or order_block.type == 'video_with_text' or order_block.type == 'two_images_with_text' or order_block.type == 'stats' or order_block.type == 'info_panel' -%}
+            {%- if order_block.type == 'image_with_text' or order_block.type == 'video_with_text' or order_block.type == 'two_images_with_text' or order_block.type == 'stats' or order_block.type == 'words' or order_block.type == 'info_panel' -%}
               {%- liquid
                 assign phone_order = forloop.index0
 
@@ -404,6 +404,99 @@
       font-size: calc(var(--text-base) - 1.5px);
       line-height: 1.5;
       opacity: .8;
+    }
+
+    {%- comment -%}
+    "Palabras" block: a few big words (ingredients, what it is for...), each one a button. They have one base color; the word turns into the
+    chosen color while the pointer is over it (mouse) or after a click / tap (a second click puts it back). The font is one of the store's own
+    fonts (Rektorat, Swiss 721, Satoshi, Apercu), never one from the Shopify library. Each font file is declared here, with its own family name,
+    only when a block of this section uses it, so nothing is downloaded for nothing.
+    {%- endcomment -%}
+    {%- assign words_fonts_used = '' -%}
+    {%- for words_block in section.blocks -%}
+      {%- if words_block.type == 'words' -%}
+        {%- assign words_font_key = words_block.settings.font | default: 'rektorat' -%}
+        {%- unless words_fonts_used contains words_font_key -%}
+          {%- assign words_fonts_used = words_fonts_used | append: ',' | append: words_font_key -%}
+        {%- endunless -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- if words_fonts_used contains 'rektorat' -%}
+      @font-face { font-family: 'Words Rektorat'; src: url('{{ 'rektorat-bold.woff2' | asset_url }}') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+      @font-face { font-family: 'Words Rektorat'; src: url('{{ 'rektorat-heavy.woff2' | asset_url }}') format('woff2'); font-weight: 800; font-style: normal; font-display: swap; }
+    {%- endif -%}
+
+    {%- if words_fonts_used contains 'swiss' -%}
+      @font-face { font-family: 'Words Swiss'; src: url('{{ 'swiss-721-light.woff2' | asset_url }}') format('woff2'); font-weight: 300; font-style: normal; font-display: swap; }
+      @font-face { font-family: 'Words Swiss'; src: url('{{ 'swiss-721-regular.woff2' | asset_url }}') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+      @font-face { font-family: 'Words Swiss'; src: url('{{ 'swiss-721-medium.woff2' | asset_url }}') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+    {%- endif -%}
+
+    {%- if words_fonts_used contains 'satoshi' -%}
+      @font-face { font-family: 'Words Satoshi'; src: url('{{ 'satoshi-variable.woff2' | asset_url }}') format('woff2'); font-weight: 300 900; font-style: normal; font-display: swap; }
+    {%- endif -%}
+
+    {%- if words_fonts_used contains 'apercu' -%}
+      @font-face { font-family: 'Words Apercu'; src: url('{{ 'apercu-light.woff2' | asset_url }}') format('woff2'); font-weight: 300; font-style: normal; font-display: swap; }
+      @font-face { font-family: 'Words Apercu'; src: url('{{ 'apercu-regular.woff2' | asset_url }}') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+      @font-face { font-family: 'Words Apercu'; src: url('{{ 'apercu-medium.woff2' | asset_url }}') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+      @font-face { font-family: 'Words Apercu'; src: url('{{ 'apercu-bold.woff2' | asset_url }}') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+      @font-face { font-family: 'Words Apercu'; src: url('{{ 'apercu-extrabold.woff2' | asset_url }}') format('woff2'); font-weight: 800; font-style: normal; font-display: swap; }
+      @font-face { font-family: 'Words Apercu'; src: url('{{ 'apercu-black.woff2' | asset_url }}') format('woff2'); font-weight: 900; font-style: normal; font-display: swap; }
+    {%- endif -%}
+
+    #shopify-section-{{ section.id }} .media-words__list {
+      display: grid;
+      align-content: center;
+      justify-items: var(--media-words-justify, center);
+      text-align: var(--media-words-text-align, center);
+      row-gap: .35em;
+      height: 100%;
+    }
+
+    #shopify-section-{{ section.id }} .media-words__word {
+      appearance: none;
+      background: none;
+      border: 0;
+      margin: 0;
+      padding: 0;
+      cursor: pointer;
+      text-align: inherit;
+      text-transform: none;
+      line-height: 1.05;
+      color: var(--media-words-base, inherit);
+      font-family: var(--media-words-font-family, inherit);
+      font-weight: var(--media-words-weight, 800);
+      -webkit-tap-highlight-color: transparent;
+      transition: color .25s ease;
+    }
+
+    #shopify-section-{{ section.id }} .media-words__word[aria-pressed="true"] {
+      color: var(--media-words-active, currentColor);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #shopify-section-{{ section.id }} .media-words__word:hover {
+        color: var(--media-words-active, currentColor);
+      }
+    }
+
+    #shopify-section-{{ section.id }} .media-words__word:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: .12em;
+    }
+
+    @media screen and (max-width: 699px) {
+      #shopify-section-{{ section.id }} .media-words__word {
+        font-size: var(--media-words-size-mobile);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #shopify-section-{{ section.id }} .media-words__word {
+        transition: none;
+      }
     }
 
     {%- comment -%}
@@ -1111,6 +1204,84 @@
                     </div>
                   </div>
                 </div>
+
+              {%- when 'words' -%}
+                {%- liquid
+                  assign words_font = block.settings.font | default: 'rektorat'
+                  assign words_family = ''
+
+                  case words_font
+                    when 'rektorat'
+                      assign words_family = "'Words Rektorat'"
+                    when 'swiss'
+                      assign words_family = "'Words Swiss'"
+                    when 'satoshi'
+                      assign words_family = "'Words Satoshi'"
+                    when 'apercu'
+                      assign words_family = "'Words Apercu'"
+                  endcase
+
+                  assign words_size_mobile = block.settings.word_size_mobile | default: block.settings.word_size | default: 'h3'
+
+                  assign words_justify = 'center'
+                  if block.settings.alignment == 'left'
+                    assign words_justify = 'start'
+                  elsif block.settings.alignment == 'right'
+                    assign words_justify = 'end'
+                  endif
+
+                  capture words_style
+                    echo '--media-words-justify: ' | append: words_justify | append: ';'
+                    echo '--media-words-text-align: ' | append: block.settings.alignment | append: ';'
+                    echo '--media-words-font-family: ' | append: words_family | append: ', var(--heading-font-family);'
+                    echo '--media-words-weight: ' | append: block.settings.font_weight | append: ';'
+                    echo '--media-words-size-mobile: var(--text-' | append: words_size_mobile | append: ');'
+
+                    if block.settings.base_color != blank and block.settings.base_color != 'rgba(0,0,0,0)'
+                      echo '--media-words-base: ' | append: block.settings.base_color | append: ';'
+                    endif
+
+                    if block.settings.active_color != blank and block.settings.active_color != 'rgba(0,0,0,0)'
+                      echo '--media-words-active: ' | append: block.settings.active_color | append: ';'
+                    endif
+                  endcapture
+                -%}
+
+                {%- comment -%}
+                Words card: up to 4 words, each a button styled like a heading (the size is picked in the block, XX-Large to XX-Small; not a real
+                heading tag, so the page's heading structure is untouched). Pointer over a word or a click / tap on it paints it with the chosen
+                color; see .media-words__word in the CSS above.
+                {%- endcomment -%}
+                <div id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="{{ words_style | strip_newlines }}" {{ block.shopify_attributes }}>
+                  <div class="content-box h-full">
+                    <div class="media-words__list">
+                      {%- for i in (1..4) -%}
+                        {%- liquid
+                          assign word_key = 'word_' | append: i
+                          assign word_text = block.settings[word_key]
+                        -%}
+
+                        {%- if word_text != blank -%}
+                          <button type="button" class="media-words__word {{ block.settings.word_size }}" aria-pressed="false">{{ word_text }}</button>
+                        {%- endif -%}
+                      {%- endfor -%}
+                    </div>
+                  </div>
+                </div>
+
+                <script>
+                  if (!window.__mediaWordsInit) {
+                    window.__mediaWordsInit = true;
+
+                    document.addEventListener('click', function (event) {
+                      var word = event.target.closest && event.target.closest('.media-words__word');
+
+                      if (word) {
+                        word.setAttribute('aria-pressed', word.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+                      }
+                    });
+                  }
+                </script>
 
               {%- when 'info_panel' -%}
                 {%- liquid
@@ -3764,6 +3935,121 @@
           "id": "note",
           "label": "Texto pequeño",
           "info": "Se muestra 1,5 px más pequeño que el texto del cuerpo."
+        }
+      ]
+    },
+    {
+      "type": "words",
+      "name": "Palabras",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Varias palabras grandes (por ejemplo ingredientes o para qué sirve el producto). Todas usan un color base; al pasar el cursor o al hacer clic en una palabra, se pinta del color elegido (otro clic la devuelve al color base). Deja vacía una palabra para no mostrarla."
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-3"
+        },
+        {
+          "type": "header",
+          "content": "Palabras"
+        },
+        { "type": "text", "id": "word_1", "label": "Palabra 1", "default": "peptides" },
+        { "type": "text", "id": "word_2", "label": "Palabra 2", "default": "tamanu oil" },
+        { "type": "text", "id": "word_3", "label": "Palabra 3" },
+        { "type": "text", "id": "word_4", "label": "Palabra 4" },
+        {
+          "type": "header",
+          "content": "Colores"
+        },
+        {
+          "type": "color",
+          "id": "base_color",
+          "label": "Color base de las palabras",
+          "info": "Vacío usa el color del texto del esquema.",
+          "default": "#8f8d88"
+        },
+        {
+          "type": "color",
+          "id": "active_color",
+          "label": "Color al pasar el cursor o hacer clic",
+          "default": "#e08aa0"
+        },
+        {
+          "type": "header",
+          "content": "Tipografía"
+        },
+        {
+          "type": "select",
+          "id": "font",
+          "label": "Fuente",
+          "info": "Solo fuentes propias de la tienda (no las de la librería de Shopify).",
+          "options": [
+            { "value": "rektorat", "label": "Rektorat" },
+            { "value": "swiss", "label": "Swiss 721" },
+            { "value": "satoshi", "label": "Satoshi" },
+            { "value": "apercu", "label": "Apercu" }
+          ],
+          "default": "rektorat"
+        },
+        {
+          "type": "select",
+          "id": "font_weight",
+          "label": "Grosor",
+          "info": "Si la fuente no tiene ese grosor, se usa el más cercano que tenga (Rektorat: 700 y 800; Swiss 721: 300 a 500).",
+          "options": [
+            { "value": "300", "label": "Light (300)" },
+            { "value": "400", "label": "Regular (400)" },
+            { "value": "500", "label": "Medium (500)" },
+            { "value": "700", "label": "Bold (700)" },
+            { "value": "800", "label": "Extra bold (800)" },
+            { "value": "900", "label": "Black (900)" }
+          ],
+          "default": "800"
+        },
+        {
+          "type": "select",
+          "id": "word_size",
+          "label": "Tamaño de las palabras en escritorio",
+          "info": "Es un botón con el estilo de un título (no un título real), así que no afecta al SEO de la página.",
+          "options": [
+            { "value": "h1", "label": "XX-Large" },
+            { "value": "h2", "label": "X-Large" },
+            { "value": "h3", "label": "Large" },
+            { "value": "h4", "label": "Medium" },
+            { "value": "h5", "label": "Small" },
+            { "value": "h6", "label": "X-Small" },
+            { "value": "h7", "label": "XX-Small" }
+          ],
+          "default": "h2"
+        },
+        {
+          "type": "select",
+          "id": "word_size_mobile",
+          "label": "Tamaño de las palabras en móvil",
+          "options": [
+            { "value": "h1", "label": "XX-Large" },
+            { "value": "h2", "label": "X-Large" },
+            { "value": "h3", "label": "Large" },
+            { "value": "h4", "label": "Medium" },
+            { "value": "h5", "label": "Small" },
+            { "value": "h6", "label": "X-Small" },
+            { "value": "h7", "label": "XX-Small" }
+          ],
+          "default": "h3"
+        },
+        {
+          "type": "select",
+          "id": "alignment",
+          "label": "Alineación",
+          "options": [
+            { "value": "left", "label": "Izquierda" },
+            { "value": "center", "label": "Centro" },
+            { "value": "right", "label": "Derecha" }
+          ],
+          "default": "center"
         }
       ]
     },
