@@ -570,55 +570,65 @@ height-observer {
    the button starting from the side where the pointer came in (or was pressed) and sweeping to the opposite side: from the right to the left if it
    came from the right, from the bottom up if it came from below, and so on. On leaving, the fill withdraws toward the side where the pointer went
    out. The text takes the scheme's "Hover text". The border is not touched.
-   The fill is the button's own background image (a flat color sized from 0 to 100% on one axis), measured from the outer edge of the border
-   (background-origin: border-box) and drawn UNDER the border: the previous version was a layer inside the border, and its edge never matched the
-   border's rounded, sub-pixel edge, leaving unpainted pixels around the button. assets/theme.js (outline button fill direction) sets data-fill-from
-   (left, right, top or bottom; left when it is not set) and the is-filled class. */
+   The fill is a solid piece (::before) with the SAME shape as the button (border-radius: inherit): it slides in from the chosen side, so its leading
+   edge is rounded like the button (a pill enters as a pill) instead of a straight edge. The button clips it (overflow: hidden) and keeps it under its
+   content (isolation + z-index: -1). assets/theme.js (outline button fill direction) sets data-fill-from (left, right, top or bottom; left when it
+   is not set) and the is-filled class. */
 :is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])) {
-  background-image: linear-gradient(rgb(var(--button-hover-background)), rgb(var(--button-hover-background)));
-  background-repeat: no-repeat;
-  background-origin: border-box;
-  background-position: left center;
-  background-size: 0% 100%;
-  transition: background-size .6s cubic-bezier(.65, 0, .35, 1), color .2s ease-in-out !important;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color .2s ease-in-out !important;
 }
 
-:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))[data-fill-from="right"] {
-  background-position: right center;
-  background-size: 0% 100%;
+:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgb(var(--button-hover-background));
+  pointer-events: none;
+  transform: translateX(-100%);
+  transition: transform .6s cubic-bezier(.65, 0, .35, 1);
 }
 
-:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))[data-fill-from="top"] {
-  background-position: center top;
-  background-size: 100% 0%;
+:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))[data-fill-from="right"]::before {
+  transform: translateX(100%);
 }
 
-:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))[data-fill-from="bottom"] {
-  background-position: center bottom;
-  background-size: 100% 0%;
+:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))[data-fill-from="top"]::before {
+  transform: translateY(-100%);
+}
+
+:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))[data-fill-from="bottom"]::before {
+  transform: translateY(100%);
 }
 
 /* Phones and tablets: no sweep. The press paints the whole button with the hover color at once, and assets/theme.js keeps it for about 10 seconds. */
 @media screen and (max-width: 999px) {
-  :is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])) {
-    transition: color .2s ease-in-out !important;
+  :is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))::before {
+    transition: none;
   }
 }
 
 /* The filled state is a class (is-filled) set by assets/theme.js (so it can restart from the right side each time, which a :hover transition cannot
    do when the side changes); the reset class cuts the transition for the frame in which the new starting side is applied. */
-:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])).fill-reset {
+:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])).fill-reset::before {
   transition: none !important;
 }
 
 :is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])).is-filled:not([disabled], [aria-disabled="true"]) {
-  background-size: 100% 100%;
   color: rgb(var(--button-hover-text, var(--button-text-primary))) !important;
 }
 
+:is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])).is-filled:not([disabled], [aria-disabled="true"])::before {
+  transform: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  :is(.button--outline, .collection__toolbar-links a:not([aria-current="page"])) {
-    transition: color .2s ease-in-out !important;
+  :is(.button--outline, .collection__toolbar-links a:not([aria-current="page"]))::before {
+    transition: none;
   }
 }
 
