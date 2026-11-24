@@ -699,11 +699,20 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
 
         <style>
           {%- comment -%}
-          Size of the round play button on the thumbnails: 40% bigger than the shared rule in snippets/media-zoom-style.liquid
-          (1.3 x the global control button), so 1.3 x 1.4 = 1.82. Only this section: Media Blocks and FAQ keep the shared size.
+          Size of the round play button on the thumbnails: 1.3 x 1.4 x 0.8 = 1.456 times the global control button (the shared rule in
+          snippets/media-zoom-style.liquid is 1.3). Only this section: Media Blocks and FAQ keep the shared size.
+          The button is always a perfect circle, whatever "Controls > Border radius" says in the theme settings (a fixed px radius
+          turns a big button into a rounded square): 50% radius on a square box, so the background, the blur and the focus ring
+          all follow the circle.
           {%- endcomment -%}
           #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button {
-            --play-button-scale: 1.82;
+            --play-button-scale: 1.456;
+          }
+
+          #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button .overlay-control {
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            overflow: hidden;
           }
 
           {%- comment -%}
@@ -734,7 +743,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
               cursor: pointer;
               /* Desktop only: the round play button is bigger than the shared one (1.3 in snippets/media-zoom-style.liquid,
                  which FAQ and Media Blocks also use). Circle and play icon both follow this variable. */
-              --play-button-scale: 2.8;
+              --play-button-scale: 2.24;
             }
 
             #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button .overlay-control {
