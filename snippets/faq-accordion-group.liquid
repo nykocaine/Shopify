@@ -1,12 +1,12 @@
 {%- doc -%}
-Makes the accordions inside a ".faq-block__list" mutually exclusive - opening one closes any other one
-already open in the same list. Reused by both the "FAQ" block inside Media Blocks and the standalone FAQ
+Makes the accordions inside a ".faq-block__list" (FAQ section) or a ".media-faq__list" (FAQ block of Media Blocks) mutually exclusive - opening one closes any other one
+already open in the same list. Rendered by both the "FAQ" block inside Media Blocks and the standalone FAQ
 section, so there is a single implementation instead of two.
 
 Copies product-info.liquid's own accordion-group technique verbatim: a delegated click listener that just
 calls .click() on the other open summaries (accordion-disclosure's own click handler already does the
 actual closing), so this never reaches into accordion-disclosure's private open/close internals. Scoped to
-".faq-block__list" so each FAQ list is its own independent group - opening a question in one FAQ never
+each list (".faq-block__list" / ".media-faq__list") so each FAQ list is its own independent group - opening a question in one FAQ never
 closes a question open in a different FAQ on the same page.
 {%- enddoc -%}
 
@@ -15,11 +15,11 @@ closes a question open in a different FAQ on the same page.
     window.__faqAccordionAutoCollapse = true;
 
     document.addEventListener('click', function (event) {
-      var summary = event.target.closest('.faq-block__list .accordion__summary');
+      var summary = event.target.closest('.faq-block__list .accordion__summary, .media-faq__list .accordion__summary');
       if (!summary) return;
 
       var clickedDisclosure = summary.closest('accordion-disclosure');
-      var list = summary.closest('.faq-block__list');
+      var list = summary.closest('.faq-block__list, .media-faq__list');
       if (!list || !clickedDisclosure || !clickedDisclosure.classList.contains('is-open')) return;
 
       list.querySelectorAll('accordion-disclosure.is-open').forEach(function (otherDisclosure) {
