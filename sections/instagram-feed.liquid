@@ -1554,6 +1554,23 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
   }
 
   {%- comment -%}
+  Logo of the expanded video (zoom view), only in this feed: in the middle of the video, centered both ways (it was at the top left), 25% bigger
+  (width min(5rem, 25%) -> min(6.25rem, 31.25%), height 2.75rem -> 3.4375rem) and 20% more transparent (opacity .7 -> .56). The shared rule that
+  placed it at the top left is in snippets/media-zoom-style.liquid; this one has the same specificity and comes later in the page, so it wins
+  here without touching the other sections that use that snippet.
+  {%- endcomment -%}
+  #{{ instagram_feed_id }}[data-lightbox-layout] .has-video-logo video-media.is-lightbox-expanded::after {
+    inset-inline-start: 50%;
+    inset-block-start: 50%;
+    inset-block-end: auto;
+    width: min(6.25rem, 31.25%);
+    height: 3.4375rem;
+    transform: translate(-50%, -50%);
+    background-position: center;
+    opacity: .56;
+  }
+
+  {%- comment -%}
   Zoom view: every photo opens in the SAME box as the videos (their height and shape), never in its own proportions - a landscape photo used to open
   as a wide, short strip next to the tall videos. The photo fills that box (object-fit: cover, centered both ways), so whatever its size or shape,
   it is cropped evenly around its middle instead of letterboxed.
