@@ -297,17 +297,15 @@
         }
 
         {%- comment -%}
-          An "Image with text" block and an "Info panel" block next to each other (either order): on phones they are one piece. The gap between
-          them is taken away, the one on top (.media-blocks__item--glue-next) has square bottom corners and the one below
-          (.media-blocks__item--glued) square top corners. Phones only: on larger screens nothing changes.
+          An "Image with text" block with an "Info panel" right below it: on phones they are one piece. The gap between them is taken away, the
+          image block (.media-blocks__item--glue-next) has square bottom corners and the panel (.media-blocks__item--glued) square top corners.
+          Phones only: on larger screens nothing changes.
+          The gap is taken away with a negative margin ON TOP of the panel, not under the image block: the theme centers the blocks in their row
+          (align-items: center) and gives each one height: 100%, so a negative margin under the image block only squashed the image by the same
+          amount and the gap stayed. With the margin on the panel, the image keeps its full height and the panel moves up against it.
         {%- endcomment -%}
-        {%- comment -%}
-          The gap is taken away on the element that really sits in the grid row: the block itself (Info panel), or the <media-block> wrapper that
-          "Image with text" is rendered inside of (the wrapper holds the block, so a margin on the block alone would not move the next row up).
-        {%- endcomment -%}
-        #shopify-section-{{ section.id }} .media-blocks > .media-blocks__item--glue-next,
-        #shopify-section-{{ section.id }} .media-blocks > media-block:has(> .media-blocks__item--glue-next) {
-          margin-block-end: calc(-1 * {% if section.settings.column_spacing == 'none' %}0px{% else %}var(--horizontal-gap){% endif %});
+        #shopify-section-{{ section.id }} .media-blocks > .media-blocks__item--pull-up {
+          margin-block-start: calc(-1 * {% if section.settings.column_spacing == 'none' %}0px{% else %}var(--horizontal-gap){% endif %});
         }
 
         #shopify-section-{{ section.id }} .media-blocks__item--glue-next,
@@ -674,8 +672,6 @@
                     assign prev_block = section.blocks[prev_index]
 
                     if prev_block.type == 'two_images_with_text' and block.settings.image == blank
-                      assign glued_class = 'media-blocks__item--glued'
-                    elsif prev_block.type == 'info_panel'
                       assign glued_class = 'media-blocks__item--glued'
                     endif
                   endif
@@ -1056,20 +1052,15 @@
 
               {%- when 'info_panel' -%}
                 {%- liquid
-                  # On phones (blocks stacked) an "Image with text" block right before or after the panel is glued to it (see .media-blocks__item--glued / --glue-next)
+                  # On phones (blocks stacked) an "Image with text" block right before the panel is glued to it (see .media-blocks__item--pull-up)
                   assign info_panel_glue_class = ''
 
-                  if section.settings.stack_on_mobile
+                  if section.settings.stack_on_mobile and forloop.index0 > 0
                     assign info_panel_prev_index = forloop.index0 | minus: 1
                     assign info_panel_prev_block = section.blocks[info_panel_prev_index]
-                    assign info_panel_next_block = section.blocks[forloop.index]
 
-                    if forloop.index0 > 0 and info_panel_prev_block.type == 'image_with_text'
-                      assign info_panel_glue_class = 'media-blocks__item--glued'
-                    endif
-
-                    if info_panel_next_block.type == 'image_with_text'
-                      assign info_panel_glue_class = info_panel_glue_class | append: ' media-blocks__item--glue-next'
+                    if info_panel_prev_block.type == 'image_with_text'
+                      assign info_panel_glue_class = 'media-blocks__item--glued media-blocks__item--pull-up'
                     endif
                   endif
                 -%}
