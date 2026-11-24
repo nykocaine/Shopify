@@ -58,28 +58,28 @@
 
 <style>
   {%- comment -%}
-  Collapsible text (accordion blocks) inside main-product: product-info.liquid already wraps
-  consecutive accordion blocks in a shared ".accordion-group" div (its own block-grouping
-  mechanism) - this just gives that existing wrapper a subtle card treatment. Uses the info
-  scheme's own secondary background (--background-secondary) rather than a hardcoded white, so a
-  dark "Info box color scheme" doesn't get a jarring white block. Radius matched to the rest of
-  the section (gallery_border_radius, computed above).
+  Collapsible text (accordion blocks) inside main-product: product-info.liquid wraps consecutive accordion blocks in a shared
+  ".accordion-group" div (its own block-grouping mechanism). They look like the FAQ's questions (sections/faq.liquid, "Border" style):
+  - Same width as every other block of the info box: the group has no card, no background and no side padding of its own, so the titles
+    and the text start and end on the same lines as the title, the price and the buttons.
+  - A hairline between one accordion and the next (the same line the FAQ draws, 1px in the scheme's border color), none above the first or
+    below the last one. The accordion's own top / bottom lines (theme.css) are switched off inside the group so they do not double up.
+  - The title has the Body Text weight, like the FAQ's questions (theme.css gives .accordion__summary a hardcoded 600).
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .accordion-group {
-    background: rgb(var(--background-secondary));
-    border-radius: {{ gallery_border_radius }}px;
-    padding-inline: var(--container-gutter);
-    overflow: hidden;
+    width: 100%;
   }
 
-  {%- comment -%}
-  .accordion's own top/bottom hairline dividers (theme.css: box-shadow: 0 1px 0 border-color,
-  0 1px 0 border-color inset) are what draw the horizontal separator lines between each accordion
-  in the group - removing them here since the white card itself is enough visual separation from
-  the rest of the page.
-  {%- endcomment -%}
   #shopify-section-{{ section.id }} .accordion-group .accordion {
     box-shadow: none;
+  }
+
+  #shopify-section-{{ section.id }} .accordion-group .product-info__block-item:not(:first-child) {
+    box-shadow: 0 -1px 0 rgb(var(--border-color));
+  }
+
+  #shopify-section-{{ section.id }} .accordion-group .accordion__summary {
+    font-weight: var(--text-font-weight);
   }
 
   {%- comment -%}
