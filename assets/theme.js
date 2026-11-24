@@ -7544,8 +7544,8 @@ import { Delegate as Delegate11 } from "vendor";
 // Section image scroll zoom (theme.css, img.scroll-zoom): each image of a section card grows slightly inside its frame as the page is scrolled up and
 // shrinks as it is scrolled down: 20% bigger when it comes in at the bottom of the screen, its normal size when it has gone out at the top.
 // The same effect applies to the big logo of the footer (layout "Full width", an SVG or any image): it is not a photo that fills a clipping frame, so
-// it grows from its left edge (it stays lined up with the footer columns) and only as much as the room to its right in the footer card allows, so it
-// is never cut off and never widens the page (on a phone, where the logo already fills the width, that is a smaller zoom than the 20%).
+// it grows from its centre, like the images, but only as much as the room it has on its two sides in the footer card allows (the smaller of the two),
+// so it is never cut off and never widens the page. That can be less than the 20% when the logo is close to the edge of the footer.
 (function () {
   const MAX_ZOOM = 0.2;
   const FOOTER_LOGO = ".footer__big-logo--full img";
@@ -7583,10 +7583,13 @@ import { Delegate as Delegate11 } from "vendor";
       const progress = Math.min(1, Math.max(0, (viewport - rect.top) / (viewport + rect.height)));
       let maxZoom = MAX_ZOOM;
       if (img.matches(FOOTER_LOGO) && img.offsetWidth > 0) {
-        // the footer logo grows to the right from its left edge (theme.css): at most as much as the room left to the right of it in its frame
+        // the footer logo grows from its centre: each side grows by half of the extra width, so it can grow at most twice the smaller room it has
+        // between its (un-zoomed) edges and the edges of its frame
         const imgRect = img.getBoundingClientRect();
-        const roomRight = rect.right - (imgRect.left + img.offsetWidth);
-        maxZoom = Math.min(MAX_ZOOM, Math.max(0, roomRight / img.offsetWidth));
+        const centerX = imgRect.left + imgRect.width / 2;
+        const roomLeft = centerX - img.offsetWidth / 2 - rect.left;
+        const roomRight = rect.right - (centerX + img.offsetWidth / 2);
+        maxZoom = Math.min(MAX_ZOOM, Math.max(0, (2 * Math.min(roomLeft, roomRight)) / img.offsetWidth));
       }
       img.style.transform = `scale(${(1 + maxZoom * (1 - progress)).toFixed(4)})`;
     });
