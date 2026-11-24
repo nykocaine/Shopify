@@ -468,21 +468,6 @@
         font-weight: var(--text-font-weight);
       }
 
-      {%- comment -%}
-      More room between each question and the separator lines above and below it (the accordion's block padding, used above and below the
-      question and below the answer): 1.125rem on phones and 1.625rem from 700px (the theme's default is .875rem and 1.25rem). The category
-      rows of the "categories as accordion" layout keep their own spacing.
-      {%- endcomment -%}
-      #shopify-section-{{ section.id }} .accordion:not(.faq__cat-head) {
-        --accordion-block-padding: 1.125rem;
-      }
-
-      @media screen and (min-width: 700px) {
-        #shopify-section-{{ section.id }} .accordion:not(.faq__cat-head) {
-          --accordion-block-padding: 1.625rem;
-        }
-      }
-
       {%- if section.settings.two_columns -%}
         {%- comment -%}
         White containers, no border, rounded with the section's corner radius. Phones: one container around the whole list (the two columns
