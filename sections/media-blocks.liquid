@@ -531,13 +531,30 @@
       -webkit-text-stroke: .02em currentColor;
     }
 
+    {%- comment -%}
+    One exact measure for the space between the title and the first text of the content, shared by the FAQ block and the Info panel (both views):
+    2rem, on every screen. The Info panel's first row has no padding above it, so there the 2rem is the gap itself. The FAQ's first question
+    has the accordion's own padding above its text (the theme's .875rem on phones, 1.25rem from 700px), so that padding is taken off the margin of
+    the list: title -> text of the first question is also 2rem.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} {
+      --media-blocks-title-content-gap: 2rem;
+      --media-faq-row-space: .875rem;
+    }
+
+    @media screen and (min-width: 700px) {
+      #shopify-section-{{ section.id }} {
+        --media-faq-row-space: 1.25rem;
+      }
+    }
+
     #shopify-section-{{ section.id }} .media-faq__list {
-      margin-block-start: 1.75rem;
+      margin-block-start: calc(var(--media-blocks-title-content-gap) - var(--media-faq-row-space));
     }
 
     #shopify-section-{{ section.id }} .media-faq__title + .media-faq__list,
     #shopify-section-{{ section.id }} .media-faq__subtitle + .media-faq__list {
-      margin-block-start: 1.75rem;
+      margin-block-start: calc(var(--media-blocks-title-content-gap) - var(--media-faq-row-space));
     }
 
     #shopify-section-{{ section.id }} .media-faq:not(:has(.media-faq__title, .media-faq__subtitle)) .media-faq__list {
@@ -630,7 +647,7 @@
     #shopify-section-{{ section.id }} .info-panel__view {
       grid-area: 1 / 1;
       display: grid;
-      gap: 2rem;
+      gap: var(--media-blocks-title-content-gap);
       align-content: end;
       justify-items: start;
       text-align: start;
