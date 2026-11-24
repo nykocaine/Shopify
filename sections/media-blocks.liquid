@@ -600,6 +600,9 @@
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel {
       --info-panel-pad: calc(var(--container-gutter) + 0.5rem);
+      /* Space above and below each row (between its text and the hairlines): the same measure as the accordions of the FAQ (the theme's
+         --accordion-block-padding in theme.css: 1.25rem from 700px, .875rem on phones, see the phone rule below) */
+      --info-panel-row-space: 1.25rem;
       padding: var(--info-panel-pad);
       display: grid;
     }
@@ -732,7 +735,7 @@
       column-gap: var(--horizontal-gap);
       row-gap: .25rem;
       text-align: start;
-      padding-block: 1.25rem;
+      padding-block: var(--info-panel-row-space);
       border-block-end: 1px solid rgb(var(--border-color));
       display: grid;
     }
@@ -782,6 +785,10 @@
     Desktop and tablets keep the label on the left and the content on the right.
     {%- endcomment -%}
     @media screen and (max-width: 699px) {
+      #shopify-section-{{ section.id }} .info-panel {
+        --info-panel-row-space: .875rem;
+      }
+
       #shopify-section-{{ section.id }} .info-panel__list-item {
         grid-template-columns: minmax(0, 1fr);
         row-gap: .25rem;
