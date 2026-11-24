@@ -600,8 +600,17 @@
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel {
       padding: calc(var(--container-gutter) + 0.5rem);
-      gap: 2rem;
+      gap: 1rem;
       display: grid;
+    }
+
+    {%- comment -%}
+    The panel keeps its size (and so the free room it may have above its content, e.g. when the block beside it is taller), but the title and
+    the rows are packed together at the bottom of the card: align-content: end. Without it the grid stretched its rows and spread that free
+    room between the title and the list. The title sits close to the first row (1rem, it was 2rem).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .info-panel {
+      align-content: end;
     }
 
     {%- comment -%}
