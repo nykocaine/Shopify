@@ -421,8 +421,31 @@
       text-transform: none;
     }
 
+    {%- comment -%}
+    Everything is aligned to the left, nothing sits against the right edge: the title, the labels and the content (text-align: start, not end).
+    The rows share ONE label column (subgrid), so the content of every row starts on the same vertical line, whatever the length of its label.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .info-panel,
+    #shopify-section-{{ section.id }} .info-panel > :is(h1, h2, h3, h4, h5, h6) {
+      text-align: start;
+      justify-items: start;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__list {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      column-gap: var(--horizontal-gap);
+      justify-items: start;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__list-item {
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+      justify-items: start;
+    }
+
     #shopify-section-{{ section.id }} .info-panel__list-item-content {
-      text-align: end;
+      text-align: start;
     }
 
     {%- comment -%}
