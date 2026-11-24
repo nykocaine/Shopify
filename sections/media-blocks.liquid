@@ -407,8 +407,8 @@
     }
 
     {%- comment -%}
-    "Palabras" block: a few big words (ingredients, what it is for...), each one a button. They have one base color; the word turns into the
-    chosen color while the pointer is over it (mouse) or after a click / tap (a second click puts it back). The font is one of the store's own
+    "Palabras" block: a few big words (ingredients, what it is for...). They have one base color; a word turns into the chosen color only while
+    the mouse pointer is over it. There is no click or tap action. The font is one of the store's own
     fonts (Rektorat, Swiss 721, Satoshi, Apercu), never one from the Shopify library. Each font file is declared here, with its own family name,
     only when a block of this section uses it, so nothing is downloaded for nothing.
     {%- endcomment -%}
@@ -451,45 +451,44 @@
       align-content: center;
       justify-items: var(--media-words-justify, center);
       text-align: var(--media-words-text-align, center);
-      row-gap: .35em;
+      {%- comment -%}Space between the words: a share of the size of a word (not "em" of this box, which is the small body size)
+      so it grows with the words; phones use their own size, see the phone rule below{%- endcomment -%}
+      row-gap: calc(var(--media-words-size) * var(--media-words-scale, 1.5) * var(--media-words-gap-ratio, .35));
       height: 100%;
     }
 
+    {%- comment -%}
+    The words are bigger than the size picked in the block: that size (XX-Large to XX-Small, the same scale as the headings) times
+    --media-words-scale, so even XX-Large reads as a big word. Phones use their own size, with the same increase.
+    {%- endcomment -%}
     #shopify-section-{{ section.id }} .media-words__word {
-      appearance: none;
-      background: none;
-      border: 0;
       margin: 0;
       padding: 0;
-      cursor: pointer;
-      text-align: inherit;
+      max-width: 100%;
       text-transform: none;
       line-height: 1.05;
+      overflow-wrap: anywhere;
       color: var(--media-words-base, inherit);
       font-family: var(--media-words-font-family, inherit);
       font-weight: var(--media-words-weight, 800);
-      -webkit-tap-highlight-color: transparent;
+      font-size: calc(var(--media-words-size) * var(--media-words-scale, 1.5));
       transition: color .25s ease;
     }
 
-    #shopify-section-{{ section.id }} .media-words__word[aria-pressed="true"] {
-      color: var(--media-words-active, currentColor);
-    }
-
+    {%- comment -%}Only the mouse pointer paints a word (no click, no tap): the rule is limited to devices that really hover{%- endcomment -%}
     @media (hover: hover) and (pointer: fine) {
       #shopify-section-{{ section.id }} .media-words__word:hover {
         color: var(--media-words-active, currentColor);
       }
     }
 
-    #shopify-section-{{ section.id }} .media-words__word:focus-visible {
-      outline: 2px solid currentColor;
-      outline-offset: .12em;
-    }
-
     @media screen and (max-width: 699px) {
+      #shopify-section-{{ section.id }} .media-words__list {
+        row-gap: calc(var(--media-words-size-mobile) * var(--media-words-scale, 1.5) * var(--media-words-gap-ratio, .35));
+      }
+
       #shopify-section-{{ section.id }} .media-words__word {
-        font-size: var(--media-words-size-mobile);
+        font-size: calc(var(--media-words-size-mobile) * var(--media-words-scale, 1.5));
       }
     }
 
@@ -1221,7 +1220,8 @@
                       assign words_family = "'Words Apercu'"
                   endcase
 
-                  assign words_size_mobile = block.settings.word_size_mobile | default: block.settings.word_size | default: 'h3'
+                  assign words_size_desktop = block.settings.word_size | default: 'h2'
+                  assign words_size_mobile = block.settings.word_size_mobile | default: words_size_desktop
 
                   assign words_justify = 'center'
                   if block.settings.alignment == 'left'
@@ -1235,6 +1235,7 @@
                     echo '--media-words-text-align: ' | append: block.settings.alignment | append: ';'
                     echo '--media-words-font-family: ' | append: words_family | append: ', var(--heading-font-family);'
                     echo '--media-words-weight: ' | append: block.settings.font_weight | append: ';'
+                    echo '--media-words-size: var(--text-' | append: words_size_desktop | append: ');'
                     echo '--media-words-size-mobile: var(--text-' | append: words_size_mobile | append: ');'
 
                     if block.settings.base_color != blank and block.settings.base_color != 'rgba(0,0,0,0)'
@@ -1248,9 +1249,9 @@
                 -%}
 
                 {%- comment -%}
-                Words card: up to 4 words, each a button styled like a heading (the size is picked in the block, XX-Large to XX-Small; not a real
-                heading tag, so the page's heading structure is untouched). Pointer over a word or a click / tap on it paints it with the chosen
-                color; see .media-words__word in the CSS above.
+                Words card: up to 4 words, each a paragraph styled like a heading (the size is picked in the block, XX-Large to XX-Small; not a real
+                heading tag, so the page's heading structure is untouched). The mouse pointer over a word paints it with the chosen color (no click
+                action); see .media-words__word in the CSS above.
                 {%- endcomment -%}
                 <div id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="{{ words_style | strip_newlines }}" {{ block.shopify_attributes }}>
                   <div class="content-box h-full">
@@ -1262,26 +1263,12 @@
                         -%}
 
                         {%- if word_text != blank -%}
-                          <button type="button" class="media-words__word {{ block.settings.word_size }}" aria-pressed="false">{{ word_text }}</button>
+                          <p class="media-words__word {{ words_size_desktop }}">{{ word_text }}</p>
                         {%- endif -%}
                       {%- endfor -%}
                     </div>
                   </div>
                 </div>
-
-                <script>
-                  if (!window.__mediaWordsInit) {
-                    window.__mediaWordsInit = true;
-
-                    document.addEventListener('click', function (event) {
-                      var word = event.target.closest && event.target.closest('.media-words__word');
-
-                      if (word) {
-                        word.setAttribute('aria-pressed', word.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
-                      }
-                    });
-                  }
-                </script>
 
               {%- when 'info_panel' -%}
                 {%- liquid
@@ -3944,7 +3931,7 @@
       "settings": [
         {
           "type": "paragraph",
-          "content": "Varias palabras grandes (por ejemplo ingredientes o para qué sirve el producto). Todas usan un color base; al pasar el cursor o al hacer clic en una palabra, se pinta del color elegido (otro clic la devuelve al color base). Deja vacía una palabra para no mostrarla."
+          "content": "Varias palabras grandes (por ejemplo ingredientes o para qué sirve el producto). Todas usan un color base; al pasar el cursor por una palabra se pinta del color elegido (no hay clic). Deja vacía una palabra para no mostrarla."
         },
         {
           "type": "color_scheme",
@@ -3974,7 +3961,7 @@
         {
           "type": "color",
           "id": "active_color",
-          "label": "Color al pasar el cursor o hacer clic",
+          "label": "Color al pasar el cursor",
           "default": "#e08aa0"
         },
         {
@@ -4013,7 +4000,7 @@
           "type": "select",
           "id": "word_size",
           "label": "Tamaño de las palabras en escritorio",
-          "info": "Es un botón con el estilo de un título (no un título real), así que no afecta al SEO de la página.",
+          "info": "Es un párrafo con el estilo de un título (no un título real), así que no afecta al SEO de la página. Las palabras se muestran más grandes que el tamaño de título elegido.",
           "options": [
             { "value": "h1", "label": "XX-Large" },
             { "value": "h2", "label": "X-Large" },
