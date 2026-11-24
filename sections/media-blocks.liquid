@@ -388,10 +388,22 @@
       display: grid;
     }
 
+    {%- comment -%}
+    Each row is stacked: the label on top, its content right under it, all aligned to the left (nothing against the right edge), with a hairline
+    between one row and the next. The label and the content are plain text: they inherit the size, weight, style and case of the theme's body
+    text, nothing is forced (no capitals, no bold, no smaller size).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .info-panel,
+    #shopify-section-{{ section.id }} .info-panel > :is(h1, h2, h3, h4, h5, h6) {
+      text-align: start;
+      justify-items: start;
+    }
+
     #shopify-section-{{ section.id }} .info-panel__list-item {
-      grid-template-columns: auto minmax(0, 1fr);
-      align-items: baseline;
-      gap: var(--horizontal-gap);
+      grid-template-columns: minmax(0, 1fr);
+      justify-items: start;
+      text-align: start;
+      row-gap: .25rem;
       padding-block: 1.25rem;
       border-block-end: 1px solid rgb(var(--border-color));
       display: grid;
@@ -408,7 +420,6 @@
 
     {%- comment -%}
     The panel's title has the same weight as the big numbers of the Statistics block (1000 + thin outline, see .media-stats__number).
-    The row labels are plain body text: inherited size, weight and style, no capitals.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel > :is(h1, h2, h3, h4, h5, h6) {
       color: var(--info-panel-title-color, inherit);
@@ -416,36 +427,12 @@
       -webkit-text-stroke: .02em currentColor;
     }
 
-    #shopify-section-{{ section.id }} .info-panel__list-item-label {
-      font-weight: inherit;
-      text-transform: none;
+    #shopify-section-{{ section.id }} .info-panel__list-item-content > :first-child {
+      margin-block-start: 0;
     }
 
-    {%- comment -%}
-    Everything is aligned to the left, nothing sits against the right edge: the title, the labels and the content (text-align: start, not end).
-    The rows share ONE label column (subgrid), so the content of every row starts on the same vertical line, whatever the length of its label.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .info-panel,
-    #shopify-section-{{ section.id }} .info-panel > :is(h1, h2, h3, h4, h5, h6) {
-      text-align: start;
-      justify-items: start;
-    }
-
-    #shopify-section-{{ section.id }} .info-panel__list {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
-      column-gap: var(--horizontal-gap);
-      justify-items: start;
-    }
-
-    #shopify-section-{{ section.id }} .info-panel__list-item {
-      grid-column: 1 / -1;
-      grid-template-columns: subgrid;
-      justify-items: start;
-    }
-
-    #shopify-section-{{ section.id }} .info-panel__list-item-content {
-      text-align: start;
+    #shopify-section-{{ section.id }} .info-panel__list-item-content > :last-child {
+      margin-block-end: 0;
     }
 
     {%- comment -%}
