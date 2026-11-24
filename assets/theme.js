@@ -7546,6 +7546,9 @@ import { Delegate as Delegate11 } from "vendor";
 // The big logo of the footer (layout "Full width", an SVG or any image) also expands on scroll, but it is already as wide as the space between the
 // side margins of the footer, which it must respect on both sides: so its biggest size is that full width (never past the margins, nothing is cut) and
 // it starts 20% smaller (1 / 1.2). It expands from its centre when the footer comes into the screen as the page is scrolled, and stays at full width.
+// Kept light on purpose: only the frames near the screen are measured (IntersectionObserver), all the measures are read first and all the sizes written
+// after (no layout is forced in between), the layer of an image is only promoted while it is near the screen, and the page is only scanned for new
+// images when something was added to it. The footer logo also follows the scroll with a short easing, so a mouse wheel does not make it jump.
 (function () {
   const MAX_ZOOM = 0.2;
   const FOOTER_LOGO = ".footer__big-logo--full img";
@@ -7555,35 +7558,112 @@ import { Delegate as Delegate11 } from "vendor";
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     return;
   }
-  const images = new Set();
+  const images = new Set(); // every image that takes the effect
+  const near = new Set(); // the ones whose frame is near the screen: the only ones measured and animated
+  const frameToImage = new WeakMap();
+  const frameOf = (img) => (img.parentElement && img.parentElement.closest(".content-box__background-media")) || img.parentElement;
+  const observer = "IntersectionObserver" in window
+    ? new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          const img = frameToImage.get(entry.target);
+          if (!img) {
+            return;
+          }
+          if (entry.isIntersecting) {
+            near.add(img);
+            img.style.willChange = "transform";
+          } else {
+            near.delete(img);
+            img.style.willChange = "";
+          }
+        });
+        requestUpdate();
+      }, { rootMargin: "50px 0px" })
+    : null;
   let ticking = false;
   function collect() {
     document.querySelectorAll(SELECTOR).forEach((img) => {
       if (!images.has(img) && !img.closest(EXCLUDED)) {
         img.classList.add("scroll-zoom");
         images.add(img);
+        if (observer) {
+          const frame = frameOf(img);
+          frameToImage.set(frame, img);
+          observer.observe(frame);
+        }
       }
     });
     images.forEach((img) => {
       if (!img.isConnected) {
         images.delete(img);
+        near.delete(img);
+        smooth.delete(img);
+        if (observer) {
+          observer.unobserve(frameOf(img) || img);
+        }
       }
     });
+  }
+  // Footer logo: the transform follows its target with an exponential easing (about 0.1 s), frame after frame, until it has arrived
+  const smooth = new Map(); // img -> { current, target }
+  let smoothing = false;
+  let lastTime = 0;
+  function easeStep(now) {
+    const dt = Math.min(64, lastTime ? now - lastTime : 16);
+    lastTime = now;
+    const k = 1 - Math.exp(-dt / 100);
+    let moving = false;
+    smooth.forEach((state, img) => {
+      const diff = state.target - state.current;
+      if (Math.abs(diff) < 0.0005) {
+        state.current = state.target;
+      } else {
+        state.current += diff * k;
+        moving = true;
+      }
+      img.style.transform = `scale(${state.current.toFixed(4)})`;
+    });
+    if (moving) {
+      requestAnimationFrame(easeStep);
+    } else {
+      smoothing = false;
+      lastTime = 0;
+    }
+  }
+  function setSmoothTarget(img, target) {
+    const state = smooth.get(img);
+    if (!state) {
+      // first time: no easing from nowhere, it starts at its target
+      smooth.set(img, { current: target, target });
+      img.style.transform = `scale(${target.toFixed(4)})`;
+      return;
+    }
+    state.target = target;
+    if (!smoothing) {
+      smoothing = true;
+      requestAnimationFrame(easeStep);
+    }
   }
   function update() {
     ticking = false;
     const viewport = window.innerHeight;
-    images.forEach((img) => {
-      const frame = img.parentElement && img.parentElement.closest(".content-box__background-media") || img.parentElement;
-      const rect = frame.getBoundingClientRect();
+    const list = observer ? near : images;
+    // 1. read: every frame's position, with no style written in between
+    const measured = [];
+    list.forEach((img) => {
+      const rect = frameOf(img).getBoundingClientRect();
       if (rect.bottom < -50 || rect.top > viewport + 50 || rect.height === 0) {
         return;
       }
+      measured.push([img, rect]);
+    });
+    // 2. write
+    measured.forEach(([img, rect]) => {
       if (img.matches(FOOTER_LOGO)) {
         // 0 while the footer is still below the screen, 1 once its top has risen to 40% of the screen height: from 1 / 1.2 up to its full width
         const entered = Math.min(1, Math.max(0, (viewport - rect.top) / (viewport * 0.6)));
         const smallest = 1 / (1 + MAX_ZOOM);
-        img.style.transform = `scale(${(smallest + (1 - smallest) * entered).toFixed(4)})`;
+        setSmoothTarget(img, smallest + (1 - smallest) * entered);
         return;
       }
       // 0 when the frame is entering at the bottom of the screen, 1 when it has left at the top
@@ -7609,10 +7689,18 @@ import { Delegate as Delegate11 } from "vendor";
   window.addEventListener("load", start);
   window.addEventListener("scroll", requestUpdate, { passive: true });
   window.addEventListener("resize", requestUpdate);
-  // Sections added or re-rendered later (theme editor, filters...)
-  new MutationObserver(() => {
-    collect();
-    requestUpdate();
+  // Sections added or re-rendered later (theme editor, filters...): scan only when elements were added, and at most once every 100 ms
+  let scanQueued = false;
+  new MutationObserver((mutations) => {
+    if (scanQueued || !mutations.some((mutation) => mutation.addedNodes.length > 0)) {
+      return;
+    }
+    scanQueued = true;
+    setTimeout(() => {
+      scanQueued = false;
+      collect();
+      requestUpdate();
+    }, 100);
   }).observe(document.documentElement, { childList: true, subtree: true });
 })();
 
