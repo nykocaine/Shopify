@@ -534,27 +534,31 @@
     {%- comment -%}
     One exact measure for the space between the title and the first text of the content, shared by the FAQ block and the Info panel (both views):
     2rem, on every screen. The Info panel's first row has no padding above it, so there the 2rem is the gap itself. The FAQ's first question
-    has the accordion's own padding above its text (the theme's .875rem on phones, 1.25rem from 700px), so that padding is taken off the margin of
+    has the accordion's own padding above its text (--media-blocks-row-space below), so that padding is taken off the margin of
     the list: title -> text of the first question is also 2rem.
+
+    --media-blocks-row-space: the space above and below each row of a list inside this section (between its text and the hairlines), the same
+    measure as the accordions of the FAQ (theme.css --accordion-block-padding): .875rem on phones, 1.25rem from 700px. Used by the Info panel's rows,
+    the FAQ block (the accordions) and the Tabs list, so all three breathe the same.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} {
       --media-blocks-title-content-gap: 2rem;
-      --media-faq-row-space: .875rem;
+      --media-blocks-row-space: .875rem;
     }
 
     @media screen and (min-width: 700px) {
       #shopify-section-{{ section.id }} {
-        --media-faq-row-space: 1.25rem;
+        --media-blocks-row-space: 1.25rem;
       }
     }
 
     #shopify-section-{{ section.id }} .media-faq__list {
-      margin-block-start: calc(var(--media-blocks-title-content-gap) - var(--media-faq-row-space));
+      margin-block-start: calc(var(--media-blocks-title-content-gap) - var(--media-blocks-row-space));
     }
 
     #shopify-section-{{ section.id }} .media-faq__title + .media-faq__list,
     #shopify-section-{{ section.id }} .media-faq__subtitle + .media-faq__list {
-      margin-block-start: calc(var(--media-blocks-title-content-gap) - var(--media-faq-row-space));
+      margin-block-start: calc(var(--media-blocks-title-content-gap) - var(--media-blocks-row-space));
     }
 
     #shopify-section-{{ section.id }} .media-faq:not(:has(.media-faq__title, .media-faq__subtitle)) .media-faq__list {
@@ -617,9 +621,6 @@
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel {
       --info-panel-pad: calc(var(--container-gutter) + 0.5rem);
-      /* Space above and below each row (between its text and the hairlines): the same measure as the accordions of the FAQ (the theme's
-         --accordion-block-padding in theme.css: 1.25rem from 700px, .875rem on phones, see the phone rule below) */
-      --info-panel-row-space: 1.25rem;
       padding: var(--info-panel-pad);
       display: grid;
     }
@@ -752,7 +753,7 @@
       column-gap: var(--horizontal-gap);
       row-gap: .25rem;
       text-align: start;
-      padding-block: var(--info-panel-row-space);
+      padding-block: var(--media-blocks-row-space);
       border-block-end: 1px solid rgb(var(--border-color));
       display: grid;
     }
@@ -802,10 +803,6 @@
     Desktop and tablets keep the label on the left and the content on the right.
     {%- endcomment -%}
     @media screen and (max-width: 699px) {
-      #shopify-section-{{ section.id }} .info-panel {
-        --info-panel-row-space: .875rem;
-      }
-
       #shopify-section-{{ section.id }} .info-panel__list-item {
         grid-template-columns: minmax(0, 1fr);
         row-gap: .25rem;
@@ -855,8 +852,8 @@
 
     #shopify-section-{{ section.id }} .media-tabs__tab {
       text-align: start;
-      padding-block: 1.25rem;
-      border-block-start: 1px solid rgb(var(--text-color) / 0.2);
+      padding-block: var(--media-blocks-row-space);
+      border-block-start: 1px solid rgb(var(--border-color));
       cursor: pointer;
       display: block;
       width: 100%;
@@ -4589,7 +4586,7 @@
       "settings": [
         {
           "type": "paragraph",
-          "content": "A solid-color panel with a heading and a list of label/content rows below it, each edited as its own pair of fields. Add up to 6 rows - leave a row's fields blank to skip it."
+          "content": "Un panel de color con un título y, debajo, una lista de filas (nombre y contenido), cada una con sus propios campos. Puedes agregar hasta 6 filas: deja vacíos los campos de una fila para no mostrarla."
         },
         {
           "type": "inline_richtext",
@@ -4637,71 +4634,71 @@
         },
         {
           "type": "header",
-          "content": "List"
+          "content": "Filas"
         },
         {
           "type": "text",
           "id": "item_1_label",
-          "label": "Row 1 label",
+          "label": "Fila 1: nombre",
           "default": "Good for:"
         },
         {
           "type": "richtext",
           "id": "item_1_content",
-          "label": "Row 1 content",
+          "label": "Fila 1: contenido",
           "default": "<p>Add content here.</p>"
         },
         {
           "type": "text",
           "id": "item_2_label",
-          "label": "Row 2 label",
+          "label": "Fila 2: nombre",
           "default": "Feels like:"
         },
         {
           "type": "richtext",
           "id": "item_2_content",
-          "label": "Row 2 content",
+          "label": "Fila 2: contenido",
           "default": "<p>Add content here.</p>"
         },
         {
           "type": "text",
           "id": "item_3_label",
-          "label": "Row 3 label"
+          "label": "Fila 3: nombre"
         },
         {
           "type": "richtext",
           "id": "item_3_content",
-          "label": "Row 3 content"
+          "label": "Fila 3: contenido"
         },
         {
           "type": "text",
           "id": "item_4_label",
-          "label": "Row 4 label"
+          "label": "Fila 4: nombre"
         },
         {
           "type": "richtext",
           "id": "item_4_content",
-          "label": "Row 4 content"
+          "label": "Fila 4: contenido"
         },
         {
           "type": "text",
           "id": "item_5_label",
-          "label": "Row 5 label"
+          "label": "Fila 5: nombre"
         },
         {
           "type": "richtext",
           "id": "item_5_content",
-          "label": "Row 5 content"
+          "label": "Fila 5: contenido"
         },
         {
           "type": "text",
           "id": "item_6_label",
-          "label": "Row 6 label"
+          "label": "Fila 6: nombre"
         },
         {
           "type": "richtext",
           "id": "item_6_content",
-          "label": "Row 6 content"
+          "label": "Fila 6: contenido"
         },
         {
           "type": "header",
@@ -4712,18 +4709,18 @@
           "content": "Otro contenido para este mismo panel (por ejemplo, la lista de ingredientes y para qué sirve cada uno). Se muestra en lugar del normal cuando se presiona el botón de un bloque Imagen con texto que esté justo antes o después y tenga activada la opción \"El botón abre el contenido alternativo del Info panel de al lado\". Si es más largo que el panel, se desplaza dentro de él sin cambiar su altura. Si lo dejas vacío, no hay contenido alternativo."
         },
         { "type": "inline_richtext", "id": "alt_title", "label": "Título alternativo" },
-        { "type": "text", "id": "alt_item_1_label", "label": "Alt row 1 label" },
-        { "type": "richtext", "id": "alt_item_1_content", "label": "Alt row 1 content" },
-        { "type": "text", "id": "alt_item_2_label", "label": "Alt row 2 label" },
-        { "type": "richtext", "id": "alt_item_2_content", "label": "Alt row 2 content" },
-        { "type": "text", "id": "alt_item_3_label", "label": "Alt row 3 label" },
-        { "type": "richtext", "id": "alt_item_3_content", "label": "Alt row 3 content" },
-        { "type": "text", "id": "alt_item_4_label", "label": "Alt row 4 label" },
-        { "type": "richtext", "id": "alt_item_4_content", "label": "Alt row 4 content" },
-        { "type": "text", "id": "alt_item_5_label", "label": "Alt row 5 label" },
-        { "type": "richtext", "id": "alt_item_5_content", "label": "Alt row 5 content" },
-        { "type": "text", "id": "alt_item_6_label", "label": "Alt row 6 label" },
-        { "type": "richtext", "id": "alt_item_6_content", "label": "Alt row 6 content" },
+        { "type": "text", "id": "alt_item_1_label", "label": "Fila alternativa 1: nombre" },
+        { "type": "richtext", "id": "alt_item_1_content", "label": "Fila alternativa 1: contenido" },
+        { "type": "text", "id": "alt_item_2_label", "label": "Fila alternativa 2: nombre" },
+        { "type": "richtext", "id": "alt_item_2_content", "label": "Fila alternativa 2: contenido" },
+        { "type": "text", "id": "alt_item_3_label", "label": "Fila alternativa 3: nombre" },
+        { "type": "richtext", "id": "alt_item_3_content", "label": "Fila alternativa 3: contenido" },
+        { "type": "text", "id": "alt_item_4_label", "label": "Fila alternativa 4: nombre" },
+        { "type": "richtext", "id": "alt_item_4_content", "label": "Fila alternativa 4: contenido" },
+        { "type": "text", "id": "alt_item_5_label", "label": "Fila alternativa 5: nombre" },
+        { "type": "richtext", "id": "alt_item_5_content", "label": "Fila alternativa 5: contenido" },
+        { "type": "text", "id": "alt_item_6_label", "label": "Fila alternativa 6: nombre" },
+        { "type": "richtext", "id": "alt_item_6_content", "label": "Fila alternativa 6: contenido" },
         {
           "type": "color_scheme",
           "id": "color_scheme",
@@ -4734,7 +4731,7 @@
     },
     {
       "type": "tabs_with_media",
-      "name": "Tabs with media",
+      "name": "Pestañas con imagen",
       "limit": 1,
       "settings": [
         {
