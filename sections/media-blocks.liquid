@@ -521,6 +521,16 @@
       margin: 0;
     }
 
+    {%- comment -%}
+    The title is the same as the Info panel's and the big numbers of the Statistics block: color picked in the block (empty = the color of the
+    scheme's text) and the heaviest weight (1000 + a thin outline of the same color, see .media-stats__number).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .media-faq__title > :is(h1, h2, h3, h4, h5, h6) {
+      color: var(--media-faq-title-color, inherit);
+      font-weight: 1000;
+      -webkit-text-stroke: .02em currentColor;
+    }
+
     #shopify-section-{{ section.id }} .media-faq__list {
       margin-block-start: 1.75rem;
     }
@@ -1337,7 +1347,7 @@
                 FAQ card: title + subtitle + up to 12 questions, each an accordion (snippets/accordion.liquid, the same component the FAQ section uses,
                 with the "+" icon). Questions and answers are each in their own field; a question left empty is skipped. See .media-faq in the CSS above.
                 {%- endcomment -%}
-                <div id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="--media-faq-position: {{ faq_position }};" {{ block.shopify_attributes }}>
+                <div id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="--media-faq-position: {{ faq_position }};{% if block.settings.title_color != blank and block.settings.title_color != 'rgba(0,0,0,0)' %} --media-faq-title-color: {{ block.settings.title_color }};{% endif %}" {{ block.shopify_attributes }}>
                   <div class="content-box h-full">
                     <div class="media-faq">
                       {%- if block.settings.title != blank -%}
@@ -4184,6 +4194,12 @@
             { "value": "h6", "label": "X-Small" }
           ],
           "default": "h3"
+        },
+        {
+          "type": "color",
+          "id": "title_color",
+          "label": "Color del título",
+          "info": "Vacío usa el color del texto del esquema."
         },
         { "type": "text", "id": "subtitle", "label": "Subtítulo", "info": "Por ejemplo: Descubre más sobre este producto." },
         {
