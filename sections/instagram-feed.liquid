@@ -708,6 +708,13 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
             --play-button-scale: 1.456;
           }
 
+          {%- comment -%}Phones only (below 700px): the play button is 20% bigger than on larger screens, 1.456 x 1.2 = 1.747{%- endcomment -%}
+          @media screen and (max-width: 699px) {
+            #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button {
+              --play-button-scale: 1.747;
+            }
+          }
+
           #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button .overlay-control {
             aspect-ratio: 1 / 1;
             border-radius: 50%;
