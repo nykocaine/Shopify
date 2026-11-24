@@ -599,7 +599,8 @@
     unified so every "card" interior padding in the theme matches.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel {
-      padding: calc(var(--container-gutter) + 0.5rem);
+      --info-panel-pad: calc(var(--container-gutter) + 0.5rem);
+      padding: var(--info-panel-pad);
       display: grid;
     }
 
@@ -611,12 +612,15 @@
     end, which would push the start of a long content out of reach of the scroll).
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel {
+      grid-template-columns: minmax(0, 1fr);
       grid-template-rows: minmax(0, 1fr);
     }
 
+    {%- comment -%}The views' box takes the whole width of the card (the panel aligns its children to the start, which would shrink it to its content){%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel__views {
       position: relative;
       display: grid;
+      justify-self: stretch;
       min-height: 0;
     }
 
@@ -630,9 +634,19 @@
       transition: opacity .3s ease, visibility .3s;
     }
 
+    {%- comment -%}
+    The alternative view's scroll area reaches almost to the edges of the card, so its scrollbar sits close to the side edge (.375rem from it) and the
+    content scrolls out under the top and bottom edges (.625rem from them) instead of being cut at the inner padding. The padding it gets back is the
+    same that the card has, minus that little margin, so the content itself stays exactly where the normal view's content is.
+    {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel__view--alt {
       position: absolute;
-      inset: 0;
+      inset-block: calc(-1 * var(--info-panel-pad) + .625rem);
+      inset-inline-start: calc(-1 * var(--info-panel-pad));
+      inset-inline-end: calc(-1 * var(--info-panel-pad) + .375rem);
+      padding-block: calc(var(--info-panel-pad) - .625rem);
+      padding-inline-start: var(--info-panel-pad);
+      padding-inline-end: calc(var(--info-panel-pad) - .375rem);
       display: flex;
       flex-direction: column;
       overflow-y: auto;
@@ -646,6 +660,30 @@
 
     #shopify-section-{{ section.id }} .info-panel__view--alt > .info-panel__list {
       width: 100%;
+    }
+
+    {%- comment -%}Title on the left, close button (the theme's round control, same look as the other X buttons) pushed to the right edge{%- endcomment -%}
+    #shopify-section-{{ section.id }} .info-panel__view-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__view-head > :is(h1, h2, h3, h4, h5, h6) {
+      margin: 0;
+      min-width: 0;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__close {
+      flex: none;
+      margin-inline-start: auto;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__close-icon {
+      width: var(--control-icon-size, 16px);
+      height: auto;
     }
 
     {%- comment -%}The view that is not showing is invisible, out of the way of the mouse and of the keyboard{%- endcomment -%}
@@ -677,7 +715,8 @@
     inherit the size, style and case of the theme's body text (no capitals, no smaller size); only the row labels are bold.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel,
-    #shopify-section-{{ section.id }} .info-panel__view > :is(h1, h2, h3, h4, h5, h6) {
+    #shopify-section-{{ section.id }} .info-panel__view > :is(h1, h2, h3, h4, h5, h6),
+    #shopify-section-{{ section.id }} .info-panel__view-head > :is(h1, h2, h3, h4, h5, h6) {
       text-align: start;
       justify-items: start;
     }
@@ -710,7 +749,8 @@
     {%- comment -%}
     The panel's title has the same weight as the big numbers of the Statistics block (1000 + thin outline, see .media-stats__number).
     {%- endcomment -%}
-    #shopify-section-{{ section.id }} .info-panel__view > :is(h1, h2, h3, h4, h5, h6) {
+    #shopify-section-{{ section.id }} .info-panel__view > :is(h1, h2, h3, h4, h5, h6),
+    #shopify-section-{{ section.id }} .info-panel__view-head > :is(h1, h2, h3, h4, h5, h6) {
       color: var(--info-panel-title-color, inherit);
       font-weight: 1000;
       -webkit-text-stroke: .02em currentColor;
@@ -735,6 +775,21 @@
 
     #shopify-section-{{ section.id }} .info-panel__list-item-content > :last-child {
       margin-block-end: 0;
+    }
+
+    {%- comment -%}
+    Phones (below 700px): every row is vertical. The label on top and its content right under it, aligned to the left (no longer to the right).
+    Desktop and tablets keep the label on the left and the content on the right.
+    {%- endcomment -%}
+    @media screen and (max-width: 699px) {
+      #shopify-section-{{ section.id }} .info-panel__list-item {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: .25rem;
+      }
+
+      #shopify-section-{{ section.id }} .info-panel__list-item-content {
+        text-align: start;
+      }
     }
 
     {%- comment -%}
@@ -1589,7 +1644,18 @@
 
                       {%- if show_view -%}
                         <div class="info-panel__view info-panel__view--{{ info_view }}">
-                          {%- if view_title != blank -%}
+                          {%- if info_view == 'alt' -%}
+                            {%- comment -%}Title on the left and the close button (the theme's round control with the X icon) on the right: it goes back to the normal view{%- endcomment -%}
+                            <div class="info-panel__view-head">
+                              {%- if view_title != blank -%}
+                                {%- render 'heading', content: view_title, style: block.settings.heading_tag, html_tag: 'h3', balance_text: true -%}
+                              {%- endif -%}
+
+                              <button type="button" class="info-panel__close overlay-control" aria-label="{{ 'general.accessibility.close' | t }}">
+                                {%- render 'icon' with 'close', class: 'info-panel__close-icon' -%}
+                              </button>
+                            </div>
+                          {%- elsif view_title != blank -%}
                             {%- render 'heading', content: view_title, style: block.settings.heading_tag, html_tag: 'h3', balance_text: true -%}
                           {%- endif -%}
 
@@ -1645,6 +1711,13 @@
                     };
 
                     document.addEventListener('click', function (event) {
+                      var close = event.target.closest && event.target.closest('.info-panel__close');
+
+                      if (close) {
+                        setInfoPanelView(close.closest('.info-panel'), false);
+                        return;
+                      }
+
                       var toggle = event.target.closest && event.target.closest('.media-blocks__panel-toggle');
 
                       if (toggle) {
