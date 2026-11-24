@@ -604,11 +604,20 @@
     }
 
     {%- comment -%}
-    The two views (normal and alternative) sit in the same grid cell, so the card is as tall as the taller one and nothing moves when they swap.
-    Each view is its own column: the title and the list, 2rem apart, packed at the bottom of the card.
+    The normal view gives the card its height. The alternative view lies over it (absolute, filling the whole space of the card) and never adds to
+    that height: when its content is longer than the card it scrolls inside (overflow-y: auto, thin scrollbar). The row of the card is 1fr so the
+    views' box fills the card even when the card is taller than its content (e.g. the block beside it is taller); the normal view's title and rows
+    stay packed at the bottom of it. In the alternative view the free room goes above the first element with an auto margin (not align-content:
+    end, which would push the start of a long content out of reach of the scroll).
     {%- endcomment -%}
+    #shopify-section-{{ section.id }} .info-panel {
+      grid-template-rows: minmax(0, 1fr);
+    }
+
     #shopify-section-{{ section.id }} .info-panel__views {
+      position: relative;
       display: grid;
+      min-height: 0;
     }
 
     #shopify-section-{{ section.id }} .info-panel__view {
@@ -621,25 +630,30 @@
       transition: opacity .3s ease, visibility .3s;
     }
 
+    #shopify-section-{{ section.id }} .info-panel__view--alt {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__view--alt > :first-child {
+      margin-block-start: auto;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__view--alt > .info-panel__list {
+      width: 100%;
+    }
+
     {%- comment -%}The view that is not showing is invisible, out of the way of the mouse and of the keyboard{%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel:not([data-alt]) .info-panel__view--alt,
     #shopify-section-{{ section.id }} .info-panel[data-alt] .info-panel__view--main {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-    }
-
-    #shopify-section-{{ section.id }} .info-panel__back {
-      appearance: none;
-      background: none;
-      border: 0;
-      padding: 0;
-      margin: 0;
-      font: inherit;
-      color: inherit;
-      text-decoration: underline;
-      text-underline-offset: .2em;
-      cursor: pointer;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1539,9 +1553,10 @@
                 -%}
                 <div id="block-{{ block.id }}" class="media-blocks__item {{ info_panel_glue_class }} {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {% if block.settings.title_color != blank and block.settings.title_color != 'rgba(0,0,0,0)' %}style="--info-panel-title-color: {{ block.settings.title_color }};"{% endif %} {{ block.shopify_attributes }}>
                   {%- comment -%}
-                  Two views in the same grid cell (so the card keeps the height of the taller one and nothing jumps when they swap): the normal one, and an
-                  alternative one (title + rows of its own) that opens in place of it when the button of a neighbouring "Image with text" block is pressed
-                  (see .media-blocks__panel-toggle, the script below and the "button_opens_panel" setting of that block). Only the normal view is shown at the start.
+                  Two views on top of each other: the normal one, which gives the card its height, and an alternative one (title + rows of its own) that
+                  opens in place of it when the button of a neighbouring "Image with text" block is pressed (see .media-blocks__panel-toggle, the script
+                  below and the "button_opens_panel" setting of that block). The alternative view never changes the height of the card: if it is longer, it
+                  scrolls inside the card. Pressing the button again goes back to the normal view. Only the normal view is shown at the start.
                   {%- endcomment -%}
                   <div class="info-panel__views">
                     {%- assign info_views = 'main,alt' | split: ',' -%}
@@ -1602,10 +1617,6 @@
                               {%- endfor -%}
                             </div>
                           {%- endif -%}
-
-                          {%- if info_view == 'alt' -%}
-                            <button type="button" class="info-panel__back">{{ block.settings.alt_back_label | default: 'volver' }}</button>
-                          {%- endif -%}
                         </div>
                       {%- endif -%}
                     {%- endfor -%}
@@ -1645,12 +1656,6 @@
                         }
 
                         return;
-                      }
-
-                      var back = event.target.closest && event.target.closest('.info-panel__back');
-
-                      if (back) {
-                        setInfoPanelView(back.closest('.info-panel'), false);
                       }
                     });
                   }
@@ -2940,7 +2945,7 @@
           "type": "checkbox",
           "id": "button_opens_panel",
           "label": "El botón abre el contenido alternativo del Info panel de al lado",
-          "info": "Solo funciona si justo antes o después hay un bloque Info panel con contenido alternativo y este bloque no tiene enlace. Al presionar el botón, el panel cambia a su contenido alternativo (otro clic, o \"volver\" en el panel, regresa al normal). Si no hay panel, el botón se comporta como siempre.",
+          "info": "Solo funciona si justo antes o después hay un bloque Info panel con contenido alternativo y este bloque no tiene enlace. Al presionar el botón, el panel cambia a su contenido alternativo sin cambiar de altura (otro clic en el botón regresa al normal). Si no hay panel, el botón se comporta como siempre.",
           "default": false
         },
         {
@@ -3746,7 +3751,7 @@
           "type": "checkbox",
           "id": "button_opens_panel",
           "label": "El botón abre el contenido alternativo del Info panel de al lado",
-          "info": "Solo funciona si justo antes o después hay un bloque Info panel con contenido alternativo y este bloque no tiene enlace. Al presionar el botón, el panel cambia a su contenido alternativo (otro clic, o \"volver\" en el panel, regresa al normal). Si no hay panel, el botón se comporta como siempre.",
+          "info": "Solo funciona si justo antes o después hay un bloque Info panel con contenido alternativo y este bloque no tiene enlace. Al presionar el botón, el panel cambia a su contenido alternativo sin cambiar de altura (otro clic en el botón regresa al normal). Si no hay panel, el botón se comporta como siempre.",
           "default": false
         },
         {
@@ -4607,10 +4612,9 @@
         },
         {
           "type": "paragraph",
-          "content": "Otro contenido para este mismo panel (por ejemplo, la lista de ingredientes y para qué sirve cada uno). Se muestra en lugar del normal cuando se presiona el botón de un bloque Imagen con texto que esté justo antes o después y tenga activada la opción \"El botón abre el contenido alternativo del Info panel de al lado\". Si lo dejas vacío, no hay contenido alternativo."
+          "content": "Otro contenido para este mismo panel (por ejemplo, la lista de ingredientes y para qué sirve cada uno). Se muestra en lugar del normal cuando se presiona el botón de un bloque Imagen con texto que esté justo antes o después y tenga activada la opción \"El botón abre el contenido alternativo del Info panel de al lado\". Si es más largo que el panel, se desplaza dentro de él sin cambiar su altura. Si lo dejas vacío, no hay contenido alternativo."
         },
         { "type": "inline_richtext", "id": "alt_title", "label": "Título alternativo" },
-        { "type": "text", "id": "alt_back_label", "label": "Texto para volver", "info": "Enlace que regresa al contenido normal.", "default": "volver" },
         { "type": "text", "id": "alt_item_1_label", "label": "Alt row 1 label" },
         { "type": "richtext", "id": "alt_item_1_content", "label": "Alt row 1 content" },
         { "type": "text", "id": "alt_item_2_label", "label": "Alt row 2 label" },
