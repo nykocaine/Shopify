@@ -411,6 +411,7 @@
     The row labels are plain body text: inherited size, weight and style, no capitals.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel > :is(h1, h2, h3, h4, h5, h6) {
+      color: var(--info-panel-title-color, inherit);
       font-weight: 1000;
       -webkit-text-stroke: .02em currentColor;
     }
@@ -1017,7 +1018,7 @@
                 </div>
 
               {%- when 'info_panel' -%}
-                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {{ block.shopify_attributes }}>
+                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {% if block.settings.title_color != blank and block.settings.title_color != 'rgba(0,0,0,0)' %}style="--info-panel-title-color: {{ block.settings.title_color }};"{% endif %} {{ block.shopify_attributes }}>
                   {%- if block.settings.title != blank -%}
                     {%- render 'heading', content: block.settings.title, style: block.settings.heading_tag, html_tag: 'h3', balance_text: true -%}
                   {%- endif -%}
@@ -3689,6 +3690,12 @@
             }
           ],
           "default": "h3"
+        },
+        {
+          "type": "color",
+          "id": "title_color",
+          "label": "Color del título",
+          "info": "Vacío usa el color del texto del esquema."
         },
         {
           "type": "header",
