@@ -319,7 +319,7 @@
         -%}
         {%- if mobile_swap_index >= 0 -%}
           {%- for order_block in section.blocks -%}
-            {%- if order_block.type == 'image_with_text' or order_block.type == 'video_with_text' or order_block.type == 'two_images_with_text' or order_block.type == 'stats' or order_block.type == 'words' or order_block.type == 'info_panel' -%}
+            {%- if order_block.type == 'image_with_text' or order_block.type == 'video_with_text' or order_block.type == 'two_images_with_text' or order_block.type == 'stats' or order_block.type == 'words' or order_block.type == 'faq_card' or order_block.type == 'info_panel' -%}
               {%- liquid
                 assign phone_order = forloop.index0
 
@@ -496,6 +496,61 @@
       #shopify-section-{{ section.id }} .media-words__word {
         transition: none;
       }
+    }
+
+    {%- comment -%}
+    "FAQ" block: a card with a title, a short subtitle and a list of questions, each one an accordion like the ones of the FAQ section (the "+"
+    icon takes its colors from Step Controls of the color scheme; a hairline between one question and the next, none above the first or below the
+    last). The questions are plain text: no capitals, and the weight and size of the theme's body text. The content sits at the top, in the middle
+    or at the bottom of the card (the card can be taller than its content when the block beside it is taller).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .media-faq {
+      display: flex;
+      flex-direction: column;
+      justify-content: var(--media-faq-position, flex-end);
+      height: 100%;
+    }
+
+    #shopify-section-{{ section.id }} .media-faq__title,
+    #shopify-section-{{ section.id }} .media-faq__subtitle {
+      margin: 0;
+    }
+
+    #shopify-section-{{ section.id }} .media-faq__list {
+      margin-block-start: 1.75rem;
+    }
+
+    #shopify-section-{{ section.id }} .media-faq__title + .media-faq__list,
+    #shopify-section-{{ section.id }} .media-faq__subtitle + .media-faq__list {
+      margin-block-start: 1.75rem;
+    }
+
+    #shopify-section-{{ section.id }} .media-faq:not(:has(.media-faq__title, .media-faq__subtitle)) .media-faq__list {
+      margin-block-start: 0;
+    }
+
+    #shopify-section-{{ section.id }} .media-faq__subtitle {
+      margin-block-start: .25rem;
+    }
+
+    #shopify-section-{{ section.id }} .media-faq .accordion {
+      --accordion-block-padding: 1.125rem;
+      box-shadow: none;
+    }
+
+    @media screen and (min-width: 700px) {
+      #shopify-section-{{ section.id }} .media-faq .accordion {
+        --accordion-block-padding: 1.625rem;
+      }
+    }
+
+    #shopify-section-{{ section.id }} .media-faq__item + .media-faq__item {
+      box-shadow: 0 -1px 0 rgb(var(--border-color));
+    }
+
+    #shopify-section-{{ section.id }} .media-faq .accordion__summary {
+      text-transform: none;
+      font-weight: var(--text-font-weight);
     }
 
     {%- comment -%}
@@ -1266,6 +1321,53 @@
                           <p class="media-words__word {{ words_size_desktop }}">{{ word_text }}</p>
                         {%- endif -%}
                       {%- endfor -%}
+                    </div>
+                  </div>
+                </div>
+
+              {%- when 'faq_card' -%}
+                {%- liquid
+                  assign faq_position = 'flex-end'
+                  if block.settings.content_position == 'top'
+                    assign faq_position = 'flex-start'
+                  elsif block.settings.content_position == 'middle'
+                    assign faq_position = 'center'
+                  endif
+                -%}
+
+                {%- comment -%}
+                FAQ card: title + subtitle + up to 6 questions, each an accordion (snippets/accordion.liquid, the same component the FAQ section uses,
+                with the "+" icon). Questions and answers are each in their own field; a question left empty is skipped. See .media-faq in the CSS above.
+                {%- endcomment -%}
+                <div id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }}" style="--media-faq-position: {{ faq_position }};" {{ block.shopify_attributes }}>
+                  <div class="content-box h-full">
+                    <div class="media-faq">
+                      {%- if block.settings.title != blank -%}
+                        <div class="media-faq__title">
+                          {%- render 'heading', content: block.settings.title, style: block.settings.heading_tag, html_tag: 'h3', balance_text: true -%}
+                        </div>
+                      {%- endif -%}
+
+                      {%- if block.settings.subtitle != blank -%}
+                        <p class="media-faq__subtitle">{{ block.settings.subtitle }}</p>
+                      {%- endif -%}
+
+                      <div class="media-faq__list">
+                        {%- for i in (1..6) -%}
+                          {%- liquid
+                            assign question_key = 'question_' | append: i
+                            assign answer_key = 'answer_' | append: i
+                            assign faq_question = block.settings[question_key]
+                            assign faq_answer = block.settings[answer_key]
+                          -%}
+
+                          {%- if faq_question != blank and faq_answer != blank -%}
+                            <div class="media-faq__item">
+                              {%- render 'accordion', title: faq_question, content: faq_answer, prose_content: true, toggle_icon: 'accordion-plus' -%}
+                            </div>
+                          {%- endif -%}
+                        {%- endfor -%}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -4038,6 +4140,90 @@
           ],
           "default": "center"
         }
+      ]
+    },
+    {
+      "type": "faq_card",
+      "name": "FAQ",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Una tarjeta con título, subtítulo y hasta 6 preguntas en acordeón (con el ícono +), como las de la sección FAQ pero con las preguntas en texto normal, sin mayúsculas. Una pregunta necesita su respuesta para mostrarse."
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-3"
+        },
+        {
+          "type": "select",
+          "id": "content_position",
+          "label": "Posición del contenido en la tarjeta",
+          "info": "Se nota cuando la tarjeta es más alta que su contenido (por ejemplo, por el bloque de al lado).",
+          "options": [
+            { "value": "top", "label": "Arriba" },
+            { "value": "middle", "label": "Centro" },
+            { "value": "bottom", "label": "Abajo" }
+          ],
+          "default": "bottom"
+        },
+        {
+          "type": "header",
+          "content": "Encabezado"
+        },
+        { "type": "inline_richtext", "id": "title", "label": "Título", "default": "FAQ" },
+        {
+          "type": "select",
+          "id": "heading_tag",
+          "label": "Tamaño del título",
+          "options": [
+            { "value": "h1", "label": "XX-Large" },
+            { "value": "h2", "label": "X-Large" },
+            { "value": "h3", "label": "Large" },
+            { "value": "h4", "label": "Medium" },
+            { "value": "h5", "label": "Small" },
+            { "value": "h6", "label": "X-Small" }
+          ],
+          "default": "h3"
+        },
+        { "type": "text", "id": "subtitle", "label": "Subtítulo", "info": "Por ejemplo: Descubre más sobre este producto." },
+        {
+          "type": "header",
+          "content": "Pregunta 1"
+        },
+        { "type": "text", "id": "question_1", "label": "Pregunta", "default": "Pregunta 1", "info": "Escríbela con mayúsculas y minúsculas normales: no se fuerzan a mayúsculas." },
+        { "type": "richtext", "id": "answer_1", "label": "Respuesta", "default": "<p>Escribe aquí la respuesta.</p>" },
+        {
+          "type": "header",
+          "content": "Pregunta 2"
+        },
+        { "type": "text", "id": "question_2", "label": "Pregunta",  "info": "Si la dejas vacía, esta pregunta no se muestra." },
+        { "type": "richtext", "id": "answer_2", "label": "Respuesta" },
+        {
+          "type": "header",
+          "content": "Pregunta 3"
+        },
+        { "type": "text", "id": "question_3", "label": "Pregunta",  "info": "Si la dejas vacía, esta pregunta no se muestra." },
+        { "type": "richtext", "id": "answer_3", "label": "Respuesta" },
+        {
+          "type": "header",
+          "content": "Pregunta 4"
+        },
+        { "type": "text", "id": "question_4", "label": "Pregunta",  "info": "Si la dejas vacía, esta pregunta no se muestra." },
+        { "type": "richtext", "id": "answer_4", "label": "Respuesta" },
+        {
+          "type": "header",
+          "content": "Pregunta 5"
+        },
+        { "type": "text", "id": "question_5", "label": "Pregunta",  "info": "Si la dejas vacía, esta pregunta no se muestra." },
+        { "type": "richtext", "id": "answer_5", "label": "Respuesta" },
+        {
+          "type": "header",
+          "content": "Pregunta 6"
+        },
+        { "type": "text", "id": "question_6", "label": "Pregunta",  "info": "Si la dejas vacía, esta pregunta no se muestra." },
+        { "type": "richtext", "id": "answer_6", "label": "Respuesta" }
       ]
     },
     {
