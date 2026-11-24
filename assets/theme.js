@@ -7544,8 +7544,8 @@ import { Delegate as Delegate11 } from "vendor";
 // Section image scroll zoom (theme.css, img.scroll-zoom): each image of a section card grows slightly inside its frame as the page is scrolled up and
 // shrinks as it is scrolled down: 20% bigger when it comes in at the bottom of the screen, its normal size when it has gone out at the top.
 // The same effect applies to the big logo of the footer (layout "Full width", an SVG or any image): it is not a photo that fills a clipping frame, so
-// it grows from its centre, like the images, but only as much as the room it has on its two sides in the footer card allows (the smaller of the two),
-// so it is never cut off and never widens the page. That can be less than the 20% when the logo is close to the edge of the footer.
+// it grows from its centre, exactly like the images (same 20%, same progress): what goes past the edge of the footer card is cut off there (the frame
+// clips it sideways, theme.css), so it never widens the page.
 (function () {
   const MAX_ZOOM = 0.2;
   const FOOTER_LOGO = ".footer__big-logo--full img";
@@ -7581,17 +7581,7 @@ import { Delegate as Delegate11 } from "vendor";
       }
       // 0 when the frame is entering at the bottom of the screen, 1 when it has left at the top
       const progress = Math.min(1, Math.max(0, (viewport - rect.top) / (viewport + rect.height)));
-      let maxZoom = MAX_ZOOM;
-      if (img.matches(FOOTER_LOGO) && img.offsetWidth > 0) {
-        // the footer logo grows from its centre: each side grows by half of the extra width, so it can grow at most twice the smaller room it has
-        // between its (un-zoomed) edges and the edges of its frame
-        const imgRect = img.getBoundingClientRect();
-        const centerX = imgRect.left + imgRect.width / 2;
-        const roomLeft = centerX - img.offsetWidth / 2 - rect.left;
-        const roomRight = rect.right - (centerX + img.offsetWidth / 2);
-        maxZoom = Math.min(MAX_ZOOM, Math.max(0, (2 * Math.min(roomLeft, roomRight)) / img.offsetWidth));
-      }
-      img.style.transform = `scale(${(1 + maxZoom * (1 - progress)).toFixed(4)})`;
+      img.style.transform = `scale(${(1 + MAX_ZOOM * (1 - progress)).toFixed(4)})`;
     });
   }
   function requestUpdate() {
