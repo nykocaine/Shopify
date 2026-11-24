@@ -295,6 +295,16 @@
           border-start-start-radius: 0 !important;
           border-start-end-radius: 0 !important;
         }
+
+        {%- comment -%}
+          Same idea for the Info panel: when another block follows it (image with text, statistics), on phones the two are one piece. The panel
+          loses the gap below it and its bottom corners, and the block after it (.media-blocks__item--glued) loses its top corners.
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} .media-blocks__item--glue-next {
+          margin-block-end: calc(-1 * {% if section.settings.column_spacing == 'none' %}0px{% else %}var(--horizontal-gap){% endif %});
+          border-end-start-radius: 0 !important;
+          border-end-end-radius: 0 !important;
+        }
       }
     {%- endif -%}
 
@@ -649,11 +659,13 @@
                   # A text-only block that comes right after a "Two images with text" block: on phones (blocks stacked) it is glued to it
                   assign glued_class = ''
 
-                  if section.settings.stack_on_mobile and block.type == 'image_with_text' and block.settings.image == blank and forloop.index0 > 0
+                  if section.settings.stack_on_mobile and block.type == 'image_with_text' and forloop.index0 > 0
                     assign prev_index = forloop.index0 | minus: 1
                     assign prev_block = section.blocks[prev_index]
 
-                    if prev_block.type == 'two_images_with_text'
+                    if prev_block.type == 'two_images_with_text' and block.settings.image == blank
+                      assign glued_class = 'media-blocks__item--glued'
+                    elsif prev_block.type == 'info_panel'
                       assign glued_class = 'media-blocks__item--glued'
                     endif
                   endif
@@ -985,7 +997,7 @@
                     assign prev_index = forloop.index0 | minus: 1
                     assign prev_block = section.blocks[prev_index]
 
-                    if prev_block.type == 'two_images_with_text'
+                    if prev_block.type == 'two_images_with_text' or prev_block.type == 'info_panel'
                       assign glued_class = 'media-blocks__item--glued'
                     endif
                   endif
@@ -1028,7 +1040,18 @@
                 </div>
 
               {%- when 'info_panel' -%}
-                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {% if block.settings.title_color != blank and block.settings.title_color != 'rgba(0,0,0,0)' %}style="--info-panel-title-color: {{ block.settings.title_color }};"{% endif %} {{ block.shopify_attributes }}>
+                {%- liquid
+                  # On phones (blocks stacked), an image with text or a statistics card right after the panel is glued to it (see .media-blocks__item--glue-next)
+                  assign info_panel_glue_class = ''
+                  assign info_panel_next_block = section.blocks[forloop.index]
+
+                  if section.settings.stack_on_mobile and info_panel_next_block.type == 'image_with_text'
+                    assign info_panel_glue_class = 'media-blocks__item--glue-next'
+                  elsif section.settings.stack_on_mobile and info_panel_next_block.type == 'stats'
+                    assign info_panel_glue_class = 'media-blocks__item--glue-next'
+                  endif
+                -%}
+                <div class="media-blocks__item {{ info_panel_glue_class }} {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {% if block.settings.title_color != blank and block.settings.title_color != 'rgba(0,0,0,0)' %}style="--info-panel-title-color: {{ block.settings.title_color }};"{% endif %} {{ block.shopify_attributes }}>
                   {%- if block.settings.title != blank -%}
                     {%- render 'heading', content: block.settings.title, style: block.settings.heading_tag, html_tag: 'h3', balance_text: true -%}
                   {%- endif -%}
