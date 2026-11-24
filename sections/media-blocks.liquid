@@ -406,9 +406,18 @@
       border-block-end: none;
     }
 
+    {%- comment -%}
+    The panel's title has the same weight as the big numbers of the Statistics block (1000 + thin outline, see .media-stats__number).
+    The row labels are plain body text: inherited size, weight and style, no capitals.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .info-panel > :is(h1, h2, h3, h4, h5, h6) {
+      font-weight: 1000;
+      -webkit-text-stroke: .02em currentColor;
+    }
+
     #shopify-section-{{ section.id }} .info-panel__list-item-label {
-      font-weight: 600;
-      text-transform: uppercase;
+      font-weight: inherit;
+      text-transform: none;
     }
 
     #shopify-section-{{ section.id }} .info-panel__list-item-content {
