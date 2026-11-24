@@ -297,6 +297,46 @@
         }
 
         {%- comment -%}
+          Phone order. If the Info panel comes right BEFORE an "Image with text" block (the order picked for desktop), on phones the two swap:
+          the image goes on top and the panel under it, so they can be glued (below). Every block gets an explicit order (its position, with
+          the two swapped) so nothing else moves. Desktop and tablets keep the order of the editor.
+        {%- endcomment -%}
+        {%- liquid
+          assign mobile_swap_index = -1
+
+          for swap_block in section.blocks
+            if swap_block.type == 'info_panel'
+              assign swap_next_block = section.blocks[forloop.index]
+
+              if swap_next_block.type == 'image_with_text'
+                assign mobile_swap_index = forloop.index0
+                break
+              endif
+            endif
+          endfor
+
+          assign mobile_swap_next = mobile_swap_index | plus: 1
+        -%}
+        {%- if mobile_swap_index >= 0 -%}
+          {%- for order_block in section.blocks -%}
+            {%- if order_block.type == 'image_with_text' or order_block.type == 'video_with_text' or order_block.type == 'two_images_with_text' or order_block.type == 'stats' or order_block.type == 'info_panel' -%}
+              {%- liquid
+                assign phone_order = forloop.index0
+
+                if forloop.index0 == mobile_swap_index
+                  assign phone_order = mobile_swap_next
+                elsif forloop.index0 == mobile_swap_next
+                  assign phone_order = mobile_swap_index
+                endif
+              -%}
+              #shopify-section-{{ section.id }} .media-blocks > :is(#block-{{ order_block.id }}, media-block:has(> #block-{{ order_block.id }})) {
+                order: {{ phone_order }};
+              }
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+
+        {%- comment -%}
           An "Image with text" block with an "Info panel" right below it: on phones they are one piece. The gap between them is taken away, the
           image block (.media-blocks__item--glue-next) has square bottom corners and the panel (.media-blocks__item--glued) square top corners.
           Phones only: on larger screens nothing changes.
@@ -679,9 +719,28 @@
                     endif
                   endif
 
-                  # An "Info panel" right after this block: on phones it is glued to it (see .media-blocks__item--glue-next)
-                  if section.settings.stack_on_mobile and block.type == 'image_with_text' and section.blocks[forloop.index].type == 'info_panel'
-                    assign glued_class = glued_class | append: ' media-blocks__item--glue-next'
+                  # An "Info panel" right before or after this block: on phones the image goes on top and the panel is glued under it
+                  # (see .media-blocks__item--glue-next and the phone order further down)
+                  if section.settings.stack_on_mobile and block.type == 'image_with_text'
+                    assign iw_glue_panel = false
+                    assign iw_next_block = section.blocks[forloop.index]
+
+                    if iw_next_block.type == 'info_panel'
+                      assign iw_glue_panel = true
+                    endif
+
+                    if forloop.index0 > 0
+                      assign iw_prev_index = forloop.index0 | minus: 1
+                      assign iw_prev_block = section.blocks[iw_prev_index]
+
+                      if iw_prev_block.type == 'info_panel'
+                        assign iw_glue_panel = true
+                      endif
+                    endif
+
+                    if iw_glue_panel
+                      assign glued_class = glued_class | append: ' media-blocks__item--glue-next'
+                    endif
                   endif
 
                   if block.settings.subheading contains '</a>' or block.settings.text contains '</a>' or block.settings.title contains '</a>'
@@ -1055,19 +1114,33 @@
 
               {%- when 'info_panel' -%}
                 {%- liquid
-                  # On phones (blocks stacked) an "Image with text" block right before the panel is glued to it (see .media-blocks__item--pull-up)
+                  # On phones (blocks stacked) an "Image with text" block right before or after the panel is glued to it: the image on top, the panel
+                  # under it (see .media-blocks__item--pull-up and the phone order further up)
                   assign info_panel_glue_class = ''
 
-                  if section.settings.stack_on_mobile and forloop.index0 > 0
-                    assign info_panel_prev_index = forloop.index0 | minus: 1
-                    assign info_panel_prev_block = section.blocks[info_panel_prev_index]
+                  if section.settings.stack_on_mobile
+                    assign info_panel_image_next = false
+                    assign info_panel_next_block = section.blocks[forloop.index]
 
-                    if info_panel_prev_block.type == 'image_with_text'
+                    if info_panel_next_block.type == 'image_with_text'
+                      assign info_panel_image_next = true
+                    endif
+
+                    if forloop.index0 > 0
+                      assign info_panel_prev_index = forloop.index0 | minus: 1
+                      assign info_panel_prev_block = section.blocks[info_panel_prev_index]
+
+                      if info_panel_prev_block.type == 'image_with_text'
+                        assign info_panel_image_next = true
+                      endif
+                    endif
+
+                    if info_panel_image_next
                       assign info_panel_glue_class = 'media-blocks__item--glued media-blocks__item--pull-up'
                     endif
                   endif
                 -%}
-                <div class="media-blocks__item {{ info_panel_glue_class }} {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {% if block.settings.title_color != blank and block.settings.title_color != 'rgba(0,0,0,0)' %}style="--info-panel-title-color: {{ block.settings.title_color }};"{% endif %} {{ block.shopify_attributes }}>
+                <div id="block-{{ block.id }}" class="media-blocks__item {{ info_panel_glue_class }} {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {% if block.settings.title_color != blank and block.settings.title_color != 'rgba(0,0,0,0)' %}style="--info-panel-title-color: {{ block.settings.title_color }};"{% endif %} {{ block.shopify_attributes }}>
                   {%- if block.settings.title != blank -%}
                     {%- render 'heading', content: block.settings.title, style: block.settings.heading_tag, html_tag: 'h3', balance_text: true -%}
                   {%- endif -%}
