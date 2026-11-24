@@ -7543,9 +7543,9 @@ import { Delegate as Delegate11 } from "vendor";
 
 // Section image scroll zoom (theme.css, img.scroll-zoom): each image of a section card grows slightly inside its frame as the page is scrolled up and
 // shrinks as it is scrolled down: 20% bigger when it comes in at the bottom of the screen, its normal size when it has gone out at the top.
-// The same effect applies to the big logo of the footer (layout "Full width", an SVG or any image): it is not a photo that fills a clipping frame, so
-// it grows from its centre, exactly like the images (same 20%, same progress): what goes past the edge of the footer card is cut off there (the frame
-// clips it sideways, theme.css), so it never widens the page.
+// The big logo of the footer (layout "Full width", an SVG or any image) also expands on scroll, but it is already as wide as the space between the
+// side margins of the footer, which it must respect on both sides: so its biggest size is that full width (never past the margins, nothing is cut) and
+// it starts 20% smaller (1 / 1.2). It expands from its centre when the footer comes into the screen as the page is scrolled, and stays at full width.
 (function () {
   const MAX_ZOOM = 0.2;
   const FOOTER_LOGO = ".footer__big-logo--full img";
@@ -7577,6 +7577,13 @@ import { Delegate as Delegate11 } from "vendor";
       const frame = img.parentElement && img.parentElement.closest(".content-box__background-media") || img.parentElement;
       const rect = frame.getBoundingClientRect();
       if (rect.bottom < -50 || rect.top > viewport + 50 || rect.height === 0) {
+        return;
+      }
+      if (img.matches(FOOTER_LOGO)) {
+        // 0 while the footer is still below the screen, 1 once its top has risen to 40% of the screen height: from 1 / 1.2 up to its full width
+        const entered = Math.min(1, Math.max(0, (viewport - rect.top) / (viewport * 0.6)));
+        const smallest = 1 / (1 + MAX_ZOOM);
+        img.style.transform = `scale(${(smallest + (1 - smallest) * entered).toFixed(4)})`;
         return;
       }
       // 0 when the frame is entering at the bottom of the screen, 1 when it has left at the top

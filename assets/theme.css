@@ -12362,9 +12362,6 @@ img.scroll-zoom {
   will-change: transform;
 }
 
-/* The footer's big logo also takes the scroll zoom (theme.js), exactly like the images: it grows from its centre (the default transform-origin above)
-   and what goes past the edge of the footer card is cut off there: the frame, which reaches the edges of the card, clips it sideways, so it can never
-   widen the page. Vertically nothing is clipped: it grows into the padding of the footer. */
-.footer__big-logo--full {
-  overflow-x: clip;
-}
+/* The footer's big logo (theme.js, layout "Full width") expands on scroll from 1 / 1.2 of its width up to its full width, which is the space between the side
+   margins of the footer: it never goes past those margins, so nothing is cut and the page never gets wider. It grows from its centre (the default
+   transform-origin above). */
