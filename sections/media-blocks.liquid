@@ -659,12 +659,15 @@
     }
 
     {%- comment -%}
-    Row labels in bold ("bold" takes the heaviest weight the theme's font has: Swiss 721, medium, only slightly heavier than regular) and with the
+    Row labels in bold ("bold" takes the heaviest weight the theme's font has: Swiss 721, medium) plus a very thin outline of the same color, which
+    makes them a little heavier still (the same trick as the price in the buy button, see .buy-buttons__price in theme.css), and with the
     same color as the panel's title: they use the "Title color" of the block (--info-panel-title-color), or the scheme's text color when that is empty.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel__list-item-label {
       color: var(--info-panel-title-color, inherit);
       font-weight: bold;
+      -webkit-text-stroke: .4px currentColor;
+      paint-order: stroke fill;
     }
 
     #shopify-section-{{ section.id }} .info-panel__list-item-content {
