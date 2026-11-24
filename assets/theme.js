@@ -7543,9 +7543,13 @@ import { Delegate as Delegate11 } from "vendor";
 
 // Section image scroll zoom (theme.css, img.scroll-zoom): each image of a section card grows slightly inside its frame as the page is scrolled up and
 // shrinks as it is scrolled down: 20% bigger when it comes in at the bottom of the screen, its normal size when it has gone out at the top.
+// The same effect applies to the big logo of the footer (layout "Full width", an SVG or any image): it is not a photo that fills a clipping frame, so
+// it grows from its left edge (it stays lined up with the footer columns) and only as much as the room to its right in the footer card allows, so it
+// is never cut off and never widens the page (on a phone, where the logo already fills the width, that is a smaller zoom than the 20%).
 (function () {
   const MAX_ZOOM = 0.2;
-  const SELECTOR = ".content-box__background-media img";
+  const FOOTER_LOGO = ".footer__big-logo--full img";
+  const SELECTOR = ".content-box__background-media img, " + FOOTER_LOGO;
   // (not [class*="zoom"] / [class*="drawer"] on their own: the <body> carries classes like features--zoom-image and drawer-mobile-centered, which would exclude every image)
   const EXCLUDED = '.product-card, .product-list, .product-list__promo, .menu-promo, .drawer, [class*="-drawer"], [class*="drawer--"], .modal, [class*="-modal"], .popover, [class*="lightbox"], [class*="media-zoom"], video-media';
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -7577,7 +7581,14 @@ import { Delegate as Delegate11 } from "vendor";
       }
       // 0 when the frame is entering at the bottom of the screen, 1 when it has left at the top
       const progress = Math.min(1, Math.max(0, (viewport - rect.top) / (viewport + rect.height)));
-      img.style.transform = `scale(${(1 + MAX_ZOOM * (1 - progress)).toFixed(4)})`;
+      let maxZoom = MAX_ZOOM;
+      if (img.matches(FOOTER_LOGO) && img.offsetWidth > 0) {
+        // the footer logo grows to the right from its left edge (theme.css): at most as much as the room left to the right of it in its frame
+        const imgRect = img.getBoundingClientRect();
+        const roomRight = rect.right - (imgRect.left + img.offsetWidth);
+        maxZoom = Math.min(MAX_ZOOM, Math.max(0, roomRight / img.offsetWidth));
+      }
+      img.style.transform = `scale(${(1 + maxZoom * (1 - progress)).toFixed(4)})`;
     });
   }
   function requestUpdate() {
