@@ -600,8 +600,52 @@
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel {
       padding: calc(var(--container-gutter) + 0.5rem);
-      gap: 2rem;
       display: grid;
+    }
+
+    {%- comment -%}
+    The two views (normal and alternative) sit in the same grid cell, so the card is as tall as the taller one and nothing moves when they swap.
+    Each view is its own column: the title and the list, 2rem apart, packed at the bottom of the card.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .info-panel__views {
+      display: grid;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__view {
+      grid-area: 1 / 1;
+      display: grid;
+      gap: 2rem;
+      align-content: end;
+      justify-items: start;
+      text-align: start;
+      transition: opacity .3s ease, visibility .3s;
+    }
+
+    {%- comment -%}The view that is not showing is invisible, out of the way of the mouse and of the keyboard{%- endcomment -%}
+    #shopify-section-{{ section.id }} .info-panel:not([data-alt]) .info-panel__view--alt,
+    #shopify-section-{{ section.id }} .info-panel[data-alt] .info-panel__view--main {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__back {
+      appearance: none;
+      background: none;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      font: inherit;
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: .2em;
+      cursor: pointer;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #shopify-section-{{ section.id }} .info-panel__view {
+        transition: none;
+      }
     }
 
     {%- comment -%}
@@ -619,7 +663,7 @@
     inherit the size, style and case of the theme's body text (no capitals, no smaller size); only the row labels are bold.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel,
-    #shopify-section-{{ section.id }} .info-panel > :is(h1, h2, h3, h4, h5, h6) {
+    #shopify-section-{{ section.id }} .info-panel__view > :is(h1, h2, h3, h4, h5, h6) {
       text-align: start;
       justify-items: start;
     }
@@ -652,7 +696,7 @@
     {%- comment -%}
     The panel's title has the same weight as the big numbers of the Statistics block (1000 + thin outline, see .media-stats__number).
     {%- endcomment -%}
-    #shopify-section-{{ section.id }} .info-panel > :is(h1, h2, h3, h4, h5, h6) {
+    #shopify-section-{{ section.id }} .info-panel__view > :is(h1, h2, h3, h4, h5, h6) {
       color: var(--info-panel-title-color, inherit);
       font-weight: 1000;
       -webkit-text-stroke: .02em currentColor;
@@ -902,6 +946,35 @@
                     endif
                   endif
 
+                  # The button of this block opens the alternative content of a neighbouring Info panel (the one right before or right after it), when the
+                  # "button_opens_panel" setting is on, the block has no link of its own and that panel has alternative content: panel_toggle_id is the DOM id of
+                  # that panel (block-<id>), empty otherwise (then the button works as always)
+                  assign panel_toggle_id = ''
+
+                  if block.settings.button_opens_panel and block.settings.link_text != blank and block.settings.link_url == blank
+                    assign pt_panel = nil
+                    assign pt_next = section.blocks[forloop.index]
+
+                    if pt_next.type == 'info_panel'
+                      assign pt_panel = pt_next
+                    endif
+
+                    if pt_panel == nil and forloop.index0 > 0
+                      assign pt_prev_index = forloop.index0 | minus: 1
+                      assign pt_prev = section.blocks[pt_prev_index]
+
+                      if pt_prev.type == 'info_panel'
+                        assign pt_panel = pt_prev
+                      endif
+                    endif
+
+                    if pt_panel != nil
+                      if pt_panel.settings.alt_title != blank or pt_panel.settings.alt_item_1_label != blank or pt_panel.settings.alt_item_1_content != blank
+                        assign panel_toggle_id = 'block-' | append: pt_panel.id
+                      endif
+                    endif
+                  endif
+
                   # An "Info panel" or "FAQ" block right before or after this block: on phones the image goes on top and that block is glued under it
                   # (see .media-blocks__item--glue-next and the phone order further down)
                   if section.settings.stack_on_mobile and block.type == 'image_with_text'
@@ -1017,7 +1090,9 @@
                           {%- when 'link' -%}
                             {%- liquid
                               if block.settings.link_text != blank
-                                if can_make_block_clickable
+                                if panel_toggle_id != blank
+                                  render 'button', content: block.settings.link_text, type: 'button', style: block.settings.button_style, class: 'media-blocks__panel-toggle', aria_controls: panel_toggle_id
+                                elsif can_make_block_clickable
                                   render 'button', content: block.settings.link_text, type: 'button', style: block.settings.button_style
                                 else
                                   render 'button', content: block.settings.link_text, href: block.settings.link_url, style: block.settings.button_style
@@ -1463,67 +1538,129 @@
                   endif
                 -%}
                 <div id="block-{{ block.id }}" class="media-blocks__item {{ info_panel_glue_class }} {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {% if block.settings.title_color != blank and block.settings.title_color != 'rgba(0,0,0,0)' %}style="--info-panel-title-color: {{ block.settings.title_color }};"{% endif %} {{ block.shopify_attributes }}>
-                  {%- if block.settings.title != blank -%}
-                    {%- render 'heading', content: block.settings.title, style: block.settings.heading_tag, html_tag: 'h3', balance_text: true -%}
-                  {%- endif -%}
+                  {%- comment -%}
+                  Two views in the same grid cell (so the card keeps the height of the taller one and nothing jumps when they swap): the normal one, and an
+                  alternative one (title + rows of its own) that opens in place of it when the button of a neighbouring "Image with text" block is pressed
+                  (see .media-blocks__panel-toggle, the script below and the "button_opens_panel" setting of that block). Only the normal view is shown at the start.
+                  {%- endcomment -%}
+                  <div class="info-panel__views">
+                    {%- assign info_views = 'main,alt' | split: ',' -%}
 
-                  {%- liquid
-                    assign info_panel_has_items = false
+                    {%- for info_view in info_views -%}
+                      {%- liquid
+                        assign view_prefix = ''
+                        if info_view == 'alt'
+                          assign view_prefix = 'alt_'
+                        endif
 
-                    for i in (1..6)
-                      capture item_label_key
-                        echo 'item_'
-                        echo i
-                        echo '_label'
-                      endcapture
+                        assign view_title_key = view_prefix | append: 'title'
+                        assign view_title = block.settings[view_title_key]
+                        assign view_has_items = false
 
-                      capture item_content_key
-                        echo 'item_'
-                        echo i
-                        echo '_content'
-                      endcapture
+                        for i in (1..6)
+                          assign view_label_key = view_prefix | append: 'item_' | append: i | append: '_label'
+                          assign view_content_key = view_prefix | append: 'item_' | append: i | append: '_content'
 
-                      if block.settings[item_label_key] != blank or block.settings[item_content_key] != blank
-                        assign info_panel_has_items = true
-                      endif
-                    endfor
-                  -%}
+                          if block.settings[view_label_key] != blank or block.settings[view_content_key] != blank
+                            assign view_has_items = true
+                          endif
+                        endfor
 
-                  {%- if info_panel_has_items -%}
-                    <div class="info-panel__list">
-                      {%- for i in (1..6) -%}
-                        {%- liquid
-                          capture item_label_key
-                            echo 'item_'
-                            echo i
-                            echo '_label'
-                          endcapture
+                        assign show_view = true
+                        if info_view == 'alt' and view_title == blank and view_has_items == false
+                          assign show_view = false
+                        endif
+                      -%}
 
-                          capture item_content_key
-                            echo 'item_'
-                            echo i
-                            echo '_content'
-                          endcapture
+                      {%- if show_view -%}
+                        <div class="info-panel__view info-panel__view--{{ info_view }}">
+                          {%- if view_title != blank -%}
+                            {%- render 'heading', content: view_title, style: block.settings.heading_tag, html_tag: 'h3', balance_text: true -%}
+                          {%- endif -%}
 
-                          assign item_label = block.settings[item_label_key]
-                          assign item_content = block.settings[item_content_key]
-                        -%}
+                          {%- if view_has_items -%}
+                            <div class="info-panel__list">
+                              {%- for i in (1..6) -%}
+                                {%- liquid
+                                  assign view_label_key = view_prefix | append: 'item_' | append: i | append: '_label'
+                                  assign view_content_key = view_prefix | append: 'item_' | append: i | append: '_content'
+                                  assign item_label = block.settings[view_label_key]
+                                  assign item_content = block.settings[view_content_key]
+                                -%}
 
-                        {%- if item_label != blank or item_content != blank -%}
-                          <div class="info-panel__list-item">
-                            {%- if item_label != blank -%}
-                              <div class="info-panel__list-item-label">{{ item_label }}</div>
-                            {%- endif -%}
+                                {%- if item_label != blank or item_content != blank -%}
+                                  <div class="info-panel__list-item">
+                                    {%- if item_label != blank -%}
+                                      <div class="info-panel__list-item-label">{{ item_label }}</div>
+                                    {%- endif -%}
 
-                            {%- if item_content != blank -%}
-                              <div class="info-panel__list-item-content">{{ item_content }}</div>
-                            {%- endif -%}
-                          </div>
-                        {%- endif -%}
-                      {%- endfor -%}
-                    </div>
-                  {%- endif -%}
+                                    {%- if item_content != blank -%}
+                                      <div class="info-panel__list-item-content">{{ item_content }}</div>
+                                    {%- endif -%}
+                                  </div>
+                                {%- endif -%}
+                              {%- endfor -%}
+                            </div>
+                          {%- endif -%}
+
+                          {%- if info_view == 'alt' -%}
+                            <button type="button" class="info-panel__back">{{ block.settings.alt_back_label | default: 'volver' }}</button>
+                          {%- endif -%}
+                        </div>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </div>
                 </div>
+
+                <script>
+                  if (!window.__mediaInfoPanelInit) {
+                    window.__mediaInfoPanelInit = true;
+
+                    // Shows the alternative view of an info panel (alt = true) or the normal one, and keeps aria-expanded of its buttons in step
+                    var setInfoPanelView = function (panel, alt) {
+                      if (!panel) {
+                        return;
+                      }
+
+                      if (alt) {
+                        panel.setAttribute('data-alt', '');
+                      } else {
+                        panel.removeAttribute('data-alt');
+                      }
+
+                      document.querySelectorAll('.media-blocks__panel-toggle[aria-controls="' + panel.id + '"]').forEach(function (toggle) {
+                        toggle.setAttribute('aria-expanded', alt ? 'true' : 'false');
+                      });
+                    };
+
+                    document.addEventListener('click', function (event) {
+                      var toggle = event.target.closest && event.target.closest('.media-blocks__panel-toggle');
+
+                      if (toggle) {
+                        event.preventDefault();
+                        var target = document.getElementById(toggle.getAttribute('aria-controls'));
+
+                        if (target) {
+                          setInfoPanelView(target, !target.hasAttribute('data-alt'));
+                        }
+
+                        return;
+                      }
+
+                      var back = event.target.closest && event.target.closest('.info-panel__back');
+
+                      if (back) {
+                        setInfoPanelView(back.closest('.info-panel'), false);
+                      }
+                    });
+                  }
+
+                  document.querySelectorAll('.media-blocks__panel-toggle').forEach(function (toggle) {
+                    if (!toggle.hasAttribute('aria-expanded')) {
+                      toggle.setAttribute('aria-expanded', 'false');
+                    }
+                  });
+                </script>
 
               {%- when 'tabs_with_media' -%}
                 {%- comment -%}
@@ -2800,6 +2937,13 @@
           "label": "t:global.text.link_text"
         },
         {
+          "type": "checkbox",
+          "id": "button_opens_panel",
+          "label": "El botón abre el contenido alternativo del Info panel de al lado",
+          "info": "Solo funciona si justo antes o después hay un bloque Info panel con contenido alternativo y este bloque no tiene enlace. Al presionar el botón, el panel cambia a su contenido alternativo (otro clic, o \"volver\" en el panel, regresa al normal). Si no hay panel, el botón se comporta como siempre.",
+          "default": false
+        },
+        {
           "type": "select",
           "id": "link_position",
           "label": "t:global.position.alignment",
@@ -3597,6 +3741,13 @@
           "type": "text",
           "id": "link_text",
           "label": "t:global.text.link_text"
+        },
+        {
+          "type": "checkbox",
+          "id": "button_opens_panel",
+          "label": "El botón abre el contenido alternativo del Info panel de al lado",
+          "info": "Solo funciona si justo antes o después hay un bloque Info panel con contenido alternativo y este bloque no tiene enlace. Al presionar el botón, el panel cambia a su contenido alternativo (otro clic, o \"volver\" en el panel, regresa al normal). Si no hay panel, el botón se comporta como siempre.",
+          "default": false
         },
         {
           "type": "select",
@@ -4450,6 +4601,28 @@
           "id": "item_6_content",
           "label": "Row 6 content"
         },
+        {
+          "type": "header",
+          "content": "Contenido alternativo"
+        },
+        {
+          "type": "paragraph",
+          "content": "Otro contenido para este mismo panel (por ejemplo, la lista de ingredientes y para qué sirve cada uno). Se muestra en lugar del normal cuando se presiona el botón de un bloque Imagen con texto que esté justo antes o después y tenga activada la opción \"El botón abre el contenido alternativo del Info panel de al lado\". Si lo dejas vacío, no hay contenido alternativo."
+        },
+        { "type": "inline_richtext", "id": "alt_title", "label": "Título alternativo" },
+        { "type": "text", "id": "alt_back_label", "label": "Texto para volver", "info": "Enlace que regresa al contenido normal.", "default": "volver" },
+        { "type": "text", "id": "alt_item_1_label", "label": "Alt row 1 label" },
+        { "type": "richtext", "id": "alt_item_1_content", "label": "Alt row 1 content" },
+        { "type": "text", "id": "alt_item_2_label", "label": "Alt row 2 label" },
+        { "type": "richtext", "id": "alt_item_2_content", "label": "Alt row 2 content" },
+        { "type": "text", "id": "alt_item_3_label", "label": "Alt row 3 label" },
+        { "type": "richtext", "id": "alt_item_3_content", "label": "Alt row 3 content" },
+        { "type": "text", "id": "alt_item_4_label", "label": "Alt row 4 label" },
+        { "type": "richtext", "id": "alt_item_4_content", "label": "Alt row 4 content" },
+        { "type": "text", "id": "alt_item_5_label", "label": "Alt row 5 label" },
+        { "type": "richtext", "id": "alt_item_5_content", "label": "Alt row 5 content" },
+        { "type": "text", "id": "alt_item_6_label", "label": "Alt row 6 label" },
+        { "type": "richtext", "id": "alt_item_6_content", "label": "Alt row 6 content" },
         {
           "type": "color_scheme",
           "id": "color_scheme",
