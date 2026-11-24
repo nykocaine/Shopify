@@ -301,7 +301,12 @@
           them is taken away, the one on top (.media-blocks__item--glue-next) has square bottom corners and the one below
           (.media-blocks__item--glued) square top corners. Phones only: on larger screens nothing changes.
         {%- endcomment -%}
-        #shopify-section-{{ section.id }} .media-blocks__item--glue-next {
+        {%- comment -%}
+          The gap is taken away on the element that really sits in the grid row: the block itself (Info panel), or the <media-block> wrapper that
+          "Image with text" is rendered inside of (the wrapper holds the block, so a margin on the block alone would not move the next row up).
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} .media-blocks > .media-blocks__item--glue-next,
+        #shopify-section-{{ section.id }} .media-blocks > media-block:has(> .media-blocks__item--glue-next) {
           margin-block-end: calc(-1 * {% if section.settings.column_spacing == 'none' %}0px{% else %}var(--horizontal-gap){% endif %});
         }
 
