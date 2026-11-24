@@ -605,9 +605,9 @@
     }
 
     {%- comment -%}
-    Each row is stacked: the label on top, its content right under it, all aligned to the left (nothing against the right edge), with a hairline
-    between one row and the next. The label and the content are plain text: they inherit the size, weight, style and case of the theme's body
-    text, nothing is forced (no capitals, no bold, no smaller size).
+    Each row has the label on the left and its content on the right (the content's lines are aligned to the right edge, also when it wraps onto
+    several lines), with a hairline between one row and the next. The title stays on the left. The label and the content are plain text: they
+    inherit the size, weight, style and case of the theme's body text, nothing is forced (no capitals, no bold, no smaller size).
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel,
     #shopify-section-{{ section.id }} .info-panel > :is(h1, h2, h3, h4, h5, h6) {
@@ -615,11 +615,17 @@
       justify-items: start;
     }
 
+    #shopify-section-{{ section.id }} .info-panel__list {
+      width: 100%;
+      justify-self: stretch;
+    }
+
     #shopify-section-{{ section.id }} .info-panel__list-item {
-      grid-template-columns: minmax(0, 1fr);
-      justify-items: start;
-      text-align: start;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: baseline;
+      column-gap: var(--horizontal-gap);
       row-gap: .25rem;
+      text-align: start;
       padding-block: 1.25rem;
       border-block-end: 1px solid rgb(var(--border-color));
       display: grid;
@@ -641,6 +647,10 @@
       color: var(--info-panel-title-color, inherit);
       font-weight: 1000;
       -webkit-text-stroke: .02em currentColor;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__list-item-content {
+      text-align: end;
     }
 
     #shopify-section-{{ section.id }} .info-panel__list-item-content > :first-child {
