@@ -295,6 +295,26 @@
           border-start-start-radius: 0 !important;
           border-start-end-radius: 0 !important;
         }
+
+        {%- comment -%}
+          An "Image with text" block and an "Info panel" block next to each other (either order): on phones they are one piece. The gap between
+          them is taken away, the one on top (.media-blocks__item--glue-next) has square bottom corners and the one below
+          (.media-blocks__item--glued) square top corners. Phones only: on larger screens nothing changes.
+        {%- endcomment -%}
+        {%- comment -%}
+          The gap is taken away on the element that really sits in the grid row: the block itself (Info panel), or the <media-block> wrapper that
+          "Image with text" is rendered inside of (the wrapper holds the block, so a margin on the block alone would not move the next row up).
+        {%- endcomment -%}
+        #shopify-section-{{ section.id }} .media-blocks > .media-blocks__item--glue-next,
+        #shopify-section-{{ section.id }} .media-blocks > media-block:has(> .media-blocks__item--glue-next) {
+          margin-block-end: calc(-1 * {% if section.settings.column_spacing == 'none' %}0px{% else %}var(--horizontal-gap){% endif %});
+        }
+
+        #shopify-section-{{ section.id }} .media-blocks__item--glue-next,
+        #shopify-section-{{ section.id }} .media-blocks__item--glue-next > .content-box {
+          border-end-start-radius: 0 !important;
+          border-end-end-radius: 0 !important;
+        }
       }
     {%- endif -%}
 
@@ -388,10 +408,22 @@
       display: grid;
     }
 
+    {%- comment -%}
+    Each row is stacked: the label on top, its content right under it, all aligned to the left (nothing against the right edge), with a hairline
+    between one row and the next. The label and the content are plain text: they inherit the size, weight, style and case of the theme's body
+    text, nothing is forced (no capitals, no bold, no smaller size).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .info-panel,
+    #shopify-section-{{ section.id }} .info-panel > :is(h1, h2, h3, h4, h5, h6) {
+      text-align: start;
+      justify-items: start;
+    }
+
     #shopify-section-{{ section.id }} .info-panel__list-item {
-      grid-template-columns: auto minmax(0, 1fr);
-      align-items: baseline;
-      gap: var(--horizontal-gap);
+      grid-template-columns: minmax(0, 1fr);
+      justify-items: start;
+      text-align: start;
+      row-gap: .25rem;
       padding-block: 1.25rem;
       border-block-end: 1px solid rgb(var(--border-color));
       display: grid;
@@ -406,13 +438,21 @@
       border-block-end: none;
     }
 
-    #shopify-section-{{ section.id }} .info-panel__list-item-label {
-      font-weight: 600;
-      text-transform: uppercase;
+    {%- comment -%}
+    The panel's title has the same weight as the big numbers of the Statistics block (1000 + thin outline, see .media-stats__number).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .info-panel > :is(h1, h2, h3, h4, h5, h6) {
+      color: var(--info-panel-title-color, inherit);
+      font-weight: 1000;
+      -webkit-text-stroke: .02em currentColor;
     }
 
-    #shopify-section-{{ section.id }} .info-panel__list-item-content {
-      text-align: end;
+    #shopify-section-{{ section.id }} .info-panel__list-item-content > :first-child {
+      margin-block-start: 0;
+    }
+
+    #shopify-section-{{ section.id }} .info-panel__list-item-content > :last-child {
+      margin-block-end: 0;
     }
 
     {%- comment -%}
@@ -629,13 +669,20 @@
                   # A text-only block that comes right after a "Two images with text" block: on phones (blocks stacked) it is glued to it
                   assign glued_class = ''
 
-                  if section.settings.stack_on_mobile and block.type == 'image_with_text' and block.settings.image == blank and forloop.index0 > 0
+                  if section.settings.stack_on_mobile and block.type == 'image_with_text' and forloop.index0 > 0
                     assign prev_index = forloop.index0 | minus: 1
                     assign prev_block = section.blocks[prev_index]
 
-                    if prev_block.type == 'two_images_with_text'
+                    if prev_block.type == 'two_images_with_text' and block.settings.image == blank
+                      assign glued_class = 'media-blocks__item--glued'
+                    elsif prev_block.type == 'info_panel'
                       assign glued_class = 'media-blocks__item--glued'
                     endif
+                  endif
+
+                  # An "Info panel" right after this block: on phones it is glued to it (see .media-blocks__item--glue-next)
+                  if section.settings.stack_on_mobile and block.type == 'image_with_text' and section.blocks[forloop.index].type == 'info_panel'
+                    assign glued_class = glued_class | append: ' media-blocks__item--glue-next'
                   endif
 
                   if block.settings.subheading contains '</a>' or block.settings.text contains '</a>' or block.settings.title contains '</a>'
@@ -1008,7 +1055,25 @@
                 </div>
 
               {%- when 'info_panel' -%}
-                <div class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {{ block.shopify_attributes }}>
+                {%- liquid
+                  # On phones (blocks stacked) an "Image with text" block right before or after the panel is glued to it (see .media-blocks__item--glued / --glue-next)
+                  assign info_panel_glue_class = ''
+
+                  if section.settings.stack_on_mobile
+                    assign info_panel_prev_index = forloop.index0 | minus: 1
+                    assign info_panel_prev_block = section.blocks[info_panel_prev_index]
+                    assign info_panel_next_block = section.blocks[forloop.index]
+
+                    if forloop.index0 > 0 and info_panel_prev_block.type == 'image_with_text'
+                      assign info_panel_glue_class = 'media-blocks__item--glued'
+                    endif
+
+                    if info_panel_next_block.type == 'image_with_text'
+                      assign info_panel_glue_class = info_panel_glue_class | append: ' media-blocks__item--glue-next'
+                    endif
+                  endif
+                -%}
+                <div class="media-blocks__item {{ info_panel_glue_class }} {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} info-panel" {% if block.settings.title_color != blank and block.settings.title_color != 'rgba(0,0,0,0)' %}style="--info-panel-title-color: {{ block.settings.title_color }};"{% endif %} {{ block.shopify_attributes }}>
                   {%- if block.settings.title != blank -%}
                     {%- render 'heading', content: block.settings.title, style: block.settings.heading_tag, html_tag: 'h3', balance_text: true -%}
                   {%- endif -%}
@@ -3680,6 +3745,12 @@
             }
           ],
           "default": "h3"
+        },
+        {
+          "type": "color",
+          "id": "title_color",
+          "label": "Color del título",
+          "info": "Vacío usa el color del texto del esquema."
         },
         {
           "type": "header",
