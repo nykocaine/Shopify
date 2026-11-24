@@ -607,7 +607,7 @@
     {%- comment -%}
     Each row has the label on the left and its content on the right (the content's lines are aligned to the right edge, also when it wraps onto
     several lines), with a hairline between one row and the next. The title stays on the left. The label and the content are plain text: they
-    inherit the size, weight, style and case of the theme's body text, nothing is forced (no capitals, no bold, no smaller size).
+    inherit the size, style and case of the theme's body text (no capitals, no smaller size); only the row labels are bold.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} .info-panel,
     #shopify-section-{{ section.id }} .info-panel > :is(h1, h2, h3, h4, h5, h6) {
@@ -647,6 +647,11 @@
       color: var(--info-panel-title-color, inherit);
       font-weight: 1000;
       -webkit-text-stroke: .02em currentColor;
+    }
+
+    {%- comment -%}Row labels in bold: "bold" takes the heaviest weight the theme's font has (Swiss 721: medium, only slightly heavier than regular){%- endcomment -%}
+    #shopify-section-{{ section.id }} .info-panel__list-item-label {
+      font-weight: bold;
     }
 
     #shopify-section-{{ section.id }} .info-panel__list-item-content {
