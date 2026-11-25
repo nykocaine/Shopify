@@ -30,7 +30,7 @@ Crea exactamente estos, namespace `custom`, uno por uno. Ojo con el tipo, porque
 | Resultado 2 - texto | `resultado_2_texto` | Texto de una línea |
 | Resultado 3 - número | `resultado_3_numero` | Texto de una línea |
 | Resultado 3 - texto | `resultado_3_texto` | Texto de una línea |
-| Resultados - texto pequeño | `resultado_nota` | Texto de varias líneas |
+| Resultados - texto pequeño | `resultado_nota` | Texto de una línea |
 
 **Bloque Info panel, vista principal** (cada metacampo es el texto de la derecha de una fila):
 
