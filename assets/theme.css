@@ -9273,10 +9273,11 @@ shopify-account::part(signed-out-avatar) {
   margin-inline-start: auto;
 }
 
-/* Sticky add-to-cart (snippets/product-sticky-add-to-cart.liquid): a bar on the bottom edge of the screen, the width of the page, with the
-   variant selector (a pill, left) and the buy button (a pill, right) side by side, each taking half of the row. A light, blurred background (the page's
-   own, a little see-through), the page's side gutter at the sides, the home-indicator safe area below. On wide screens the row keeps a comfortable
-   width, centered. Without variants (a product with a single option) the button takes the whole row. */
+/* Sticky add-to-cart (snippets/product-sticky-add-to-cart.liquid): a bar on the bottom edge of the screen, the width of the page. At the left the
+   product's name (and the chosen variant under it), at the right an outline "Buy - price" button. The bar is a color scheme of its own (the product
+   section's "Sticky add to cart: color scheme": text and button colors come from it) over a background with its own color, opacity and blur (the same
+   section's settings, --sticky-atc-background / --sticky-atc-blur: nothing is shared with the dialog backdrop). The page's side gutter at the sides,
+   the home-indicator safe area below. On wide screens the row keeps a comfortable width, centered. */
 .product-sticky-add-to-cart {
   z-index: 2;
   visibility: hidden;
@@ -9286,9 +9287,10 @@ shopify-account::part(signed-out-avatar) {
   inset-block-end: 0;
   inset-inline: 0;
   padding: .75rem var(--container-gutter) calc(.75rem + env(safe-area-inset-bottom, 0px));
-  background: rgb(var(--background) / .92);
-  -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
-  backdrop-filter: blur(var(--dialog-backdrop-blur));
+  background-color: var(--sticky-atc-background, rgb(var(--background) / .7));
+  background-image: none;
+  -webkit-backdrop-filter: blur(var(--sticky-atc-blur, 14px));
+  backdrop-filter: blur(var(--sticky-atc-blur, 14px));
 }
 
 .product-sticky-add-to-cart.is-visible {
@@ -9299,37 +9301,54 @@ shopify-account::part(signed-out-avatar) {
 .product-sticky-add-to-cart__inner {
   max-width: 40rem;
   margin-inline: auto;
-  align-items: stretch;
-  gap: .75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   display: flex;
 }
 
-.product-sticky-add-to-cart__variant {
-  flex: 1 1 0;
+.product-sticky-add-to-cart__info {
+  flex: 1 1 auto;
   min-width: 0;
+  gap: .125rem;
   display: grid;
-  position: relative;
 }
 
-/* The pill: same height as the button (the row stretches both), the button's rounded shape, a thin outline, the page background inside, the
-   variant name in bold (like the price of the button) and a small filled triangle at the end. */
-.product-sticky-add-to-cart__select {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 100%;
-  min-height: var(--button-min-height, 3rem);
-  padding-block: 0;
-  padding-inline: 1.5rem 3rem;
-  border: 1px solid rgb(var(--text-color) / .35);
-  border-radius: var(--button-border-radius);
-  background: rgb(var(--background));
+.product-sticky-add-to-cart__name {
+  margin: 0;
   color: rgb(var(--text-color));
   font-family: var(--text-font-family);
   font-size: var(--text-base);
   font-weight: bold;
   -webkit-text-stroke: .3px currentColor;
   paint-order: stroke fill;
+  line-height: 1.3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* The chosen variant: a small select with no box (looks like a line of text) and a small filled triangle after it */
+.product-sticky-add-to-cart__variant {
+  max-width: 100%;
+  width: max-content;
+  display: grid;
+  position: relative;
+}
+
+.product-sticky-add-to-cart__select {
+  -webkit-appearance: none;
+  appearance: none;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 1.125rem 0 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: rgb(var(--text-color) / .75);
+  font-family: var(--text-font-family);
+  font-size: calc(var(--text-base) - 1.5px);
+  line-height: 1.3;
   text-align: start;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -9344,21 +9363,20 @@ shopify-account::part(signed-out-avatar) {
 
 .product-sticky-add-to-cart__variant::after {
   content: "";
-  inset-block-start: calc(50% - 3px);
-  inset-inline-end: 1.25rem;
+  inset-block-start: calc(50% - 2px);
+  inset-inline-end: .1875rem;
   width: 0;
   height: 0;
-  border-inline: 6px solid transparent;
-  border-block-start: 6px solid currentColor;
-  color: rgb(var(--text-color));
+  border-inline: 4px solid transparent;
+  border-block-start: 5px solid rgb(var(--text-color) / .75);
   pointer-events: none;
   position: absolute;
 }
 
+/* The outline button keeps its own size (the theme's button padding), never wider than half of the row */
 .product-sticky-add-to-cart .button {
-  flex: 1 1 0;
-  min-width: 0;
-  width: auto;
+  flex: none;
+  max-width: 55%;
 }
 
 .products-with-image .product-list {

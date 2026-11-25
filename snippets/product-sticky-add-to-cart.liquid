@@ -7,17 +7,22 @@ This component is used to render the sticky add to cart.
 {%- enddoc -%}
 
 {%- if product.available and section.settings.show_sticky_add_to_cart -%}
-  <product-sticky-add-to-cart class="product-sticky-add-to-cart" main-product-form="{{ product_form_id }}">
+  {%- liquid
+    # Own settings of the product section (sticky_atc_*): the bar's color scheme (text and outline button colors), its background color + opacity,
+    # and its own blur amount. They do not depend on the dialog backdrop settings.
+    assign sticky_scheme = section.settings.sticky_atc_color_scheme
+    assign sticky_bg = section.settings.sticky_atc_background
+    assign sticky_bg_opacity = section.settings.sticky_atc_background_opacity | default: 70
+    assign sticky_blur = section.settings.sticky_atc_blur | default: 14
+  -%}
+  <product-sticky-add-to-cart class="product-sticky-add-to-cart color-scheme{% if sticky_scheme != blank %} color-scheme--{{ sticky_scheme.id }}{% endif %}" main-product-form="{{ product_form_id }}" style="--sticky-atc-blur: {{ sticky_blur }}px;{% if sticky_bg != blank %} --sticky-atc-background: rgb({{ sticky_bg.rgb }} / {{ sticky_bg.alpha | times: sticky_bg_opacity | divided_by: 100.0 }});{% endif %}">
     <product-rerender id="product-sticky-add-to-cart-{{ product.id }}-{{ section.id }}" observe-form="{{ product_form_id }}">
       {%- liquid
-        # Same button as the main product's "Add to cart" (snippets/buy-buttons.liquid): same style and
-        # colors (read from the section's own buy_buttons block), label and price centered together.
+        # An outline button (its colors come from the bar's color scheme), "Buy – price" like the product cards' quick buy.
         assign variant = product.selected_or_first_available_variant
-        assign atc_block = section.blocks | where: 'type', 'buy_buttons' | first
-        assign atc_style = atc_block.settings.atc_button_style | default: 'solid'
 
         if variant.available
-          assign button_content = 'product.general.add_to_cart_button' | t
+          assign button_label = 'Buy'
           assign disabled = false
 
           if settings.currency_code_enabled
@@ -36,8 +41,8 @@ This component is used to render the sticky add to cart.
             assign button_price = button_price | append: ' <s>' | append: button_compare_at_price | append: '</s>'
           endif
 
-          # Same centered "label – price" as the product page button (snippets/buy-buttons.liquid, .buy-buttons__cta--centered)
-          assign button_content = '<span>' | append: button_content | append: '</span><span aria-hidden="true">–</span><span class="buy-buttons__price">' | append: button_price | append: '</span>'
+          # Centered "label – price" (same markup as the product page button, .buy-buttons__cta--centered)
+          assign button_content = '<span>' | append: button_label | append: '</span><span aria-hidden="true">–</span><span class="buy-buttons__price">' | append: button_price | append: '</span>'
           assign button_class = 'buy-buttons__cta buy-buttons__cta--centered'
         else
           assign button_content = 'product.general.sold_out_button' | t
@@ -48,25 +53,30 @@ This component is used to render the sticky add to cart.
       -%}
 
       <div class="product-sticky-add-to-cart__inner">
-        {%- unless product.has_only_default_variant -%}
-          {%- comment -%}
-          Variant selector, as a pill at the left of the button. It has no form of its own: choosing an option checks the matching option inputs of the main
-          product's variant picker and triggers that picker's own "change" (script below), so the page, the price and this bar all update the usual way.
-          Each option carries the values of its variant (one per product option, in order) in data-options.
-          {%- endcomment -%}
-          <div class="product-sticky-add-to-cart__variant">
-            <select class="product-sticky-add-to-cart__select" aria-label="{{ product.options_with_values.first.name | escape }}">
-              {%- for product_variant in product.variants -%}
-                <option value="{{ product_variant.id }}" data-options="{{ product_variant.options | json | escape }}"{% if product_variant.id == variant.id %} selected{% endif %}>
-                  {{- product_variant.title | escape -}}
-                  {%- unless product_variant.available %} – {{ 'product.general.sold_out_button' | t }}{% endunless -%}
-                </option>
-              {%- endfor -%}
-            </select>
-          </div>
-        {%- endunless -%}
+        {%- comment -%}
+        Left: the product's name and, when the product has variants, the chosen one below it (a plain select, no box of its own). The select has no
+        form: choosing an option checks the matching option inputs of the main product's variant picker and triggers that picker's own "change"
+        (script below), so the page, the price and this bar all update the usual way. Each option carries the values of its variant (one per
+        product option, in order) in data-options.
+        {%- endcomment -%}
+        <div class="product-sticky-add-to-cart__info">
+          <p class="product-sticky-add-to-cart__name">{{ product.title | escape }}</p>
 
-        {%- render 'button', type: 'submit', form: product_form_id, content: button_content, disabled: disabled, style: atc_style, text_color: atc_block.settings.atc_button_text_color, stretch: true, class: button_class -%}
+          {%- unless product.has_only_default_variant -%}
+            <div class="product-sticky-add-to-cart__variant">
+              <select class="product-sticky-add-to-cart__select" aria-label="{{ product.options_with_values.first.name | escape }}">
+                {%- for product_variant in product.variants -%}
+                  <option value="{{ product_variant.id }}" data-options="{{ product_variant.options | json | escape }}"{% if product_variant.id == variant.id %} selected{% endif %}>
+                    {{- product_variant.title | escape -}}
+                    {%- unless product_variant.available %} – {{ 'product.general.sold_out_button' | t }}{% endunless -%}
+                  </option>
+                {%- endfor -%}
+              </select>
+            </div>
+          {%- endunless -%}
+        </div>
+
+        {%- render 'button', type: 'submit', form: product_form_id, content: button_content, disabled: disabled, style: 'outline', class: button_class -%}
       </div>
     </product-rerender>
   </product-sticky-add-to-cart>
