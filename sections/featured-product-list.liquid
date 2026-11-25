@@ -151,21 +151,14 @@
 
     {%- comment -%}
     The rounded box has its four corners rounded and ends where the cards end (the dots are under it, outside). Cards scrolled sideways are cut by
-    that same rounded shape, like the Instagram feed. The spacing under the section, which the box used to carry, is on the section itself and is
-    exactly the standard gap between sections (--section-vertical-spacing, measured from the bottom of the cards). The dots take no room of their
-    own (they were an extra margin + row on top of that gap): they sit centered inside that gap, so the section below starts one standard gap
-    after the cards, with or without dots.
+    that same rounded shape, like the Instagram feed. The section ends right under the dots: the space to the next section is a margin of the
+    section itself, not padding, so it belongs to no section (the theme editor's outline stops under the dots and the gap shows between the two
+    sections). Same size and same neighbour rules as the theme's other outer spacing (.section-spacing--outside): the standard section spacing,
+    and none when the section sits right above the collection.
     {%- endcomment -%}
     #shopify-section-{{ section.id }} {
-      position: relative;
-      padding-block-end: var(--section-vertical-spacing);
-    }
-
-    #shopify-section-{{ section.id }} .featured-product-list__scroll-controls {
-      position: absolute;
-      inset-inline: 0;
-      inset-block-end: max(0px, calc((var(--section-vertical-spacing) - 1rem) / 2));
-      margin-top: 0;
+      padding-block-end: 0;
+      margin-block-end: var(--section-vertical-spacing-block-end, var(--section-vertical-spacing));
     }
   {%- endif -%}
 
