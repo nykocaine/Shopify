@@ -9283,6 +9283,7 @@ shopify-account::part(signed-out-avatar) {
    section's "Sticky add to cart: color scheme": text and button colors come from it) over a background with its own color, opacity and blur (the same
    section's settings, --sticky-atc-background / --sticky-atc-blur: nothing is shared with the dialog backdrop). The page's side gutter at the sides.
    On wide screens the row keeps a comfortable width, centered.
+   Phones only (hidden from 700px up, see the rule below the row styles).
    The bar's size never changes: no safe-area padding (it grew by the home-indicator height whenever the phone's browser hid its bottom toolbar), so
    the only thing that moves with the toolbar is the bar's position, which the browser follows by itself. It comes in and goes out by sliding from the
    bottom edge, with a soft ease-out (no bounce, no snap). All its texts are the body's size (--text-base). */
@@ -9398,34 +9399,10 @@ shopify-account::part(signed-out-avatar) {
   font-size: var(--text-base);
 }
 
-/* Tablet and desktop: a wide bar set in from the page's side edges (same gutter as the page) with its top corners rounded and the bottom
-   flush with the screen. The row uses the whole width: at the left the product's name in bold capitals with the chosen variant right next to
-   it, on the same line, and the button at the far right. */
+/* Phones only: from 700px up (tablet and desktop) there is no sticky add-to-cart bar. */
 @media screen and (min-width: 700px) {
   .product-sticky-add-to-cart {
-    inset-inline: var(--container-gutter);
-    border-radius: 12px 12px 0 0;
-  }
-
-  .product-sticky-add-to-cart__inner {
-    max-width: none;
-  }
-
-  .product-sticky-add-to-cart__info {
-    flex: 0 1 auto;
-    align-items: center;
-    column-gap: 1.25rem;
-    display: flex;
-  }
-
-  .product-sticky-add-to-cart__name {
-    flex: 0 1 auto;
-    min-width: 0;
-    text-transform: uppercase;
-  }
-
-  .product-sticky-add-to-cart__variant {
-    flex: none;
+    display: none;
   }
 }
 
