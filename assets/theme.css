@@ -9398,6 +9398,37 @@ shopify-account::part(signed-out-avatar) {
   font-size: var(--text-base);
 }
 
+/* Tablet and desktop: a wide bar set in from the page's side edges (same gutter as the page) with its top corners rounded and the bottom
+   flush with the screen. The row uses the whole width: at the left the product's name in bold capitals with the chosen variant right next to
+   it, on the same line, and the button at the far right. */
+@media screen and (min-width: 700px) {
+  .product-sticky-add-to-cart {
+    inset-inline: var(--container-gutter);
+    border-radius: 12px 12px 0 0;
+  }
+
+  .product-sticky-add-to-cart__inner {
+    max-width: none;
+  }
+
+  .product-sticky-add-to-cart__info {
+    flex: 0 1 auto;
+    align-items: center;
+    column-gap: 1.25rem;
+    display: flex;
+  }
+
+  .product-sticky-add-to-cart__name {
+    flex: 0 1 auto;
+    min-width: 0;
+    text-transform: uppercase;
+  }
+
+  .product-sticky-add-to-cart__variant {
+    flex: none;
+  }
+}
+
 .products-with-image .product-list {
   position: relative;
 }
