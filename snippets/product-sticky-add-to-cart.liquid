@@ -18,11 +18,11 @@ This component is used to render the sticky add to cart.
   <product-sticky-add-to-cart class="product-sticky-add-to-cart color-scheme{% if sticky_scheme != blank %} color-scheme--{{ sticky_scheme.id }}{% endif %}" main-product-form="{{ product_form_id }}" style="--sticky-atc-blur: {{ sticky_blur }}px;{% if sticky_bg != blank %} --sticky-atc-background: rgb({{ sticky_bg.rgb }} / {{ sticky_bg.alpha | times: sticky_bg_opacity | divided_by: 100.0 }});{% endif %}">
     <product-rerender id="product-sticky-add-to-cart-{{ product.id }}-{{ section.id }}" observe-form="{{ product_form_id }}">
       {%- liquid
-        # An outline button (its colors come from the bar's color scheme), "Buy – price" like the product cards' quick buy.
+        # An outline button (its colors come from the bar's color scheme), "Add to cart – price" (the same translated label as the main button).
         assign variant = product.selected_or_first_available_variant
 
         if variant.available
-          assign button_label = 'Buy'
+          assign button_label = 'product.general.add_to_cart_button' | t
           assign disabled = false
 
           if settings.currency_code_enabled
