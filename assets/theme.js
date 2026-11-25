@@ -7430,7 +7430,7 @@ import { Delegate as Delegate11 } from "vendor";
     }
   });
   if (navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)) {
-    document.head.querySelector('meta[name="viewport"]').content = "width=device-width, initial-scale=1.0, height=device-height, minimum-scale=1.0, maximum-scale=1.0";
+    document.head.querySelector('meta[name="viewport"]').content = "width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0";
   }
   Array.from(document.querySelectorAll(".prose table")).forEach((table) => {
     table.outerHTML = '<div class="table-scroller">' + table.outerHTML + "</div>";
