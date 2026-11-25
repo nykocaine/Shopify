@@ -9273,16 +9273,22 @@ shopify-account::part(signed-out-avatar) {
   margin-inline-start: auto;
 }
 
-/* Floating add-to-cart: no box of its own - just the same button as the main product's, spanning the page
-   width minus the theme's side gutter (same gutter the WhatsApp button uses). */
+/* Sticky add-to-cart (snippets/product-sticky-add-to-cart.liquid): a bar on the bottom edge of the screen, the width of the page, with the
+   variant selector (a pill, left) and the buy button (a pill, right) side by side, each taking half of the row. A light, blurred background (the page's
+   own, a little see-through), the page's side gutter at the sides, the home-indicator safe area below. On wide screens the row keeps a comfortable
+   width, centered. Without variants (a product with a single option) the button takes the whole row. */
 .product-sticky-add-to-cart {
   z-index: 2;
   visibility: hidden;
   opacity: 0;
   transition: opacity .2s ease-in-out, visibility .2s ease-in-out;
   position: fixed;
-  inset-block-end: var(--container-gutter);
-  inset-inline: var(--container-gutter);
+  inset-block-end: 0;
+  inset-inline: 0;
+  padding: .75rem var(--container-gutter) calc(.75rem + env(safe-area-inset-bottom, 0px));
+  background: rgb(var(--background) / .92);
+  -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
+  backdrop-filter: blur(var(--dialog-backdrop-blur));
 }
 
 .product-sticky-add-to-cart.is-visible {
@@ -9290,40 +9296,69 @@ shopify-account::part(signed-out-avatar) {
   opacity: 1;
 }
 
-/* Phones: the button sits flush on the bottom edge of the screen, as if it grew out of it - top
-   corners 12px, bottom corners are square (+ home-indicator safe area), see the max-width: 699px rule below.
-   Tablet and desktop: a floating button centered at the bottom, no wider than a comfortable button (a button as wide as the whole screen
-   looks wrong there), with the button's own corners and the page's side gutter below it. */
-@media screen and (min-width: 700px) {
-  .product-sticky-add-to-cart {
-    inset-inline: 0;
-    width: min(32rem, calc(100% - 2 * var(--container-gutter)));
-    margin-inline: auto;
-  }
+.product-sticky-add-to-cart__inner {
+  max-width: 40rem;
+  margin-inline: auto;
+  align-items: stretch;
+  gap: .75rem;
+  display: flex;
 }
 
-/* No outline on the floating button (the main product's button keeps its own border). Its fill is the same
-   backdrop the theme's popups use (color + opacity + blur from the "dialog backdrop" theme settings) - no
-   color of its own. */
+.product-sticky-add-to-cart__variant {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  position: relative;
+}
+
+/* The pill: same height as the button (the row stretches both), the button's rounded shape, a thin outline, the page background inside, the
+   variant name in bold (like the price of the button) and a small filled triangle at the end. */
+.product-sticky-add-to-cart__select {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 100%;
+  min-height: var(--button-min-height, 3rem);
+  padding-block: 0;
+  padding-inline: 1.5rem 3rem;
+  border: 1px solid rgb(var(--text-color) / .35);
+  border-radius: var(--button-border-radius);
+  background: rgb(var(--background));
+  color: rgb(var(--text-color));
+  font-family: var(--text-font-family);
+  font-size: var(--text-base);
+  font-weight: bold;
+  -webkit-text-stroke: .3px currentColor;
+  paint-order: stroke fill;
+  text-align: start;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.product-sticky-add-to-cart__select:focus-visible {
+  outline: 2px solid rgb(var(--text-color));
+  outline-offset: 2px;
+}
+
+.product-sticky-add-to-cart__variant::after {
+  content: "";
+  inset-block-start: calc(50% - 3px);
+  inset-inline-end: 1.25rem;
+  width: 0;
+  height: 0;
+  border-inline: 6px solid transparent;
+  border-block-start: 6px solid currentColor;
+  color: rgb(var(--text-color));
+  pointer-events: none;
+  position: absolute;
+}
+
 .product-sticky-add-to-cart .button {
-  --button-border-color: 0 0 0 / 0;
-  --button-background: var(--page-overlay);
-  --button-hover-background: var(--page-overlay);
-  border-color: transparent;
-  background: rgb(var(--page-overlay));
-  -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
-  backdrop-filter: blur(var(--dialog-backdrop-blur));
-}
-
-@media screen and (max-width: 699px) {
-  .product-sticky-add-to-cart {
-    inset-block-end: 0;
-  }
-
-  .product-sticky-add-to-cart .button {
-    border-radius: 12px 12px 0 0;
-    padding-block-end: env(safe-area-inset-bottom, 0px);
-  }
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
 }
 
 .products-with-image .product-list {
