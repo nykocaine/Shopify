@@ -266,10 +266,19 @@ The control icon set (media/lightbox/bar controls) has no size of its own: .icon
         <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linecap="round" d="M5 5.5V5a3 3 0 0 1 6 0v.5" />
       </svg>
         {%- when 'shopping_cart' -%}
+          {%- comment -%}
+          Shopping cart on the theme's 16x16 grid (same size, stroke width settings.icon_stroke_width and color currentColor as the other cart icons):
+          a handle that curves down into the left side of a basket that narrows towards the bottom, with softly rounded lower corners and a rim that
+          overhangs a little on the right, two short struts and two round wheels. It is deliberately not a box: the sides lean and nothing is square.
+          The header (snippets/header-cart-icon.liquid) puts the number of items inside the basket, so the basket is left empty. The basket is never
+          filled while the cart has items (no .cart-bag__body here), the number takes that job.
+          {%- endcomment -%}
           <svg aria-hidden="true" focusable="false" width="{{ mobile_width | default: 16 }}" fill="none" class="{{ class | strip }}" {% if style != blank %}style="{{ style }}"{% endif %} part="icon" viewBox="0 0 16 16">
-            <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" d="M0 2.5h2.5l2 9h8l2-6H3.167" />
-            <circle stroke-width="{{ settings.icon_stroke_width }}" cx="6" cy="14" r="1" fill="currentColor"/>
-            <circle stroke-width="{{ settings.icon_stroke_width }}" cx="11" cy="14" r="1" fill="currentColor" />
+            <path class="cart-basket" stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M.9 1.6h1.4c.65 0 1.2.35 1.35 1L5 9.9c.1.5.55.8 1.1.8h6.3c.55 0 1-.3 1.1-.8l1.4-6.7"/>
+            <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linecap="round" d="M3.76 3.2h11.3"/>
+            <path stroke-width="{{ settings.icon_stroke_width }}" stroke="currentColor" stroke-linecap="round" d="M6.7 11.2v1.1M11.9 11.2v1.1"/>
+            <circle cx="6.7" cy="14.2" r="1.05" fill="currentColor"/>
+            <circle cx="11.9" cy="14.2" r="1.05" fill="currentColor"/>
           </svg>
 
         {%- when 'sharp_bag' -%}

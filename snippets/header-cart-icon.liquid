@@ -5,9 +5,15 @@ icon's own color. Both icons take the same size and stroke width.
 
 @param {number} [width] - the icon width on desktop
 @param {number} [mobile_width] - the icon width on mobile
+
+With the "Shopping cart" icon (theme settings > cart icon) the number of items is shown inside its basket (.header__cart-icon-count).
 {%- enddoc -%}
 
-<span class="header__cart-icon{% unless cart.empty? %} has-items{% endunless %}">
+<span class="header__cart-icon{% unless cart.empty? %} has-items{% endunless %}"{% if settings.cart_icon == 'shopping_cart' %} style="--cart-icon-width: {{ width | default: 16 }}px; --cart-icon-mobile-width: {{ mobile_width | default: width | default: 16 }}px"{% endif %}>
   {%- render 'icon' with 'cart', mobile_width: mobile_width, width: width, class: 'header__cart-icon-bag' -%}
   {%- render 'icon' with 'cart-smile', mobile_width: mobile_width, width: width, class: 'header__cart-icon-smile' -%}
+  {%- if settings.cart_icon == 'shopping_cart' -%}
+    {%- comment -%}The number of items, inside the basket of the shopping cart icon; <cart-count> keeps it up to date (and hides it when the cart is empty){%- endcomment -%}
+    <cart-count class="header__cart-icon-count"{% if cart.empty? %} hidden{% endif %}><span>{{ cart.item_count }}</span></cart-count>
+  {%- endif -%}
 </span>
