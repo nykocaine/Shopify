@@ -319,7 +319,7 @@
         -%}
         {%- if mobile_swap_index >= 0 -%}
           {%- for order_block in section.blocks -%}
-            {%- if order_block.type == 'image_with_text' or order_block.type == 'video_with_text' or order_block.type == 'two_images_with_text' or order_block.type == 'stats' or order_block.type == 'words' or order_block.type == 'faq_card' or order_block.type == 'info_panel' -%}
+            {%- if order_block.type == 'image_with_text' or order_block.type == 'video_with_text' or order_block.type == 'two_images_with_text' or order_block.type == 'stats' or order_block.type == 'words' or order_block.type == 'faq_card' or order_block.type == 'info_panel' or order_block.type == 'compare_panel' -%}
               {%- liquid
                 assign phone_order = forloop.index0
 
@@ -819,6 +819,140 @@
 
       #shopify-section-{{ section.id }} .info-panel__list-item-content {
         text-align: start;
+      }
+    }
+
+    {%- comment -%}
+    Compare panel: a card with a title, and under it the content of ONE of two options (a subtitle, then rows: label on top, content right under it,
+    a hairline between rows). Two round buttons at the bottom switch the option (hover with a mouse, click / tap / keyboard otherwise): the chosen one
+    is filled with its own color, the other is an outline with softer text. All the options' contents share one grid cell, so the card always has the
+    height of the tallest and nothing jumps when switching. Same card padding as the Info panel.
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .compare-panel {
+      --compare-pad: calc(var(--container-gutter) + 0.5rem);
+      padding: var(--compare-pad);
+      gap: .75rem;
+      text-align: start;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel > :is(h1, h2, h3, h4, h5, h6) {
+      margin: 0;
+      color: var(--compare-title-color, inherit);
+      font-weight: 1000;
+      -webkit-text-stroke: .02em currentColor;
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__panels {
+      display: grid;
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__panel {
+      grid-area: 1 / 1;
+      align-content: start;
+      transition: opacity .3s ease, visibility .3s;
+      display: grid;
+    }
+
+    {%- comment -%}The option that is not showing is invisible, out of the way of the mouse and of the keyboard{%- endcomment -%}
+    #shopify-section-{{ section.id }} .compare-panel[data-active="1"] .compare-panel__panel[data-option="2"],
+    #shopify-section-{{ section.id }} .compare-panel[data-active="2"] .compare-panel__panel[data-option="1"] {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    {%- comment -%}Subtitle and row labels: bold capitals in the text color; a hairline under the subtitle and between the rows (not after the last one){%- endcomment -%}
+    #shopify-section-{{ section.id }} .compare-panel__subtitle,
+    #shopify-section-{{ section.id }} .compare-panel__row-label {
+      margin: 0;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__subtitle {
+      padding-block-end: var(--media-blocks-row-space);
+      border-block-end: 1px solid rgb(var(--border-color));
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__row {
+      gap: .25rem;
+      padding-block: var(--media-blocks-row-space);
+      border-block-end: 1px solid rgb(var(--border-color));
+      display: grid;
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__row:first-child {
+      padding-block-start: 0;
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__row:last-child {
+      padding-block-end: 0;
+      border-block-end: none;
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__row-content > :first-child {
+      margin-block-start: 0;
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__row-content > :last-child {
+      margin-block-end: 0;
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__tabs {
+      margin-block-start: auto;
+      padding-block-start: 2.5rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      justify-items: center;
+      display: grid;
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__tab {
+      width: 4.5rem;
+      aspect-ratio: 1;
+      padding: .25rem;
+      border: 1px solid rgb(var(--text-color) / .35);
+      border-radius: 50%;
+      background: transparent;
+      color: rgb(var(--text-color) / .35);
+      font: inherit;
+      font-weight: bold;
+      text-transform: uppercase;
+      text-align: center;
+      text-wrap: balance;
+      overflow-wrap: anywhere;
+      cursor: pointer;
+      place-items: center;
+      transition: background-color .25s ease, color .25s ease;
+      display: grid;
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__tab[aria-selected="true"] {
+      background: var(--compare-color, rgb(var(--text-color)));
+      color: var(--compare-text, rgb(var(--background)));
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__tab[data-option="1"] {
+      --compare-color: var(--compare-color-1);
+      --compare-text: var(--compare-text-1);
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__tab[data-option="2"] {
+      --compare-color: var(--compare-color-2);
+      --compare-text: var(--compare-text-2);
+    }
+
+    #shopify-section-{{ section.id }} .compare-panel__tab:focus-visible {
+      outline: 2px solid rgb(var(--text-color));
+      outline-offset: 3px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #shopify-section-{{ section.id }} .compare-panel__panel,
+      #shopify-section-{{ section.id }} .compare-panel__tab {
+        transition: none;
       }
     }
 
@@ -1769,6 +1903,194 @@
                       toggle.setAttribute('aria-expanded', 'false');
                     }
                   });
+                </script>
+
+              {%- when 'compare_panel' -%}
+                {%- liquid
+                  # Options that have a button label or any content are shown; the buttons only appear when there are two of them
+                  assign cmp_has_1 = false
+                  assign cmp_has_2 = false
+                  assign cmp_count = 0
+
+                  for n in (1..2)
+                    assign cmp_label_key = 'option_' | append: n | append: '_label'
+                    assign cmp_subtitle_key = 'option_' | append: n | append: '_subtitle'
+                    assign cmp_has = false
+
+                    if block.settings[cmp_label_key] != blank or block.settings[cmp_subtitle_key] != blank
+                      assign cmp_has = true
+                    endif
+
+                    for i in (1..6)
+                      assign cmp_row_label_key = 'option_' | append: n | append: '_row_' | append: i | append: '_label'
+                      assign cmp_row_content_key = 'option_' | append: n | append: '_row_' | append: i | append: '_content'
+
+                      if block.settings[cmp_row_label_key] != blank or block.settings[cmp_row_content_key] != blank
+                        assign cmp_has = true
+                      endif
+                    endfor
+
+                    if cmp_has
+                      assign cmp_count = cmp_count | plus: 1
+
+                      if n == 1
+                        assign cmp_has_1 = true
+                      else
+                        assign cmp_has_2 = true
+                      endif
+                    endif
+                  endfor
+
+                  # The option shown at the start: the chosen one, or the first that has content
+                  assign cmp_active = block.settings.default_option | default: '1'
+
+                  if cmp_active == '2' and cmp_has_2 == false
+                    assign cmp_active = '1'
+                  elsif cmp_active == '1' and cmp_has_1 == false and cmp_has_2
+                    assign cmp_active = '2'
+                  endif
+
+                  assign cmp_style = ''
+
+                  if block.settings.title_color != blank and block.settings.title_color != 'rgba(0,0,0,0)'
+                    assign cmp_style = cmp_style | append: '--compare-title-color: ' | append: block.settings.title_color | append: ';'
+                  endif
+
+                  for n in (1..2)
+                    assign cmp_color_key = 'option_' | append: n | append: '_color'
+                    assign cmp_text_key = 'option_' | append: n | append: '_text_color'
+
+                    if block.settings[cmp_color_key] != blank and block.settings[cmp_color_key] != 'rgba(0,0,0,0)'
+                      assign cmp_style = cmp_style | append: '--compare-color-' | append: n | append: ': ' | append: block.settings[cmp_color_key] | append: ';'
+                    endif
+
+                    if block.settings[cmp_text_key] != blank and block.settings[cmp_text_key] != 'rgba(0,0,0,0)'
+                      assign cmp_style = cmp_style | append: '--compare-text-' | append: n | append: ': ' | append: block.settings[cmp_text_key] | append: ';'
+                    endif
+                  endfor
+                -%}
+                <div id="block-{{ block.id }}" class="media-blocks__item {% if section.settings.add_border %}media-blocks__item--bordered{% endif %} color-scheme color-scheme--{{ block.settings.color_scheme.id }} compare-panel" data-active="{{ cmp_active }}"{% if cmp_style != blank %} style="{{ cmp_style }}"{% endif %} {{ block.shopify_attributes }}>
+                  {%- if block.settings.title != blank -%}
+                    {%- render 'heading', content: block.settings.title, style: block.settings.heading_tag, html_tag: 'h3', balance_text: true -%}
+                  {%- endif -%}
+
+                  <div class="compare-panel__panels">
+                    {%- for n in (1..2) -%}
+                      {%- liquid
+                        assign cmp_show = cmp_has_1
+                        if n == 2
+                          assign cmp_show = cmp_has_2
+                        endif
+
+                        assign cmp_subtitle_key = 'option_' | append: n | append: '_subtitle'
+                        assign cmp_subtitle = block.settings[cmp_subtitle_key]
+                      -%}
+
+                      {%- if cmp_show -%}
+                        <div class="compare-panel__panel" role="tabpanel" id="compare-panel-{{ block.id }}-{{ n }}" aria-labelledby="compare-tab-{{ block.id }}-{{ n }}" data-option="{{ n }}">
+                          {%- if cmp_subtitle != blank -%}
+                            <p class="compare-panel__subtitle">{{ cmp_subtitle }}</p>
+                          {%- endif -%}
+
+                          {%- for i in (1..6) -%}
+                            {%- liquid
+                              assign cmp_row_label_key = 'option_' | append: n | append: '_row_' | append: i | append: '_label'
+                              assign cmp_row_content_key = 'option_' | append: n | append: '_row_' | append: i | append: '_content'
+                              assign cmp_row_label = block.settings[cmp_row_label_key]
+                              assign cmp_row_content = block.settings[cmp_row_content_key]
+                            -%}
+
+                            {%- if cmp_row_label != blank or cmp_row_content != blank -%}
+                              <div class="compare-panel__row">
+                                {%- if cmp_row_label != blank -%}
+                                  <div class="compare-panel__row-label">{{ cmp_row_label }}</div>
+                                {%- endif -%}
+
+                                {%- if cmp_row_content != blank -%}
+                                  <div class="compare-panel__row-content">{{ cmp_row_content }}</div>
+                                {%- endif -%}
+                              </div>
+                            {%- endif -%}
+                          {%- endfor -%}
+                        </div>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </div>
+
+                  {%- if cmp_count > 1 -%}
+                    <div class="compare-panel__tabs" role="tablist">
+                      {%- for n in (1..2) -%}
+                        {%- liquid
+                          assign cmp_label_key = 'option_' | append: n | append: '_label'
+                          assign cmp_n_string = n | append: ''
+                        -%}
+                        <button type="button" role="tab" class="compare-panel__tab" id="compare-tab-{{ block.id }}-{{ n }}" data-option="{{ n }}" aria-controls="compare-panel-{{ block.id }}-{{ n }}" aria-selected="{% if cmp_active == cmp_n_string %}true{% else %}false{% endif %}" tabindex="{% if cmp_active == cmp_n_string %}0{% else %}-1{% endif %}">{{ block.settings[cmp_label_key] | default: n }}</button>
+                      {%- endfor -%}
+                    </div>
+                  {%- endif -%}
+                </div>
+
+                <script>
+                  if (!window.__mediaComparePanelInit) {
+                    window.__mediaComparePanelInit = true;
+
+                    // Shows the option of a tab (and keeps aria-selected / the tab order of its buttons in step)
+                    var activateComparePanelTab = function (tab, focus) {
+                      var panel = tab.closest('.compare-panel');
+
+                      if (!panel) {
+                        return;
+                      }
+
+                      panel.setAttribute('data-active', tab.getAttribute('data-option'));
+
+                      panel.querySelectorAll('.compare-panel__tab').forEach(function (item) {
+                        var selected = item === tab;
+                        item.setAttribute('aria-selected', selected ? 'true' : 'false');
+                        item.setAttribute('tabindex', selected ? '0' : '-1');
+                      });
+
+                      if (focus) {
+                        tab.focus();
+                      }
+                    };
+
+                    var comparePanelTab = function (event) {
+                      return event.target.closest ? event.target.closest('.compare-panel__tab') : null;
+                    };
+
+                    // A mouse changes the option as soon as it is over a button; touch and keyboard use the click
+                    document.addEventListener('pointerenter', function (event) {
+                      var tab = event.pointerType === 'mouse' ? comparePanelTab(event) : null;
+
+                      if (tab && tab.getAttribute('aria-selected') !== 'true') {
+                        activateComparePanelTab(tab, false);
+                      }
+                    }, true);
+
+                    document.addEventListener('click', function (event) {
+                      var tab = comparePanelTab(event);
+
+                      if (tab) {
+                        activateComparePanelTab(tab, false);
+                      }
+                    });
+
+                    document.addEventListener('keydown', function (event) {
+                      var tab = comparePanelTab(event);
+
+                      if (!tab || ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].indexOf(event.key) === -1) {
+                        return;
+                      }
+
+                      var tabs = Array.prototype.slice.call(tab.closest('.compare-panel').querySelectorAll('.compare-panel__tab'));
+                      var index = tabs.indexOf(tab);
+                      var next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1) + tabs.length) % tabs.length;
+
+                      event.preventDefault();
+                      activateComparePanelTab(tabs[next], true);
+                    });
+                  }
                 </script>
 
               {%- when 'tabs_with_media' -%}
@@ -4731,6 +5053,262 @@
         { "type": "richtext", "id": "alt_item_5_content", "label": "Fila alternativa 5: contenido" },
         { "type": "text", "id": "alt_item_6_label", "label": "Fila alternativa 6: nombre" },
         { "type": "richtext", "id": "alt_item_6_content", "label": "Fila alternativa 6: contenido" },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:global.colors.scheme",
+          "default": "scheme-2"
+        }
+      ]
+    },
+    {
+      "type": "compare_panel",
+      "name": "Comparar (2 opciones)",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Una tarjeta con un título y el contenido de una de dos opciones (subtítulo y hasta 6 filas, con el nombre arriba y el texto debajo). Dos botones redondos abajo cambian de opción al pasar el cursor o al hacer clic. Una opción sin texto en el botón ni en sus campos no se muestra; con una sola opción no aparecen los botones."
+        },
+        {
+          "type": "inline_richtext",
+          "id": "title",
+          "label": "t:global.text.heading",
+          "default": "how it compares"
+        },
+        {
+          "type": "select",
+          "id": "heading_tag",
+          "label": "t:global.text.heading_size",
+          "options": [
+            {
+              "value": "h1",
+              "label": "XX-Large"
+            },
+            {
+              "value": "h2",
+              "label": "X-Large"
+            },
+            {
+              "value": "h3",
+              "label": "Large"
+            },
+            {
+              "value": "h4",
+              "label": "Medium"
+            },
+            {
+              "value": "h5",
+              "label": "Small"
+            },
+            {
+              "value": "h6",
+              "label": "XX-Small"
+            }
+          ],
+          "default": "h3"
+        },
+        {
+          "type": "color",
+          "id": "title_color",
+          "label": "Color del título",
+          "info": "Vacío usa el color del texto del esquema."
+        },
+        {
+          "type": "select",
+          "id": "default_option",
+          "label": "Opción que se ve al cargar",
+          "options": [
+            {
+              "value": "1",
+              "label": "Opción 1"
+            },
+            {
+              "value": "2",
+              "label": "Opción 2"
+            }
+          ],
+          "default": "1"
+        },
+        {
+          "type": "header",
+          "content": "Opción 1"
+        },
+        {
+          "type": "text",
+          "id": "option_1_label",
+          "label": "Texto del botón redondo",
+          "default": "Option 1"
+        },
+        {
+          "type": "color",
+          "id": "option_1_color",
+          "label": "Color del botón cuando está elegido",
+          "default": "#8a8780"
+        },
+        {
+          "type": "color",
+          "id": "option_1_text_color",
+          "label": "Color del texto del botón cuando está elegido",
+          "default": "#ffffff"
+        },
+        {
+          "type": "text",
+          "id": "option_1_subtitle",
+          "label": "Subtítulo",
+          "info": "Va debajo del título, en mayúsculas y negrita."
+        },
+        {
+          "type": "text",
+          "id": "option_1_row_1_label",
+          "label": "Fila 1: nombre",
+          "default": "What it is"
+        },
+        {
+          "type": "richtext",
+          "id": "option_1_row_1_content",
+          "label": "Fila 1: contenido",
+          "default": "<p>Add content here.</p>"
+        },
+        {
+          "type": "text",
+          "id": "option_1_row_2_label",
+          "label": "Fila 2: nombre"
+        },
+        {
+          "type": "richtext",
+          "id": "option_1_row_2_content",
+          "label": "Fila 2: contenido"
+        },
+        {
+          "type": "text",
+          "id": "option_1_row_3_label",
+          "label": "Fila 3: nombre"
+        },
+        {
+          "type": "richtext",
+          "id": "option_1_row_3_content",
+          "label": "Fila 3: contenido"
+        },
+        {
+          "type": "text",
+          "id": "option_1_row_4_label",
+          "label": "Fila 4: nombre"
+        },
+        {
+          "type": "richtext",
+          "id": "option_1_row_4_content",
+          "label": "Fila 4: contenido"
+        },
+        {
+          "type": "text",
+          "id": "option_1_row_5_label",
+          "label": "Fila 5: nombre"
+        },
+        {
+          "type": "richtext",
+          "id": "option_1_row_5_content",
+          "label": "Fila 5: contenido"
+        },
+        {
+          "type": "text",
+          "id": "option_1_row_6_label",
+          "label": "Fila 6: nombre"
+        },
+        {
+          "type": "richtext",
+          "id": "option_1_row_6_content",
+          "label": "Fila 6: contenido"
+        },
+        {
+          "type": "header",
+          "content": "Opción 2"
+        },
+        {
+          "type": "text",
+          "id": "option_2_label",
+          "label": "Texto del botón redondo",
+          "default": "Option 2"
+        },
+        {
+          "type": "color",
+          "id": "option_2_color",
+          "label": "Color del botón cuando está elegido",
+          "default": "#a45a4d"
+        },
+        {
+          "type": "color",
+          "id": "option_2_text_color",
+          "label": "Color del texto del botón cuando está elegido",
+          "default": "#ffffff"
+        },
+        {
+          "type": "text",
+          "id": "option_2_subtitle",
+          "label": "Subtítulo",
+          "info": "Va debajo del título, en mayúsculas y negrita."
+        },
+        {
+          "type": "text",
+          "id": "option_2_row_1_label",
+          "label": "Fila 1: nombre",
+          "default": "What it is"
+        },
+        {
+          "type": "richtext",
+          "id": "option_2_row_1_content",
+          "label": "Fila 1: contenido",
+          "default": "<p>Add content here.</p>"
+        },
+        {
+          "type": "text",
+          "id": "option_2_row_2_label",
+          "label": "Fila 2: nombre"
+        },
+        {
+          "type": "richtext",
+          "id": "option_2_row_2_content",
+          "label": "Fila 2: contenido"
+        },
+        {
+          "type": "text",
+          "id": "option_2_row_3_label",
+          "label": "Fila 3: nombre"
+        },
+        {
+          "type": "richtext",
+          "id": "option_2_row_3_content",
+          "label": "Fila 3: contenido"
+        },
+        {
+          "type": "text",
+          "id": "option_2_row_4_label",
+          "label": "Fila 4: nombre"
+        },
+        {
+          "type": "richtext",
+          "id": "option_2_row_4_content",
+          "label": "Fila 4: contenido"
+        },
+        {
+          "type": "text",
+          "id": "option_2_row_5_label",
+          "label": "Fila 5: nombre"
+        },
+        {
+          "type": "richtext",
+          "id": "option_2_row_5_content",
+          "label": "Fila 5: contenido"
+        },
+        {
+          "type": "text",
+          "id": "option_2_row_6_label",
+          "label": "Fila 6: nombre"
+        },
+        {
+          "type": "richtext",
+          "id": "option_2_row_6_content",
+          "label": "Fila 6: contenido"
+        },
         {
           "type": "color_scheme",
           "id": "color_scheme",
