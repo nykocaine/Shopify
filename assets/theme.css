@@ -9290,12 +9290,15 @@ shopify-account::part(signed-out-avatar) {
   opacity: 1;
 }
 
-/* Phones only: the button sits flush on the bottom edge of the screen, as if it grew out of it - top
-   corners 12px, bottom corners are square (+ home-indicator safe area). */
-/* Desktop: no floating add-to-cart (phones only). */
+/* Phones: the button sits flush on the bottom edge of the screen, as if it grew out of it - top
+   corners 12px, bottom corners are square (+ home-indicator safe area), see the max-width: 699px rule below.
+   Tablet and desktop: a floating button centered at the bottom, no wider than a comfortable button (a button as wide as the whole screen
+   looks wrong there), with the button's own corners and the page's side gutter below it. */
 @media screen and (min-width: 700px) {
   .product-sticky-add-to-cart {
-    display: none;
+    inset-inline: 0;
+    width: min(32rem, calc(100% - 2 * var(--container-gutter)));
+    margin-inline: auto;
   }
 }
 
