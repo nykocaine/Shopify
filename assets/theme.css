@@ -9276,17 +9276,21 @@ shopify-account::part(signed-out-avatar) {
 /* Sticky add-to-cart (snippets/product-sticky-add-to-cart.liquid): a bar on the bottom edge of the screen, the width of the page. At the left the
    product's name (and the chosen variant under it), at the right an outline "Buy - price" button. The bar is a color scheme of its own (the product
    section's "Sticky add to cart: color scheme": text and button colors come from it) over a background with its own color, opacity and blur (the same
-   section's settings, --sticky-atc-background / --sticky-atc-blur: nothing is shared with the dialog backdrop). The page's side gutter at the sides,
-   the home-indicator safe area below. On wide screens the row keeps a comfortable width, centered. */
+   section's settings, --sticky-atc-background / --sticky-atc-blur: nothing is shared with the dialog backdrop). The page's side gutter at the sides.
+   On wide screens the row keeps a comfortable width, centered.
+   The bar's size never changes: no safe-area padding (it grew by the home-indicator height whenever the phone's browser hid its bottom toolbar), so
+   the only thing that moves with the toolbar is the bar's position, which the browser follows by itself. It comes in and goes out by sliding from the
+   bottom edge, with a soft ease-out (no bounce, no snap). All its texts are the body's size (--text-base). */
 .product-sticky-add-to-cart {
   z-index: 2;
   visibility: hidden;
-  opacity: 0;
-  transition: opacity .2s ease-in-out, visibility .2s ease-in-out;
+  transform: translateY(100%);
+  transition: transform .5s cubic-bezier(.22, .61, .36, 1), visibility 0s linear .5s;
+  will-change: transform;
   position: fixed;
   inset-block-end: 0;
   inset-inline: 0;
-  padding: .75rem var(--container-gutter) calc(.75rem + env(safe-area-inset-bottom, 0px));
+  padding: .75rem var(--container-gutter);
   background-color: var(--sticky-atc-background, rgb(var(--background) / .7));
   background-image: none;
   -webkit-backdrop-filter: blur(var(--sticky-atc-blur, 14px));
@@ -9295,7 +9299,14 @@ shopify-account::part(signed-out-avatar) {
 
 .product-sticky-add-to-cart.is-visible {
   visibility: visible;
-  opacity: 1;
+  transform: none;
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-sticky-add-to-cart {
+    transition: none;
+  }
 }
 
 .product-sticky-add-to-cart__inner {
@@ -9322,7 +9333,7 @@ shopify-account::part(signed-out-avatar) {
   font-weight: bold;
   -webkit-text-stroke: .3px currentColor;
   paint-order: stroke fill;
-  line-height: 1.3;
+  line-height: var(--text-line-height);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -9347,8 +9358,8 @@ shopify-account::part(signed-out-avatar) {
   background: none;
   color: rgb(var(--text-color) / .75);
   font-family: var(--text-font-family);
-  font-size: calc(var(--text-base) - 1.5px);
-  line-height: 1.3;
+  font-size: var(--text-base);
+  line-height: var(--text-line-height);
   text-align: start;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -9377,6 +9388,8 @@ shopify-account::part(signed-out-avatar) {
 .product-sticky-add-to-cart .button {
   flex: none;
   max-width: 55%;
+  /* The label is the body's size too (the theme's button font size is its own setting) */
+  font-size: var(--text-base);
 }
 
 .products-with-image .product-list {
