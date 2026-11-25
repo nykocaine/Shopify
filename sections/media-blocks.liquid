@@ -406,6 +406,15 @@
       opacity: .8;
     }
 
+    {%- comment -%}The note is a rich text setting (so it can connect to a multi-line / rich text metafield): it comes wrapped in its own <p> tags{%- endcomment -%}
+    #shopify-section-{{ section.id }} .media-stats__note > p {
+      margin: 0;
+    }
+
+    #shopify-section-{{ section.id }} .media-stats__note > p + p {
+      margin-block-start: .5em;
+    }
+
     {%- comment -%}
     "Palabras" block: a few big words (ingredients, what it is for...). They have one base color; a word turns into the chosen color only while
     the mouse pointer is over it. There is no click or tap action. The font is one of the store's own
@@ -1454,7 +1463,7 @@
                       {%- endfor -%}
 
                       {%- if block.settings.note != blank -%}
-                        <p class="media-stats__note">{{ block.settings.note }}</p>
+                        <div class="media-stats__note">{{ block.settings.note }}</div>
                       {%- endif -%}
                     </div>
                   </div>
@@ -4333,7 +4342,7 @@
           "content": "Nota"
         },
         {
-          "type": "text",
+          "type": "richtext",
           "id": "note",
           "label": "Texto pequeño",
           "info": "Se muestra 1,5 px más pequeño que el texto del cuerpo."
