@@ -119,6 +119,16 @@
   @media screen and (max-width: 999px) {
     #shopify-section-{{ section.id }} {
       --product-gallery-carousel-gap: 0px !important;
+      --product-gallery-carousel-grid: auto / auto-flow 100% !important;
+    }
+
+    {%- comment -%}
+    A classic gallery on phones and tablets: every photo takes the whole width, the next one does not peek out at the right edge (product-gallery.liquid
+    makes the first visible slide 93% wide so the second one shows). !important because it has to beat that rule, which has the same selector, comes later
+    in the page and also has a variant inside @supports (round()).
+    {%- endcomment -%}
+    #shopify-section-{{ section.id }} .product-gallery__carousel > .product-gallery__media:nth-child(1 of :not([hidden])) {
+      width: 100% !important;
     }
   }
 
