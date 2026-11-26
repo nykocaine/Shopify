@@ -1,5 +1,6 @@
 {%- doc -%}
-This component generates a review badge from the product metafields information: the numeric rating followed by one star.
+This component generates a review badge from the product metafields information: the numeric rating followed by one star and, when the product has
+reviews, their number in parentheses ("4.7 ★ (23)", from custom.reviews_count).
 
 @param {object} [product] - the product from which ratings are extracted
 @param {boolean} [show_empty] - if set to true, the theme shows a 0.0 if there are no rating yet
@@ -46,5 +47,9 @@ This component generates a review badge from the product metafields information:
         {%- render 'icon' with 'star-rating' -%}
       {%- endif -%}
     </div>
+
+    {%- if rating_count > 0 -%}
+      <span class="rating-badge__count subheading">({{ rating_count }})</span>
+    {%- endif -%}
   </div>
 {%- endunless -%}
