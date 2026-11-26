@@ -320,10 +320,10 @@ the zoom view shortens it to two lines by itself and offers "Ver más".
             <input type="radio" name="contact[Rating]" id="{{ rating_id }}" value="{{ i }}" required>
             <label for="{{ rating_id }}">
               <span class="sr-only">{{ i }} estrella{% if i != 1 %}s{% endif %}</span>
-              {%- comment -%}Same rounded star as the rating icons (snippets/icon.liquid, 'star-rating'){%- endcomment -%}
+              {%- comment -%}Same pointed star as the rating icons (snippets/icon.liquid, 'star-rating'){%- endcomment -%}
               {%- capture star_path -%}{%- render 'star-path' -%}{%- endcapture -%}
               <svg viewBox="0.996 0.786 11.008 11.008" overflow="visible" aria-hidden="true" focusable="false" width="26" height="26">
-                <path d="{{ star_path | strip }}" stroke-width=".6" stroke-linejoin="round"/>
+                <path d="{{ star_path | strip }}" stroke-width=".6" stroke-linejoin="miter" stroke-miterlimit="10"/>
               </svg>
             </label>
           {%- endfor -%}
