@@ -104,6 +104,17 @@
   }
 
   {%- comment -%}
+  Phones and tablets: no space between the photos of the gallery carousel (product-gallery.liquid gives them a 4px gap, 2px with no controls). Set here, for
+  this section only (the snippet is shared with the featured product and the quick buy modal), with !important for the same reason as the rule above:
+  the snippet's own <style> comes later in the page and sets the same variable on the same element.
+  {%- endcomment -%}
+  @media screen and (max-width: 999px) {
+    #shopify-section-{{ section.id }} {
+      --product-gallery-carousel-gap: 0px !important;
+    }
+  }
+
+  {%- comment -%}
   Desktop: the caption is under the carousel image (product-gallery.liquid), a strip of the card with HALF the inner padding (container gutter + .5rem) on all four sides, the same as the thumbnails strip. The content of both strips starts exactly at the top padding line (the caption has no padding or margin of its own and its text is trimmed to the line; the thumbnails sit at the top of the strip).
   {%- endcomment -%}
   #shopify-section-{{ section.id }} {
