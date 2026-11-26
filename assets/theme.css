@@ -4162,6 +4162,13 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   }
 }
 
+/* Single card: its inner padding (the card badge and the enfoque over the photo, the card icon, the swatches) is always the same as the padding of the
+   info under the photo, at every screen width. The generic values just above (0.85rem from 700px, 1.25rem from 1600px) are for the other card styles
+   and, being later in the file, used to win over the single card's own value, so from 700px the top line sat closer to the edges than the text. */
+.product-card.product-card--single {
+  --product-card-inner-padding: var(--product-card-info-padding);
+}
+
 /* Quick buy with a mouse: an outline button under the product info (snippets/product-card.liquid), the width of the card. Its text and border take the text
    color of the card's own color scheme (the outline button would otherwise use the scheme's primary button color). !important beats the inline custom
    property the button snippet writes. */
