@@ -16,6 +16,14 @@
   # just in the HTML below) so both the <style> block and the markup can use it.
   assign first_product_image = product.media | where: 'media_type', 'image' | first
 
+  # "Hide the first image in the gallery": the product's first image (the one set first in the Shopify admin) is only the image of the cards, not of the
+  # gallery. Not for a product with a single media (the gallery would be empty). It also switches off the desktop "first image as its own column",
+  # which is that same image.
+  assign hide_first_media = false
+  if section.settings.hide_first_media_in_gallery and product.media.size > 1
+    assign hide_first_media = true
+  endif
+
   # use_first_image_column drives the whole "static first image as a 3rd desktop column" layout: only
   # when the merchant opted in (desktop_show_first_image_column) AND there is an image to show. When
   # it's off the layout falls back to the plain 2-column split, so product_media_size is meaningful.
@@ -23,7 +31,7 @@
   # Needs at least a second media too: the gallery hides that image on desktop (it is shown in the static column), so with a single media the
   # gallery card beside the static column would be left empty - such a product keeps the plain gallery instead.
   assign use_first_image_column = false
-  if first_product_image != blank and section.settings.desktop_show_first_image_column and product.media.size > 1
+  if first_product_image != blank and section.settings.desktop_show_first_image_column and product.media.size > 1 and hide_first_media == false
     assign use_first_image_column = true
   endif
 
@@ -1059,7 +1067,8 @@
           gallery_border_radius: gallery_border_radius,
           thumbnail_border_radius: section.settings.thumbnail_border_radius,
           move_to_second_media_id: move_to_second_media_id,
-          thumbnails_out: thumbnails_out
+          thumbnails_out: thumbnails_out,
+          skip_first_media: hide_first_media
       -%}
     {%- endcapture -%}
 
@@ -1420,6 +1429,13 @@
       "unit": "px",
       "label": "Sticky add to cart: desenfoque (blur) del fondo",
       "default": 14
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_first_media_in_gallery",
+      "label": "Ocultar la primera imagen en la galería",
+      "info": "La primera imagen del producto (la primera que subes en el admin de Shopify) solo se ve en las tarjetas, no en la galería. Con esto activo se desactiva también la columna de la primera imagen en escritorio. Un producto con una sola imagen la sigue mostrando.",
+      "default": true
     },
     {
       "type": "checkbox",

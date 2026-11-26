@@ -16,6 +16,7 @@ This component is used to show the product gallery (used in product page and fea
 @param {string} [class] - extra class applied on the container
 @param {boolean} [thumbnails_out] - if set (main-product.liquid, desktop), the thumbnails of the carousel are NOT drawn inside the gallery: they are output between two <!--gallery-thumbs--> markers at the very end, so the caller can split them out of the gallery's markup and place them elsewhere (under the static first image). Only the thumbnails that follow the carousel (same order, same hidden ones, same click behaviour: they point to it by id).
 @param {number} [move_to_second_media_id] - if set, this media's id is kept in the gallery but repositioned to the second slide and hidden - itself and its scroll-marker - at desktop widths (min-width: 1000px), where it's shown elsewhere instead (eg. main-product.liquid's separate first-image column)
+@param {boolean} [skip_first_media] - if set (main-product.liquid), the product's first media is not shown in this gallery (it stays in the markup, hidden, like a media filtered out by the variant image sets, so counters, thumbnails and the variant -> slide logic keep working). It is still the image of the product cards.
 @param {object} [section]
 {%- enddoc -%}
 
@@ -461,6 +462,14 @@ only way to do it on Shopify right now.
 {%- endcomment -%}
 {% liquid
   assign default_media = product.selected_or_first_available_variant.featured_media | default: product.featured_media
+
+  # skip_first_media: the product's first media is hidden in this gallery (it is added to filtered_indexes below). A product with a single media keeps
+  # showing it, otherwise the gallery would be empty. The DOM order of the media is NOT changed, so the variant -> slide logic of assets/theme.js
+  # (position minus the hidden slides before it) stays right.
+  assign hide_first_media = false
+  if skip_first_media and product.media.size > 1
+    assign hide_first_media = true
+  endif
   assign product_gallery_carousel_id = 'product-gallery-carousel-' | append: product.id | append: '-' | append: section.id
   assign filtered_indexes = null | sort
 
@@ -502,6 +511,11 @@ only way to do it on Shopify right now.
   # being hidden, not just default_media (which might not even be part of gallery_media).
   assign effective_default_media = gallery_media.first
 
+  # The gallery never opens on the hidden first media: it opens on the second one instead
+  if hide_first_media and effective_default_media == product.media.first
+    assign effective_default_media = product.media[1]
+  endif
+
   if product.variants.size > 1
     for media in product.media
       # Leftover "!dark"/"!light" markers (an old manual tag that is no longer used - the contrast over the photo is now
@@ -521,6 +535,12 @@ only way to do it on Shopify right now.
         endif
       endif
     endfor
+  endif
+
+  # The first media is hidden like a media filtered out by the variant image sets (same attribute, same counting, same slide logic in assets/theme.js)
+  if hide_first_media
+    assign first_media_position = product.media.first.position | sort
+    assign filtered_indexes = filtered_indexes | concat: first_media_position
   endif
 
   # Shared by numbers_controls and bar_controls below (both show a "current / total" counter) so the
