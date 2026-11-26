@@ -5961,6 +5961,14 @@ table caption {
   display: flex;
 }
 
+/* The rating number and its star are centered on each other: the number is moved down by --cap-offset (0.1em with the Swiss 721 font, 0 with other
+   fonts). Swiss 721 reserves more room below its digits than above, so in a flex row centered on the line box the digits sat about 0.1em above the
+   middle and the star looked low next to them (measured: 1.3px at 14.5px text; with this, 0.3px). A relative offset, so nothing around it moves. */
+.rating-badge__value {
+  position: relative;
+  inset-block-start: var(--cap-offset, 0em);
+}
+
 /* One size for every rating star in the theme (the rating badge, the reviews summary and cards, the testimonials): the star icons (icon-star-rating,
    -half, -empty, see snippets/icon.liquid) read --rating-star-size (css-variables.liquid), instead of each place sizing them by its own text. This beats
    the icon's own fixed pixel width attribute. */
