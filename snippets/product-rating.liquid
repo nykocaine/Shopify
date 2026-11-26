@@ -16,7 +16,8 @@ reviews, their number in parentheses ("4.7 ★ (23)", from custom.reviews_count)
 
   if product and product.metafields.custom.reviews_rating.value != blank
     assign rating_value = product.metafields.custom.reviews_rating.value.rating | plus: 0
-    assign rating_count = product.metafields.custom.reviews_count.value | default: 0
+    # | plus: 0 turns the value into a number even when the metafield was created as text (comparing a string with 0 fails)
+    assign rating_count = product.metafields.custom.reviews_count.value | default: 0 | plus: 0
     assign rating_max = product.metafields.custom.reviews_rating.value.scale_max | round
   elsif show_empty
     assign rating_value = 0
