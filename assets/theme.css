@@ -3735,6 +3735,23 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   max-width: 100%;
 }
 
+/* Narrow cards (phones, two or three per row): with a compare-at price the two prices cannot sit next to the name, so they used to drop to their own line
+   under it. The price stays at the right end of the name's line instead, and the crossed-out compare-at price goes right under it, aligned to the
+   right edge (the name goes back to taking only the room that is left, wrapping onto a second line if it must, like a card without a sale). The
+   info is a size container (container-type: inline-size), so this follows the card's own width, not the screen's. 16rem = the width of the info
+   under which the name plus both prices on one line do not fit. */
+@container product-card-info (max-width: 16rem) {
+  .product-card__info > .h-stack.justify-between:has(compare-at-price) .product-title {
+    flex: 1 1 0;
+  }
+
+  .product-card__info > .h-stack.justify-between:has(compare-at-price) price-list {
+    flex-direction: column;
+    align-items: flex-end;
+    row-gap: 0;
+  }
+}
+
 /* The price looks like the name (reference: the name on the left, the price on the right, the same text): the body text size, same weight
    (medium 500 + the thin stroke) and same color. More specific than the "split" rule in css-variables.liquid, which set the price to the
    plain body text weight. The crossed-out compare-at price keeps its soft color. */
