@@ -20,7 +20,7 @@ to the first 5 of the newly sorted order.
   # when the metafields aren't set (eg. a non-product page, or a product without them yet).
   if product and product.metafields.custom.reviews_rating.value != blank
     assign average_rating = product.metafields.custom.reviews_rating.value.rating | plus: 0 | round: 1
-    assign review_count = product.metafields.custom.reviews_count.value | default: 0 | plus: 0
+    assign review_count = product.metafields.custom.reviews_count.value | default: product.metafields.custom.rating_count.value | default: 0 | plus: 0
   else
     assign review_count = review_blocks.size
     assign rating_sum = 0
