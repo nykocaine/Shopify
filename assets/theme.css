@@ -3735,20 +3735,20 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   max-width: 100%;
 }
 
-/* Narrow cards (phones, two or three per row): with a compare-at price the two prices cannot sit next to the name, so they used to drop to their own line
-   under it. The price stays at the right end of the name's line instead, and the crossed-out compare-at price goes right under it, aligned to the
-   right edge (the name goes back to taking only the room that is left, wrapping onto a second line if it must, like a card without a sale). The
-   info is a size container (container-type: inline-size), so this follows the card's own width, not the screen's. 16rem = the width of the info
-   under which the name plus both prices on one line do not fit. */
-@container product-card-info (max-width: 16rem) {
-  .product-card__info > .h-stack.justify-between:has(compare-at-price) .product-title {
-    flex: 1 1 0;
+/* Phones, a single card WITHOUT the quick buy button (the setting is off, or the product cannot be bought from the card): the price goes on its own line
+   right under the name, not at the right end of the name's line. (With the button, the price is in the button and this info does not show it.) The name
+   takes the whole line, the price takes the next one (the crossed-out compare-at price wraps under it when they do not fit side by side), and the
+   sistema and rating lines follow, in their usual order. Tablets and desktop keep the name on the left and the price on the right. */
+@media screen and (max-width: 699px) {
+  .product-card--single .product-card__info:not(:has(> .product-card__quick-buy-below--card)) > .h-stack.justify-between .product-title {
+    flex: 1 1 100%;
   }
 
-  .product-card__info > .h-stack.justify-between:has(compare-at-price) price-list {
-    flex-direction: column;
-    align-items: flex-end;
-    row-gap: 0;
+  .product-card--single .product-card__info:not(:has(> .product-card__quick-buy-below--card)) > .h-stack.justify-between price-list {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    white-space: normal;
+    justify-content: flex-start;
   }
 }
 
