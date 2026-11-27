@@ -653,6 +653,13 @@ height-observer {
   padding-block: calc(var(--button-text-offset, 0em) * 2) 0;
 }
 
+/* Rule: the buy buttons of the product page (the add-to-cart button in the product info and the one in the sticky bar, both inside the
+   main product section) are 5px taller than the theme's global button height (--button-min-height, "Button height" setting). Every other
+   button keeps the global height. */
+.shopify-section--main-product :is(buy-buttons, product-sticky-add-to-cart) .button:not(.button--sm) .button__content {
+  min-height: calc(var(--button-min-height) + 5px);
+}
+
 /* Buy button (buy-buttons.liquid): label and price are two separate flex children instead of one
    concatenated string, pinned to opposite ends of the already-flex .button__content - scoped to this
    one button only, so every other button in the theme keeps its default centered content.
