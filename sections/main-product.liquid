@@ -416,6 +416,15 @@
     margin-block-end: 0;
   }
 
+  {%- comment -%}
+  The product's name has the same weight as the title of the FAQ block of Media Blocks (and of the Info panel, the big numbers of the Statistics block,
+  the Instagram feed's title): the heaviest weight of the font (1000) with a thin outline of the same color (see .media-faq__title in media-blocks.liquid).
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .product-info__block-item[data-block-type="title"] .product-title {
+    font-weight: 1000;
+    -webkit-text-stroke: .02em currentColor;
+  }
+
   #shopify-section-{{ section.id }} .product-info__block-item[data-block-type="title"] + * {
     margin-block-start: calc((var(--product-block-item-margin) - 0.5rem) / 1.5);
   }
