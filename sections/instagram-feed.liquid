@@ -87,7 +87,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {% if instagram_scheme_is_white %}0{% else %}{{ instagram_corner_radius_px }}{% endif %}; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
-    <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack{% if section.settings.bw_intro %} is-bw{% endif %}">
+    <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack{% if section.settings.bw_intro %} is-bw{% endif %}"{% if section.settings.title_color != blank and section.settings.title_color != 'rgba(0,0,0,0)' %} style="--instagram-title-color: {{ section.settings.title_color }};"{% endif %}>
       {%- liquid
         # Phones: the button moves under the dots (see below the carousel), so it is hidden up here. Only when there is a row to put it under.
         assign instagram_button_below_on_mobile = false
@@ -1067,6 +1067,16 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
   }
 
   {%- comment -%}
+  The title looks like the one of the FAQ block of Media Blocks (and the Info panel's): the color picked in "Color del título" (empty = the color of the
+  scheme's text) and the heaviest weight (1000 + a thin outline of the same color). The size is the "Heading size" setting.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed__content > .prose > h2 {
+    color: var(--instagram-title-color, inherit);
+    font-weight: 1000;
+    -webkit-text-stroke: .02em currentColor;
+  }
+
+  {%- comment -%}
   Phones: the button under the dots, centered horizontally. It is its own row of the .section-stack grid, so the space above it is the same
   row gap as between the row of photos and the dots.
   {%- endcomment -%}
@@ -1693,6 +1703,12 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
         }
       ],
       "default": "h3"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Color del título",
+      "info": "Vacío usa el color del texto del esquema."
     },
     {
       "type": "richtext",
