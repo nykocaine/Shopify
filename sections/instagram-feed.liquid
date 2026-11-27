@@ -1137,7 +1137,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
       {%- comment -%}
       "Attach to footer": only when this section is the last one of the page content, so the footer comes right after it
       (the footer lives in its own section group, right below <main>). The two join with no gap: this section loses its
-      bottom margin and its bottom corners, keeping only the top ones, and the footer loses all its rounded corners; a divider line
+      bottom margin and its bottom corners, keeping only the top ones, and the footer loses only its top corners (its bottom corners stay rounded); a divider line
       like the footer's own separates them.
       Side margins stay (both are floating). The footer's own rules are scoped through :root:has(), because it is a
       different section.
@@ -1156,7 +1156,8 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
       scheme), across the whole width of the footer card, on top of it. It is the footer's top border, so it takes no extra room.
       {%- endcomment -%}
       :root:has(main > #shopify-section-{{ section.id }}:last-child) .shopify-section--footer .footer {
-        border-radius: 0 !important;
+        border-start-start-radius: 0 !important;
+        border-start-end-radius: 0 !important;
         border-block-start: 1px solid rgb(var(--border-color));
       }
     {%- endif -%}
