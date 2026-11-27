@@ -449,25 +449,29 @@
     .vc-whatsapp-overlay {
       display: block !important;
       position: fixed;
-      inset: 0;
+      /* Desde arriba hasta el borde de abajo de la pantalla; si la barra sticky de Main Product está activa
+         (--sticky-atc-top, la publica snippets/product-sticky-add-to-cart.liquid), termina justo encima de ella y no la cubre. */
+      inset: 0 0 var(--sticky-atc-top, 0px) 0;
       z-index: 105;
-      /* Sin color de fondo (se veía blanco) y sin degradado: solo el blur del tema, completo y parejo
-         sobre toda la pantalla, el mismo de los pop-ups (--dialog-backdrop-blur). */
+      /* Sin color de fondo (se veía blanco) y sin degradado: solo el blur, completo y parejo, y es el mismo de la barra sticky
+         (--sticky-atc-blur, el ajuste de blur de esa barra); donde no hay barra, el de los pop-ups (--dialog-backdrop-blur). */
       background: none;
-      -webkit-backdrop-filter: blur(var(--dialog-backdrop-blur));
-      backdrop-filter: blur(var(--dialog-backdrop-blur));
-      /* Al abrir el desenfoque mismo crece de 0 al valor del tema, despacio y suave (no se anima la opacidad
-         de la capa: eso se veía como una cortina que bajaba) */
-      transition: -webkit-backdrop-filter .5s var(--wa-ease-out), backdrop-filter .5s var(--wa-ease-out), visibility 0s;
+      -webkit-backdrop-filter: blur(var(--sticky-atc-blur, var(--dialog-backdrop-blur)));
+      backdrop-filter: blur(var(--sticky-atc-blur, var(--dialog-backdrop-blur)));
+      /* Al abrir el desenfoque crece de 0 al valor del blur con la misma curva suave del popup de agentes (.5s ease-out),
+         y entra con un fundido leve (.4s, como la caja de agentes). Sin color de fondo, así que el fundido no se ve como cortina. */
+      opacity: 1;
+      transition: -webkit-backdrop-filter .5s var(--wa-ease-out), backdrop-filter .5s var(--wa-ease-out), opacity .4s ease, visibility 0s;
     }
 
     /* Al cerrar el desenfoque se va a 0 más rápido, y la capa sale de en medio al terminar */
     .vc-whatsapp-overlay[hidden] {
       -webkit-backdrop-filter: blur(0px);
       backdrop-filter: blur(0px);
+      opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transition: -webkit-backdrop-filter .3s ease-in, backdrop-filter .3s ease-in, visibility 0s linear .3s;
+      transition: -webkit-backdrop-filter .3s ease-in, backdrop-filter .3s ease-in, opacity .22s ease-in, visibility 0s linear .3s;
     }
   }
 
