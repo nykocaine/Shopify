@@ -59,11 +59,11 @@
             <p class="subheading">{{ 'gift_card.issued.remaining_amount' | t }}</p>
 
             {% if settings.currency_code_enabled %}
-              {%- assign gift_card_balance = gift_card.balance | money_with_currency -%}
-              {%- assign gift_card_initial_value = gift_card.initial_value | money_with_currency -%}
+              {%- assign gift_card_balance = gift_card.balance | money_with_currency | replace: '.00', '' -%}
+              {%- assign gift_card_initial_value = gift_card.initial_value | money_with_currency | replace: '.00', '' -%}
             {% else %}
-              {%- assign gift_card_balance = gift_card.balance | money -%}
-              {%- assign gift_card_initial_value = gift_card.initial_value | money -%}
+              {%- assign gift_card_balance = gift_card.balance | money_without_trailing_zeros -%}
+              {%- assign gift_card_initial_value = gift_card.initial_value | money_without_trailing_zeros -%}
             {% endif %}
 
             <h1 class="h1">{{ gift_card_balance }}</h1>

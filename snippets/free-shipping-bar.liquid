@@ -30,7 +30,7 @@ being eligible for free shipping.
     {%- if calculated_total_price >= cart_free_shipping_threshold -%}
       <span>{{ 'cart.free_shipping_bar.limit_reached_html' | t }}</span>
     {%- else -%}
-      {%- assign remaining_amount = cart_free_shipping_threshold | minus: calculated_total_price | money -%}
+      {%- assign remaining_amount = cart_free_shipping_threshold | minus: calculated_total_price | money_without_trailing_zeros -%}
       <span>{{ 'cart.free_shipping_bar.limit_unreached_html' | t: remaining_amount: remaining_amount }}</span>
     {%- endif -%}
 

@@ -28,7 +28,7 @@ swap in the last product the visitor viewed.
           <span class="complete-routine__subtitle">{{ subtitle | escape }}</span>
         {%- endif -%}
 
-        <span class="complete-routine__price" data-complete-routine-price>{{ extra_variant.price | money }}</span>
+        <span class="complete-routine__price" data-complete-routine-price>{{ extra_variant.price | money_without_trailing_zeros }}</span>
       </span>
 
       <span class="complete-routine__controls">
@@ -40,7 +40,7 @@ swap in the last product the visitor viewed.
           <span class="complete-routine__select-wrapper">
             <select class="complete-routine__select" data-complete-routine-variant aria-label="{{ extra.title | escape }}">
               {%- for variant in extra.variants -%}
-                <option value="{{ variant.id }}" data-price="{{ variant.price | money | escape }}" {% if variant == extra_variant %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>
+                <option value="{{ variant.id }}" data-price="{{ variant.price | money_without_trailing_zeros | escape }}" {% if variant == extra_variant %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>
                   {{- variant.title | escape -}}
                 </option>
               {%- endfor -%}

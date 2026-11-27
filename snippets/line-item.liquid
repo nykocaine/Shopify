@@ -73,7 +73,7 @@ This component renders a single line item product information, and is used on or
             <ul role="list" class="unstyled-list">
               {%- for discount_allocation in line_item.line_level_discount_allocations -%}
                 <li class="discount-badge text-xxs">
-                  {%- render 'icon' with 'discount', width: 10 -%} {{ discount_allocation.discount_application.title }} (-{{ discount_allocation.amount | money }})
+                  {%- render 'icon' with 'discount', width: 10 -%} {{ discount_allocation.discount_application.title }} (-{{ discount_allocation.amount | money_without_trailing_zeros }})
 
                   {%- if section.settings.allow_discount_application and discount_allocation.discount_application.type != '' -%}
                     <cart-discount-remove-button discount-code="{{ discount_allocation.discount_application.title | escape }}" class="h-stack align-center">
@@ -107,9 +107,9 @@ This component renders a single line item product information, and is used on or
       <div class="v-stack justify-items-end shrink-0 gap-0.5">
         <span class="line-item__line-price subheading">
           {%- if settings.currency_code_enabled -%}
-            {{- line_item.final_line_price | money_with_currency -}}
+            {{- line_item.final_line_price | money_with_currency | replace: '.00', '' -}}
           {%- else -%}
-            {{- line_item.final_line_price | money -}}
+            {{- line_item.final_line_price | money_without_trailing_zeros -}}
           {%- endif -%}
         </span>
 

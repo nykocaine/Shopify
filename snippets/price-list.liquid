@@ -47,9 +47,9 @@ Render a list of price for a product, variant or line item.
       <span class="sr-only">{{ 'product.price.sale_price' | t }}</span>
 
       {%- if settings.currency_code_enabled -%}
-        {{- variant.price | money_with_currency | replace: 'S/', 'S<span class="price-slash">/</span>' -}}
+        {{- variant.price | money_with_currency | replace: '.00', '' | replace: 'S/', 'S<span class="price-slash">/</span>' -}}
       {%- else -%}
-        {{- variant.price | money | replace: 'S/', 'S<span class="price-slash">/</span>' -}}
+        {{- variant.price | money_without_trailing_zeros | replace: 'S/', 'S<span class="price-slash">/</span>' -}}
       {%- endif -%}
     </sale-price>
 
@@ -58,9 +58,9 @@ Render a list of price for a product, variant or line item.
         <span class="sr-only">{{ 'product.price.regular_price' | t }}</span>
 
         {%- if settings.currency_code_enabled -%}
-          {{- variant.compare_at_price | money_with_currency | replace: 'S/', 'S<span class="price-slash">/</span>' -}}
+          {{- variant.compare_at_price | money_with_currency | replace: '.00', '' | replace: 'S/', 'S<span class="price-slash">/</span>' -}}
         {%- else -%}
-          {{- variant.compare_at_price | money | replace: 'S/', 'S<span class="price-slash">/</span>' -}}
+          {{- variant.compare_at_price | money_without_trailing_zeros | replace: 'S/', 'S<span class="price-slash">/</span>' -}}
         {%- endif -%}
       </compare-at-price>
     {%- endif -%}
@@ -75,9 +75,9 @@ Render a list of price for a product, variant or line item.
       <span class="sr-only">{{ 'product.price.sale_price' | t }}</span>
 
       {%- if settings.currency_code_enabled -%}
-        {{- line_item.final_price | money_with_currency -}}
+        {{- line_item.final_price | money_with_currency | replace: '.00', '' -}}
       {%- else -%}
-        {{- line_item.final_price | money -}}
+        {{- line_item.final_price | money_without_trailing_zeros -}}
       {%- endif -%}
     </sale-price>
 
@@ -86,9 +86,9 @@ Render a list of price for a product, variant or line item.
         <span class="sr-only">{{ 'product.price.regular_price' | t }}</span>
 
         {%- if settings.currency_code_enabled -%}
-          {{- line_item.original_price | money_with_currency -}}
+          {{- line_item.original_price | money_with_currency | replace: '.00', '' -}}
         {%- else -%}
-          {{- line_item.original_price | money -}}
+          {{- line_item.original_price | money_without_trailing_zeros -}}
         {%- endif -%}
       </compare-at-price>
     {%- endif -%}
@@ -106,11 +106,11 @@ Render a list of price for a product, variant or line item.
       endif
 
       if settings.currency_code_enabled
-        assign variant_price = variant.price | money_with_currency
-        assign variant_compare_at_price = variant.compare_at_price | money_with_currency
+        assign variant_price = variant.price | money_with_currency | replace: '.00', ''
+        assign variant_compare_at_price = variant.compare_at_price | money_with_currency | replace: '.00', ''
       else
-        assign variant_price = variant.price | money
-        assign variant_compare_at_price = variant.compare_at_price | money
+        assign variant_price = variant.price | money_without_trailing_zeros
+        assign variant_compare_at_price = variant.compare_at_price | money_without_trailing_zeros
       endif
 
       # The slash of the sol sign ("S/.") is a hairline in Swiss 721 at every weight: it is wrapped so it can be drawn as heavy as the digits (theme.css .price-slash)
@@ -160,9 +160,9 @@ Render a list of price for a product, variant or line item.
       <span class="sr-only">{{ 'product.price.sale_price' | t }}</span>
 
       {%- if settings.currency_code_enabled -%}
-        {{- 4999 | money_with_currency -}}
+        {{- 4999 | money_with_currency | replace: '.00', '' -}}
       {%- else -%}
-        {{- 4999 | money -}}
+        {{- 4999 | money_without_trailing_zeros -}}
       {%- endif -%}
     </sale-price>
   {%- endif -%}

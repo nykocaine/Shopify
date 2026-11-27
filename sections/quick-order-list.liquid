@@ -283,17 +283,17 @@ used in B2B context.
                     {%- capture volume_pricing -%}
                       {%- liquid
                         if variant.quantity_price_breaks.size <= 1
-                          assign price = variant.price | money
+                          assign price = variant.price | money_without_trailing_zeros
                         else
                           assign price_breaks_array = variant.quantity_price_breaks | sort: 'quantity' | reverse
                           assign cart_quantity = cart | item_count_for_variant: variant.id
 
                           for price_break in price_breaks_array
                             if cart_quantity >= price_break.minimum_quantity
-                              assign price = price_break.price | money
+                              assign price = price_break.price | money_without_trailing_zeros
                               break
                             else
-                              assign price = variant.price | money
+                              assign price = variant.price | money_without_trailing_zeros
                             endif
                           endfor
                         endif
@@ -380,7 +380,7 @@ used in B2B context.
                                           <ul class="quantity-breaks-list unstyled-list border-t divide-y">
                                             {%- for quantity_break in variant.quantity_price_breaks -%}
                                               <li class="quantity-breaks-list__item h-stack justify-between">
-                                                {%- assign price = quantity_break.price | money -%}
+                                                {%- assign price = quantity_break.price | money_without_trailing_zeros -%}
 
                                                 <span class="text-sm">{{ quantity_break.minimum_quantity }}+</span>
                                                 <span class="text-sm">{{ 'product.volume_pricing.price_at_each' | t: price: price }}</span>
@@ -428,7 +428,7 @@ used in B2B context.
 
                                         {%- for quantity_break in variant.quantity_price_breaks -%}
                                           <li class="quantity-breaks-list__item h-stack justify-between">
-                                            {%- assign price = quantity_break.price | money -%}
+                                            {%- assign price = quantity_break.price | money_without_trailing_zeros -%}
 
                                             <span class="text-sm">{{ quantity_break.minimum_quantity }}+</span>
                                             <span class="text-sm">{{ 'product.volume_pricing.price_at_each' | t: price: price }}</span>
@@ -466,7 +466,7 @@ used in B2B context.
                         This cell displays the subtotal price of the variants added to the cart.
                       {%- endcomment -%}
                       <td class="text-end">
-                        {{- line_items_for_variant | sum: 'original_line_price' | default: 0 | money -}}
+                        {{- line_items_for_variant | sum: 'original_line_price' | default: 0 | money_without_trailing_zeros -}}
                       </td>
                     </tr>
                   {%- endfor -%}
@@ -552,7 +552,7 @@ used in B2B context.
                       </div>
 
                       <div>
-                        {{ 'sections.quick_order_list.product_subtotal' | t }}: {{ total_price | money }}
+                        {{ 'sections.quick_order_list.product_subtotal' | t }}: {{ total_price | money_without_trailing_zeros }}
 
                         {%- if cart.taxes_included and shop.shipping_policy.body != blank -%}
                           <p class="text-subdued subheading-xs">{{ 'cart.general.taxes_included_and_shipping_policy_html' | t: link: shop.shipping_policy.url }}</p>

@@ -144,9 +144,9 @@ This component is used to show the buy buttons
           endif
 
           if settings.currency_code_enabled
-            assign button_price = product.selected_or_first_available_variant.price | money_with_currency
+            assign button_price = product.selected_or_first_available_variant.price | money_with_currency | replace: '.00', ''
           else
-            assign button_price = product.selected_or_first_available_variant.price | money
+            assign button_price = product.selected_or_first_available_variant.price | money_without_trailing_zeros
           endif
 
           # content is rendered as raw HTML by button.liquid (no | escape there), so the <s> tag
@@ -154,9 +154,9 @@ This component is used to show the buy buttons
           # current price when the variant is actually on sale.
           if product.selected_or_first_available_variant.compare_at_price > product.selected_or_first_available_variant.price
             if settings.currency_code_enabled
-              assign button_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money_with_currency
+              assign button_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money_with_currency | replace: '.00', ''
             else
-              assign button_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money
+              assign button_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money_without_trailing_zeros
             endif
 
             assign button_price = button_price | append: ' <s>' | append: button_compare_at_price | append: '</s>'

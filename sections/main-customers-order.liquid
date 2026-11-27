@@ -70,7 +70,7 @@
                       <tr>
                         <td>{%- render 'line-item', line_item: line_item, show_quantity_selector: false -%}</td>
                         <td class="subheading text-center">{{ line_item.quantity }}</td>
-                        <td class="subheading text-end">{{ line_item.final_line_price | money }}</td>
+                        <td class="subheading text-end">{{ line_item.final_line_price | money_without_trailing_zeros }}</td>
                       </tr>
                     {%- endfor -%}
                   </tbody>
@@ -79,20 +79,20 @@
                 <div class="order-totals">
                   <div class="contents">
                     <span class="subheading">{{ 'customer.order.subtotal' | t }}</span>
-                    <span class="subheading text-end">{{ order.line_items_subtotal_price | money }}</span>
+                    <span class="subheading text-end">{{ order.line_items_subtotal_price | money_without_trailing_zeros }}</span>
                   </div>
 
                   {%- for discount_application in order.cart_level_discount_applications -%}
                     <div class="contents">
                       <span class="subheading">{{ 'customer.order.discount' | t }} ({{ discount_application.title }})</span>
-                      <span class="subheading text-end">-{{ discount_application.total_allocated_amount | money }}</span>
+                      <span class="subheading text-end">-{{ discount_application.total_allocated_amount | money_without_trailing_zeros }}</span>
                     </div>
                   {%- endfor -%}
 
                   {%- for shipping_method in order.shipping_methods -%}
                     <div class="contents">
                       <span class="subheading">{{ 'customer.order.shipping' | t }} ({{ shipping_method.title }})</span>
-                      <span class="subheading text-end">{{ shipping_method.price | money }}</span>
+                      <span class="subheading text-end">{{ shipping_method.price | money_without_trailing_zeros }}</span>
                     </div>
                   {%- endfor -%}
 
@@ -106,27 +106,27 @@
                         {%- endif -%}
                       </span>
 
-                      <span class="subheading text-end">{{ tax_line.price | money }}</span>
+                      <span class="subheading text-end">{{ tax_line.price | money_without_trailing_zeros }}</span>
                     </div>
                   {%- endfor -%}
 
                   {%- if order.total_duties > 0 -%}
                     <div class="contents">
                       <span class="subheading">{{ 'customer.order.total_duties' | t }}</span>
-                      <span class="subheading text-end">{{ order.total_duties | money }}</span>
+                      <span class="subheading text-end">{{ order.total_duties | money_without_trailing_zeros }}</span>
                     </div>
                   {%- endif -%}
 
                   {%- if order.total_refunded_amount > 0 -%}
                     <div class="contents">
                       <span class="subheading">{{ 'customer.order.refunded_amount' | t }}</span>
-                      <span class="subheading text-end">{{ order.total_refunded_amount | money }}</span>
+                      <span class="subheading text-end">{{ order.total_refunded_amount | money_without_trailing_zeros }}</span>
                     </div>
                   {%- endif -%}
 
                   <div class="contents">
                     <span class="subheading bold">{{ 'customer.order.total' | t }}</span>
-                    <span class="subheading bold text-end">{{ order.total_net_amount | money_with_currency }}</span>
+                    <span class="subheading bold text-end">{{ order.total_net_amount | money_with_currency | replace: '.00', '' }}</span>
                   </div>
                 </div>
               </div>

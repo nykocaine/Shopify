@@ -65,7 +65,7 @@
 
                                     <div class="v-stack gap-1.5">
                                       <p class="subheading subheading-xs bold">{{ 'customer.order.total' | t }}</p>
-                                      <p class="subheading text-subdued">{{ order.total_net_amount | money }}</p>
+                                      <p class="subheading text-subdued">{{ order.total_net_amount | money_without_trailing_zeros }}</p>
                                     </div>
                                   </div>
 
@@ -94,7 +94,7 @@
                                   <td class="subheading text-subdued">{{ order.created_at | date: format: 'date' }}</td>
                                   <td class="subheading text-subdued">{{ order.financial_status_label }}</td>
                                   <td class="subheading text-subdued">{{ order.fulfillment_status_label }}</td>
-                                  <td class="subheading text-subdued">{{ order.total_net_amount | money }}</td>
+                                  <td class="subheading text-subdued">{{ order.total_net_amount | money_without_trailing_zeros }}</td>
                                 </tr>
                               {%- endfor -%}
                             </tbody>

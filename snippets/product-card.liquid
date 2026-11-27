@@ -322,17 +322,17 @@ based on your desired layout (and remove most of the settings associated), and t
           assign button_label = 'product.general.add_to_cart_button' | t
 
           if settings.currency_code_enabled
-            assign button_price = product.selected_or_first_available_variant.price | money_with_currency
+            assign button_price = product.selected_or_first_available_variant.price | money_with_currency | replace: '.00', ''
           else
-            assign button_price = product.selected_or_first_available_variant.price | money
+            assign button_price = product.selected_or_first_available_variant.price | money_without_trailing_zeros
           endif
         else
           assign button_label = 'product.general.choose_options' | t
 
           if settings.currency_code_enabled
-            assign button_price = product.price_min | money_with_currency
+            assign button_price = product.price_min | money_with_currency | replace: '.00', ''
           else
-            assign button_price = product.price_min | money
+            assign button_price = product.price_min | money_without_trailing_zeros
           endif
         endif
 
@@ -340,9 +340,9 @@ based on your desired layout (and remove most of the settings associated), and t
         # children (.buy-buttons__cta pins them to opposite ends), with the crossed-out compare-at price next to the price when the variant is on sale.
         if quick_buy_single and product.selected_or_first_available_variant.compare_at_price > product.selected_or_first_available_variant.price
           if settings.currency_code_enabled
-            assign button_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money_with_currency
+            assign button_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money_with_currency | replace: '.00', ''
           else
-            assign button_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money
+            assign button_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money_without_trailing_zeros
           endif
 
           assign button_price = button_price | append: ' <s>' | append: button_compare_at_price | append: '</s>'

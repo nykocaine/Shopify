@@ -26,16 +26,16 @@ This component is used to render the sticky add to cart.
           assign disabled = false
 
           if settings.currency_code_enabled
-            assign button_price = variant.price | money_with_currency
+            assign button_price = variant.price | money_with_currency | replace: '.00', ''
           else
-            assign button_price = variant.price | money
+            assign button_price = variant.price | money_without_trailing_zeros
           endif
 
           if variant.compare_at_price > variant.price
             if settings.currency_code_enabled
-              assign button_compare_at_price = variant.compare_at_price | money_with_currency
+              assign button_compare_at_price = variant.compare_at_price | money_with_currency | replace: '.00', ''
             else
-              assign button_compare_at_price = variant.compare_at_price | money
+              assign button_compare_at_price = variant.compare_at_price | money_without_trailing_zeros
             endif
 
             assign button_price = button_price | append: ' <s>' | append: button_compare_at_price | append: '</s>'
