@@ -16,6 +16,7 @@ This component is used to show the product gallery (used in product page and fea
 @param {string} [class] - extra class applied on the container
 @param {boolean} [thumbnails_out] - if set (main-product.liquid, desktop), the thumbnails of the carousel are NOT drawn inside the gallery: they are output between two <!--gallery-thumbs--> markers at the very end, so the caller can split them out of the gallery's markup and place them elsewhere (under the static first image). Only the thumbnails that follow the carousel (same order, same hidden ones, same click behaviour: they point to it by id).
 @param {number} [move_to_second_media_id] - if set, this media's id is kept in the gallery but repositioned to the second slide and hidden - itself and its scroll-marker - at desktop widths (min-width: 1000px), where it's shown elsewhere instead (eg. main-product.liquid's separate first-image column)
+@param {boolean} [mobile_progress_bar] - if set (main-product.liquid), phones get a thin bar under the photos (<carousel-segments>, theme.css .carousel-segments): a painted part as wide as one photo that slides along it as the visitor moves through the gallery. The main product hides the dots with CSS instead.
 @param {boolean} [skip_first_media] - if set (main-product.liquid), the product's first media is not shown in this gallery (it stays in the markup, hidden, like a media filtered out by the variant image sets, so counters, thumbnails and the variant -> slide logic keep working). It is still the image of the product cards.
 @param {object} [section]
 {%- enddoc -%}
@@ -862,6 +863,16 @@ only way to do it on Shopify right now.
             {{- mobile_thumbs_strip -}}
           </div>
         {%- endif -%}
+      {%- endif -%}
+
+      {%- comment -%}
+      Phones: the bar under the photos (its look is set by the section that asks for it: main-product.liquid). A plain item of the image list, so it takes
+      its own row under the carousel, inside the card, like the thumbnails strip. It hides itself when there is a single photo.
+      {%- endcomment -%}
+      {%- if mobile_progress_bar and product != blank -%}
+        <div class="product-gallery__progress md:hidden">
+          <carousel-segments class="carousel-segments" aria-controls="{{ product_gallery_carousel_id }}"></carousel-segments>
+        </div>
       {%- endif -%}
 
       {%- comment -%}

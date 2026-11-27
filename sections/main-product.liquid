@@ -112,23 +112,47 @@
   }
 
   {%- comment -%}
-  Phones and tablets: no space between the photos of the gallery carousel (product-gallery.liquid gives them a 4px gap, 2px with no controls). Set here, for
-  this section only (the snippet is shared with the featured product and the quick buy modal), with !important for the same reason as the rule above:
-  the snippet's own <style> comes later in the page and sets the same variable on the same element.
+  Phones (below 700px) only: the gallery of this section, as a classic mobile product gallery:
+  - the first photo takes 94% of the width, so the very start of the next one peeks out at the right edge (a little: the photos are 6px apart, which
+    is what is left of that 6% besides the gap), and a bar under the photos shows where the visitor is (see the .product-gallery__progress rules
+    below), in place of the dots, which are hidden here.
+  The snippet (product-gallery.liquid, shared with the featured product and the quick buy modal) gives the first photo 93% and a 4px gap on phones
+  and tablets; this is set for this section only, with !important because the snippet's own <style> comes later in the page and uses the same selectors
+  (one of its rules also has a variant inside @supports (round())). Tablets keep the snippet's values.
   {%- endcomment -%}
-  @media screen and (max-width: 999px) {
+  @media screen and (max-width: 699px) {
     #shopify-section-{{ section.id }} {
-      --product-gallery-carousel-gap: 0px !important;
-      --product-gallery-carousel-grid: auto / auto-flow 100% !important;
+      --product-gallery-carousel-gap: 6px !important;
+      --product-gallery-carousel-grid: auto / auto-flow 94% !important;
+    }
+
+    #shopify-section-{{ section.id }} .product-gallery__carousel > .product-gallery__media:nth-child(1 of :not([hidden])) {
+      width: 94% !important;
+    }
+
+    @supports (width: round(down, 50%, 1px)) {
+      #shopify-section-{{ section.id }} .product-gallery__carousel > .product-gallery__media:nth-child(1 of :not([hidden])) {
+        width: round(down, 94%, 1px) !important;
+      }
+    }
+
+    #shopify-section-{{ section.id }} .product-gallery__controls-floating .carousel-dots {
+      display: none;
     }
 
     {%- comment -%}
-    A classic gallery on phones and tablets: every photo takes the whole width, the next one does not peek out at the right edge (product-gallery.liquid
-    makes the first visible slide 93% wide so the second one shows). !important because it has to beat that rule, which has the same selector, comes later
-    in the page and also has a variant inside @supports (round()).
+    The bar under the photos: 3px high, square ends, a soft track and a darker painted part (the text color of the card's scheme at 15% and 55%), inset
+    from the card's sides by the page's side margin, with room above and below it.
     {%- endcomment -%}
-    #shopify-section-{{ section.id }} .product-gallery__carousel > .product-gallery__media:nth-child(1 of :not([hidden])) {
-      width: 100% !important;
+    #shopify-section-{{ section.id }} .product-gallery__progress {
+      padding: 1rem var(--container-gutter) 1.25rem;
+    }
+
+    #shopify-section-{{ section.id }} .product-gallery__progress .carousel-segments {
+      --progress-bar-height: 3px;
+      --progress-bar-radius: 0px;
+      --progress-bar-background-color: rgb(var(--text-color) / .15);
+      --progress-bar-fill-color: rgb(var(--text-color) / .55);
     }
   }
 
@@ -702,6 +726,28 @@
     }
 
     {%- comment -%}
+    Phones (below 700px): the gallery and the info box are one piece again - no space between them, the gallery's bottom corners and the info box's top
+    corners square so they meet flush. (Tablets keep the two separate rounded cards of the block above.) Later than that block, with !important like it.
+    {%- endcomment -%}
+    @media screen and (max-width: 699px) {
+      #shopify-section-{{ section.id }} .product {
+        gap: 0;
+      }
+
+      #shopify-section-{{ section.id }} .product-gallery-frame,
+      #shopify-section-{{ section.id }} .product-gallery__carousel-frame,
+      #shopify-section-{{ section.id }} .product-gallery__image-list > * {
+        border-end-start-radius: 0 !important;
+        border-end-end-radius: 0 !important;
+      }
+
+      #shopify-section-{{ section.id }} .product-info-frame {
+        border-start-start-radius: 0 !important;
+        border-start-end-radius: 0 !important;
+      }
+    }
+
+    {%- comment -%}
     Skipped when the transparent header is actually going to overlay this section (same condition
     used below for the allow-transparent-header attribute): the header's CSS assumes the gallery
     sits flush at the very top (zero gap) to overlay correctly, so adding the usual top gutter here
@@ -1078,7 +1124,8 @@
           thumbnail_border_radius: section.settings.thumbnail_border_radius,
           move_to_second_media_id: move_to_second_media_id,
           thumbnails_out: thumbnails_out,
-          skip_first_media: hide_first_media
+          skip_first_media: hide_first_media,
+          mobile_progress_bar: true
       -%}
     {%- endcapture -%}
 
