@@ -754,6 +754,17 @@
         border-start-start-radius: 0 !important;
         border-start-end-radius: 0 !important;
       }
+
+      {%- comment -%}
+      The strip with the bar under the photos has the same background as the info box right below it (the info box's phone color scheme: its color or
+      gradient), so the gallery card and the info box read as one piece, and the bar takes that scheme's text color.
+      {%- endcomment -%}
+      {%- assign progress_scheme = section.settings.product_info_color_scheme_mobile -%}
+      #shopify-section-{{ section.id }} .product-gallery__progress {
+        --text-color: {{ progress_scheme.settings.text_color.rgb }};
+        background-color: {% if progress_scheme.settings.background == 'rgba(0,0,0,0)' %}transparent{% else %}rgb({{ progress_scheme.settings.background.rgb }}){% endif %};
+        background-image: {% if progress_scheme.settings.background_gradient != blank %}{{ progress_scheme.settings.background_gradient }}{% else %}none{% endif %};
+      }
     }
 
     {%- comment -%}
