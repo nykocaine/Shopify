@@ -6,8 +6,9 @@
   also moves the selection of the card and of the panel.
 - The panel (its own color scheme) has, from top to bottom: one small thumbnail per block (tap one to change the story), the block's phrase, and two
   rows: the creator ("Creator" + its @user) and the picks (a title + links to the picked products). Everything in the panel changes with the story.
-- The card and the panel can be joined (no gap, only the outer corners rounded) or separated by a gap. Each screen size has its own gap: 0 means joined.
-  Phones: the card on top, the panel under it. From 700px: side by side.
+- The card and the panel are two blocks of their own, with no container or background behind them. Phones: the card on top and the panel joined
+  under it (one card: only the outer corners are rounded). From 700px: side by side, joined by default; the "Separate" checkbox pulls them apart (a gap
+  between two fully rounded blocks). The video can be on the left or on the right.
 - The section's header (title, subtitle and button) is optional and sits above.
 
 Colors and the shape of the round controls come from Theme settings > Controls.
@@ -53,29 +54,24 @@ Colors and the shape of the round controls come from Theme settings > Controls.
   assign lightbox_id = 'instagram-feed-lightbox-' | append: section.id
   assign corner_radius_px = section.settings.instagram_feed_border_radius | append: 'px'
 
-  # The section's color scheme has a pure white background (#ffffff, exactly): then the section has no inner padding and no rounded corners of its own.
-  assign scheme_is_white = false
+  # Desktop: joined (one card) or two separate blocks; the video on the start (left) or the end (right) side. Phones are always joined.
+  assign separate_desktop = section.settings.separate_desktop
+  assign video_end = false
 
-  if section.settings.color_scheme.settings.background.rgb == '255 255 255'
-    assign scheme_is_white = true
+  if section.settings.video_position == 'end'
+    assign video_end = true
   endif
 
-  # Joined (gap 0) or separated (any gap), per screen size
-  assign joined_mobile = false
-  assign joined_desktop = false
+  assign story_gap_desktop = 0
 
-  if section.settings.gap_mobile == 0
-    assign joined_mobile = true
-  endif
-
-  if section.settings.gap_desktop == 0
-    assign joined_desktop = true
+  if separate_desktop
+    assign story_gap_desktop = section.settings.gap_desktop
   endif
 
   assign panel_scheme = section.settings.panel_color_scheme
 -%}
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {% if scheme_is_white %}0{% else %}{{ corner_radius_px }}{% endif %}; overflow: hidden;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %} instagram-feed-wrapper">
   <div class="section-spacing">
     <div id="{{ feed_id }}" class="instagram-feed section-stack" {% if section.settings.title_color != blank and section.settings.title_color != 'rgba(0,0,0,0)' %}style="--instagram-title-color: {{ section.settings.title_color }};"{% endif %}>
       {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank -%}
@@ -103,7 +99,7 @@ Colors and the shape of the round controls come from Theme settings > Controls.
       {%- endif -%}
 
       {%- if story_count > 0 -%}
-        <div class="ig-story{% if joined_mobile %} ig-story--joined-mobile{% endif %}{% if joined_desktop %} ig-story--joined-desktop{% endif %}">
+        <div class="ig-story{% if separate_desktop %} ig-story--separate{% endif %}{% if video_end %} ig-story--video-end{% endif %}">
           {%- comment -%}
           The card: every story's media stacked in the same spot, only the selected one is visible (see the style below). They are all in the
           page so the zoom view can go from one to the next with its own arrows.
@@ -379,84 +375,90 @@ Colors and the shape of the round controls come from Theme settings > Controls.
 
   {%- comment -%}
   ============================================================
-  FLOATING MODE / SECTION PADDING
+  NO CONTAINER
   ============================================================
-  Same formula as sections/reviews.liquid and sections/faq.liquid: gutter + 0.5rem on every side, at every breakpoint, instead of
-  .section-spacing's generic page-to-page rhythm. A pure white color scheme has no inner padding at all.
+  The video card and the panel are the blocks themselves: nothing wraps them. The section's own wrapper has no background (its color scheme only
+  gives the header its text color), and no padding around the story: the card fills its whole block. Floating: the side margins of the page and
+  the usual space above and below (no inner padding). Not floating: the story keeps the page's side margin as padding.
   {%- endcomment -%}
+  #shopify-section-{{ section.id }} .instagram-feed-wrapper {
+    background: none;
+  }
+
   {%- if section.settings.floating_instagram_feed -%}
     #shopify-section-{{ section.id }} .section-spacing {
       padding-block: 0;
     }
-
+  {%- else -%}
     #shopify-section-{{ section.id }} .instagram-feed {
-      padding: calc(var(--container-gutter) + 0.5rem);
+      padding-inline: var(--container-gutter);
+    }
+  {%- endif -%}
+
+  {%- if section.settings.attach_to_footer -%}
+    {%- comment -%}
+    "Attach to footer": only when this section is the last one of the page content, so the footer comes right after it
+    (the footer lives in its own section group, right below <main>). The two join with no gap: this section loses its bottom margin and the bottom
+    corners of its blocks (the panel on phones; the card and the panel from 700px), and the footer loses only its top corners (its bottom corners
+    stay rounded); a divider line like the footer's own separates them. Side margins stay. The footer's own rules are scoped through :root:has(),
+    because it is a different section.
+    {%- endcomment -%}
+    main > #shopify-section-{{ section.id }}:last-child > .section-floating {
+      margin-block-end: 0 !important;
     }
 
-    {%- if scheme_is_white -%}
-      #shopify-section-{{ section.id }} .instagram-feed {
-        padding: 0;
-      }
-    {%- endif -%}
+    main > #shopify-section-{{ section.id }}:last-child .ig-story__panel {
+      border-end-start-radius: 0 !important;
+      border-end-end-radius: 0 !important;
+    }
 
-    {%- if section.settings.attach_to_footer -%}
-      {%- comment -%}
-      "Attach to footer": only when this section is the last one of the page content, so the footer comes right after it
-      (the footer lives in its own section group, right below <main>). The two join with no gap: this section loses its
-      bottom margin and its bottom corners, keeping only the top ones, and the footer loses only its top corners (its bottom corners stay rounded); a divider line
-      like the footer's own separates them.
-      Side margins stay (both are floating). The footer's own rules are scoped through :root:has(), because it is a
-      different section.
-      {%- endcomment -%}
-      main > #shopify-section-{{ section.id }}:last-child > .section-floating {
-        margin-block-end: 0 !important;
-        border-radius: {% if scheme_is_white %}0{% else %}{{ corner_radius_px }} {{ corner_radius_px }} 0 0{% endif %} !important;
+    @media screen and (min-width: 700px) {
+      main > #shopify-section-{{ section.id }}:last-child .ig-story__stage {
+        border-end-start-radius: 0 !important;
+        border-end-end-radius: 0 !important;
       }
+    }
 
-      :root:has(main > #shopify-section-{{ section.id }}:last-child) .shopify-section--footer {
-        margin-block-start: 0;
-      }
+    :root:has(main > #shopify-section-{{ section.id }}:last-child) .shopify-section--footer {
+      margin-block-start: 0;
+    }
 
-      :root:has(main > #shopify-section-{{ section.id }}:last-child) .shopify-section--footer .footer {
-        border-start-start-radius: 0 !important;
-        border-start-end-radius: 0 !important;
-        border-block-start: 1px solid rgb(var(--border-color));
-      }
-    {%- endif -%}
+    :root:has(main > #shopify-section-{{ section.id }}:last-child) .shopify-section--footer .footer {
+      border-start-start-radius: 0 !important;
+      border-start-end-radius: 0 !important;
+      border-block-start: 1px solid rgb(var(--border-color));
+    }
   {%- endif -%}
 
   {%- comment -%}
   ============================================================
   THE STORY: CARD + PANEL
   ============================================================
-  Phones: one column, the card on top and the panel under it, with the gap of "Gap (mobile)" (0 = joined, only the outer corners rounded).
-  From 700px: two equal columns side by side, with the gap of "Gap (desktop)". The card's height comes from its shape (the "shape" settings) and the
-  panel takes the same height. Every corner uses the section's corner radius; where the two parts touch (joined) the corners facing each other are square.
+  Phones: one column, the card on top and the panel joined under it (no gap): one card, rounded only on its outer corners.
+  From 700px: two equal columns side by side. Joined by default; with "Separate" they are two blocks with a gap between them and every corner of both
+  rounded. The video is on the start side (left) or, with "Video on the right", on the end side. The card's height comes from its shape (the
+  "shape" settings) and the panel takes the same height. Where the two parts touch (joined) the corners facing each other are square.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .ig-story {
     --ig-radius: {{ corner_radius_px }};
     --ig-ratio: {{ story_ratio_mobile }};
-    gap: {{ section.settings.gap_mobile }}px;
+    gap: 0;
     grid-template-columns: minmax(0, 1fr);
     display: grid;
   }
 
   #shopify-section-{{ section.id }} .ig-story__stage {
     aspect-ratio: var(--ig-ratio);
-    border-radius: var(--ig-radius);
+    border-radius: var(--ig-radius) var(--ig-radius) 0 0;
     min-width: 0;
     overflow: hidden;
     display: grid;
     position: relative;
-  }
-
-  #shopify-section-{{ section.id }} .ig-story--joined-mobile .ig-story__stage {
-    border-end-start-radius: 0;
-    border-end-end-radius: 0;
+    isolation: isolate;
   }
 
   #shopify-section-{{ section.id }} .ig-story__panel {
-    border-radius: var(--ig-radius);
+    border-radius: 0 0 var(--ig-radius) var(--ig-radius);
     min-width: 0;
     padding: calc(var(--container-gutter) + 0.5rem);
     gap: 2rem;
@@ -465,32 +467,37 @@ Colors and the shape of the round controls come from Theme settings > Controls.
     display: flex;
   }
 
-  #shopify-section-{{ section.id }} .ig-story--joined-mobile .ig-story__panel {
-    border-start-start-radius: 0;
-    border-start-end-radius: 0;
-  }
-
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .ig-story {
-      gap: {{ section.settings.gap_desktop }}px;
+      gap: {{ story_gap_desktop }}px;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       align-items: stretch;
     }
 
-    {%- comment -%}Back to the full radius, then the joined side of the desktop layout (the sides facing each other) is squared{%- endcomment -%}
-    #shopify-section-{{ section.id }} .ig-story .ig-story__stage,
+    {%- comment -%}Joined, video on the start side: the card is rounded at the start, the panel at the end{%- endcomment -%}
+    #shopify-section-{{ section.id }} .ig-story .ig-story__stage {
+      border-radius: var(--ig-radius) 0 0 var(--ig-radius);
+    }
+
     #shopify-section-{{ section.id }} .ig-story .ig-story__panel {
+      border-radius: 0 var(--ig-radius) var(--ig-radius) 0;
+    }
+
+    {%- comment -%}Video on the end side{%- endcomment -%}
+    #shopify-section-{{ section.id }} .ig-story--video-end .ig-story__stage {
+      order: 2;
+      border-radius: 0 var(--ig-radius) var(--ig-radius) 0;
+    }
+
+    #shopify-section-{{ section.id }} .ig-story--video-end .ig-story__panel {
+      order: 1;
+      border-radius: var(--ig-radius) 0 0 var(--ig-radius);
+    }
+
+    {%- comment -%}Separate: two blocks of their own, every corner rounded{%- endcomment -%}
+    #shopify-section-{{ section.id }} .ig-story--separate .ig-story__stage,
+    #shopify-section-{{ section.id }} .ig-story--separate .ig-story__panel {
       border-radius: var(--ig-radius);
-    }
-
-    #shopify-section-{{ section.id }} .ig-story--joined-desktop .ig-story__stage {
-      border-start-end-radius: 0;
-      border-end-end-radius: 0;
-    }
-
-    #shopify-section-{{ section.id }} .ig-story--joined-desktop .ig-story__panel {
-      border-start-start-radius: 0;
-      border-end-start-radius: 0;
     }
   }
 
@@ -517,6 +524,7 @@ Colors and the shape of the round controls come from Theme settings > Controls.
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+    border-radius: inherit;
     transition: opacity .4s ease, visibility 0s linear .4s;
   }
 
@@ -528,11 +536,23 @@ Colors and the shape of the round controls come from Theme settings > Controls.
     transition: opacity .4s ease, visibility 0s;
   }
 
-  {%- comment -%}The stage clips the media, so the card has no rounded corner of its own on the joined sides; the zoom view keeps the section's radius{%- endcomment -%}
+  {%- comment -%}
+  The media fills its whole block with the block's own corners, at rest: every layer between the block and the picture (the card, the video, its poster)
+  takes the radius of the block (inherit), so the corners are rounded even where a browser doesn't clip a video to the rounded block (Safari). The zoom view
+  keeps its own radius (the section's corner radius).
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .ig-story__cell .content-box,
+  #shopify-section-{{ section.id }} .ig-story__cell .content-box__background-media,
+  #shopify-section-{{ section.id }} .ig-story__cell video-media:not(.is-lightbox-expanded),
+  #shopify-section-{{ section.id }} .ig-story__cell video-media:not(.is-lightbox-expanded) > video,
+  #shopify-section-{{ section.id }} .ig-story__cell video-media:not(.is-lightbox-expanded) > img,
+  #shopify-section-{{ section.id }} .ig-story__cell .content-box__background-media > img:not(.is-lightbox-expanded) {
+    border-radius: inherit !important;
+  }
+
   #shopify-section-{{ section.id }} .ig-story__cell .content-box {
     height: 100%;
     aspect-ratio: auto;
-    border-radius: 0 !important;
   }
 
   #shopify-section-{{ section.id }} .ig-story__cell video-media > video,
@@ -744,13 +764,14 @@ Colors and the shape of the round controls come from Theme settings > Controls.
       "type": "color_scheme",
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
+      "info": "Da el color del texto del título. No hay fondo detrás del video ni del panel (el panel tiene su propio esquema).",
       "default": "scheme-1"
     },
     {
       "type": "checkbox",
       "id": "floating_instagram_feed",
       "label": "Floating",
-      "info": "Adds margins around the section (bottom and sides), using the store's global side margin.",
+      "info": "Adds margins around the section (top, bottom and sides), using the store's global side margin.",
       "default": false
     },
     {
@@ -776,32 +797,38 @@ Colors and the shape of the round controls come from Theme settings > Controls.
       "content": "Historia: tarjeta y panel"
     },
     {
-      "type": "color_scheme",
-      "id": "panel_color_scheme",
-      "label": "Esquema de color del panel",
-      "default": "scheme-1"
+      "type": "select",
+      "id": "video_position",
+      "label": "Posición del video (escritorio)",
+      "options": [
+        { "value": "start", "label": "Izquierda" },
+        { "value": "end", "label": "Derecha" }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "checkbox",
+      "id": "separate_desktop",
+      "label": "Separar el video y el panel (escritorio)",
+      "info": "En escritorio quedan como dos bloques separados, con todas las esquinas redondeadas. En móvil siempre van juntos: el video arriba y el panel pegado debajo.",
+      "default": false
     },
     {
       "type": "range",
       "id": "gap_desktop",
-      "min": 0,
+      "min": 4,
       "max": 48,
       "step": 4,
       "unit": "px",
-      "label": "Espacio entre el video y el panel (escritorio)",
-      "info": "0 los junta: solo quedan redondeadas las esquinas de afuera.",
-      "default": 0
+      "label": "Espacio entre el video y el panel",
+      "default": 16,
+      "visible_if": "{{ section.settings.separate_desktop }}"
     },
     {
-      "type": "range",
-      "id": "gap_mobile",
-      "min": 0,
-      "max": 32,
-      "step": 4,
-      "unit": "px",
-      "label": "Espacio entre el video y el panel (móvil)",
-      "info": "0 los junta: solo quedan redondeadas las esquinas de afuera.",
-      "default": 0
+      "type": "color_scheme",
+      "id": "panel_color_scheme",
+      "label": "Esquema de color del panel",
+      "default": "scheme-1"
     },
     {
       "type": "select",
