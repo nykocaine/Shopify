@@ -10,7 +10,15 @@ This component is used to render the sticky add to cart.
   {%- liquid
     # Own settings of the product section (sticky_atc_*): the bar's color scheme (text and outline button colors), its background color + opacity,
     # and its own blur amount. They do not depend on the dialog backdrop settings.
+    # The bar's colors (and so its solid buy button) follow the product info box's color scheme (the phone one first, the bar only shows on phones),
+    # unless a scheme is picked in the section's "Sticky add to cart: esquema de colores" setting.
     assign sticky_scheme = section.settings.sticky_atc_color_scheme
+    if sticky_scheme == blank
+      assign sticky_scheme = section.settings.product_info_color_scheme_mobile
+    endif
+    if sticky_scheme == blank
+      assign sticky_scheme = section.settings.product_info_color_scheme
+    endif
     assign sticky_bg = section.settings.sticky_atc_background
     assign sticky_bg_opacity = section.settings.sticky_atc_background_opacity | default: 70
     assign sticky_blur = section.settings.sticky_atc_blur | default: 14
@@ -18,7 +26,7 @@ This component is used to render the sticky add to cart.
   <product-sticky-add-to-cart class="product-sticky-add-to-cart color-scheme{% if sticky_scheme != blank %} color-scheme--{{ sticky_scheme.id }}{% endif %}" main-product-form="{{ product_form_id }}" style="--sticky-atc-blur: {{ sticky_blur }}px;{% if sticky_bg != blank %} --sticky-atc-background: rgb({{ sticky_bg.rgb }} / {{ sticky_bg.alpha | times: sticky_bg_opacity | divided_by: 100.0 }});{% endif %}">
     <product-rerender id="product-sticky-add-to-cart-{{ product.id }}-{{ section.id }}" observe-form="{{ product_form_id }}">
       {%- liquid
-        # An outline button (its colors come from the bar's color scheme), "Buy – price" like the product cards' quick buy.
+        # A solid, full width button (its colors come from the bar's color scheme: the info box's), "Buy – price" like the product cards' quick buy.
         assign variant = product.selected_or_first_available_variant
 
         if variant.available
@@ -76,7 +84,7 @@ This component is used to render the sticky add to cart.
           {%- endunless -%}
         </div>
 
-        {%- render 'button', type: 'submit', form: product_form_id, content: button_content, disabled: disabled, style: 'outline', class: button_class -%}
+        {%- render 'button', type: 'submit', form: product_form_id, content: button_content, disabled: disabled, class: button_class -%}
       </div>
     </product-rerender>
   </product-sticky-add-to-cart>

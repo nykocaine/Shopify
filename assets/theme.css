@@ -9461,10 +9461,17 @@ shopify-account::part(signed-out-avatar) {
   position: absolute;
 }
 
-/* The outline button keeps its own size (the theme's button padding), never wider than half of the row */
+/* The bar is just the buy button: solid (the color scheme of the product info box), the full width of the bar and fully rounded (pill). The
+   product's name and the variant select are not shown here (the variant is chosen in the product's own picker, the name is on the page). */
+.product-sticky-add-to-cart__info {
+  display: none;
+}
+
 .product-sticky-add-to-cart .button {
-  flex: none;
-  max-width: 55%;
+  flex: 1 1 100%;
+  width: 100%;
+  max-width: none;
+  border-radius: 9999px;
   /* The label is the body's size too (the theme's button font size is its own setting) */
   font-size: var(--text-base);
 }
