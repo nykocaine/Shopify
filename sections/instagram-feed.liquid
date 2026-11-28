@@ -62,11 +62,6 @@ Colors and the shape of the round controls come from Theme settings > Controls.
     assign video_end = true
   endif
 
-  assign story_gap_desktop = 0
-
-  if separate_desktop
-    assign story_gap_desktop = section.settings.gap_desktop
-  endif
 
   assign panel_scheme = section.settings.panel_color_scheme
 -%}
@@ -283,6 +278,37 @@ Colors and the shape of the round controls come from Theme settings > Controls.
               thumb.addEventListener('click', () => select(Number(thumb.dataset.index)));
             });
 
+            {%- comment -%}
+            Desktop (700px and up): no pop-up. The play button of the card does not open the zoom view: the video plays right there, with sound (the
+            click is the visitor's tap, so the browser allows it), through the video's own sound button so its icon stays right. In the capture phase,
+            before the zoom script sees the event. On phones nothing changes: the zoom view opens as usual.
+            {%- endcomment -%}
+            const desktopQuery = window.matchMedia('(min-width: 700px)');
+
+            feed.addEventListener('lightbox:open', (event) => {
+              if (!desktopQuery.matches) {
+                return;
+              }
+
+              event.stopPropagation();
+
+              const cell = cells.find((item) => item.classList.contains('is-active')) ?? cells[0];
+              const media = cell?.querySelector('video-media');
+              const video = media?.querySelector('video');
+
+              if (!media || !video) {
+                return;
+              }
+
+              if (video.muted) {
+                cell.querySelector('.carousel-video-sound-toggle')?.click();
+              }
+
+              if (typeof media.play === 'function') {
+                media.play();
+              }
+            }, true);
+
             {%- comment -%}Next / previous in the zoom view: the card and the panel go to the same story{%- endcomment -%}
             feed.addEventListener('lightbox:item-active', (event) => {
               const cell = event.detail?.cell;
@@ -447,6 +473,10 @@ Colors and the shape of the round controls come from Theme settings > Controls.
     display: grid;
   }
 
+  {%- comment -%}
+  No stacking context on the stage (no isolation, z-index, transform...): the zoom view's media and its backdrop are position: fixed with their own z-index
+  (snippets/media-zoom-style.liquid) and must compete with the rest of the page, not only inside the card, or the backdrop's blur ends up over the video.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .ig-story__stage {
     aspect-ratio: var(--ig-ratio);
     border-radius: var(--ig-radius) var(--ig-radius) 0 0;
@@ -454,7 +484,6 @@ Colors and the shape of the round controls come from Theme settings > Controls.
     overflow: hidden;
     display: grid;
     position: relative;
-    isolation: isolate;
   }
 
   #shopify-section-{{ section.id }} .ig-story__panel {
@@ -469,7 +498,7 @@ Colors and the shape of the round controls come from Theme settings > Controls.
 
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .ig-story {
-      gap: {{ story_gap_desktop }}px;
+      gap: {% if separate_desktop %}var(--horizontal-gap){% else %}0{% endif %};
       grid-template-columns: repeat(2, minmax(0, 1fr));
       align-items: stretch;
     }
@@ -560,9 +589,29 @@ Colors and the shape of the round controls come from Theme settings > Controls.
     object-fit: cover;
   }
 
-  {%- comment -%}The play / pause / sound buttons exist only inside the zoom view: on the card the round play button is the only control{%- endcomment -%}
+  {%- comment -%}
+  Phones: the play / pause / sound buttons exist only inside the zoom view (the pop-up): on the card the round play button is the only control.
+  From 700px (desktop) there is no pop-up: the video plays in its own place. While it plays, the round play button goes away and the video's own
+  sound and pause buttons show at its corner; paused, the round play button is back. A photo has no zoom button there either.
+  {%- endcomment -%}
   #shopify-section-{{ section.id }} .carousel-video-controls:not(.is-lightbox-expanded) {
     display: none;
+  }
+
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .ig-story__cell:has(video-media[playing]:not(.is-lightbox-expanded)) .carousel-video-controls {
+      display: flex;
+    }
+
+    #{{ feed_id }} .ig-story__cell:has(video-media[playing]:not(.is-lightbox-expanded)) .video-open-button .overlay-control {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    #shopify-section-{{ section.id }} .ig-story__cell .product-zoom-button {
+      display: none;
+    }
   }
 
   {%- comment -%}
@@ -810,19 +859,8 @@ Colors and the shape of the round controls come from Theme settings > Controls.
       "type": "checkbox",
       "id": "separate_desktop",
       "label": "Separar el video y el panel (escritorio)",
-      "info": "En escritorio quedan como dos bloques separados, con todas las esquinas redondeadas. En móvil siempre van juntos: el video arriba y el panel pegado debajo.",
+      "info": "En escritorio quedan como dos bloques separados, con todas las esquinas redondeadas y el mismo espacio que hay entre bloques en Media Blocks. En móvil siempre van juntos: el video arriba y el panel pegado debajo.",
       "default": false
-    },
-    {
-      "type": "range",
-      "id": "gap_desktop",
-      "min": 4,
-      "max": 48,
-      "step": 4,
-      "unit": "px",
-      "label": "Espacio entre el video y el panel",
-      "default": 16,
-      "visible_if": "{{ section.settings.separate_desktop }}"
     },
     {
       "type": "color_scheme",
