@@ -1,0 +1,26 @@
+{%- doc -%}
+A stable pseudo-random whole number (0 to 65535) taken from a text, so "random" choices (a username, a product) are different from one item to the
+next but never change between visits: the same text always gives the same number. Prints the number only.
+
+@param {string} seed - the text to take the number from (eg. a block's id)
+@param {number} [offset] - where in the text's fingerprint to read (0 to 28), to get several independent numbers from the same seed (default 0)
+{%- enddoc -%}
+
+{%- liquid
+  assign seed_start = offset | default: 0
+  assign seed_hex = seed | md5 | slice: seed_start, 4
+  assign seed_chars = seed_hex | split: ''
+  assign seed_digits = '0123456789abcdef' | split: ''
+  assign seed_total = 0
+
+  for seed_char in seed_chars
+    for seed_digit in seed_digits
+      if seed_digit == seed_char
+        assign seed_total = seed_total | times: 16 | plus: forloop.index0
+        break
+      endif
+    endfor
+  endfor
+
+  echo seed_total
+-%}

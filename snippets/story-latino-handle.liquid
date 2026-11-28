@@ -1,0 +1,50 @@
+{%- doc -%}
+A made-up username that sounds like a real Latin American person's, with the @ (eg. @camila.rojas, @vale_torres98, @sofi.quispe): used by the Instagram feed
+for a video whose "Creator" field was left empty. It comes from the seed (the block's id), so a video keeps the same username on every visit.
+Prints the username only.
+
+@param {string} seed - the text the username comes from (eg. a block's id)
+{%- enddoc -%}
+
+{%- liquid
+  assign first_names = 'camila,valentina,sofia,isabella,mariana,luciana,fernanda,daniela,andrea,paula,valeria,gabriela,renata,antonella,ximena,carolina,alejandra,juliana,catalina,nicole,mayra,rocio,milagros,fiorella,jimena,adriana,lucia,natalia,ariana,vale,sofi,cami,fer,dani,mili,lu,mateo,sebastian,diego,matias,andres,joaquin,santiago,rodrigo' | split: ','
+  assign last_names = 'quispe,huaman,flores,rojas,mendoza,torres,vargas,castillo,chavez,ramirez,gutierrez,salazar,paredes,rios,vega,campos,cardenas,delgado,herrera,medina,navarro,ortiz,pacheco,reyes,silva,soto,valdez,zegarra,benites,carrasco,rdz,garcia,lopez,diaz,morales,cruz' | split: ','
+
+  capture seed_a
+    render 'story-seed', seed: seed, offset: 0
+  endcapture
+
+  capture seed_b
+    render 'story-seed', seed: seed, offset: 4
+  endcapture
+
+  capture seed_c
+    render 'story-seed', seed: seed, offset: 8
+  endcapture
+
+  capture seed_d
+    render 'story-seed', seed: seed, offset: 12
+  endcapture
+
+  assign first_index = seed_a | plus: 0 | modulo: first_names.size
+  assign last_index = seed_b | plus: 0 | modulo: last_names.size
+  assign first_name = first_names[first_index]
+  assign last_name = last_names[last_index]
+  assign style = seed_c | plus: 0 | modulo: 6
+  assign number = seed_d | plus: 0 | modulo: 90 | plus: 10
+
+  case style
+    when 0
+      echo '@' | append: first_name | append: '.' | append: last_name
+    when 1
+      echo '@' | append: first_name | append: '_' | append: last_name | append: number
+    when 2
+      echo '@' | append: first_name | append: number
+    when 3
+      echo '@' | append: first_name | append: '.' | append: last_name | append: number
+    when 4
+      echo '@' | append: first_name | append: '_' | append: last_name
+    else
+      echo '@' | append: first_name | append: last_name | append: number
+  endcase
+-%}

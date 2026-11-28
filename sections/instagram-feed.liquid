@@ -9,6 +9,10 @@
 - The card and the panel are two blocks of their own, with no container or background behind them. Phones: the card on top and the panel joined
   under it (one card: only the outer corners are rounded). From 700px: side by side, joined by default; the "Separate" checkbox pulls them apart (a gap
   between two fully rounded blocks). The video can be on the left or on the right.
+- Nothing has to be typed per video: an empty "Creator" gets a made-up Latin username (@camila.rojas) and a video with no picks gets one product of
+  the chosen collection (both stable, they come from the block's id; anything typed wins).
+- On a product page the videos whose picks include that product come first and the others after, for any product; a bundle (tag "bundle", or listed in
+  "Products that mix every video") shows them in a random order instead.
 - The section's header (title, subtitle and button) is optional and sits above.
 
 Colors and the shape of the round controls come from Theme settings > Controls.
@@ -64,6 +68,85 @@ Colors and the shape of the round controls come from Theme settings > Controls.
 
 
   assign panel_scheme = section.settings.panel_color_scheme
+
+  # Automatic data, so nothing has to be typed for every video: a made-up Latin username when "Creator" is empty, and one product of the chosen
+  # collection as the pick when there are no picks. Both come from the block's id (snippets/story-seed.liquid), so a video keeps its own
+  # username and product on every visit; anything typed in the editor wins.
+  assign auto_creator = section.settings.auto_creator
+  assign auto_picks_on = section.settings.auto_picks
+  assign auto_products = section.settings.auto_picks_collection.products
+  assign auto_products_size = auto_products.size
+
+  # Order of the stories. On a product page the videos whose picks include THIS product come first and the rest after (each group keeps the
+  # editor's order), for any product: it is read from the picks, nothing is set per product. A bundle (a product with the tag "bundle", or one
+  # of "Products that mix every video") shows every video in a random order instead (script below, so it changes on every visit).
+  assign current_handle = ''
+
+  if request.page_type == 'product' and product != blank
+    assign current_handle = product.handle
+  endif
+
+  assign mixed_order = false
+
+  if current_handle != blank
+    if product.tags contains 'bundle'
+      assign mixed_order = true
+    endif
+
+    for mixed_product in section.settings.mixed_products
+      if mixed_product.handle == current_handle
+        assign mixed_order = true
+      endif
+    endfor
+  endif
+
+  assign needle = ',' | append: current_handle | append: ','
+  assign all_ids = ''
+  assign tagged_ids = ''
+  assign other_ids = ''
+
+  for block in story_blocks
+    assign story_valid = false
+
+    if block.settings.media_type == 'video' and block.settings.video != blank
+      assign story_valid = true
+    elsif block.settings.media_type != 'video' and block.settings.image != blank
+      assign story_valid = true
+    endif
+
+    if story_valid
+      assign pick_handles = ','
+
+      if block.settings.picks.size > 0
+        for pick in block.settings.picks
+          assign pick_handles = pick_handles | append: pick.handle | append: ','
+        endfor
+      elsif auto_picks_on and auto_products_size > 0
+        capture pick_seed
+          render 'story-seed', seed: block.id, offset: 20
+        endcapture
+
+        assign pick_index = pick_seed | plus: 0 | modulo: auto_products_size
+        assign pick_handles = pick_handles | append: auto_products[pick_index].handle | append: ','
+      endif
+
+      assign all_ids = all_ids | append: block.id | append: ','
+
+      if current_handle != blank and pick_handles contains needle
+        assign tagged_ids = tagged_ids | append: block.id | append: ','
+      else
+        assign other_ids = other_ids | append: block.id | append: ','
+      endif
+    endif
+  endfor
+
+  if current_handle != blank and mixed_order == false
+    assign story_order = tagged_ids | append: other_ids
+  else
+    assign story_order = all_ids
+  endif
+
+  assign story_order_ids = story_order | split: ','
 -%}
 
 <div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %} instagram-feed-wrapper">
@@ -102,17 +185,10 @@ Colors and the shape of the round controls come from Theme settings > Controls.
           <div class="ig-story__stage">
             {%- assign story_index = 0 -%}
 
-            {%- for block in story_blocks -%}
-              {%- liquid
-                assign story_valid = false
-                if block.settings.media_type == 'video' and block.settings.video != blank
-                  assign story_valid = true
-                elsif block.settings.media_type != 'video' and block.settings.image != blank
-                  assign story_valid = true
-                endif
-              -%}
+            {%- for block_id in story_order_ids -%}
+              {%- assign block = section.blocks | where: 'id', block_id | first -%}
 
-              {%- if story_valid -%}
+              {%- if block != blank -%}
                 <div class="ig-story__cell{% if story_index == 0 %} is-active{% endif %}" data-index="{{ story_index }}" data-block-id="{{ block.id }}" {{ block.shopify_attributes }}>
                   {%- if block.settings.media_type == 'video' -%}
                     {%- render 'media-zoom-slide',
@@ -146,15 +222,10 @@ Colors and the shape of the round controls come from Theme settings > Controls.
               <div class="ig-story__thumbs" role="group" aria-label="{{ section.settings.title | strip_html | escape | default: 'Stories' }}">
                 {%- assign story_index = 0 -%}
 
-                {%- for block in story_blocks -%}
-                  {%- liquid
-                    assign story_valid = false
-                    if block.settings.media_type == 'video' and block.settings.video != blank
-                      assign story_valid = true
-                    elsif block.settings.media_type != 'video' and block.settings.image != blank
-                      assign story_valid = true
-                    endif
+                {%- for block_id in story_order_ids -%}
+                  {%- assign block = section.blocks | where: 'id', block_id | first -%}
 
+                  {%- liquid
                     assign thumb = block.settings.thumbnail
                     if thumb == blank
                       if block.settings.media_type == 'video'
@@ -165,7 +236,7 @@ Colors and the shape of the round controls come from Theme settings > Controls.
                     endif
                   -%}
 
-                  {%- if story_valid -%}
+                  {%- if block != blank -%}
                     <button type="button" class="ig-story__thumb{% if story_index == 0 %} is-active{% endif %}" data-index="{{ story_index }}" aria-pressed="{% if story_index == 0 %}true{% else %}false{% endif %}" aria-label="{{ block.settings.creator | default: block.settings.tagline | default: forloop.index | escape }}">
                       {%- if thumb != blank -%}
                         {{- thumb | image_url: width: 240 | image_tag: loading: 'lazy', widths: '96,144,192,240', sizes: '72px', alt: '' -}}
@@ -181,38 +252,56 @@ Colors and the shape of the round controls come from Theme settings > Controls.
             <div class="ig-story__infos">
               {%- assign story_index = 0 -%}
 
-              {%- for block in story_blocks -%}
-                {%- liquid
-                  assign story_valid = false
-                  if block.settings.media_type == 'video' and block.settings.video != blank
-                    assign story_valid = true
-                  elsif block.settings.media_type != 'video' and block.settings.image != blank
-                    assign story_valid = true
-                  endif
-                -%}
+              {%- for block_id in story_order_ids -%}
+                {%- assign block = section.blocks | where: 'id', block_id | first -%}
 
-                {%- if story_valid -%}
+                {%- if block != blank -%}
+                  {%- liquid
+                    assign creator_text = block.settings.creator
+
+                    if creator_text == blank and auto_creator
+                      capture creator_text
+                        render 'story-latino-handle', seed: block.id
+                      endcapture
+                    endif
+
+                    assign auto_pick = nil
+
+                    if block.settings.picks.size == 0 and auto_picks_on and auto_products_size > 0
+                      capture pick_seed
+                        render 'story-seed', seed: block.id, offset: 20
+                      endcapture
+
+                      assign pick_index = pick_seed | plus: 0 | modulo: auto_products_size
+                      assign auto_pick = auto_products[pick_index]
+                    endif
+                  -%}
+
                   <div class="ig-story__info{% if story_index == 0 %} is-active{% endif %}" data-index="{{ story_index }}">
                     {%- if block.settings.tagline != blank -%}
                       <p class="ig-story__tagline h3">{{ block.settings.tagline | escape }}</p>
                     {%- endif -%}
 
-                    {%- if block.settings.creator != blank or block.settings.picks.size > 0 -%}
+                    {%- if creator_text != blank or block.settings.picks.size > 0 or auto_pick != blank -%}
                       <div class="ig-story__rows">
-                        {%- if block.settings.creator != blank -%}
+                        {%- if creator_text != blank -%}
                           <div class="ig-story__row">
                             <p class="ig-story__row-label subheading">{{ section.settings.creator_label | escape }}</p>
-                            <p class="ig-story__row-value">{{ block.settings.creator | escape }}</p>
+                            <p class="ig-story__row-value">{{ creator_text | escape }}</p>
                           </div>
                         {%- endif -%}
 
-                        {%- if block.settings.picks.size > 0 -%}
+                        {%- if block.settings.picks.size > 0 or auto_pick != blank -%}
                           <div class="ig-story__row">
                             <p class="ig-story__row-label subheading">{{ block.settings.picks_title | escape }}</p>
                             <ul class="ig-story__row-value ig-story__picks unstyled-list">
-                              {%- for pick in block.settings.picks -%}
-                                <li><a href="{{ pick.url }}">{{ pick.title | escape }}</a></li>
-                              {%- endfor -%}
+                              {%- if block.settings.picks.size > 0 -%}
+                                {%- for pick in block.settings.picks -%}
+                                  <li><a href="{{ pick.url }}">{{ pick.title | escape }}</a></li>
+                                {%- endfor -%}
+                              {%- else -%}
+                                <li><a href="{{ auto_pick.url }}">{{ auto_pick.title | escape }}</a></li>
+                              {%- endif -%}
                             </ul>
                           </div>
                         {%- endif -%}
@@ -232,6 +321,59 @@ Colors and the shape of the round controls come from Theme settings > Controls.
         <style>
           {%- render 'media-zoom-style', wrapper_id: feed_id, lightbox_id: lightbox_id, corner_radius: corner_radius_px -%}
         </style>
+
+        {%- if mixed_order and story_has_multiple -%}
+          {%- comment -%}
+          Bundle product page: the stories come in a random order on every visit. It runs here, synchronously and BEFORE the zoom script below: that one
+          reads the list of cells when it starts, so the order (and the number each cell's zoom button opens) has to be final by then.
+          {%- endcomment -%}
+          <script>
+            (() => {
+              const feed = document.getElementById('{{ feed_id }}');
+
+              if (!feed) {
+                return;
+              }
+
+              const groups = [
+                [...feed.querySelectorAll('.ig-story__cell')],
+                [...feed.querySelectorAll('.ig-story__thumb')],
+                [...feed.querySelectorAll('.ig-story__info')]
+              ];
+
+              const count = groups[0].length;
+              const order = [...Array(count).keys()];
+
+              for (let i = count - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+
+                [order[i], order[j]] = [order[j], order[i]];
+              }
+
+              groups.forEach((items) => {
+                if (items.length !== count) {
+                  return;
+                }
+
+                const parent = items[0].parentElement;
+
+                order.forEach((oldIndex, newIndex) => {
+                  const item = items[oldIndex];
+
+                  parent.append(item);
+                  item.dataset.index = newIndex;
+                  item.classList.toggle('is-active', newIndex === 0);
+
+                  if (item.classList.contains('ig-story__thumb')) {
+                    item.setAttribute('aria-pressed', String(newIndex === 0));
+                  }
+
+                  item.querySelector('open-lightbox-button')?.setAttribute('image-index', newIndex);
+                });
+              });
+            })();
+          </script>
+        {%- endif -%}
 
         {%- render 'media-zoom-script', wrapper_id: feed_id, lightbox_id: lightbox_id, sound_on_open: true, framed_icons: true -%}
 
@@ -895,6 +1037,36 @@ Colors and the shape of the round controls come from Theme settings > Controls.
       "id": "creator_label",
       "label": "Título de la fila del creador",
       "default": "Creator"
+    },
+    {
+      "type": "header",
+      "content": "Datos automáticos"
+    },
+    {
+      "type": "checkbox",
+      "id": "auto_creator",
+      "label": "Usuario al azar si falta el creador",
+      "info": "Un video sin creador muestra un usuario inventado que suena latino (@camila.rojas). Es siempre el mismo para ese video.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "auto_picks",
+      "label": "Producto al azar si faltan los picks",
+      "info": "Un video sin productos etiquetados muestra uno de la colección elegida abajo. Es siempre el mismo para ese video. Lo que pongas a mano manda.",
+      "default": true
+    },
+    {
+      "type": "collection",
+      "id": "auto_picks_collection",
+      "label": "Colección para etiquetar al azar"
+    },
+    {
+      "type": "product_list",
+      "id": "mixed_products",
+      "label": "Productos que mezclan todos los videos",
+      "info": "En su página los videos salen en orden al azar (para bundles). Un producto con la etiqueta \"bundle\" también se mezcla. En cualquier otro producto salen primero los videos que lo tienen etiquetado.",
+      "limit": 10
     },
     {
       "type": "header",
