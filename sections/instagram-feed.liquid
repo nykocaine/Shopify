@@ -1,109 +1,85 @@
 {%- doc -%}
-A carousel of square (or portrait) photos and videos in an Instagram-feed style: each "Media" block is either an image or a video (the merchant
-swaps the type per block from the editor). Extracted from sections/reviews.liquid, where this started as a block, so it isn't tied to Reviews.
+"Stories" layout of the Instagram feed: one big photo or video card with the panel of that story next to it (desktop) or under it (phones).
 
-- The row starts with all the videos, then the photos; each group is reshuffled on every page load.
-- Photos open the zoom view by tapping the photo itself (no visible button). Videos use snippets/media-zoom-slide.liquid, the same as FAQ's
-  "Text + image/video" block and Media Blocks' Carousel: a round play button in the middle of the video opens the zoom view.
-- Nothing autoplays by itself: on mobile only the first video at the left edge plays (a muted preview), on desktop a video plays while the
-  cursor is over it (script "Video previews" below).
-- Navigation: dots under the row on every screen size (snippets/carousel-dots.liquid). On phones the section button sits under them, centered.
-- The zoom view (snippets/media-zoom-script.liquid) keeps its icons inside the open photo or video (framed_icons).
+- The card shows the selected "Media" block (a video or a photo). A round play button on a video opens the zoom view (snippets/media-zoom-slide.liquid,
+  snippets/media-zoom-script.liquid, snippets/media-lightbox.liquid: the same zoom view as Media Blocks and FAQ). Next / previous in the zoom view
+  also moves the selection of the card and of the panel.
+- The panel (its own color scheme) has, from top to bottom: one small thumbnail per block (tap one to change the story), the block's phrase, and two
+  rows: the creator ("Creator" + its @user) and the picks (a title + links to the picked products). Everything in the panel changes with the story.
+- The card and the panel can be joined (no gap, only the outer corners rounded) or separated by a gap. Each screen size has its own gap: 0 means joined.
+  Phones: the card on top, the panel under it. From 700px: side by side.
+- The section's header (title, subtitle and button) is optional and sits above.
 
-Colors and the shape of the round controls come from Theme settings > Controls; the color of a liked heart from this section's settings.
+Colors and the shape of the round controls come from Theme settings > Controls.
 {%- enddoc -%}
 
 {%- liquid
   case section.settings.aspect_ratio_mobile
-    when 'square'
-      assign instagram_ratio_mobile = '1 / 1'
     when 'portrait'
-      assign instagram_ratio_mobile = '4 / 5'
+      assign story_ratio_mobile = '4 / 5'
+    when 'tall'
+      assign story_ratio_mobile = '3 / 5'
     else
-      assign instagram_ratio_mobile = '3 / 5'
+      assign story_ratio_mobile = '1 / 1'
   endcase
 
   case section.settings.aspect_ratio_desktop
     when 'portrait'
-      assign instagram_ratio_desktop = '4 / 5'
+      assign story_ratio_desktop = '4 / 5'
     when 'tall'
-      assign instagram_ratio_desktop = '3 / 5'
+      assign story_ratio_desktop = '3 / 5'
     else
-      assign instagram_ratio_desktop = '1 / 1'
+      assign story_ratio_desktop = '1 / 1'
   endcase
 
-  assign instagram_media_blocks = section.blocks | where: 'type', 'item'
-  assign instagram_media_count = 0
+  assign story_blocks = section.blocks | where: 'type', 'item'
+  assign story_count = 0
 
-  for block in instagram_media_blocks
+  for block in story_blocks
     if block.settings.media_type == 'video' and block.settings.video != blank
-      assign instagram_media_count = instagram_media_count | plus: 1
-    elsif block.settings.image != blank
-      assign instagram_media_count = instagram_media_count | plus: 1
+      assign story_count = story_count | plus: 1
+    elsif block.settings.media_type != 'video' and block.settings.image != blank
+      assign story_count = story_count | plus: 1
     endif
   endfor
 
-  assign instagram_has_multiple = false
+  assign story_has_multiple = false
 
-  if instagram_media_count > 1
-    assign instagram_has_multiple = true
+  if story_count > 1
+    assign story_has_multiple = true
   endif
 
-  assign instagram_feed_id = 'instagram-feed-' | append: section.id
-  assign instagram_carousel_id = 'instagram-feed-carousel-' | append: section.id
-  assign instagram_lightbox_id = 'instagram-feed-lightbox-' | append: section.id
-
-  # Computed once here (same pattern as snippets/faq-text-image.liquid's border_radius_px) instead
-  # of repeating "section.settings.instagram_feed_border_radius | append: 'px'" inline at each call
-  # site - every image, video and the carousel frame itself then shares this exact same string.
-  assign instagram_corner_radius_px = section.settings.instagram_feed_border_radius | append: 'px'
+  assign feed_id = 'instagram-feed-' | append: section.id
+  assign lightbox_id = 'instagram-feed-lightbox-' | append: section.id
+  assign corner_radius_px = section.settings.instagram_feed_border_radius | append: 'px'
 
   # The section's color scheme has a pure white background (#ffffff, exactly): then the section has no inner padding and no rounded corners of its own.
-  assign instagram_scheme_is_white = false
+  assign scheme_is_white = false
 
   if section.settings.color_scheme.settings.background.rgb == '255 255 255'
-    assign instagram_scheme_is_white = true
+    assign scheme_is_white = true
   endif
 
-  # Every photo and video is shown at about 90% of the screen width in the zoom view (the thumbnails are smaller, but it is the same element)
-  assign instagram_media_sizes = '90vw'
+  # Joined (gap 0) or separated (any gap), per screen size
+  assign joined_mobile = false
+  assign joined_desktop = false
 
-  # Auto-scroll needs more than one card; the speed setting maps to pixels per second
-  assign instagram_autoscroll = false
-
-  if section.settings.autoscroll and instagram_has_multiple
-    assign instagram_autoscroll = true
+  if section.settings.gap_mobile == 0
+    assign joined_mobile = true
   endif
 
-  case section.settings.autoscroll_speed
-    when 'slow'
-      assign instagram_autoscroll_speed = 30
-    when 'fast'
-      assign instagram_autoscroll_speed = 70
-    else
-      assign instagram_autoscroll_speed = 45
-  endcase
+  if section.settings.gap_desktop == 0
+    assign joined_desktop = true
+  endif
+
+  assign panel_scheme = section.settings.panel_color_scheme
 -%}
 
-<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {% if instagram_scheme_is_white %}0{% else %}{{ instagram_corner_radius_px }}{% endif %}; overflow: hidden;"{% endif %}>
+<div class="color-scheme color-scheme--{{ section.settings.color_scheme.id }}{% if section.settings.floating_instagram_feed %} section-floating section-floating--block{% endif %}"{% if section.settings.floating_instagram_feed %} style="border-radius: {% if scheme_is_white %}0{% else %}{{ corner_radius_px }}{% endif %}; overflow: hidden;"{% endif %}>
   <div class="section-spacing">
-    <div id="{{ instagram_feed_id }}" class="instagram-feed section-stack{% if section.settings.bw_intro %} is-bw{% endif %}"{% if section.settings.title_color != blank and section.settings.title_color != 'rgba(0,0,0,0)' %} style="--instagram-title-color: {{ section.settings.title_color }};"{% endif %}>
-      {%- liquid
-        # Phones: the button moves under the dots (see below the carousel), so it is hidden up here. Only when there is a row to put it under.
-        assign instagram_button_below_on_mobile = false
-        if section.settings.button_text != blank and instagram_media_count > 0
-          assign instagram_button_below_on_mobile = true
-        endif
-
-        # With the button gone on phones and nothing else in the header (no title, subtitle or icon), the empty header is hidden there too
-        assign instagram_header_only_button = false
-        if instagram_button_below_on_mobile and section.settings.title == blank and section.settings.subtitle == blank and section.settings.show_icon == false
-          assign instagram_header_only_button = true
-        endif
-      -%}
-
-      {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank or section.settings.show_icon -%}
-        <div class="instagram-feed__header{% if instagram_header_only_button %} instagram-feed__header--desktop-only{% endif %}">
+    <div id="{{ feed_id }}" class="instagram-feed section-stack" {% if section.settings.title_color != blank and section.settings.title_color != 'rgba(0,0,0,0)' %}style="--instagram-title-color: {{ section.settings.title_color }};"{% endif %}>
+      {%- if section.settings.title != blank or section.settings.subtitle != blank or section.settings.button_text != blank -%}
+        <div class="instagram-feed__header">
           <div class="instagram-feed__content{% if section.settings.title == blank and section.settings.subtitle == blank %} instagram-feed__content--no-text{% endif %}">
             {%- if section.settings.title != blank or section.settings.subtitle != blank -%}
               <div class="prose prose--compact">
@@ -120,831 +96,207 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
             {%- endif -%}
 
             {%- if section.settings.button_text != blank -%}
-              {%- if instagram_button_below_on_mobile -%}
-                {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style, class: 'instagram-feed__button sm-max:hidden' -%}
-              {%- else -%}
-                {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style, class: 'instagram-feed__button' -%}
-              {%- endif -%}
+              {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style, class: 'instagram-feed__button' -%}
             {%- endif -%}
           </div>
-
-          {%- if section.settings.show_icon -%}
-            {%- render 'decorative-icon',
-              icon_type: section.settings.icon_type,
-              icon_size: section.settings.icon_size,
-              icon_spin: section.settings.icon_spin,
-              icon_primary_color: section.settings.icon_primary_color,
-              icon_secondary_color: section.settings.icon_secondary_color,
-              icon_border_color: section.settings.icon_border_color,
-              class: 'instagram-feed__icon'
-            -%}
-          {%- endif -%}
         </div>
       {%- endif -%}
 
-      {%- if instagram_media_count > 0 -%}
-        <scroll-carousel id="{{ instagram_carousel_id }}" class="instagram-feed__carousel snap-x scroll-area">
-        {%- assign instagram_slide_index = 0 -%}
+      {%- if story_count > 0 -%}
+        <div class="ig-story{% if joined_mobile %} ig-story--joined-mobile{% endif %}{% if joined_desktop %} ig-story--joined-desktop{% endif %}">
+          {%- comment -%}
+          The card: every story's media stacked in the same spot, only the selected one is visible (see the style below). They are all in the
+          page so the zoom view can go from one to the next with its own arrows.
+          {%- endcomment -%}
+          <div class="ig-story__stage">
+            {%- assign story_index = 0 -%}
 
-        {%- for block in instagram_media_blocks -%}
-          {%- if block.settings.media_type == 'video' and block.settings.video != blank -%}
-            {%- comment -%}
-            The videos are a muted, looped preview that THIS section starts and stops (script "Video previews" below), not
-            autoplay: on mobile only the first video at the left edge plays, and it changes as the row is scrolled; on desktop
-            none plays by itself, each one plays while the cursor is over it. The round play button on top opens the zoom view.
-            {%- endcomment -%}
-            <div class="snap-start instagram-feed__video-cell" data-block-id="{{ block.id }}" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
-              {%- render 'media-zoom-slide',
-                video: block.settings.video,
-                loop_video: true,
-                show_like: section.settings.show_likes,
-                like_id: block.id,
-                like_count: block.settings.likes_count,
-                corner_radius: instagram_corner_radius_px,
-                lightbox_id: instagram_lightbox_id,
-                lightbox_index: instagram_slide_index,
-                sizes: instagram_media_sizes
+            {%- for block in story_blocks -%}
+              {%- liquid
+                assign story_valid = false
+                if block.settings.media_type == 'video' and block.settings.video != blank
+                  assign story_valid = true
+                elsif block.settings.media_type != 'video' and block.settings.image != blank
+                  assign story_valid = true
+                endif
               -%}
 
-              {%- comment -%}The video's caption, always at the bottom of the thumbnail, mobile and desktop (style "Thumbnail caption" below){%- endcomment -%}
-              {%- if block.settings.caption != blank -%}
-                <p class="instagram-feed__thumb-caption">{{ block.settings.caption | escape }}</p>
-              {%- endif -%}
-            </div>
-
-            {%- assign instagram_slide_index = instagram_slide_index | plus: 1 -%}
-          {%- elsif block.settings.image != blank -%}
-            {%- comment -%}
-            No separate "zoom" button shown - the button wraps the image itself, so the whole
-            square opens the lightbox on tap. It stays invisible with zero extra CSS: the theme's
-            global reset already strips any button border/background/padding, and
-            .content-box__background-media's width/height: 100% (theme.css) sizes it to fill the
-            square since it's the only direct child, same as a plain img would be.
-
-            The direct flex item is a plain div (like the video branch above, and like
-            trust-icons.liquid's own carousel items) - open-lightbox-button sits one level inside
-            it instead of being the flex item itself, same as it already is inside
-            media-zoom-slide.liquid's own output for the video branch.
-            {%- endcomment -%}
-            <div class="snap-start" data-caption="{{ block.settings.caption | escape }}" {{ block.shopify_attributes }}>
-              <open-lightbox-button class="block" aria-controls="{{ instagram_lightbox_id }}" image-index="{{ instagram_slide_index }}">
-                <div class="content-box__background-media">
-                  <button type="button">
-                    {%- comment -%}
-                    sizes/widths are sized for the lightbox's expanded view (up to 96vw, see
-                    media-zoom-style.liquid), not the small grid thumbnail - it's the same img
-                    element in both states (the lightbox only repositions/rescales it via CSS, never
-                    swaps in a different image), so a thumbnail-sized sizes hint here would have the
-                    browser fetch a small srcset candidate that then looks soft/blurry once expanded
-                    full-screen.
-                    {%- endcomment -%}
-                    {{- block.settings.image | image_url: width: block.settings.image.width | image_tag: loading: 'lazy', sizes: instagram_media_sizes, widths: '150,300,450,600,900,1200,1500', class: 'instagram-feed__image aspect-square image-cover' -}}
-                    <span class="sr-only">{{ 'product.gallery.zoom' | t }}</span>
-                  </button>
+              {%- if story_valid -%}
+                <div class="ig-story__cell{% if story_index == 0 %} is-active{% endif %}" data-index="{{ story_index }}" data-block-id="{{ block.id }}" {{ block.shopify_attributes }}>
+                  {%- if block.settings.media_type == 'video' -%}
+                    {%- render 'media-zoom-slide',
+                      video: block.settings.video,
+                      loop_video: true,
+                      corner_radius: corner_radius_px,
+                      lightbox_id: lightbox_id,
+                      lightbox_index: story_index,
+                      as_lightbox_cell: true,
+                      sizes: '90vw'
+                    -%}
+                  {%- else -%}
+                    {%- render 'media-zoom-slide',
+                      image: block.settings.image,
+                      corner_radius: corner_radius_px,
+                      lightbox_id: lightbox_id,
+                      lightbox_index: story_index,
+                      as_lightbox_cell: true,
+                      sizes: '90vw'
+                    -%}
+                  {%- endif -%}
                 </div>
-              </open-lightbox-button>
-            </div>
 
-            {%- assign instagram_slide_index = instagram_slide_index | plus: 1 -%}
-          {%- endif -%}
-        {%- endfor -%}
-        </scroll-carousel>
-
-        {%- comment -%}Dots centered under the row (snippets/carousel-dots.liquid), the navigation on every screen size. Not with auto-scroll, which moves the row by itself{%- endcomment -%}
-        {%- if section.settings.show_dots and instagram_autoscroll == false -%}
-          {%- render 'carousel-dots', target_id: instagram_carousel_id -%}
-        {%- endif -%}
-
-        {%- comment -%}Phones only: the section's button, centered under the dots (under the row when there are no dots). Desktop keeps it in the header{%- endcomment -%}
-        {%- if instagram_button_below_on_mobile -%}
-          <div class="instagram-feed__mobile-button sm:hidden">
-            {%- render 'button', content: section.settings.button_text, href: section.settings.button_url, style: section.settings.button_style, class: 'instagram-feed__button' -%}
+                {%- assign story_index = story_index | plus: 1 -%}
+              {%- endif -%}
+            {%- endfor -%}
           </div>
-        {%- endif -%}
 
-        {%- render 'media-lightbox', id: instagram_lightbox_id, show_nav: instagram_has_multiple -%}
+          <div class="ig-story__panel{% if panel_scheme != blank %} color-scheme color-scheme--{{ panel_scheme.id }}{% endif %}">
+            {%- if story_has_multiple -%}
+              <div class="ig-story__thumbs" role="group" aria-label="{{ section.settings.title | strip_html | escape | default: 'Stories' }}">
+                {%- assign story_index = 0 -%}
 
-        {%- comment -%}
-        Caption shown only in the zoomed-in lightbox, never in the feed grid itself - each "Media"
-        block's own caption setting, read from its cell's data-caption attribute by the script below.
-        A plain sibling of the shared lightbox snippet rather than something added inside it (shared
-        with FAQ/Media Blocks too) - kept entirely local to this section instead. The CSS fade uses
-        #{{ instagram_lightbox_id }}.is-lightbox-visible's own existing toggle (a sibling selector,
-        no extra JS needed just to fade it in/out in sync with the lightbox itself); the script below
-        only has to keep its TEXT in sync with whichever item is currently expanded.
-        {%- endcomment -%}
-        <p id="{{ instagram_lightbox_id }}-caption" class="instagram-feed__lightbox-caption empty:hidden" aria-live="polite"></p>
+                {%- for block in story_blocks -%}
+                  {%- liquid
+                    assign story_valid = false
+                    if block.settings.media_type == 'video' and block.settings.video != blank
+                      assign story_valid = true
+                    elsif block.settings.media_type != 'video' and block.settings.image != blank
+                      assign story_valid = true
+                    endif
+
+                    assign thumb = block.settings.thumbnail
+                    if thumb == blank
+                      if block.settings.media_type == 'video'
+                        assign thumb = block.settings.video.preview_image
+                      else
+                        assign thumb = block.settings.image
+                      endif
+                    endif
+                  -%}
+
+                  {%- if story_valid -%}
+                    <button type="button" class="ig-story__thumb{% if story_index == 0 %} is-active{% endif %}" data-index="{{ story_index }}" aria-pressed="{% if story_index == 0 %}true{% else %}false{% endif %}" aria-label="{{ block.settings.creator | default: block.settings.tagline | default: forloop.index | escape }}">
+                      {%- if thumb != blank -%}
+                        {{- thumb | image_url: width: 240 | image_tag: loading: 'lazy', widths: '96,144,192,240', sizes: '72px', alt: '' -}}
+                      {%- endif -%}
+                    </button>
+
+                    {%- assign story_index = story_index | plus: 1 -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            {%- endif -%}
+
+            <div class="ig-story__infos">
+              {%- assign story_index = 0 -%}
+
+              {%- for block in story_blocks -%}
+                {%- liquid
+                  assign story_valid = false
+                  if block.settings.media_type == 'video' and block.settings.video != blank
+                    assign story_valid = true
+                  elsif block.settings.media_type != 'video' and block.settings.image != blank
+                    assign story_valid = true
+                  endif
+                -%}
+
+                {%- if story_valid -%}
+                  <div class="ig-story__info{% if story_index == 0 %} is-active{% endif %}" data-index="{{ story_index }}">
+                    {%- if block.settings.tagline != blank -%}
+                      <p class="ig-story__tagline h3">{{ block.settings.tagline | escape }}</p>
+                    {%- endif -%}
+
+                    {%- if block.settings.creator != blank or block.settings.picks.size > 0 -%}
+                      <div class="ig-story__rows">
+                        {%- if block.settings.creator != blank -%}
+                          <div class="ig-story__row">
+                            <p class="ig-story__row-label subheading">{{ section.settings.creator_label | escape }}</p>
+                            <p class="ig-story__row-value">{{ block.settings.creator | escape }}</p>
+                          </div>
+                        {%- endif -%}
+
+                        {%- if block.settings.picks.size > 0 -%}
+                          <div class="ig-story__row">
+                            <p class="ig-story__row-label subheading">{{ block.settings.picks_title | escape }}</p>
+                            <ul class="ig-story__row-value ig-story__picks unstyled-list">
+                              {%- for pick in block.settings.picks -%}
+                                <li><a href="{{ pick.url }}">{{ pick.title | escape }}</a></li>
+                              {%- endfor -%}
+                            </ul>
+                          </div>
+                        {%- endif -%}
+                      </div>
+                    {%- endif -%}
+                  </div>
+
+                  {%- assign story_index = story_index | plus: 1 -%}
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          </div>
+        </div>
+
+        {%- render 'media-lightbox', id: lightbox_id, show_nav: story_has_multiple -%}
 
         <style>
-          {%- render 'media-zoom-style', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, corner_radius: instagram_corner_radius_px -%}
-
-          {%- comment -%}
-          empty:hidden (theme.css utility) keeps this out of the way entirely when the active item has
-          no caption set, instead of reserving space for/fading in an empty bar. top/left/width are all
-          left unset here on purpose - desktop's expanded media has no fixed box of its own in pure CSS
-          (it's sized by its own content, up to 96vw/96vh), so the script below sets all three itself,
-          measured from the actual expanded media's own box (left-aligned to its left edge, same width
-          as it, starting just under its bottom edge), every time the active item (or the viewport)
-          changes.
-          {%- endcomment -%}
-          #shopify-section-{{ section.id }} .instagram-feed__lightbox-caption {
-            color: rgb(var(--text-color));
-            background: rgb(var(--background) / .9);
-            text-align: start;
-            padding: .5rem 1rem;
-            border-radius: {{ instagram_corner_radius_px }};
-            z-index: 1000;
-            position: fixed;
-            opacity: 0;
-            scale: .95;
-            pointer-events: none;
-            transition: opacity .2s ease, scale .2s ease;
-          }
-
-          #{{ instagram_lightbox_id }}.is-lightbox-visible ~ .instagram-feed__lightbox-caption {
-            opacity: 1;
-            scale: 1;
-          }
+          {%- render 'media-zoom-style', wrapper_id: feed_id, lightbox_id: lightbox_id, corner_radius: corner_radius_px -%}
         </style>
 
-        {%- comment -%}
-        Feed behavior, in order: the random order of the row, lazy loading and loading cue of the videos, the "#video-<block id>" deep link and
-        the like buttons.
+        {%- render 'media-zoom-script', wrapper_id: feed_id, lightbox_id: lightbox_id, sound_on_open: true, framed_icons: true -%}
 
-        The row starts with the videos, then the photos, each group in a random order on every page load (not persisted: a fresh shuffle each visit). This runs as a plain
-        synchronous script, BEFORE media-zoom-script below: that one captures its own "cells" snapshot inside an async
-        customElements.whenDefined() callback, so this reorder - and the image-index rewrite that keeps each slide's lightbox index matching
-        its new position - has to land first, or the lightbox would open the wrong item for whatever position was clicked. Every cell is a
-        plain div (see above) with its open-lightbox-button nested one level inside.
-        {%- endcomment -%}
         <script>
           (() => {
-            const feed = document.getElementById('{{ instagram_feed_id }}');
-            const carousel = document.getElementById('{{ instagram_carousel_id }}');
+            const feed = document.getElementById('{{ feed_id }}');
 
-            if (!feed || !carousel) {
+            if (!feed) {
               return;
             }
 
-            const DEEP_LINK_PREFIX = '#video-';
-            const DEEP_LINK_DELAY = 600;
-            const LIKE_KEY_PREFIX = 'instagram-feed-like-';
-            const LIKE_COUNT_UP_DURATION = 1400;
-            const LIKE_COUNT_UP_DELAY = 300;
-            const VIDEO_STATE_EVENTS = ['play', 'playing', 'waiting', 'stalled', 'seeking', 'seeked', 'loadeddata', 'canplay', 'canplaythrough', 'timeupdate', 'pause', 'ended', 'emptied', 'abort', 'error'];
-            const HAVE_FUTURE_DATA = 3;
+            const cells = [...feed.querySelectorAll('.ig-story__cell')];
+            const infos = [...feed.querySelectorAll('.ig-story__info')];
+            const thumbs = [...feed.querySelectorAll('.ig-story__thumb')];
 
-            {%- comment -%}
-            Videos and images are shuffled independently within each group (still a fresh order every page load) and then put one group after
-            the other: ALL the videos first, then the photos.
-            {%- endcomment -%}
-            const shuffle = (items) => {
-              for (let i = items.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-
-                [items[i], items[j]] = [items[j], items[i]];
+            {%- comment -%}Selects a story: the card, the panel's text and the thumbnail follow. The video that was showing is paused.{%- endcomment -%}
+            const select = (index) => {
+              if (index < 0 || index >= cells.length || cells[index].classList.contains('is-active')) {
+                return;
               }
 
-              return items;
+              cells.forEach((cell, i) => {
+                const active = i === index;
+
+                if (!active && cell.classList.contains('is-active')) {
+                  const video = cell.querySelector('video-media');
+
+                  if (video && typeof video.pause === 'function') {
+                    video.pause();
+                  }
+                }
+
+                cell.classList.toggle('is-active', active);
+              });
+
+              infos.forEach((info, i) => info.classList.toggle('is-active', i === index));
+              thumbs.forEach((thumb, i) => {
+                thumb.classList.toggle('is-active', i === index);
+                thumb.setAttribute('aria-pressed', String(i === index));
+              });
             };
 
-            const cells = [...carousel.children];
-            const videoCells = shuffle(cells.filter((cell) => cell.querySelector('video-media')));
-            const otherCells = shuffle(cells.filter((cell) => !cell.querySelector('video-media')));
-            const ordered = [...videoCells, ...otherCells];
-
-            ordered.forEach((cell, index) => {
-              cell.querySelector('open-lightbox-button')?.setAttribute('image-index', index);
-              carousel.append(cell);
+            thumbs.forEach((thumb) => {
+              thumb.addEventListener('click', () => select(Number(thumb.dataset.index)));
             });
 
-            {%- comment -%}
-            Lazy video loading: nothing is fetched for a video until the visitor gets near the section. Every <video> starts with preload="none"
-            (instead of the "metadata" the media snippet sets), and <video-media> (theme.js, VideoMedia) switches it to "auto" and picks the
-            right source once the video is within 800px of the screen, so it is ready when it comes into view.
-            {%- endcomment -%}
-            carousel.querySelectorAll('video').forEach((video) => video.setAttribute('preload', 'none'));
-
-            {%- comment -%}
-            Loading cue: while a video has been asked to play but has no frames yet, its cell gets .is-video-loading, which shows a small
-            spinner (after a short delay, so a fast start never flashes it). It follows the video's real state instead of a pair of "start" and
-            "end" events (which could leave it stuck: "stalled" and "waiting" also fire while the video is already playing or only preloading):
-            on only while the video is trying to play (not paused, not ended) without enough data to keep going, re-evaluated on every event
-            that can change that, including timeupdate while it plays.
-            {%- endcomment -%}
-            carousel.querySelectorAll('.instagram-feed__video-cell video').forEach((video) => {
-              const cell = video.closest('.instagram-feed__video-cell');
-              const update = () => cell.classList.toggle('is-video-loading', !video.paused && !video.ended && video.readyState < HAVE_FUTURE_DATA);
-
-              VIDEO_STATE_EVENTS.forEach((type) => video.addEventListener(type, update));
-            });
-
-            {%- comment -%}A page opened with a "#video-<block id>" mark opens that video's zoom view by itself{%- endcomment -%}
-            if (window.location.hash.startsWith(DEEP_LINK_PREFIX)) {
-              const blockId = window.location.hash.slice(DEEP_LINK_PREFIX.length);
-              const sharedCell = carousel.querySelector(`.instagram-feed__video-cell[data-block-id="${CSS.escape(blockId)}"]`);
-
-              if (sharedCell) {
-                customElements.whenDefined('video-media').then(() => {
-                  setTimeout(() => {
-                    const index = parseInt(sharedCell.querySelector('open-lightbox-button')?.getAttribute('image-index'), 10);
-
-                    if (!Number.isNaN(index)) {
-                      feed.dispatchEvent(new CustomEvent('lightbox:open', { bubbles: true, detail: { index } }));
-                    }
-                  }, DEEP_LINK_DELAY);
-                });
-              }
-            }
-
-            {%- comment -%}
-            Like button (the heart at the top of a video's controls in the lightbox). The number is the one entered in the Media block (the post's
-            real likes) plus the visitor's own like, which is remembered in this browser. There is no server behind it: nothing here invents or
-            sums likes from other visitors.
-            {%- endcomment -%}
-            const countUps = new WeakMap();
-            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-            carousel.querySelectorAll('.carousel-video-like').forEach((likeBox) => {
-              const storageKey = LIKE_KEY_PREFIX + likeBox.dataset.likeId;
-              const baseLikes = parseInt(likeBox.dataset.likeBase, 10);
-              const toggle = likeBox.querySelector('.carousel-video-like-toggle');
-              const countElement = likeBox.querySelector('.carousel-video-like__count');
-              let liked = false;
-              let countFrame = null;
-
-              try {
-                liked = window.localStorage.getItem(storageKey) === '1';
-              } catch {
-                liked = false;
-              }
-
-              const currentTotal = () => baseLikes + Number(liked);
-
-              {%- comment -%}Shows the final number at once (and stops a count-up that is still running){%- endcomment -%}
-              const render = () => {
-                cancelAnimationFrame(countFrame);
-                toggle.setAttribute('aria-pressed', String(liked));
-                countElement.textContent = Number.isNaN(baseLikes) ? '' : currentTotal().toLocaleString();
-              };
-
-              {%- comment -%}
-              Each time the video comes up in the zoom view the number counts up from 0 to its real total (the "Likes" of the block plus the
-              visitor's own like): fast at first, slowing down as it gets there, once the zoom has settled. Without motion it just shows the total.
-              {%- endcomment -%}
-              countUps.set(likeBox, () => {
-                if (Number.isNaN(baseLikes) || reducedMotion.matches) {
-                  return;
-                }
-
-                cancelAnimationFrame(countFrame);
-                countElement.textContent = '0';
-
-                const startAt = performance.now() + LIKE_COUNT_UP_DELAY;
-
-                const tick = (now) => {
-                  const progress = Math.min(1, Math.max(0, (now - startAt) / LIKE_COUNT_UP_DURATION));
-
-                  countElement.textContent = Math.round(currentTotal() * (1 - (1 - progress) ** 3)).toLocaleString();
-
-                  if (progress < 1) {
-                    countFrame = requestAnimationFrame(tick);
-                  }
-                };
-
-                countFrame = requestAnimationFrame(tick);
-              });
-
-              {%- comment -%}
-              Hearts floating up inside the video when it gets liked (not when the like is taken back): a small bunch that leaves from the heart
-              button, each one with its own size, sideways drift, tilt, height and delay. They remove themselves when their animation ends.
-              {%- endcomment -%}
-              const spawnHearts = () => {
-                if (reducedMotion.matches) {
-                  return;
-                }
-
-                const videoMedia = likeBox.closest('.content-box__background-media')?.querySelector('video-media');
-
-                if (!videoMedia) {
-                  return;
-                }
-
-                let layer = videoMedia.querySelector(':scope > .instagram-feed__hearts');
-
-                if (!layer) {
-                  layer = document.createElement('div');
-                  layer.className = 'instagram-feed__hearts';
-                  layer.setAttribute('aria-hidden', 'true');
-                  videoMedia.appendChild(layer);
-                }
-
-                const box = videoMedia.getBoundingClientRect();
-                const button = toggle.getBoundingClientRect();
-                const fromX = button.left + button.width / 2 - box.left;
-                const fromY = button.top + button.height / 2 - box.top;
-                const color = getComputedStyle(likeBox).getPropertyValue('--like-active-color').trim() || 'currentColor';
-                const random = (min, max) => min + Math.random() * (max - min);
-
-                for (let index = 0; index < 9; index += 1) {
-                  const heart = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                  const duration = random(1.3, 2);
-
-                  heart.setAttribute('viewBox', '0 0 24 24');
-                  heart.setAttribute('class', 'instagram-feed__heart');
-                  heart.innerHTML = '<path d="M12 21.35 10.55 20.03C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35Z"/>';
-                  heart.style.cssText = [
-                    '--from-x:' + fromX.toFixed(1) + 'px',
-                    '--from-y:' + fromY.toFixed(1) + 'px',
-                    '--size:' + random(16, 32).toFixed(0) + 'px',
-                    '--drift:' + random(-48, 48).toFixed(0) + 'px',
-                    '--rise:' + (box.height * random(0.35, 0.65)).toFixed(0) + 'px',
-                    '--tilt:' + random(-28, 28).toFixed(0) + 'deg',
-                    '--duration:' + duration.toFixed(2) + 's',
-                    '--delay:' + (index * 0.07).toFixed(2) + 's',
-                    '--heart-color:' + color
-                  ].join(';');
-                  heart.addEventListener('animationend', () => heart.remove());
-                  layer.appendChild(heart);
-                }
-              };
-
-              toggle.addEventListener('click', (event) => {
-                event.stopPropagation();
-                liked = !liked;
-
-                if (liked) {
-                  spawnHearts();
-                }
-
-                try {
-                  window.localStorage.setItem(storageKey, liked ? '1' : '0');
-                } catch {
-                  {%- comment -%}Storage can be blocked (private mode): the like then only lasts for this page view{%- endcomment -%}
-                }
-
-                render();
-              });
-
-              render();
-            });
-
+            {%- comment -%}Next / previous in the zoom view: the card and the panel go to the same story{%- endcomment -%}
             feed.addEventListener('lightbox:item-active', (event) => {
-              const likeBox = event.detail.cell?.querySelector('.carousel-video-like');
+              const cell = event.detail?.cell;
 
-              countUps.get(likeBox)?.();
+              if (!cell) {
+                return;
+              }
+
+              select(cells.findIndex((item) => item === cell || item.contains(cell)));
             });
-          })();
-        </script>
-
-        {%- if instagram_autoscroll -%}
-          {%- comment -%}
-          Auto-scroll as a conveyor belt: the row moves left at a constant, slow speed, forever, with no stops between cards. Each frame advances
-          a float position by speed * elapsed time (so the speed is the same on any refresh rate); when the first card has completely left the
-          visible area it is moved to the end of the row and the position is shifted back by exactly its width, which the eye can't notice, so
-          the row never ends. Cards are moved, not cloned, so there are no duplicated videos or lightbox items. It needs enough cards to be
-          wider than the viewport plus one card; otherwise it does nothing.
-
-          It stops only when the visitor takes over: while a pointer or finger is pressed on the row (which includes tapping a photo or a
-          video), while they scroll it themselves (plus a short moment after), while something inside has focus and while the lightbox is
-          open. It also rests while the section is off-screen or the tab is hidden, and is disabled for prefers-reduced-motion and
-          right-to-left pages. Snapping is off (see the style below) so it can move continuously. The videos' preview does not stop it.
-          {%- endcomment -%}
-          <script>
-            (() => {
-              const carousel = document.getElementById('{{ instagram_carousel_id }}');
-              const lightbox = document.getElementById('{{ instagram_lightbox_id }}');
-
-              if (!carousel || !lightbox) {
-                return;
-              }
-
-              if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.getComputedStyle(carousel).direction === 'rtl') {
-                return;
-              }
-
-              const SPEED = {{ instagram_autoscroll_speed }};
-              const RESUME_DELAY = 1200;
-              const MAX_FRAME = 64;
-              const STEP_MARGIN = 4;
-
-              let position = carousel.scrollLeft;
-              let assigned = position;
-              let shifted = false;
-              let previousTimestamp = null;
-              let pressing = false;
-              let focused = false;
-              let visible = true;
-              let lastInteraction = 0;
-
-              const shift = (fraction) => {
-                [...carousel.children].forEach((cell) => {
-                  cell.style.transform = fraction ? `translate3d(${-fraction}px, 0, 0)` : '';
-                });
-
-                shifted = fraction !== 0;
-              };
-
-              const release = () => {
-                if (shifted) {
-                  shift(0);
-                }
-
-                position = carousel.scrollLeft;
-                assigned = position;
-              };
-
-              const markInteraction = () => {
-                lastInteraction = Date.now();
-              };
-
-              const canRun = () => {
-                if (!visible || document.hidden || pressing || focused) {
-                  return false;
-                }
-
-                if (lightbox.classList.contains('is-lightbox-visible')) {
-                  markInteraction();
-                  return false;
-                }
-
-                return Date.now() - lastInteraction > RESUME_DELAY;
-              };
-
-              const frame = (timestamp) => {
-                requestAnimationFrame(frame);
-
-                const elapsed = previousTimestamp === null ? 0 : Math.min(timestamp - previousTimestamp, MAX_FRAME);
-
-                previousTimestamp = timestamp;
-
-                if (!canRun()) {
-                  release();
-                  return;
-                }
-
-                const first = carousel.firstElementChild;
-                const step = first.getBoundingClientRect().width + (parseFloat(window.getComputedStyle(carousel).columnGap) || 0);
-
-                if (carousel.scrollWidth - carousel.clientWidth <= step + STEP_MARGIN) {
-                  return;
-                }
-
-                position += (SPEED * elapsed) / 1000;
-
-                if (position >= step) {
-                  carousel.append(first);
-                  position -= step;
-                }
-
-                {%- comment -%}
-                scrollLeft only takes whole pixels on standard-density screens, which made the row advance in visible 1px hops; the whole part
-                goes to scrollLeft and the remainder is applied as a translate on the cells (composited, so sub-pixel smooth). The translate is
-                removed whenever the row stops, because a transformed ancestor would break the lightbox's fixed positioning.
-                {%- endcomment -%}
-                const whole = Math.floor(position);
-
-                carousel.scrollLeft = whole;
-                assigned = whole;
-                shift(position - whole);
-              };
-
-              carousel.addEventListener('pointerdown', () => {
-                pressing = true;
-                release();
-              });
-
-              ['pointerup', 'pointercancel'].forEach((name) => {
-                window.addEventListener(name, () => {
-                  if (pressing) {
-                    pressing = false;
-                    markInteraction();
-                  }
-                });
-              });
-
-              carousel.addEventListener('scroll', () => {
-                if (Math.abs(carousel.scrollLeft - assigned) > 1.5) {
-                  markInteraction();
-                }
-              }, { passive: true });
-
-              carousel.addEventListener('focusin', () => {
-                focused = true;
-                release();
-              });
-
-              carousel.addEventListener('focusout', () => {
-                focused = false;
-                markInteraction();
-              });
-
-              new IntersectionObserver((entries) => {
-                visible = entries[0].isIntersecting;
-              }, { threshold: 0.1 }).observe(carousel);
-
-              requestAnimationFrame(frame);
-            })();
-          </script>
-        {%- endif -%}
-
-        {%- if section.settings.bw_intro -%}
-          <noscript>
-            <style>
-              #{{ instagram_feed_id }}.is-bw .instagram-feed__carousel img,
-              #{{ instagram_feed_id }}.is-bw .instagram-feed__carousel video-media {
-                filter: none;
-              }
-            </style>
-          </noscript>
-
-          {%- comment -%}
-          Black and white intro: the countdown starts when the visitor actually reaches the section (a quarter of it on screen), not at page load,
-          so the seconds are spent looking at it. It runs once per page view.
-          {%- endcomment -%}
-          <script>
-            (() => {
-              const feed = document.getElementById('{{ instagram_feed_id }}');
-
-              if (!feed?.classList.contains('is-bw')) {
-                return;
-              }
-
-              const SECONDS_IN_BLACK_AND_WHITE = {{ section.settings.bw_intro_seconds | default: 0 }};
-              const FADE_SECONDS = {{ section.settings.bw_intro_fade | default: 0 }};
-              const FADE_CLEANUP_MARGIN = 100;
-
-              const startCountdown = () => {
-                setTimeout(() => {
-                  feed.classList.remove('is-bw');
-                  feed.classList.add('is-bw-fading');
-
-                  setTimeout(() => feed.classList.remove('is-bw-fading'), FADE_SECONDS * 1000 + FADE_CLEANUP_MARGIN);
-                }, SECONDS_IN_BLACK_AND_WHITE * 1000);
-              };
-
-              const observer = new IntersectionObserver((entries) => {
-                if (entries.some((entry) => entry.isIntersecting)) {
-                  observer.disconnect();
-                  startCountdown();
-                }
-              }, { threshold: 0.25 });
-
-              observer.observe(feed);
-            })();
-          </script>
-        {%- endif -%}
-
-        {%- render 'media-zoom-script', wrapper_id: instagram_feed_id, lightbox_id: instagram_lightbox_id, carousel_id: instagram_carousel_id, sound_on_open: true, preview_playback: true, framed_icons: true -%}
-
-        <style>
-          {%- comment -%}
-          Size of the round play button on the thumbnails: 1.747 times the global control button on every screen (the shared rule in
-          snippets/media-zoom-style.liquid is 1.3; 1.747 = 1.3 x 1.4 x 0.8 x 1.2, the last 20% added for phones first and then for desktop). Only this section: Media Blocks and FAQ keep the shared size.
-          The button is always a perfect circle, whatever "Controls > Border radius" says in the theme settings: 50% radius on a square
-          box, so the background, the blur and the focus ring all follow the circle.
-          {%- endcomment -%}
-          #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button {
-            --play-button-scale: 1.747;
-          }
-
-          #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button .overlay-control {
-            aspect-ratio: 1 / 1;
-            border-radius: 50%;
-            overflow: hidden;
-          }
-
-          {%- comment -%}
-          Mobile / touch only: the round play button shows only on the video at the left edge (the one that is playing, marked data-at-left by
-          the script below). The others get theirs when the row is scrolled and they reach that position. Desktop keeps it on every video.
-          {%- endcomment -%}
-          @media not ((hover: hover) and (pointer: fine)) {
-            #{{ instagram_feed_id }} .instagram-feed__video-cell:not([data-at-left]) .video-open-button {
-              opacity: 0;
-              visibility: hidden;
-            }
-
-            #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button {
-              transition: opacity .25s ease, visibility .25s;
-            }
-          }
-
-          {%- comment -%}
-          Desktop (mouse): the round play button shows on the videos at rest and disappears while the cursor is over one (that video plays
-          its preview). The whole video then opens the zoom view on
-          click: the button's wrapper (open-lightbox-button, which covers the whole video and opens the zoom view on any click inside it, see
-          assets/theme.js) takes the clicks there instead of letting them through. The button stays reachable with the keyboard: it shows
-          again when it has the keyboard focus. While the video loads, the loading spinner shows alone in the middle.
-          {%- endcomment -%}
-          @media (hover: hover) and (pointer: fine) {
-            #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button {
-              pointer-events: auto;
-              cursor: pointer;
-            }
-
-            #{{ instagram_feed_id }} .instagram-feed__video-cell .video-open-button .overlay-control {
-              transition: opacity .2s ease, visibility .2s;
-            }
-
-            #{{ instagram_feed_id }} .instagram-feed__video-cell:hover .video-open-button .overlay-control:not(:focus-visible) {
-              opacity: 0;
-              visibility: hidden;
-            }
-          }
-        </style>
-
-        {%- comment -%}
-        Video previews. Nothing autoplays by itself; this script decides what plays:
-
-        - Mobile / touch (no hover): only ONE video plays, the first one at the left edge of the row (the leftmost video that is at least half
-          visible). Scrolling the row moves it to the next video: the previous one pauses and the new one starts. Nothing plays when the
-          section is out of the screen. The round play button follows the same video (data-at-left): only that one shows it.
-        - Desktop (mouse): none plays by itself. The video under the cursor plays and pauses when the cursor leaves. The round play button stays
-          on the videos at rest and disappears while the cursor is over one (style above; the whole video opens the zoom view then); only pressing it opens the zoom view (snippets/media-zoom-slide.liquid, media-zoom-script.liquid).
-
-        A video opened in the zoom view is never touched here. When it is closed (event "thumbnail:collapsed") the right state is recomputed.
-        {%- endcomment -%}
-        <script>
-          (() => {
-            const carousel = document.getElementById('{{ instagram_carousel_id }}');
-
-            if (!carousel) {
-              return;
-            }
-
-            {%- comment -%}The zoom view opens photos in the shape of the videos (style above): read it from the first video, when there is one{%- endcomment -%}
-            const firstVideo = carousel.querySelector('video-media');
-            const videoRatio = firstVideo ? parseFloat(firstVideo.style.getPropertyValue('--aspect-ratio')) : 0;
-
-            if (videoRatio > 0) {
-              document.getElementById('{{ instagram_feed_id }}')?.style.setProperty('--instagram-zoom-ratio', videoRatio);
-            }
-
-            const MIN_VISIBLE_SHARE = 0.5;
-            const SECTION_VISIBLE_RATIO = 0.4;
-            const COLLAPSE_DELAY = 80;
-            const VIDEO_CELL = '.instagram-feed__video-cell';
-
-            const hoverQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
-            let sectionVisible = false;
-            let queued = false;
-
-            const videoCells = () => [...carousel.querySelectorAll(`:scope > ${VIDEO_CELL}`)];
-            const mediaOf = (cell) => cell.querySelector('video-media');
-            const isExpanded = (media) => media.classList.contains('is-lightbox-expanded');
-
-            const start = (media) => {
-              if (media && !isExpanded(media) && typeof media.play === 'function' && !media.playing) {
-                media.play();
-              }
-            };
-
-            const stop = (media) => {
-              if (media && !isExpanded(media) && typeof media.pause === 'function' && media.playing) {
-                media.pause({ manual: false });
-              }
-            };
-
-            {%- comment -%}The leftmost video that is at least half visible inside the row{%- endcomment -%}
-            const firstVideoAtTheLeft = () => {
-              const row = carousel.getBoundingClientRect();
-              let best = null;
-              let bestLeft = Infinity;
-
-              videoCells().forEach((cell) => {
-                const media = mediaOf(cell);
-                const rect = cell.getBoundingClientRect();
-
-                if (!media || !rect.width) {
-                  return;
-                }
-
-                const visibleWidth = Math.min(rect.right, row.right) - Math.max(rect.left, row.left);
-
-                if (visibleWidth / rect.width >= MIN_VISIBLE_SHARE && rect.left < bestLeft) {
-                  best = media;
-                  bestLeft = rect.left;
-                }
-              });
-
-              return best;
-            };
-
-            const apply = () => {
-              queued = false;
-
-              const chosen = !hoverQuery.matches && sectionVisible && !document.hidden ? firstVideoAtTheLeft() : null;
-
-              videoCells().forEach((cell) => {
-                const media = mediaOf(cell);
-                const isChosen = Boolean(chosen && media === chosen);
-
-                {%- comment -%}Marks the video at the left edge: on mobile only this one shows its round play button (style below){%- endcomment -%}
-                cell.toggleAttribute('data-at-left', isChosen);
-
-                if (isChosen) {
-                  start(media);
-                } else {
-                  stop(media);
-                }
-              });
-            };
-
-            const queueApply = () => {
-              if (!queued) {
-                queued = true;
-                requestAnimationFrame(apply);
-              }
-            };
-
-            {%- comment -%}Desktop: hover plays, leaving pauses (mouse only, never touch){%- endcomment -%}
-            const hoveredCell = (event) => (hoverQuery.matches && event.pointerType === 'mouse' ? event.target.closest?.(VIDEO_CELL) : null);
-
-            carousel.addEventListener('pointerover', (event) => {
-              const cell = hoveredCell(event);
-
-              if (cell) {
-                start(mediaOf(cell));
-              }
-            });
-
-            carousel.addEventListener('pointerout', (event) => {
-              const cell = hoveredCell(event);
-
-              if (cell && !cell.contains(event.relatedTarget)) {
-                stop(mediaOf(cell));
-              }
-            });
-
-            carousel.addEventListener('scroll', queueApply, { passive: true });
-            window.addEventListener('resize', queueApply);
-            document.addEventListener('visibilitychange', queueApply);
-            hoverQuery.addEventListener('change', queueApply);
-
-            {%- comment -%}The zoom view was closed: its video goes back to its thumbnail paused, then the right state is recomputed{%- endcomment -%}
-            carousel.addEventListener('thumbnail:collapsed', () => setTimeout(queueApply, COLLAPSE_DELAY));
-
-            new IntersectionObserver((entries) => {
-              sectionVisible = entries[entries.length - 1].intersectionRatio >= SECTION_VISIBLE_RATIO;
-              queueApply();
-            }, { threshold: [0, SECTION_VISIBLE_RATIO, 1] }).observe(carousel);
-
-            customElements.whenDefined('video-media').then(queueApply);
-          })();
-        </script>
-
-        {%- comment -%}
-        Caption of the open photo or video, shown only in the zoom view (the text of the block's caption setting, read from its cell's data-caption
-        attribute): under the media, or inside its top-left corner when the media fills the whole height of the screen.
-        {%- endcomment -%}
-        <script>
-          (() => {
-            const carousel = document.getElementById('{{ instagram_carousel_id }}');
-            const lightbox = document.getElementById('{{ instagram_lightbox_id }}');
-            const caption = document.getElementById('{{ instagram_lightbox_id }}-caption');
-
-            if (!carousel || !lightbox || !caption) {
-              return;
-            }
-
-            const GAP = 12;
-            const SETTLE_DELAY = 460;
-
-            const syncCaption = () => {
-              const expanded = carousel.querySelector('.is-lightbox-expanded');
-
-              caption.textContent = expanded?.closest('.snap-start')?.dataset.caption ?? '';
-
-              if (!expanded) {
-                return;
-              }
-
-              const rect = expanded.getBoundingClientRect();
-
-              caption.style.left = `${rect.left}px`;
-              caption.style.width = `${rect.width}px`;
-              caption.style.top = `${rect.bottom + GAP}px`;
-
-              {%- comment -%}
-              The media can fill the whole height of the screen (mobile, tall videos), leaving no room under it: the caption then sits inside
-              the video, at its top-left corner, with room left for the close button.
-              {%- endcomment -%}
-              if (rect.bottom + GAP + caption.offsetHeight > window.innerHeight - GAP) {
-                const closeButtonWidth = lightbox.querySelector('.media-lightbox__close')?.offsetWidth ?? 0;
-
-                caption.style.left = `${rect.left + GAP}px`;
-                caption.style.width = `${Math.max(0, rect.width - GAP * 3 - closeButtonWidth)}px`;
-                caption.style.top = `${rect.top + GAP}px`;
-              }
-            };
-
-            {%- comment -%}Measured again once the open animation has settled: during it the media is still slightly scaled down{%- endcomment -%}
-            new MutationObserver(() => {
-              syncCaption();
-              setTimeout(syncCaption, SETTLE_DELAY);
-            }).observe(carousel, { attributes: true, attributeFilter: ['class'], subtree: true });
-
-            window.addEventListener('resize', syncCaption);
           })();
         </script>
       {%- endif -%}
@@ -955,44 +307,17 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
 <style>
   {%- comment -%}
   ============================================================
-  TITLE/SUBTITLE SPACING
+  HEADER (title, subtitle and button)
   ============================================================
-  Overrides --prose-default-spacing (set by .prose--compact in the markup above, 1/1.25rem) to match
-  .instagram-feed__content's own gap below (1rem) - keeps the title-to-subtitle gap the same size as
-  the subtitle-to-button gap, instead of introducing a parallel spacing scheme.
   {%- endcomment -%}
   #shopify-section-{{ section.id }} .prose {
     --prose-default-spacing: 1rem;
   }
 
-  {%- comment -%}
-  ============================================================
-  HEADER (content column + icon column)
-  ============================================================
-  Two real columns, same on mobile and desktop - no breakpoint-specific swap. .instagram-feed__content
-  (title and subtitle stacked, the button on the title's row from 700px - see below) takes the start side, the icon (when shown) sits in its own
-  column flush to the end. A plain flex row instead of pulling the icon out with position: absolute:
-  that let the icon overlap the subtitle on narrow screens once the column grew tall enough to reach
-  it, since an out-of-flow element doesn't share space with in-flow content. flex: 1 + min-width: 0
-  on the content column let it take the remaining width and wrap/shrink its own text inside that,
-  while flex-shrink: 0 on the icon keeps it at its own natural size instead of being squeezed.
-  {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__header {
     align-items: start;
-    gap: 1rem;
     margin-block-end: var(--section-stack-row-gap);
     display: flex;
-  }
-
-  {%- comment -%}
-  Phones: a header that only holds the button (no title, subtitle or icon) is empty there, because the button moves under the dots. It is
-  removed so it leaves no space above the photos. Not done with the sm-max:hidden utility: the display: flex rule just above has the section's
-  id in it, so it is more specific than that class and won over it, and the empty header kept its height and its bottom margin.
-  {%- endcomment -%}
-  @media screen and (max-width: 699px) {
-    #shopify-section-{{ section.id }} .instagram-feed__header--desktop-only {
-      display: none;
-    }
   }
 
   #shopify-section-{{ section.id }} .instagram-feed__content {
@@ -1008,19 +333,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
     min-width: 0;
   }
 
-  #shopify-section-{{ section.id }} .instagram-feed__icon {
-    flex-shrink: 0;
-  }
-
-  {%- comment -%}
-  From 700px (tablet and desktop; phones show the button under the dots instead): the button sits on the title's row, flush with the right edge
-  of the section's content (the section's inner padding), with the title at the left and the free space in between. The content column becomes
-  a two-column grid: the text on the left (1fr) and the button on the right (auto). The .prose wrapper is display: contents, so the title and
-  the subtitle are separate rows of that grid. The button's top lines up with the top of the title (the title's top is trimmed to its capital
-  letters, see below, so both start at the section's inner padding) and it spans the title and subtitle rows: a button taller than the title
-  never pushes the subtitle down, so the 1rem between title and subtitle (the subtitle's own margin - .prose rules match the markup, not the
-  boxes - so the grid has no row gap of its own) stays the same. The button never shrinks or wraps its label (auto column), the title wraps instead.
-  {%- endcomment -%}
+  {%- comment -%}From 700px the button sits on the title's row, at the right edge; without title and subtitle it goes to the left{%- endcomment -%}
   @media screen and (min-width: 700px) {
     #shopify-section-{{ section.id }} .instagram-feed__content {
       display: grid;
@@ -1046,48 +359,18 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
       align-self: start;
     }
 
-    {%- comment -%}No title and no subtitle: nothing to sit next to, so the button goes to the left (the start of the row) instead{%- endcomment -%}
     #shopify-section-{{ section.id }} .instagram-feed__content--no-text > .instagram-feed__button {
       grid-column: 1;
       justify-self: start;
     }
   }
 
-  {%- comment -%}
-  Same title alignment system as sections/contact.liquid's .contact-heading-row__title: without it,
-  align-items: start above lines the icon up with the top of the title's full line-height box, not
-  its visible glyphs - text-box trims that invisible leading off so the icon's top edge is flush with
-  the visible top of the title text instead of sitting visibly lower than it.
-  Only the top is trimmed: trimming the bottom too (trim-both) also removed the title's lower leading, so the title sat closer to the
-  subtitle than in the other sections (sections/rich-text.liquid: same 1rem, untrimmed title). With the bottom kept, title -> subtitle
-  -> button reads the same as there.
-  {%- endcomment -%}
   #shopify-section-{{ section.id }} .instagram-feed__content > .prose > h2 {
     text-box: trim-start cap alphabetic;
-  }
-
-  {%- comment -%}
-  The title looks like the one of the FAQ block of Media Blocks (and the Info panel's): the color picked in "Color del título" (empty = the color of the
-  scheme's text) and weight 500. The size is the "Heading size" setting.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__content > .prose > h2 {
     color: var(--instagram-title-color, inherit);
     font-weight: 500;
   }
 
-  {%- comment -%}
-  Phones: the button under the dots, centered horizontally. It is its own row of the .section-stack grid, so the space above it is the same
-  row gap as between the row of photos and the dots.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__mobile-button {
-    justify-self: center;
-  }
-
-  {%- comment -%}
-  Independent of button_style (outline already has its own border, solid/link normally don't) -
-  left blank by default (the color picker's own "no color" state), so nothing renders unless the
-  merchant explicitly picks one.
-  {%- endcomment -%}
   {%- if section.settings.button_border_color != blank -%}
     #shopify-section-{{ section.id }} .instagram-feed__button {
       border: 1px solid rgb({{ section.settings.button_border_color.rgb }});
@@ -1098,8 +381,8 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
   ============================================================
   FLOATING MODE / SECTION PADDING
   ============================================================
-  Same formula as sections/reviews.liquid and sections/faq.liquid: gutter + 0.5rem on every side,
-  at every breakpoint, instead of .section-spacing's generic page-to-page rhythm.
+  Same formula as sections/reviews.liquid and sections/faq.liquid: gutter + 0.5rem on every side, at every breakpoint, instead of
+  .section-spacing's generic page-to-page rhythm. A pure white color scheme has no inner padding at all.
   {%- endcomment -%}
   {%- if section.settings.floating_instagram_feed -%}
     #shopify-section-{{ section.id }} .section-spacing {
@@ -1110,27 +393,11 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
       padding: calc(var(--container-gutter) + 0.5rem);
     }
 
-    {%- comment -%}
-    When the section's color scheme has a pure white background (#ffffff, exactly), the section loses its inner padding on every side (left,
-    right, top and bottom) and the rounded corners of the section itself (its outer wrapper; the photos and videos keep their own radius).
-    {%- endcomment -%}
-    {%- if instagram_scheme_is_white -%}
+    {%- if scheme_is_white -%}
       #shopify-section-{{ section.id }} .instagram-feed {
         padding: 0;
       }
     {%- endif -%}
-
-    {%- comment -%}
-    Same corner radius as the outer floating wrapper (which only clips the section's own edges,
-    far from the carousel once the padding above is in between). Without this, scrolling the
-    carousel reveals a plain square-cornered viewport in the middle of a rounded section - adding
-    the radius directly to .instagram-feed__carousel (with overflow-x: auto / overflow-y: hidden
-    already set below) clips every slide to that same rounded shape at rest, so the corners stay
-    rounded through the whole scroll range instead of only at the section's own edge.
-    {%- endcomment -%}
-    #shopify-section-{{ section.id }} .instagram-feed__carousel {
-      border-radius: {{ instagram_corner_radius_px }};
-    }
 
     {%- if section.settings.attach_to_footer -%}
       {%- comment -%}
@@ -1143,17 +410,13 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
       {%- endcomment -%}
       main > #shopify-section-{{ section.id }}:last-child > .section-floating {
         margin-block-end: 0 !important;
-        border-radius: {% if instagram_scheme_is_white %}0{% else %}{{ instagram_corner_radius_px }} {{ instagram_corner_radius_px }} 0 0{% endif %} !important;
+        border-radius: {% if scheme_is_white %}0{% else %}{{ corner_radius_px }} {{ corner_radius_px }} 0 0{% endif %} !important;
       }
 
       :root:has(main > #shopify-section-{{ section.id }}:last-child) .shopify-section--footer {
         margin-block-start: 0;
       }
 
-      {%- comment -%}
-      Where the two meet: a thin divider line, the same as the footer's own dividers (1px, the theme's border color of the footer's color
-      scheme), across the whole width of the footer card, on top of it. It is the footer's top border, so it takes no extra room.
-      {%- endcomment -%}
       :root:has(main > #shopify-section-{{ section.id }}:last-child) .shopify-section--footer .footer {
         border-start-start-radius: 0 !important;
         border-start-end-radius: 0 !important;
@@ -1164,405 +427,147 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
 
   {%- comment -%}
   ============================================================
-  CAROUSEL LAYOUT
+  THE STORY: CARD + PANEL
   ============================================================
-  Flexbox instead of CSS grid on purpose: a grid's auto-generated columns (grid-auto-columns) were
-  reporting the row's full, un-clipped content width - the sum of every column, intentionally wider
-  than the visible area once there are more items than fit - as this element's own size to the
-  outer .instagram-feed.section-stack grid it sits in, pushing the whole page wider once enough
-  images/videos were added to actually exceed the visible column count. Flex items aren't measured
-  that way: flex: 0 0 <basis> fixes each item's width without ever letting the row's intrinsic
-  content size feed back into the container's own sizing, so .scroll-area's overflow: auto hidden
-  reliably clips the rest instead.
-
-  Mobile: a single row of 2 items that tiles the full width - any extra items beyond those 2
-  overflow and scroll horizontally. Desktop: 4 items, same idea. Width stays an even split on
-  purpose - only the height changes (.instagram-feed__image/.content-box aspect-ratio override
-  further down), not how many items fit per row.
+  Phones: one column, the card on top and the panel under it, with the gap of "Gap (mobile)" (0 = joined, only the outer corners rounded).
+  From 700px: two equal columns side by side, with the gap of "Gap (desktop)". The card's height comes from its shape (the "shape" settings) and the
+  panel takes the same height. Every corner uses the section's corner radius; where the two parts touch (joined) the corners facing each other are square.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__carousel {
-    gap: var(--item-gap-inline);
-    width: 100%;
+  #shopify-section-{{ section.id }} .ig-story {
+    --ig-radius: {{ corner_radius_px }};
+    --ig-ratio: {{ story_ratio_mobile }};
+    gap: {{ section.settings.gap_mobile }}px;
+    grid-template-columns: minmax(0, 1fr);
+    display: grid;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__stage {
+    aspect-ratio: var(--ig-ratio);
+    border-radius: var(--ig-radius);
     min-width: 0;
-    max-width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: hidden;
+    display: grid;
+    position: relative;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story--joined-mobile .ig-story__stage {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__panel {
+    border-radius: var(--ig-radius);
+    min-width: 0;
+    padding: calc(var(--container-gutter) + 0.5rem);
+    gap: 2rem;
+    flex-direction: column;
+    justify-content: space-between;
     display: flex;
   }
 
-  {%- if instagram_autoscroll -%}
-    #shopify-section-{{ section.id }} .instagram-feed__carousel {
-      scroll-snap-type: none;
-    }
-  {%- endif -%}
-
-  #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
-    flex: 0 0 calc((100% - var(--item-gap-inline)) / 2);
-    min-width: 0;
-  }
-
-  {%- comment -%}
-  Mobile (below 700px): double gap, and the row shows one full item plus a sliver of the next one at the right edge: item = (100% - gap) / 1.2,
-  so the sliver is (100% - gap) / 6 wide, exactly half of what it was before (item = (100% - gap) / 1.5, a sliver of (100% - gap) / 3). The main
-  video is wider and the one peeking in shows half as much.
-  Desktop below keeps one full item plus half of the next. Tablets (700-999px) keep the plain 4 per row and the normal gap.
-  {%- endcomment -%}
-  @media screen and (max-width: 699px) {
-    #shopify-section-{{ section.id }} .instagram-feed__carousel {
-      --instagram-feed-gap: var(--horizontal-gap);
-      gap: var(--instagram-feed-gap);
-    }
-
-    #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
-      flex: 0 0 calc((100% - var(--instagram-feed-gap)) / 1.2);
-    }
+  #shopify-section-{{ section.id }} .ig-story--joined-mobile .ig-story__panel {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
   }
 
   @media screen and (min-width: 700px) {
-    #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
-      flex: 0 0 calc((100% - 3 * var(--item-gap-inline)) / 4);
+    #shopify-section-{{ section.id }} .ig-story {
+      gap: {{ section.settings.gap_desktop }}px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
+    }
+
+    {%- comment -%}Back to the full radius, then the joined side of the desktop layout (the sides facing each other) is squared{%- endcomment -%}
+    #shopify-section-{{ section.id }} .ig-story .ig-story__stage,
+    #shopify-section-{{ section.id }} .ig-story .ig-story__panel {
+      border-radius: var(--ig-radius);
+    }
+
+    #shopify-section-{{ section.id }} .ig-story--joined-desktop .ig-story__stage {
+      border-start-end-radius: 0;
+      border-end-end-radius: 0;
+    }
+
+    #shopify-section-{{ section.id }} .ig-story--joined-desktop .ig-story__panel {
+      border-start-start-radius: 0;
+      border-end-start-radius: 0;
     }
   }
 
-  {%- comment -%}
-  Desktop (1000px and up): the squares are as wide as the row divided by "Items per row (desktop)" - more items
-  per row means smaller squares (height follows, they stay square). Tablets keep 4 per row.
-  {%- endcomment -%}
-  {%- comment -%}
-  Desktop only: the gap between photos/videos is the theme's shared carousel gap (--horizontal-gap, css-variables.liquid), and the
-  items are square again (the aspect-ratio rules below, at the same breakpoint). The row shows "Items per row (desktop)" slots, the last of them only peeking in at the right edge (so the others are a little wider than a plain
-  split): (N - 1) full items + the sliver + (N - 1) gaps = 100%. The sliver is half as wide as it used to be: with X = 100% minus the gaps,
-  it was X / (2N - 1) (half an item), now it is X / (4N - 2), so item = X / divisor with divisor = (4N - 2) * (N - 1) / (4N - 3)
-  (4.235 for the default 5 per row; it was 4.5). The doubled gap goes in its own variable: a custom
-  property can't be redefined from itself, and the item width has to subtract the same gap the flex row uses.
-  {%- endcomment -%}
-  {%- liquid
-    assign ipr_n = section.settings.items_per_row_desktop
-    assign ipr_a = ipr_n | times: 4 | minus: 2
-    assign ipr_b = ipr_n | minus: 1
-    assign ipr_c = ipr_n | times: 4 | minus: 3
-    assign ipr_divisor = ipr_a | times: ipr_b | times: 1.0 | divided_by: ipr_c | round: 4
-  -%}
   @media screen and (min-width: 1000px) {
-    #shopify-section-{{ section.id }} .instagram-feed__carousel {
-      --instagram-feed-gap: var(--horizontal-gap);
-      gap: var(--instagram-feed-gap);
+    #shopify-section-{{ section.id }} .ig-story {
+      --ig-ratio: {{ story_ratio_desktop }};
     }
+  }
 
-    #shopify-section-{{ section.id }} .instagram-feed__carousel > .snap-start {
-      flex: 0 0 calc((100% - {{ section.settings.items_per_row_desktop | minus: 1 }} * var(--instagram-feed-gap)) / {{ ipr_divisor }});
+  @media screen and (min-width: 700px) and (max-width: 999px) {
+    #shopify-section-{{ section.id }} .ig-story {
+      --ig-ratio: 1 / 1;
     }
   }
 
   {%- comment -%}
-  The play / pause / sound buttons exist only inside the zoom view: on the thumbnails the round play button (media-zoom-slide.liquid) is the
-  only control, so the video's own controls group stays hidden there.
+  The card's stories: all stacked in the same cell of the stage, the selected one fades in (the same soft fade as the rest of the page). The one that is
+  open in the zoom view stays visible whatever the selection says.
   {%- endcomment -%}
+  #shopify-section-{{ section.id }} .ig-story__cell {
+    grid-area: 1 / 1;
+    min-width: 0;
+    min-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .4s ease, visibility 0s linear .4s;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__cell.is-active,
+  #shopify-section-{{ section.id }} .ig-story__cell:has(.is-lightbox-expanded) {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .4s ease, visibility 0s;
+  }
+
+  {%- comment -%}The stage clips the media, so the card has no rounded corner of its own on the joined sides; the zoom view keeps the section's radius{%- endcomment -%}
+  #shopify-section-{{ section.id }} .ig-story__cell .content-box {
+    height: 100%;
+    aspect-ratio: auto;
+    border-radius: 0 !important;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__cell video-media > video,
+  #shopify-section-{{ section.id }} .ig-story__cell .content-box__background-media img {
+    object-fit: cover;
+  }
+
+  {%- comment -%}The play / pause / sound buttons exist only inside the zoom view: on the card the round play button is the only control{%- endcomment -%}
   #shopify-section-{{ section.id }} .carousel-video-controls:not(.is-lightbox-expanded) {
     display: none;
   }
 
-  {%- if section.settings.bw_intro -%}
-    {%- comment -%}
-    Black and white intro (setting "Black and white intro"): photos and videos start in grayscale - from the first paint, so the
-    color never shows before the effect - and, once the visitor reaches the feed, fade back to color after the configured number
-    of seconds (script below). Only the photos and videos are filtered, not the buttons.
-    {%- endcomment -%}
-    #{{ instagram_feed_id }}.is-bw .instagram-feed__carousel img,
-    #{{ instagram_feed_id }}.is-bw .instagram-feed__carousel video-media {
-      filter: grayscale(1);
-    }
-
-    {%- comment -%}
-    The fade back to color is an animation, not a transition: the photos and videos already have transitions of their own (the zoom
-    in the lightbox, the poster fade) that a "transition: filter" would replace. The filter goes on the media elements themselves,
-    never on an ancestor, which would trap the expanded (position: fixed) photo or video of the lightbox inside it.
-    {%- endcomment -%}
-    #{{ instagram_feed_id }}.is-bw-fading .instagram-feed__carousel img,
-    #{{ instagram_feed_id }}.is-bw-fading .instagram-feed__carousel video-media {
-      animation: instagram-feed-bw-fade {{ section.settings.bw_intro_fade }}s ease-in-out forwards;
-    }
-
-    @keyframes instagram-feed-bw-fade {
-      from {
-        filter: grayscale(1);
-      }
-
-      to {
-        filter: grayscale(0);
-      }
-    }
-  {%- endif -%}
-
-  {%- comment -%}What was over the video fades out (and back) instead of vanishing: the logo, the progress line and the buttons{%- endcomment -%}
-  #shopify-section-{{ section.id }} video-media.is-lightbox-expanded::after,
-  #shopify-section-{{ section.id }} video-media.is-lightbox-expanded > .lightbox-scrubber {
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
   {%- comment -%}
-  Like button: at the top of the video's controls (in the lightbox), same round button as the play / pause / sound ones, with the number
-  under the heart. The heart fills when liked.
+  The round play button of the card: 1.747 times the global control button (the shared rule in snippets/media-zoom-style.liquid is 1.3), always a
+  perfect circle whatever "Controls > Border radius" says. Only this section: Media Blocks and FAQ keep the shared size.
   {%- endcomment -%}
-  #shopify-section-{{ section.id }} .carousel-video-like {
-    --like-icon-color: var(--control-button-icon-color, #fff);
-    --like-active-color: {{ section.settings.like_color }};
-    display: grid;
-    justify-items: center;
-    row-gap: 0.125rem;
+  #{{ feed_id }} .ig-story__cell .video-open-button {
+    --play-button-scale: 1.747;
   }
 
-  #shopify-section-{{ section.id }} .carousel-video-like__count {
-    font: var(--text-font-style) var(--text-font-weight) var(--text-base) / var(--text-line-height) var(--text-font-family);
-    letter-spacing: var(--text-letter-spacing);
-    font-variant-numeric: tabular-nums;
-    color: var(--like-icon-color);
-  }
-
-  #shopify-section-{{ section.id }} .carousel-video-like__count:empty {
-    display: none;
-  }
-
-  {%- comment -%}
-  The heart is just the icon: no round background and no border, unlike the play / pause / sound buttons. Same size as them (the
-  control button size, so it lines up in the column) and the same icon color; red and filled once liked.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .carousel-video-like-toggle {
-    display: grid;
-    place-content: center;
-    width: var(--control-button-size, 1.75rem);
-    height: var(--control-button-size, 1.75rem);
-    padding: 0;
-    background: none;
-    border: 0;
-    color: var(--like-icon-color);
-    cursor: pointer;
-    transition: color 0.3s ease, scale 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  #shopify-section-{{ section.id }} .carousel-video-like-toggle .icon path {
-    fill: transparent;
-    transition: fill 0.3s ease;
-  }
-
-  #shopify-section-{{ section.id }} .carousel-video-like-toggle[aria-pressed="true"] {
-    color: var(--like-active-color);
-    animation: instagram-feed-heart-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  #shopify-section-{{ section.id }} .carousel-video-like-toggle:active {
-    scale: 0.92;
-  }
-
-  @keyframes instagram-feed-heart-pop {
-    0% {
-      scale: 1;
-    }
-
-    45% {
-      scale: 1.35;
-    }
-
-    100% {
-      scale: 1;
-    }
-  }
-
-  #shopify-section-{{ section.id }} .carousel-video-like-toggle[aria-pressed="true"] .icon path {
-    fill: currentColor;
-  }
-
-  {%- comment -%}
-  Hearts that float up over the video when it is liked (script "Like button" below creates them): they leave from the like button, drift
-  sideways a little, grow and fade out while they rise. Only inside the video's own box (overflow hidden, same corners), never clickable.
-  Not shown for visitors who prefer reduced motion. The color is the section's "Liked heart color".
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__hearts {
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    overflow: hidden;
-    border-radius: inherit;
-    pointer-events: none;
-  }
-
-  #shopify-section-{{ section.id }} .instagram-feed__heart {
-    position: absolute;
-    inset-inline-start: var(--from-x);
-    inset-block-start: var(--from-y);
-    width: var(--size);
-    height: var(--size);
-    margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
-    fill: var(--heart-color);
-    opacity: 0;
-    filter: drop-shadow(0 0.125rem 0.375rem rgb(0 0 0 / .25));
-    animation: instagram-feed-heart-float var(--duration) cubic-bezier(0.2, 0.7, 0.3, 1) var(--delay) forwards;
-  }
-
-  @keyframes instagram-feed-heart-float {
-    0% {
-      opacity: 0;
-      transform: translate(0, 0) scale(0.3) rotate(0deg);
-    }
-
-    15% {
-      opacity: 1;
-      transform: translate(calc(var(--drift) * 0.2), calc(var(--rise) * -0.15)) scale(1) rotate(calc(var(--tilt) * 0.3));
-    }
-
-    100% {
-      opacity: 0;
-      transform: translate(var(--drift), calc(var(--rise) * -1)) scale(1.15) rotate(var(--tilt));
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    #shopify-section-{{ section.id }} .instagram-feed__hearts {
-      display: none;
-    }
-  }
-
-  {%- comment -%}
-  Loading cue: a small spinner in the middle of the cell while its video was asked to play and has no frames yet. It fades in
-  after a short delay, so a video that starts right away never shows it.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__video-cell {
-    position: relative;
-  }
-
-  #shopify-section-{{ section.id }} .instagram-feed__video-cell::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    width: 1.75rem;
-    height: 1.75rem;
-    margin: auto;
-    color: var(--control-button-icon-color, #fff);
-    border: 2px solid color-mix(in srgb, currentColor 40%, transparent);
-    border-block-start-color: currentColor;
+  #{{ feed_id }} .ig-story__cell .video-open-button .overlay-control {
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease 0s;
-  }
-
-  #shopify-section-{{ section.id }} .instagram-feed__video-cell.is-video-loading::after {
-    opacity: 1;
-    transition-delay: 0.35s;
-    animation: instagram-feed-video-spin 0.8s linear infinite;
-  }
-
-  @keyframes instagram-feed-video-spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  {%- comment -%}
-  Thumbnail caption (each video's "Caption" setting): always shown, on mobile and desktop, at the bottom of the video, in white with the body
-  text font (family, weight, size, line height, letter spacing, case). A soft dark fade behind it, from the bottom edge up, so the white text
-  stays readable on light videos. At most three lines. It lets every click through to the video, and it is hidden while the video is open in
-  the zoom view (that one shows the caption under the video, .instagram-feed__lightbox-caption).
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__thumb-caption {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
     overflow: hidden;
-    position: absolute;
-    inset-inline: 0;
-    inset-block-end: 0;
-    z-index: 2;
-    margin: 0;
-    padding: 2rem .75rem .75rem;
-    color: #fff;
-    font-family: var(--text-font-family);
-    font-weight: var(--text-font-weight);
-    font-style: var(--text-font-style);
-    font-size: var(--text-base);
-    line-height: var(--text-line-height);
-    letter-spacing: var(--text-letter-spacing);
-    text-transform: var(--text-transform);
-    background: linear-gradient(to top, rgb(0 0 0 / .45), rgb(0 0 0 / 0));
-    border-end-start-radius: {{ instagram_corner_radius_px }};
-    border-end-end-radius: {{ instagram_corner_radius_px }};
-    pointer-events: none;
   }
 
-  @media screen and (min-width: 700px) {
-    #shopify-section-{{ section.id }} .instagram-feed__thumb-caption {
-      padding: 2.5rem 1rem 1rem;
-    }
-  }
-
-  #shopify-section-{{ section.id }} .instagram-feed__video-cell:has(.is-lightbox-expanded) .instagram-feed__thumb-caption {
-    display: none;
-  }
-
-
-  {%- comment -%}
-  object-fit: cover/display: block for the image case come from the theme's global img rule, and
-  the square shape from the existing .aspect-square utility (both in assets/theme.css) - only the
-  width (to fill its grid column) and the corner radius are added here.
-
-  The video case renders through media-zoom-slide.liquid's own .content-box, which isn't square by
-  default (it's built for FAQ/Media Blocks' own configurable-ratio hero blocks) - aspect-ratio: 1
-  here forces it to match the image thumbnails instead of adding a parallel sizing mechanism.
-
-  border-radius here reuses instagram_corner_radius_px (same value as the carousel's own frame
-  above and the video thumbnail's corner_radius param below) instead of a fixed px value with no
-  real source - so every corner in this section (carousel frame, image thumbnails, video
-  thumbnails) always matches whatever the merchant sets, instead of the images being stuck at an
-  arbitrary radius the rest of the section doesn't share.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed__image {
-    width: 100%;
-    border-radius: {{ instagram_corner_radius_px }};
-  }
-
-  {%- comment -%}
-  Shape of every photo and video: one custom property that changes with the screen size - phones: the "Photo and video shape (mobile)" setting
-  (3:5 by default); tablets, from 700px: a fixed 7:10; from 1000px: the "Photo and video shape (desktop)" setting (square by default). Only the
-  height follows it, the width comes from .instagram-feed__carousel > .snap-start above. It overrides .aspect-square's aspect-ratio: 1
-  (assets/theme.css) and the ratio the video's .content-box gets from media-zoom-slide.liquid.
-  {%- endcomment -%}
-  #shopify-section-{{ section.id }} .instagram-feed {
-    --instagram-feed-ratio: {{ instagram_ratio_mobile }};
-  }
-
-  @media screen and (min-width: 700px) {
-    #shopify-section-{{ section.id }} .instagram-feed {
-      --instagram-feed-ratio: 7 / 10;
-    }
-  }
-
-  @media screen and (min-width: 1000px) {
-    #shopify-section-{{ section.id }} .instagram-feed {
-      --instagram-feed-ratio: {{ instagram_ratio_desktop }};
-    }
-  }
-
-  #shopify-section-{{ section.id }} .instagram-feed__image,
-  #shopify-section-{{ section.id }} .content-box {
-    aspect-ratio: var(--instagram-feed-ratio);
-  }
-
-  {%- comment -%}
-  No logo on the video thumbnails of this feed (snippets/media-zoom-style.liquid draws it on every video of the sections that use it). Only the thumbnail:
-  the expanded video in the zoom view (.is-lightbox-expanded) keeps its logo.
-  {%- endcomment -%}
-  #{{ instagram_feed_id }} .has-video-logo video-media:not(.is-lightbox-expanded)::after {
+  {%- comment -%}No logo on the card's video (snippets/media-zoom-style.liquid draws it on every video of the sections that use it); the zoom view keeps it{%- endcomment -%}
+  #{{ feed_id }} .has-video-logo video-media:not(.is-lightbox-expanded)::after {
     display: none;
   }
 
   {%- comment -%}
-  Logo of the expanded video (zoom view), only in this feed: in the middle of the video, centered both ways (it was at the top left), 62.5% bigger
-  than the original (width min(5rem, 25%) -> min(8.125rem, 40.625%), height 2.75rem -> 4.46875rem) and 32% more transparent (opacity .7 -> .476: .7 x .85 x .8). The shared rule that
-  placed it at the top left is in snippets/media-zoom-style.liquid; this one has the same specificity and comes later in the page, so it wins
-  here without touching the other sections that use that snippet.
+  Logo of the expanded video (zoom view): in the middle of the video, centered both ways, bigger and more transparent than the shared one.
   {%- endcomment -%}
-  #{{ instagram_feed_id }}[data-lightbox-layout] .has-video-logo video-media.is-lightbox-expanded::after {
+  #{{ feed_id }}[data-lightbox-layout] .has-video-logo video-media.is-lightbox-expanded::after {
     inset-inline-start: 50%;
     inset-block-start: 50%;
     inset-block-end: auto;
@@ -1574,34 +579,154 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
   }
 
   {%- comment -%}
-  Zoom view: every photo opens in the SAME box as the videos (their height and shape), never in its own proportions - a landscape photo used to open
-  as a wide, short strip next to the tall videos. The photo fills that box (object-fit: cover, centered both ways), so whatever its size or shape,
-  it is cropped evenly around its middle instead of letterboxed.
-  - Phones / tablets (up to 999px): the videos' box is the whole available area (--lightbox-media-w x --lightbox-media-h, media-zoom-style.liquid),
-    so the photo gets exactly that.
-  - Desktop: a video's box is the biggest one of its own shape that fits the screen. The photo takes the shape of the feed's videos (--instagram-zoom-ratio,
-    read from the first video by the script below; 9:16 when there is none) and the same "biggest that fits" width formula.
-  This is a property of the <img> itself (it also carries the thumbnail's forced aspect-ratio above), so it is re-stated here at higher specificity
-  (two ids). border-radius is re-asserted here too (same instagram_corner_radius_px media-zoom-style.liquid sets on img.is-lightbox-expanded).
+  Zoom view: a photo opens in the same box as the videos (9:16 shape, the biggest that fits the screen), cropped evenly around its middle instead of
+  letterboxed.
   {%- endcomment -%}
-  #{{ instagram_feed_id }} {
+  #{{ feed_id }} {
     --instagram-zoom-ratio: .5625;
   }
 
-  #shopify-section-{{ section.id }} #{{ instagram_feed_id }} img.is-lightbox-expanded {
+  #shopify-section-{{ section.id }} #{{ feed_id }} img.is-lightbox-expanded {
     width: min(var(--lightbox-media-w), calc(var(--lightbox-media-h) * var(--instagram-zoom-ratio)));
     height: auto;
     aspect-ratio: var(--instagram-zoom-ratio);
     object-fit: cover;
     object-position: center;
-    border-radius: {{ instagram_corner_radius_px }};
+    border-radius: {{ corner_radius_px }};
   }
 
   @media screen and (max-width: 999px) {
-    #shopify-section-{{ section.id }} #{{ instagram_feed_id }} img.is-lightbox-expanded {
+    #shopify-section-{{ section.id }} #{{ feed_id }} img.is-lightbox-expanded {
       width: var(--lightbox-media-w);
       height: var(--lightbox-media-h);
       aspect-ratio: auto;
+    }
+  }
+
+  {%- comment -%}
+  The panel: thumbnails at the top, the story's text at the bottom (space-between), same type as the rest of the page. The text of every story
+  is stacked in the same cell and the selected one fades in, like the card.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .ig-story__thumbs {
+    flex-wrap: wrap;
+    gap: .75rem;
+    display: flex;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__thumb {
+    width: 3.5rem;
+    aspect-ratio: 1 / 1;
+    border-radius: .75rem;
+    overflow: hidden;
+    opacity: .5;
+    cursor: pointer;
+    transition: opacity .3s ease;
+    flex: none;
+    padding: 0;
+  }
+
+  @media screen and (min-width: 700px) {
+    #shopify-section-{{ section.id }} .ig-story__thumb {
+      width: 4.5rem;
+    }
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__thumb:hover,
+  #shopify-section-{{ section.id }} .ig-story__thumb.is-active {
+    opacity: 1;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__thumb:focus-visible {
+    outline: 2px solid rgb(var(--text-color));
+    outline-offset: 2px;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__infos {
+    margin-block-start: auto;
+    display: grid;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__info {
+    grid-area: 1 / 1;
+    min-width: 0;
+    gap: 2rem;
+    align-content: end;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .4s ease, visibility 0s linear .4s;
+    display: grid;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__info.is-active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .4s ease, visibility 0s;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__tagline {
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__rows {
+    display: grid;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__row {
+    padding-block: 1rem;
+    gap: 1rem;
+    align-items: center;
+    grid-template-columns: auto minmax(0, 1fr);
+    display: grid;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__row + .ig-story__row {
+    border-block-start: 1px solid rgb(var(--border-color));
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__row-label {
+    margin: 0;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__row-value {
+    margin: 0;
+    text-align: end;
+    color: rgb(var(--text-color) / .75);
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__picks {
+    gap: .25rem;
+    padding: 0;
+    list-style: none;
+    display: grid;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__picks a {
+    color: inherit;
+    text-decoration: none;
+    transition: opacity .2s ease;
+  }
+
+  #shopify-section-{{ section.id }} .ig-story__picks a:hover {
+    opacity: .6;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ section.id }} .ig-story__cell,
+    #shopify-section-{{ section.id }} .ig-story__info,
+    #shopify-section-{{ section.id }} .ig-story__thumb {
+      transition: none;
     }
   }
 </style>
@@ -1632,7 +757,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
       "type": "checkbox",
       "id": "attach_to_footer",
       "label": "Attach to footer",
-      "info": "Only works when this section is the last one on the page, right above the footer: the two join with no gap, separated by a thin divider line like the footer's own; the footer's rounded corners and this section's bottom corners are removed.",
+      "info": "Only works when this section is the last one on the page, right above the footer: the two join with no gap, separated by a thin divider line like the footer's own; the footer's top corners and this section's bottom corners are removed.",
       "default": false,
       "visible_if": "{{ section.settings.floating_instagram_feed }}"
     },
@@ -1644,8 +769,67 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
       "step": 2,
       "unit": "px",
       "label": "Corner radius",
-      "default": 0,
-      "visible_if": "{{ section.settings.floating_instagram_feed }}"
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Historia: tarjeta y panel"
+    },
+    {
+      "type": "color_scheme",
+      "id": "panel_color_scheme",
+      "label": "Esquema de color del panel",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "gap_desktop",
+      "min": 0,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "label": "Espacio entre el video y el panel (escritorio)",
+      "info": "0 los junta: solo quedan redondeadas las esquinas de afuera.",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "gap_mobile",
+      "min": 0,
+      "max": 32,
+      "step": 4,
+      "unit": "px",
+      "label": "Espacio entre el video y el panel (móvil)",
+      "info": "0 los junta: solo quedan redondeadas las esquinas de afuera.",
+      "default": 0
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio_mobile",
+      "label": "Forma del video (móvil)",
+      "options": [
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "portrait", "label": "Portrait (4:5)" },
+        { "value": "tall", "label": "Tall (3:5)" }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio_desktop",
+      "label": "Forma del video (escritorio)",
+      "options": [
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "portrait", "label": "Portrait (4:5)" },
+        { "value": "tall", "label": "Tall (3:5)" }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "text",
+      "id": "creator_label",
+      "label": "Título de la fila del creador",
+      "default": "Creator"
     },
     {
       "type": "header",
@@ -1750,228 +934,12 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
       "id": "button_border_color",
       "label": "Button border color",
       "info": "Leave blank for no border."
-    },
-    {
-      "type": "header",
-      "content": "Decorative icon"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_icon",
-      "label": "Show spinning icon",
-      "info": "A decorative icon shown above the button.",
-      "default": true
-    },
-    {
-      "type": "select",
-      "id": "icon_type",
-      "label": "Icon",
-      "options": [
-        {
-          "value": "star",
-          "label": "Star"
-        },
-        {
-          "value": "lotus",
-          "label": "Lotus"
-        },
-        {
-          "value": "clover",
-          "label": "Clover"
-        },
-        {
-          "value": "smiley",
-          "label": "Smiley face"
-        },
-        {
-          "value": "cherries",
-          "label": "Cherries"
-        },
-        {
-          "value": "eight_ball",
-          "label": "8-Ball"
-        },
-        {
-          "value": "blob",
-          "label": "Blob"
-        },
-        {
-          "value": "badge",
-          "label": "Badge"
-        },
-        {
-          "value": "stamp",
-          "label": "Stamp"
-        },
-        {
-          "value": "swoosh",
-          "label": "Swoosh"
-        },
-        {
-          "value": "phone",
-          "label": "Phone"
-        }
-      ],
-      "default": "star",
-      "visible_if": "{{ section.settings.show_icon }}"
-    },
-    {
-      "type": "range",
-      "id": "icon_size",
-      "min": 16,
-      "max": 80,
-      "step": 4,
-      "unit": "px",
-      "label": "Icon size",
-      "default": 32,
-      "visible_if": "{{ section.settings.show_icon }}"
-    },
-    {
-      "type": "checkbox",
-      "id": "icon_spin",
-      "label": "Spin icon",
-      "default": true,
-      "visible_if": "{{ section.settings.show_icon }}"
-    },
-    {
-      "type": "color",
-      "id": "icon_primary_color",
-      "label": "Primary color",
-      "default": "#FF6B9D",
-      "visible_if": "{{ section.settings.show_icon }}"
-    },
-    {
-      "type": "color",
-      "id": "icon_secondary_color",
-      "label": "Secondary color",
-      "default": "#FFD93D",
-      "visible_if": "{{ section.settings.show_icon }}"
-    },
-    {
-      "type": "color",
-      "id": "icon_border_color",
-      "label": "Border color",
-      "info": "Leave blank for no border.",
-      "visible_if": "{{ section.settings.show_icon }}"
-    },
-    {
-      "type": "select",
-      "id": "aspect_ratio_mobile",
-      "label": "Photo and video shape (mobile)",
-      "options": [
-        { "value": "square", "label": "Square (1:1)" },
-        { "value": "portrait", "label": "Portrait (4:5)" },
-        { "value": "tall", "label": "Tall (3:5)" }
-      ],
-      "default": "tall"
-    },
-    {
-      "type": "select",
-      "id": "aspect_ratio_desktop",
-      "label": "Photo and video shape (desktop)",
-      "options": [
-        { "value": "square", "label": "Square (1:1)" },
-        { "value": "portrait", "label": "Portrait (4:5)" },
-        { "value": "tall", "label": "Tall (3:5)" }
-      ],
-      "default": "square"
-    },
-    {
-      "type": "range",
-      "id": "items_per_row_desktop",
-      "min": 3,
-      "max": 8,
-      "step": 1,
-      "label": "Items per row (desktop)",
-      "info": "More items per row makes the photos and videos smaller. They stay square. Mobile and tablet are not affected.",
-      "default": 5
-    },
-    {
-      "type": "header",
-      "content": "Scroll controls"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_dots",
-      "label": "Show dots",
-      "info": "One dot per position of the row, under it. Not shown while the row scrolls by itself.",
-      "default": true
-    },
-    {
-      "type": "header",
-      "content": "Auto-scroll"
-    },
-    {
-      "type": "checkbox",
-      "id": "autoscroll",
-      "label": "Scroll automatically",
-      "info": "The row moves continuously, like a conveyor belt, and loops forever. It stops while the visitor presses, drags or opens an item, and is skipped for visitors who prefer reduced motion. The scroll controls above are hidden while this is on.",
-      "default": true
-    },
-    {
-      "type": "select",
-      "id": "autoscroll_speed",
-      "label": "Speed",
-      "options": [
-        { "value": "slow", "label": "Slow" },
-        { "value": "medium", "label": "Medium" },
-        { "value": "fast", "label": "Fast" }
-      ],
-      "default": "medium",
-      "visible_if": "{{ section.settings.autoscroll }}"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_likes",
-      "label": "Show a like button on videos",
-      "info": "A heart at the top of the video's controls in the zoom view. Visitors can like a video; their like is remembered in their own browser.",
-      "default": true
-    },
-    {
-      "type": "color",
-      "id": "like_color",
-      "label": "Liked heart color",
-      "default": "#e5243b",
-      "visible_if": "{{ section.settings.show_likes }}"
-    },
-    {
-      "type": "header",
-      "content": "Black and white intro"
-    },
-    {
-      "type": "checkbox",
-      "id": "bw_intro",
-      "label": "Black and white at first",
-      "info": "Photos and videos start in black and white and fade to color after a few seconds, counted from the moment the visitor reaches this section.",
-      "default": false
-    },
-    {
-      "type": "range",
-      "id": "bw_intro_seconds",
-      "min": 3,
-      "max": 30,
-      "step": 1,
-      "unit": "s",
-      "label": "Time in black and white",
-      "default": 15,
-      "visible_if": "{{ section.settings.bw_intro }}"
-    },
-    {
-      "type": "range",
-      "id": "bw_intro_fade",
-      "min": 0.5,
-      "max": 4,
-      "step": 0.5,
-      "unit": "s",
-      "label": "Fade to color",
-      "default": 1.5,
-      "visible_if": "{{ section.settings.bw_intro }}"
     }
   ],
   "blocks": [
     {
       "type": "item",
-      "name": "Media",
+      "name": "Historia",
       "settings": [
         {
           "type": "select",
@@ -1987,7 +955,7 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
               "label": "t:global.video.video"
             }
           ],
-          "default": "image"
+          "default": "video"
         },
         {
           "type": "image_picker",
@@ -2002,47 +970,60 @@ Colors and the shape of the round controls come from Theme settings > Controls; 
           "visible_if": "{{ block.settings.media_type == 'video' }}"
         },
         {
-          "type": "text",
-          "id": "caption",
-          "label": "t:global.image.caption",
-          "info": "Shown at the bottom of the video in the feed (mobile and desktop) and under the video in the zoomed-in view."
+          "type": "image_picker",
+          "id": "thumbnail",
+          "label": "Miniatura",
+          "info": "Opcional. Vacío usa la portada del video o la foto."
         },
         {
-          "type": "number",
-          "id": "likes_count",
-          "label": "Likes (videos)",
-          "info": "The number of likes this video really has (for instance on the Instagram post it comes from). It shows next to the heart and a visitor's own like adds one. Leave empty to show the heart without a number."
+          "type": "text",
+          "id": "tagline",
+          "label": "Frase",
+          "info": "Por ejemplo: Your everyday lip combos."
+        },
+        {
+          "type": "text",
+          "id": "creator",
+          "label": "Creador",
+          "info": "Por ejemplo: @usuario"
+        },
+        {
+          "type": "text",
+          "id": "picks_title",
+          "label": "Título de los picks",
+          "info": "Por ejemplo: Los picks de Ria",
+          "default": "Picks"
+        },
+        {
+          "type": "product_list",
+          "id": "picks",
+          "label": "Productos (picks)",
+          "limit": 6
         }
       ]
     }
   ],
+  "max_blocks": 12,
   "presets": [
     {
       "name": "Instagram Feed",
-      "category": "t:global.categories.trust_social",
       "blocks": [
         {
           "type": "item",
           "settings": {
-            "media_type": "image"
+            "media_type": "video"
           }
         },
         {
           "type": "item",
           "settings": {
-            "media_type": "image"
+            "media_type": "video"
           }
         },
         {
           "type": "item",
           "settings": {
-            "media_type": "image"
-          }
-        },
-        {
-          "type": "item",
-          "settings": {
-            "media_type": "image"
+            "media_type": "video"
           }
         }
       ]
