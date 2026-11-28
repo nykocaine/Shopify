@@ -101,12 +101,20 @@ no need to manually pass the section as it is globally available)
               {%- assign product_title = 'general.on_boarding.product_title' | t -%}
             {%- endif -%}
 
+            {%- liquid
+              # Optional title color (block setting "Color del título"); empty uses the color scheme's text color
+              assign title_color_style = ''
+              if block.settings.title_color != blank and block.settings.title_color != 'rgba(0,0,0,0)'
+                assign title_color_style = 'color: ' | append: block.settings.title_color | append: ';'
+              endif
+            -%}
+
             {%- if request.page_type == 'product' and context == 'main_product' -%}
-              <h1 class="product-title {{ block.settings.heading_tag }}">
+              <h1 class="product-title {{ block.settings.heading_tag }}"{% if title_color_style != blank %} style="{{ title_color_style }}"{% endif %}>
                 {{- product_title -}}
               </h1>
             {%- else -%}
-              <h2 class="product-title {% if context == 'quick_buy' %}h4{% else %}{{ block.settings.heading_tag }}{% endif %}">
+              <h2 class="product-title {% if context == 'quick_buy' %}h4{% else %}{{ block.settings.heading_tag }}{% endif %}"{% if title_color_style != blank %} style="{{ title_color_style }}"{% endif %}>
                 <a href="{{ product.url }}">{{ product_title }}</a>
               </h2>
             {%- endif -%}
