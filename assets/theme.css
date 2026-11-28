@@ -3921,6 +3921,23 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   }
 }
 
+/* Height of the pill: the theme's global button height (--button-min-height, "Button height" setting), the same as every button, with the text
+   centered in it (the pill's own 1px border is part of that height). Not for the text-only badge, which has no pill. The first rule centers the text
+   with the line height; where the browser can trim the line to the capitals, the padding does the centering instead (same as the rules above). */
+.product-card__meta-badge:not(.product-card__meta-badge--plain) {
+  box-sizing: border-box;
+  min-height: var(--button-min-height);
+  padding-block: 0;
+  line-height: calc(var(--button-min-height) - 2px);
+}
+
+@supports (text-box: trim-both cap alphabetic) {
+  .product-card__meta-badge:not(.product-card__meta-badge--plain) {
+    line-height: 1.2;
+    padding-block: calc((var(--button-min-height) - 2px - 1cap) / 2);
+  }
+}
+
 /* Text only (no background, no border): no pill padding and no border space - the text itself sits at the badge position, the same distance
    from the photo's edges (the margin above). Also wins over the centering padding of the @supports block (more specific). */
 .product-card__meta-badge.product-card__meta-badge--plain {
