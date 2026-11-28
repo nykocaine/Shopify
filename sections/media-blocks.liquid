@@ -430,6 +430,25 @@
       {%- endif -%}
     {%- endfor -%}
 
+    {%- comment -%}The titles can use these same fonts (setting "Fuente de los títulos" of the section and, in some blocks, of the block): declared too when picked{%- endcomment -%}
+    {%- assign title_font_section = section.settings.title_font | default: 'theme' -%}
+
+    {%- if title_font_section != 'theme' -%}
+      {%- unless words_fonts_used contains title_font_section -%}
+        {%- assign words_fonts_used = words_fonts_used | append: ',' | append: title_font_section -%}
+      {%- endunless -%}
+    {%- endif -%}
+
+    {%- for title_block in section.blocks -%}
+      {%- assign title_block_font = title_block.settings.title_font -%}
+
+      {%- if title_block_font != blank and title_block_font != 'section' and title_block_font != 'theme' -%}
+        {%- unless words_fonts_used contains title_block_font -%}
+          {%- assign words_fonts_used = words_fonts_used | append: ',' | append: title_block_font -%}
+        {%- endunless -%}
+      {%- endif -%}
+    {%- endfor -%}
+
     {%- if words_fonts_used contains 'rektorat' -%}
       @font-face { font-family: 'Words Rektorat'; src: url('{{ 'rektorat-bold.woff2' | asset_url }}') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
       @font-face { font-family: 'Words Rektorat'; src: url('{{ 'rektorat-heavy.woff2' | asset_url }}') format('woff2'); font-weight: 800; font-style: normal; font-display: swap; }
@@ -453,6 +472,29 @@
       @font-face { font-family: 'Words Apercu'; src: url('{{ 'apercu-extrabold.woff2' | asset_url }}') format('woff2'); font-weight: 800; font-style: normal; font-display: swap; }
       @font-face { font-family: 'Words Apercu'; src: url('{{ 'apercu-black.woff2' | asset_url }}') format('woff2'); font-weight: 900; font-style: normal; font-display: swap; }
     {%- endif -%}
+
+    {%- comment -%}
+    Font of the titles: the section's setting applies to every title (h1 to h6) of the section; a block that has its own "Fuente del título" overrides it
+    for its own titles (the block rules come later, same specificity). "Heading del tema" changes nothing: the titles keep the theme's Heading font and
+    its normal weight (the weight is never changed here).
+    {%- endcomment -%}
+    {%- if title_font_section != 'theme' -%}
+      {%- capture title_font_family -%}{%- render 'own-font-family', font: title_font_section -%}{%- endcapture -%}
+      #shopify-section-{{ section.id }} :is(h1, h2, h3, h4, h5, h6) {
+        font-family: {{ title_font_family }};
+      }
+    {%- endif -%}
+
+    {%- for title_block in section.blocks -%}
+      {%- assign title_block_font = title_block.settings.title_font -%}
+
+      {%- if title_block_font != blank and title_block_font != 'section' -%}
+        {%- capture title_block_family -%}{%- render 'own-font-family', font: title_block_font -%}{%- endcapture -%}
+        #block-{{ title_block.id }} :is(h1, h2, h3, h4, h5, h6) {
+          font-family: {{ title_block_family }};
+        }
+      {%- endif -%}
+    {%- endfor -%}
 
     #shopify-section-{{ section.id }} .media-words__list {
       display: grid;
@@ -2349,6 +2391,20 @@
       "id": "color_scheme",
       "label": "t:global.colors.scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "title_font",
+      "label": "Fuente de los títulos",
+      "info": "Para todos los títulos de la sección. Las fuentes propias de la tienda; \"Heading del tema\" deja la del tema, con su grosor normal.",
+      "options": [
+        { "value": "theme", "label": "Heading del tema" },
+        { "value": "swiss", "label": "Swiss 721" },
+        { "value": "apercu", "label": "Apercu" },
+        { "value": "satoshi", "label": "Satoshi" },
+        { "value": "rektorat", "label": "Rektorat" }
+      ],
+      "default": "theme"
     },
     {
       "type": "checkbox",
@@ -4831,6 +4887,20 @@
           "label": "Color del título",
           "info": "Vacío usa el color del texto del esquema."
         },
+        {
+          "type": "select",
+          "id": "title_font",
+          "label": "Fuente del título",
+          "options": [
+            { "value": "section", "label": "La de la sección" },
+            { "value": "theme", "label": "Heading del tema" },
+            { "value": "swiss", "label": "Swiss 721" },
+            { "value": "apercu", "label": "Apercu" },
+            { "value": "satoshi", "label": "Satoshi" },
+            { "value": "rektorat", "label": "Rektorat" }
+          ],
+          "default": "section"
+        },
         { "type": "text", "id": "subtitle", "label": "Subtítulo", "info": "Por ejemplo: Descubre más sobre este producto." },
         {
           "type": "header",
@@ -4957,6 +5027,20 @@
           "id": "title_color",
           "label": "Color del título",
           "info": "Vacío usa el color del texto del esquema."
+        },
+        {
+          "type": "select",
+          "id": "title_font",
+          "label": "Fuente del título",
+          "options": [
+            { "value": "section", "label": "La de la sección" },
+            { "value": "theme", "label": "Heading del tema" },
+            { "value": "swiss", "label": "Swiss 721" },
+            { "value": "apercu", "label": "Apercu" },
+            { "value": "satoshi", "label": "Satoshi" },
+            { "value": "rektorat", "label": "Rektorat" }
+          ],
+          "default": "section"
         },
         {
           "type": "header",
@@ -5106,6 +5190,20 @@
           "id": "title_color",
           "label": "Color del título",
           "info": "Vacío usa el color del texto del esquema."
+        },
+        {
+          "type": "select",
+          "id": "title_font",
+          "label": "Fuente del título",
+          "options": [
+            { "value": "section", "label": "La de la sección" },
+            { "value": "theme", "label": "Heading del tema" },
+            { "value": "swiss", "label": "Swiss 721" },
+            { "value": "apercu", "label": "Apercu" },
+            { "value": "satoshi", "label": "Satoshi" },
+            { "value": "rektorat", "label": "Rektorat" }
+          ],
+          "default": "section"
         },
         {
           "type": "select",

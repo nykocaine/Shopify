@@ -1,0 +1,21 @@
+{%- doc -%}
+The CSS font-family of one of the store's own fonts (the ones in this theme's assets, not the Shopify library), by its short name. It is the family
+name that sections/media-blocks.liquid declares with @font-face ("Words ..."), followed by the theme's Heading font as the fallback. Prints the value only.
+
+@param {string} font - 'rektorat', 'swiss', 'satoshi' or 'apercu'. Anything else prints the theme's Heading font.
+{%- enddoc -%}
+
+{%- liquid
+  case font
+    when 'rektorat'
+      echo "'Words Rektorat', var(--heading-font-family)"
+    when 'swiss'
+      echo "'Words Swiss', var(--heading-font-family)"
+    when 'satoshi'
+      echo "'Words Satoshi', var(--heading-font-family)"
+    when 'apercu'
+      echo "'Words Apercu', var(--heading-font-family)"
+    else
+      echo 'var(--heading-font-family)'
+  endcase
+-%}
