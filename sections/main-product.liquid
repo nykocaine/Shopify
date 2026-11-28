@@ -792,6 +792,16 @@
           margin-block-start: 0;
         }
       }
+
+      {%- comment -%}
+      Desktop (1000px and up): the white space between the menu and the product section is half of the page's side margin (it used to be the
+      whole --container-gutter).
+      {%- endcomment -%}
+      @media screen and (min-width: 1000px) {
+        #shopify-section-{{ section.id }} > div {
+          margin-block-start: calc(var(--container-gutter) / 2);
+        }
+      }
     {%- endunless -%}
 
     {%- comment -%}
